@@ -83,7 +83,7 @@ MVP 包含两个 Agent：
 - **前端 + 后端**：Next.js 14+ App Router，单仓库全栈。API Routes 作为唯一前后端接缝。
 - **数据库**：MongoDB（本地实例或 MongoDB Atlas 免费层），使用 Mongoose ODM。
 - **鉴权**：NextAuth.js，Credentials Provider（邮箱 + 密码），JWT session。密码使用 bcrypt 哈希存储。
-- **AI 对话**：Vercel AI SDK 处理 LLM 流式输出。LLM 实际调用 Anthropic API（Claude），但封装在 API Route 内部，前端不直接调用 LLM。
+- **AI 对话**：OpenAI SDK 处理 LLM 流式输出。LLM 实际调用 DeepSeek API（`deepseek-chat`），封装在 API Route 内部，前端不直接调用 LLM。选择 DeepSeek 是因为其成本最低，且在中文 PM 场景下表现优秀。
 - **UI 组件**：shadcn/ui（基于 Radix UI + Tailwind CSS）。
 - **部署**：本地开发（localhost），不依赖 Vercel。`npm run dev` 启动。
 
@@ -138,8 +138,8 @@ MVP 包含两个 Agent：
 - `GET /api/projects/:id/files/:id/download` — 下载文件
 
 ### 流式对话
-- 前端使用 Vercel AI SDK 的 `useChat` hook 消费 SSE 流。
-- 后端 API Route 将用户消息 + Agent SystemPrompt + 已加载文件内容拼接为完整 prompt，调用 Anthropic API，以 stream 模式返回。
+- 前端手动消费 SSE 流（无需额外 SDK 依赖），解析 `data: <JSON>\n\n` 格式事件。
+- 后端 API Route 将用户消息 + Agent SystemPrompt + 已加载文件内容拼接为完整 prompt，调用 DeepSeek API（OpenAI 兼容），以 stream 模式返回。
 - Agent 产出文件内容时，以特殊标记包裹（如 `%%%FILE_BEGIN%%%` ... `%%%FILE_END%%%`），前端解析后弹出确认对话框。
 
 ### UI 行为
@@ -173,6 +173,6 @@ MVP 包含两个 Agent：
 
 - 本 spec 基于 `/grill-with-docs` 的 CONTEXT.md 决策记录，决策详情见 `CONTEXT.md`。
 - 本地开发：`npm run dev` 启动 Next.js，需要本地 MongoDB 实例（或 MongoDB Atlas 连接串）。
-- Anthropic API Key 通过环境变量 `ANTHROPIC_API_KEY` 注入，不进入代码库。
+- DeepSeek API Key 通过环境变量 `DEEPSEEK_API_KEY` 注入，不进入代码库。
 - LLM 流式响应无托管平台超时限制，但需注意长对话的 token 消耗和用户等待体验。
 - 本产品本身就是"专业化 Agent 流水线"理念的验证——如果 MVP 跑通了 2 个 Agent 的流水线，团队可以随时插入更多 Agent 类型。
