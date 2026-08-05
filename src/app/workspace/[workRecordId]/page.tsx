@@ -134,12 +134,21 @@ export default function WorkspacePage() {
     }
   }
 
-  function handleEditFile(file: ProjectFileData) {
-    setSelectedFile(file);
+  async function handleEditFile(file: ProjectFileData) {
+    if (!project) return;
+    try {
+      const res = await fetch(
+        `/api/projects/${project.id}/files/${file.id}`
+      );
+      if (res.ok) {
+        setSelectedFile(await res.json());
+      } else {
+        setSelectedFile(file);
+      }
+    } catch {
+      setSelectedFile(file);
+    }
     setPreviewOpen(true);
-    // Preview panel has the edit button — a slight delay to open preview first,
-    // then let the user click edit. Alternatively, we could open the editor directly.
-    // For now, opening preview is the simpler UX.
   }
 
   function handleDownloadFile(file: ProjectFileData) {
@@ -343,8 +352,22 @@ export default function WorkspacePage() {
     }
   }
 
-  function handleSelectFile(file: ProjectFileData) {
-    setSelectedFile(file);
+  async function handleSelectFile(file: ProjectFileData) {
+    if (!project) return;
+    // File list omits content — fetch full file from detail endpoint
+    try {
+      const res = await fetch(
+        `/api/projects/${project.id}/files/${file.id}`
+      );
+      if (res.ok) {
+        const fullFile = await res.json();
+        setSelectedFile(fullFile);
+      } else {
+        setSelectedFile(file);
+      }
+    } catch {
+      setSelectedFile(file);
+    }
     setPreviewOpen(true);
   }
 

@@ -31,6 +31,7 @@ export const CHANGELOG_HEADER_RE =
 
 /** Strip the changelog header from file content for display. */
 export function stripChangelogHeader(content: string): string {
+  if (!content) return "";
   return content.replace(CHANGELOG_HEADER_RE, "").trimStart();
 }
 
