@@ -14,7 +14,7 @@ function sseEvent(type: string, data: Record<string, unknown>): Uint8Array {
   return encoder.encode(`data: ${JSON.stringify({ type, ...data })}\n\n`);
 }
 
-const ANTHROPIC_MODEL = "claude-sonnet-4-6-20250819";
+const ANTHROPIC_MODEL = "claude-sonnet-4-6";
 
 export async function POST(
   request: Request,
@@ -136,6 +136,21 @@ export async function POST(
               await Message.create({
                 role: "assistant",
                 content: fullContent + "\n\n[回复因错误中断]",
+                tab_id: tab._id,
+                timestamp: new Date(),
+              });
+            } catch {
+              // Best effort
+            }
+          } else {
+            // No tokens received at all — save an error message so the
+            // user message isn't left orphaned in the database.
+            try {
+              await Message.create({
+                role: "assistant",
+                content:
+                  "[AI 请求失败]" +
+                  (err instanceof Error ? ` — ${err.message}` : ""),
                 tab_id: tab._id,
                 timestamp: new Date(),
               });
