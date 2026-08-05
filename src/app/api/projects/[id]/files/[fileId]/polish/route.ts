@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import { findOwnedProjectFile } from "@/lib/ownership";
+import { createDeepSeekClient, DEEPSEEK_MODEL } from "@/lib/deepseek";
 
 const POLISH_SYSTEM_PROMPT = `你是一个技术文档润色助手。请对以下 Markdown 内容进行润色：
 
@@ -14,8 +14,6 @@ const POLISH_SYSTEM_PROMPT = `你是一个技术文档润色助手。请对以�
 6. 保留原有的变更日志头部（如果有的话）
 
 请直接输出润色后的完整内容，不要添加任何解释或说明。`;
-
-const MODEL = "deepseek-chat";
 
 export async function POST(
   request: Request,
@@ -56,14 +54,11 @@ export async function POST(
       );
     }
 
-    const openai = new OpenAI({
-      apiKey,
-      baseURL: "https://api.deepseek.com",
-    });
+    const openai = createDeepSeekClient();
 
     const response = await openai.chat.completions.create({
-      model: MODEL,
-      max_tokens: 4096,
+      model: DEEPSEEK_MODEL,
+      max_tokens: 8192,
       messages: [
         { role: "system", content: POLISH_SYSTEM_PROMPT },
         { role: "user", content: `请润色以下 Markdown 内容：\n\n${content}` },

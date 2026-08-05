@@ -7,6 +7,7 @@ import AgentFileContext from "@/models/AgentFileContext";
 import { AGENT_TYPES, AGENT_TYPE_LABELS, type AgentType } from "@/lib/agent-constants";
 import { findOwnedWorkRecord } from "@/lib/ownership";
 import { serializeTab } from "@/lib/tab-helpers";
+import type { ITabDocument } from "@/models/Tab";
 
 export async function GET(
   request: Request,
@@ -32,7 +33,9 @@ export async function GET(
       .sort({ position: 1, created_at: 1 })
       .lean();
 
-    return NextResponse.json(tabs.map((t) => serializeTab(t as any)));
+    return NextResponse.json(
+      tabs.map((t) => serializeTab(t as unknown as ITabDocument))
+    );
   } catch (error) {
     console.error("GET /api/work-records/[id]/tabs error:", error);
     return NextResponse.json(

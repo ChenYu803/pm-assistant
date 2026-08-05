@@ -95,11 +95,11 @@ export function parseChangelog(
 
 /**
  * Compute requirement count from file content body (excluding changelog header).
- * Counts top-level numbered list items or sections.
+ * Counts top-level numbered sections only ("## N."), so template sub-sections
+ * ("### 1.1 目标用户" style) are not miscounted as requirements.
  */
 export function countRequirements(content: string): number {
-  // Count lines matching "### N." or "## N." pattern (numbered requirement sections)
-  const matches = content.match(/^#{2,3}\s+\d+[\.\、]/gm);
+  const matches = content.match(/^##\s+\d+[\.\、]/gm);
   return matches ? matches.length : 0;
 }
 

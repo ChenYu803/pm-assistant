@@ -1,7 +1,7 @@
-import OpenAI from "openai";
 import mongoose from "mongoose";
 import Message from "@/models/Message";
 import WorkRecord from "@/models/WorkRecord";
+import { createDeepSeekClient, DEEPSEEK_MODEL } from "@/lib/deepseek";
 
 /**
  * Attempt to auto-generate a work record name from the conversation content.
@@ -41,13 +41,10 @@ export async function autoNameWorkRecord(
       .map((m) => `${m.role === "user" ? "用户" : "AI"}: ${m.content}`)
       .join("\n");
 
-    const openai = new OpenAI({
-      apiKey,
-      baseURL: "https://api.deepseek.com",
-    });
+    const openai = createDeepSeekClient();
 
     const response = await openai.chat.completions.create({
-      model: "deepseek-chat",
+      model: DEEPSEEK_MODEL,
       max_tokens: 50,
       messages: [
         {
