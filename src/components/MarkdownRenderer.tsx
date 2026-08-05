@@ -14,7 +14,7 @@ interface MarkdownRendererProps {
  * Strips the changelog HTML comment from display.
  */
 export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
-  const displayContent = stripChangelogHeader(content);
+  const displayContent = content ? stripChangelogHeader(content) : "";
   const html = renderMarkdown(displayContent);
   return (
     <div
