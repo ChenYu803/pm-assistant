@@ -8,6 +8,15 @@
         "value": "animate-bounce",
         "createdAt": "2026-08-05T09:47:34.540Z",
         "reason": "Bouncing dots are the standard chat thinking indicator pattern, not a physics simulation"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "src/components/MarkdownRenderer.tsx"
+        ],
+        "createdAt": "2026-08-05T10:41:55.070Z",
+        "reason": "Blockquote left border is a semantic typographic convention for markdown rendering, not an AI-generated side-tab card"
       }
     ]
   }
