@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 import mongoose from "mongoose";
 import Message from "@/models/Message";
 import WorkRecord from "@/models/WorkRecord";
@@ -25,9 +25,9 @@ export async function autoNameWorkRecord(
     if (!workRecord || workRecord.name !== "未命名") return null;
 
     // Get API key
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const apiKey = process.env.DEEPSEEK_API_KEY;
     if (!apiKey) {
-      console.warn("autoNameWorkRecord: ANTHROPIC_API_KEY not set");
+      console.warn("autoNameWorkRecord: DEEPSEEK_API_KEY not set");
       return null;
     }
 
@@ -41,14 +41,20 @@ export async function autoNameWorkRecord(
       .map((m) => `${m.role === "user" ? "用户" : "AI"}: ${m.content}`)
       .join("\n");
 
-    const anthropic = new Anthropic({ apiKey });
+    const openai = new OpenAI({
+      apiKey,
+      baseURL: "https://api.deepseek.com",
+    });
 
-    const response = await anthropic.messages.create({
-      model: "claude-haiku-4-5-20251001",
+    const response = await openai.chat.completions.create({
+      model: "deepseek-chat",
       max_tokens: 50,
-      system:
-        "你是一个对话摘要助手。根据对话内容生成一个简短的工作记录名称。直接输出名称（≤20个中文字符），不要加引号、不要解释、不要有任何前缀。名称应概括对话的核心主题。",
       messages: [
+        {
+          role: "system",
+          content:
+            "你是一个对话摘要助手。根据对话内容生成一个简短的工作记录名称。直接输出名称（≤20个中文字符），不要加引号、不要解释、不要有任何前缀。名称应概括对话的核心主题。",
+        },
         {
           role: "user",
           content: `基于以下对话，生成一个简短的工作记录名称（≤20字）：\n\n${conversationText}`,
@@ -56,10 +62,7 @@ export async function autoNameWorkRecord(
       ],
     });
 
-    const textBlock = response.content.find((b) => b.type === "text");
-    if (!textBlock || textBlock.type !== "text") return null;
-
-    let name = textBlock.text.trim();
+    let name = response.choices[0]?.message?.content?.trim() ?? "";
     // Sanitize: remove quotes, limit length
     name = name.replace(/^["'「『]|["'」』]$/g, "").slice(0, 20);
 

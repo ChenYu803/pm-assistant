@@ -17,7 +17,7 @@
 | Navigation mode | Hybrid — light progress indicator shows current phase, but user is never locked; skip/back/jump-in always allowed | Guides novices without constraining experienced users |
 | v1 priority | Process efficiency ("B") to 90 points; agent output quality ("A") as baseline; history ("C") limited | Flow is the moat; prompt quality can improve incrementally |
 | Agent design | Each agent has a baked-in system prompt for its specific role | User never writes "you are a PM" — they just describe their situation |
-| AI backend | Wraps existing LLM APIs (e.g. Claude API) with custom system prompts and tools | Analogous to Claude Code's productization pattern |
+| AI backend | DeepSeek API (`deepseek-chat`) via OpenAI-compatible SDK | 成本最低的选择；DeepSeek V3 在中文 PM 场景下表现优秀 |
 | MVP agents | ① 需求分析 Agent — Requirement Analyst ② MVP-PRD Agent — MVP Scope & PRD Writer | Two agents; validates both specialization AND handoff |
 | 需求分析.md format | List of requirements, each with 4-section analysis (用户与场景 / 用户故事 / 功能范围 / 成功指标). Agent fills it autonomously from grilling context | Agent is gatekeeper, not scribe — only validated requirements enter the list |
 | File editing | User can edit any file inline; AI polishes to proper md format afterward | User has final say over content |
@@ -47,7 +47,7 @@ Project (e.g., "校园二手交易平台")
 - **File changelog** — each md file has a header tracking requirement count, iteration #, etc. so AI reads it coherently
 - **Progress indicator** — non-blocking, shows current phase (see Navigation mode)
 
-| Tech stack | Next.js + MongoDB (Mongoose) + NextAuth.js + Vercel AI SDK + shadcn/ui, local dev | Local deployment for fast iteration |
+| Tech stack | Next.js + MongoDB (Mongoose) + NextAuth.js + OpenAI SDK (DeepSeek API) + Tailwind CSS, local dev | Local deployment for fast iteration |
 | Authentication | Email + password (NextAuth.js Credentials, bcrypt, JWT) | Simple, no external auth dependency |
 | File tree | Included in MVP — click to load file into agent context; drag to v2 | Core handoff visual; demonstrates the key differentiator |
 | MVP pages | ① Register ② Login ③ Project list ④ Session list ⑤ Workspace | 5 routes; standard web app structure |
