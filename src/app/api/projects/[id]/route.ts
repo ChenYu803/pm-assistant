@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import WorkRecord from "@/models/WorkRecord";
+import ProjectFile from "@/models/ProjectFile";
+import AgentFileContext from "@/models/AgentFileContext";
 import { findOwnedProject } from "@/lib/ownership";
 
 export async function GET(
@@ -62,6 +64,9 @@ export async function DELETE(
 
     // Delete all work records under this project
     await WorkRecord.deleteMany({ project_id: project._id });
+
+    // Delete all project files
+    await ProjectFile.deleteMany({ project_id: project._id });
 
     // Delete the project
     await project.deleteOne();

@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Project from "@/models/Project";
 import WorkRecord from "@/models/WorkRecord";
 import Tab from "@/models/Tab";
+import ProjectFile from "@/models/ProjectFile";
 
 /**
  * Validate a string is a valid MongoDB ObjectId.
@@ -75,4 +76,27 @@ export async function findOwnedTab(
   if (!workRecord) return null;
 
   return tab;
+}
+
+/**
+ * Find a project file by id and verify its project belongs to the given user.
+ * Returns the file document, or null if not found / not owned.
+ */
+export async function findOwnedProjectFile(
+  fileId: string,
+  userId: string
+) {
+  const oid = parseObjectId(fileId);
+  if (!oid) return null;
+
+  const file = await ProjectFile.findById(oid);
+  if (!file) return null;
+
+  const project = await findOwnedProject(
+    file.project_id.toString(),
+    userId
+  );
+  if (!project) return null;
+
+  return file;
 }

@@ -3,6 +3,7 @@ import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import Tab from "@/models/Tab";
 import Message from "@/models/Message";
+import AgentFileContext from "@/models/AgentFileContext";
 import { findOwnedTab } from "@/lib/ownership";
 import { serializeTab } from "@/lib/tab-helpers";
 
@@ -69,9 +70,9 @@ export async function DELETE(
       );
     }
 
-    // Delete all associated messages and the tab itself
+    // Delete all associated messages and file contexts
     await Message.deleteMany({ tab_id: tab._id });
-    // TODO: Delete agent_file_contexts when that model is added (Ticket 5/7)
+    await AgentFileContext.deleteMany({ tab_id: tab._id });
     await tab.deleteOne();
 
     return NextResponse.json({ success: true });
