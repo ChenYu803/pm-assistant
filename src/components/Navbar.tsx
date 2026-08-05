@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 export default function Navbar() {
   const { data: session, status } = useSession();
@@ -29,12 +30,13 @@ export default function Navbar() {
               <span className="text-sm text-gray-600">
                 {session.user.email}
               </span>
-              <button
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={() => signOut({ redirectTo: "/login" })}
-                className="rounded-md bg-gray-100 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-200 transition-colors"
               >
                 退出
-              </button>
+              </Button>
             </>
           ) : null}
         </div>

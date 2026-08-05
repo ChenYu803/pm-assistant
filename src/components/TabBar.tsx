@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import type { TabData } from "@/lib/agent-constants";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface TabBarProps {
   tabs: TabData[];
@@ -84,14 +86,14 @@ export default function TabBar({
               }`}
             >
               {isEditing ? (
-                <input
+                <Input
                   ref={editInputRef}
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
                   onKeyDown={(e) => handleEditKeyDown(e, tab.id)}
                   onBlur={handleEditBlur}
                   onClick={(e) => e.stopPropagation()}
-                  className="w-28 rounded border border-gray-300 px-1.5 py-0.5 text-sm text-gray-900 outline-none focus:ring-2 focus:ring-gray-400"
+                  className="h-auto w-28 rounded px-1.5 py-0.5 shadow-none focus:ring-2"
                 />
               ) : (
                 <span className="max-w-[160px] truncate">
@@ -101,16 +103,18 @@ export default function TabBar({
 
               {/* Close button */}
               {!isEditing && (
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={(e) => {
                     e.stopPropagation();
                     onClose(tab.id);
                   }}
-                  className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-sm text-gray-400 opacity-0 hover:bg-gray-200 hover:text-gray-600 group-hover:opacity-100 transition-opacity"
+                  className="ml-0.5 flex h-4 w-4 items-center justify-center rounded-sm p-0 text-gray-400 opacity-0 transition-opacity hover:bg-gray-200 hover:text-gray-600 group-hover:opacity-100 focus-visible:opacity-100"
                   title="关闭标签页"
                 >
                   ×
-                </button>
+                </Button>
               )}
             </div>
           );
@@ -118,13 +122,14 @@ export default function TabBar({
       </div>
 
       {/* New tab button */}
-      <button
+      <Button
+        variant="ghost"
         onClick={onNew}
-        className="shrink-0 px-3 py-2.5 text-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+        className="shrink-0 px-3 py-2.5 text-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600"
         title="新建标签页"
       >
         +
-      </button>
+      </Button>
     </div>
   );
 }

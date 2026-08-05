@@ -1,6 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 interface FileEditorModalProps {
   open: boolean;
@@ -71,43 +78,50 @@ export default function FileEditorModal({
     }
   }
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="flex w-full max-w-2xl flex-col rounded-xl bg-white shadow-xl">
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent
+        className="flex w-full max-w-2xl flex-col p-0"
+        // 与现有行为一致：点击遮罩不关闭；保存/润色中 Escape 也不关闭
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => {
+          if (saving || isPolishing) e.preventDefault();
+        }}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-200 px-5 py-3">
+        <div className="flex items-center justify-between border-b border-border px-5 py-3">
           <div className="flex items-center gap-2">
             <span className="text-base">📝</span>
-            <h3 className="text-sm font-semibold text-gray-900">
+            <DialogTitle className="text-sm font-semibold">
               编辑 {filename}
-            </h3>
+            </DialogTitle>
           </div>
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onClose}
             disabled={saving}
-            className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors disabled:opacity-50"
+            className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
-          </button>
+          </Button>
         </div>
 
         {/* Editor */}
         <div className="flex-1 p-5">
-          <textarea
+          <Textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="h-80 w-full resize-none rounded-lg border border-gray-200 bg-gray-50 p-4 font-mono text-sm text-gray-900 placeholder-gray-400 focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-indigo-400"
+            className="h-80 rounded-lg bg-muted p-4 font-mono text-sm"
             placeholder="输入 Markdown 内容..."
             disabled={saving || isPolishing}
           />
 
           {/* Polish error */}
           {polishError && (
-            <p className="mt-2 text-xs text-red-500">{polishError}</p>
+            <p className="mt-2 text-xs text-destructive">{polishError}</p>
           )}
 
           {/* Polished preview */}
@@ -120,32 +134,36 @@ export default function FileEditorModal({
                 {polishedContent}
               </pre>
               <div className="mt-2 flex items-center gap-2">
-                <button
+                <Button
+                  size="sm"
                   onClick={applyPolish}
-                  className="rounded-md bg-emerald-600 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-700 transition-colors"
+                  className="bg-emerald-600 hover:bg-emerald-700"
                 >
                   应用润色
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => setPolishedContent(null)}
-                  className="rounded-md border border-gray-200 bg-white px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
                 >
                   保留原文
-                </button>
+                </Button>
               </div>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between border-t border-gray-200 px-5 py-3">
+        <div className="flex items-center justify-between border-t border-border px-5 py-3">
           <div className="flex items-center gap-2">
-            <p className="text-xs text-gray-400">支持 Markdown 格式</p>
+            <p className="text-xs text-muted-foreground">支持 Markdown 格式</p>
             {polishTarget && (
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handlePolish}
                 disabled={saving || isPolishing}
-                className="rounded-md border border-indigo-200 bg-white px-3 py-1 text-xs font-medium text-indigo-600 hover:bg-indigo-50 transition-colors disabled:opacity-50"
+                className="border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700"
               >
                 {isPolishing ? (
                   <span className="flex items-center gap-1">
@@ -155,22 +173,18 @@ export default function FileEditorModal({
                 ) : (
                   "AI 润色"
                 )}
-              </button>
+              </Button>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <button
+            <Button
+              variant="outline"
               onClick={onClose}
               disabled={saving || isPolishing}
-              className="rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
               取消
-            </button>
-            <button
-              onClick={() => onSave(content)}
-              disabled={saving || isPolishing}
-              className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 transition-colors disabled:opacity-50"
-            >
+            </Button>
+            <Button onClick={() => onSave(content)} disabled={saving || isPolishing}>
               {saving ? (
                 <span className="flex items-center gap-1">
                   <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -179,10 +193,10 @@ export default function FileEditorModal({
               ) : (
                 "保存"
               )}
-            </button>
+            </Button>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

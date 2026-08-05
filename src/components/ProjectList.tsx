@@ -3,6 +3,17 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Project {
   id: string;
@@ -19,6 +30,7 @@ export default function ProjectList() {
   const [creating, setCreating] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Project | null>(null);
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -65,22 +77,26 @@ export default function ProjectList() {
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm("确定要删除该项目及其所有工作记录吗？")) return;
+  /** 删除确认弹窗的「删除」动作。 */
+  async function confirmDelete() {
+    if (!pendingDelete) return;
 
-    setDeletingId(id);
+    setDeletingId(pendingDelete.id);
     try {
-      const res = await fetch(`/api/projects/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/projects/${pendingDelete.id}`, {
+        method: "DELETE",
+      });
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "删除失败");
       }
-      setProjects((prev) => prev.filter((p) => p.id !== id));
+      setProjects((prev) => prev.filter((p) => p.id !== pendingDelete.id));
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "删除项目失败");
     } finally {
       setDeletingId(null);
+      setPendingDelete(null);
     }
   }
 
@@ -88,40 +104,35 @@ export default function ProjectList() {
     <div className="mx-auto w-full max-w-3xl px-4 py-8">
       {loading ? (
         <div className="flex flex-1 items-center justify-center py-20">
-          <p className="text-sm text-gray-400">加载中...</p>
+          <p className="text-sm text-muted-foreground">加载中...</p>
         </div>
       ) : error && projects.length === 0 ? (
         /* Error state (only when no stale data to show) */
         <div className="flex flex-1 items-center justify-center py-20">
           <div className="text-center">
             <div className="mb-4 text-5xl">⚠️</div>
-            <h2 className="mb-2 text-xl font-semibold text-gray-900">
-              加载失败
-            </h2>
-            <p className="mb-6 text-sm text-gray-500">{error}</p>
-            <button
-              onClick={fetchProjects}
-              className="inline-block rounded-md bg-gray-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
-            >
+            <h2 className="mb-2 text-xl font-semibold">加载失败</h2>
+            <p className="mb-6 text-sm text-muted-foreground">{error}</p>
+            <Button variant="default" size="lg" onClick={fetchProjects}>
               重试
-            </button>
+            </Button>
           </div>
         </div>
       ) : (
         <>
           <div className="mb-6 flex items-center justify-between">
-            <h1 className="text-xl font-semibold text-gray-900">我的项目</h1>
-            <button
+            <h1 className="text-xl font-semibold">我的项目</h1>
+            <Button
+              variant="default"
               onClick={() => setShowCreate(!showCreate)}
-              className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
             >
               {showCreate ? "取消" : "新建项目"}
-            </button>
+            </Button>
           </div>
 
           {/* Error banner (shown above content when stale data exists) */}
           {error && (
-            <div className="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">
+            <div className="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-destructive">
               {error}
               <button
                 onClick={() => setError("")}
@@ -136,27 +147,24 @@ export default function ProjectList() {
           {showCreate && (
             <form
               onSubmit={handleCreate}
-              className="mb-6 rounded-lg border border-gray-200 bg-white p-4"
+              className="mb-6 rounded-lg border border-border bg-card p-4"
             >
-              <label className="mb-2 block text-sm font-medium text-gray-700">
-                项目名称
-              </label>
+              <Label className="mb-2 block">项目名称</Label>
               <div className="flex gap-2">
-                <input
+                <Input
                   type="text"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="输入项目名称"
-                  className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder-gray-400 focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                  className="flex-1"
                   autoFocus
                 />
-                <button
+                <Button
                   type="submit"
                   disabled={creating || !newName.trim()}
-                  className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors"
                 >
                   {creating ? "创建中..." : "创建"}
-                </button>
+                </Button>
               </div>
             </form>
           )}
@@ -166,18 +174,13 @@ export default function ProjectList() {
             <div className="flex flex-1 items-center justify-center py-20">
               <div className="text-center">
                 <div className="mb-4 text-5xl">📋</div>
-                <h2 className="mb-2 text-xl font-semibold text-gray-900">
-                  还没有项目
-                </h2>
-                <p className="mb-6 text-sm text-gray-500">
+                <h2 className="mb-2 text-xl font-semibold">还没有项目</h2>
+                <p className="mb-6 text-sm text-muted-foreground">
                   创建你的第一个项目，开始用 AI 驱动产品工作流
                 </p>
-                <button
-                  onClick={() => setShowCreate(true)}
-                  className="inline-block rounded-md bg-gray-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
-                >
+                <Button size="lg" onClick={() => setShowCreate(true)}>
                   创建第一个项目
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -188,32 +191,63 @@ export default function ProjectList() {
               {projects.map((project) => (
                 <li
                   key={project.id}
-                  className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 hover:border-gray-300 transition-colors"
+                  className="flex items-center justify-between rounded-lg border border-border bg-card p-4 transition-colors hover:border-gray-300"
                 >
                   <Link
                     href={`/projects/${project.id}`}
-                    className="flex-1 min-w-0"
+                    className="min-w-0 flex-1"
                   >
-                    <span className="font-medium text-gray-900 hover:text-gray-700 transition-colors">
+                    <span className="font-medium transition-colors hover:text-muted-foreground">
                       {project.name}
                     </span>
-                    <span className="ml-3 text-xs text-gray-400">
+                    <span className="ml-3 text-xs text-muted-foreground">
                       {new Date(project.created_at).toLocaleDateString("zh-CN")}
                     </span>
                   </Link>
-                  <button
-                    onClick={() => handleDelete(project.id)}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setPendingDelete(project)}
                     disabled={deletingId === project.id}
-                    className="ml-4 rounded-md px-3 py-1.5 text-xs text-gray-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 transition-colors"
+                    className="ml-4 text-gray-400 hover:bg-red-50 hover:text-red-600"
                   >
                     {deletingId === project.id ? "删除中..." : "删除"}
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>
           )}
         </>
       )}
+
+      {/* 删除确认弹窗 */}
+      <AlertDialog
+        open={pendingDelete !== null}
+        onOpenChange={(o) => {
+          if (!o) setPendingDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogTitle>确定删除该项目？</AlertDialogTitle>
+          <AlertDialogDescription>
+            项目「{pendingDelete?.name}」及其所有工作记录将被永久删除，此操作不可恢复。
+          </AlertDialogDescription>
+          <div className="mt-4 flex justify-end gap-2">
+            <AlertDialogCancel asChild>
+              <Button variant="outline">取消</Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                variant="destructive"
+                onClick={confirmDelete}
+                disabled={deletingId !== null}
+              >
+                {deletingId !== null ? "删除中..." : "删除"}
+              </Button>
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
