@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 export interface ContextFile {
   id: string;
@@ -44,15 +45,17 @@ export default function AgentContextPanel({
             当前 Agent 已加载的文件
           </h3>
         </div>
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => setCollapsed(true)}
-          className="rounded p-0.5 text-gray-300 hover:bg-gray-100 hover:text-gray-500 transition-colors"
+          className="rounded p-0.5 text-gray-300 hover:bg-gray-100 hover:text-gray-500"
           title="收起"
         >
           <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
-        </button>
+        </Button>
       </div>
 
       {/* File list */}
@@ -85,15 +88,17 @@ export default function AgentContextPanel({
                     {file.filename}
                   </span>
                 </div>
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => onRemove(file.id)}
-                  className="ml-1 shrink-0 rounded p-0.5 text-gray-400 opacity-0 hover:bg-gray-200 hover:text-gray-600 group-hover:opacity-100 transition-opacity"
+                  className="ml-1 shrink-0 rounded p-0.5 text-gray-400 opacity-0 transition-opacity hover:bg-gray-200 hover:text-gray-600 group-hover:opacity-100 focus-visible:opacity-100"
                   title="移除"
                 >
                   <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
-                </button>
+                </Button>
               </li>
             ))}
           </ul>

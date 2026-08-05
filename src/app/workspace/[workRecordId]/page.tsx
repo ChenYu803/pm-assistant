@@ -13,6 +13,15 @@ import AgentContextPanel, { type ContextFile } from "@/components/AgentContextPa
 import { AGENT_TYPES, AGENT_TYPE_LABELS, AGENT_TYPE_DESCRIPTIONS, type AgentType } from "@/lib/agent-constants";
 import type { TabData } from "@/lib/agent-constants";
 import type { ProjectFileData } from "@/lib/file-helpers";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface WorkRecord {
   id: string;
@@ -40,6 +49,8 @@ export default function WorkspacePage() {
   const [error, setError] = useState("");
   const [showAgentDialog, setShowAgentDialog] = useState(false);
   const [creating, setCreating] = useState(false);
+  // 关闭标签页确认弹窗的目标
+  const [pendingCloseTab, setPendingCloseTab] = useState<TabData | null>(null);
   const [workRecord, setWorkRecord] = useState<WorkRecord | null>(null);
   const [project, setProject] = useState<Project | null>(null);
 
@@ -134,8 +145,10 @@ export default function WorkspacePage() {
     }
   }
 
-  async function handleEditFile(file: ProjectFileData) {
+  /** Open a file in the preview panel, fetching its full content first. */
+  async function openFileFull(file: ProjectFileData) {
     if (!project) return;
+    // File list omits content — fetch full file from detail endpoint
     try {
       const res = await fetch(
         `/api/projects/${project.id}/files/${file.id}`
@@ -149,6 +162,10 @@ export default function WorkspacePage() {
       setSelectedFile(file);
     }
     setPreviewOpen(true);
+  }
+
+  async function handleEditFile(file: ProjectFileData) {
+    await openFileFull(file);
   }
 
   function handleDownloadFile(file: ProjectFileData) {
@@ -277,8 +294,7 @@ export default function WorkspacePage() {
         throw new Error(data.error || "创建标签页失败");
       }
       const responseData = await res.json();
-      // Handle new response shape: { tab, context_files } or legacy flat tab
-      const newTab: TabData = responseData.tab ?? responseData;
+      const newTab: TabData = responseData.tab;
       const autoLoadedFiles: ContextFile[] = responseData.context_files ?? [];
       // Persist immediately so the restore effect won't override
       localStorage.setItem(storageKey, newTab.id);
@@ -316,21 +332,25 @@ export default function WorkspacePage() {
     }
   }
 
-  async function handleCloseTab(tabId: string) {
+  /** 点击关闭按钮 → 打开确认弹窗。 */
+  function requestCloseTab(tabId: string) {
     const tab = tabs.find((t) => t.id === tabId);
     if (!tab) return;
+    setPendingCloseTab(tab);
+  }
 
-    const confirmed = confirm(
-      `确定要关闭标签页「${tab.display_name}」吗？该标签页的聊天记录将被删除。`
-    );
-    if (!confirmed) return;
+  /** 确认弹窗的「关闭」动作：删除该标签页及其聊天记录。 */
+  async function confirmCloseTab() {
+    const tab = pendingCloseTab;
+    if (!tab) return;
+    setPendingCloseTab(null);
 
     // Optimistic removal
-    const wasActive = tabId === activeTabId;
-    setTabs((prev) => prev.filter((t) => t.id !== tabId));
+    const wasActive = tab.id === activeTabId;
+    setTabs((prev) => prev.filter((t) => t.id !== tab.id));
 
     try {
-      const res = await fetch(`/api/tabs/${tabId}`, { method: "DELETE" });
+      const res = await fetch(`/api/tabs/${tab.id}`, { method: "DELETE" });
       if (!res.ok) {
         throw new Error("删除失败");
       }
@@ -339,36 +359,22 @@ export default function WorkspacePage() {
       return;
     }
 
-    // Switch to another tab if we closed the active one
+    // Switch to another tab if we closed the active one.
+    // Side effects stay outside the setTabs updater (StrictMode double-invokes).
     if (wasActive) {
-      setTabs((prev) => {
-        if (prev.length > 0) {
-          const nextId = prev[0].id;
-          localStorage.setItem(storageKey, nextId);
-          setActiveTabId(nextId);
-        }
-        return prev;
-      });
+      const remaining = tabs.filter((t) => t.id !== tab.id);
+      if (remaining.length > 0) {
+        localStorage.setItem(storageKey, remaining[0].id);
+        setActiveTabId(remaining[0].id);
+      } else {
+        localStorage.removeItem(storageKey);
+        setActiveTabId(null);
+      }
     }
   }
 
-  async function handleSelectFile(file: ProjectFileData) {
-    if (!project) return;
-    // File list omits content — fetch full file from detail endpoint
-    try {
-      const res = await fetch(
-        `/api/projects/${project.id}/files/${file.id}`
-      );
-      if (res.ok) {
-        const fullFile = await res.json();
-        setSelectedFile(fullFile);
-      } else {
-        setSelectedFile(file);
-      }
-    } catch {
-      setSelectedFile(file);
-    }
-    setPreviewOpen(true);
+  function handleSelectFile(file: ProjectFileData) {
+    void openFileFull(file);
   }
 
   async function handleSaveEdit(fileId: string, content: string) {
@@ -416,14 +422,11 @@ export default function WorkspacePage() {
       <div className="flex flex-1 items-center justify-center">
         <div className="text-center">
           <div className="mb-4 text-5xl">⚠️</div>
-          <h2 className="mb-2 text-xl font-semibold text-gray-900">加载失败</h2>
-          <p className="mb-6 text-sm text-gray-500">{error}</p>
-          <button
-            onClick={fetchTabs}
-            className="inline-block rounded-md bg-gray-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-800 transition-colors"
-          >
+          <h2 className="mb-2 text-xl font-semibold">加载失败</h2>
+          <p className="mb-6 text-sm text-muted-foreground">{error}</p>
+          <Button size="lg" onClick={fetchTabs}>
             重试
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -504,7 +507,7 @@ export default function WorkspacePage() {
             tabs={tabs}
             activeTabId={activeTabId}
             onSwitch={setActiveTabId}
-            onClose={handleCloseTab}
+            onClose={requestCloseTab}
             onRename={handleRenameTab}
             onNew={() => setShowAgentDialog(true)}
           />
@@ -560,6 +563,7 @@ export default function WorkspacePage() {
               tabName={activeTab?.display_name ?? null}
               agentType={activeTab?.agent_type ?? null}
               projectId={project?.id ?? null}
+              existingFileNames={files.map((f) => f.filename)}
               onWorkRecordRenamed={(newName) => {
                 setWorkRecord((prev) =>
                   prev ? { ...prev, name: newName } : prev
@@ -587,6 +591,31 @@ export default function WorkspacePage() {
         onClose={() => setShowAgentDialog(false)}
         onSelect={handleCreateTab}
       />
+
+      {/* 关闭标签页确认弹窗 */}
+      <AlertDialog
+        open={pendingCloseTab !== null}
+        onOpenChange={(o) => {
+          if (!o) setPendingCloseTab(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogTitle>确定关闭该标签页？</AlertDialogTitle>
+          <AlertDialogDescription>
+            标签页「{pendingCloseTab?.display_name}」的聊天记录将被永久删除，此操作不可恢复。
+          </AlertDialogDescription>
+          <div className="mt-4 flex justify-end gap-2">
+            <AlertDialogCancel asChild>
+              <Button variant="outline">取消</Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button variant="destructive" onClick={confirmCloseTab}>
+                关闭
+              </Button>
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

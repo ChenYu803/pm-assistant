@@ -6,6 +6,8 @@ import { AGENT_TYPE_LABELS } from "@/lib/agent-constants";
 import FileConfirmDialog, {
   type FileToConfirm,
 } from "@/components/FileConfirmDialog";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -21,6 +23,8 @@ interface ChatAreaProps {
   tabName: string | null;
   agentType: AgentType | null;
   projectId: string | null;
+  /** Filenames already present in the project — used to skip re-confirming completed writes. */
+  existingFileNames?: string[];
   onWorkRecordRenamed?: (newName: string) => void;
   onFileSaved?: () => void; // notify parent to refresh file list
 }
@@ -97,9 +101,12 @@ function MessageBubble({
 
 function FileMarkerBanner({
   filename,
+  written,
   onWrite,
 }: {
   filename: string;
+  /** True once this message's file has been written — shows status instead of a button. */
+  written?: boolean;
   onWrite?: () => void;
 }) {
   return (
@@ -110,13 +117,18 @@ function FileMarkerBanner({
           Agent 产出文件：<strong>{filename}</strong>
         </span>
       </div>
-      {onWrite && (
-        <button
-          onClick={onWrite}
-          className="mt-2 rounded-md bg-amber-100 px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-200 transition-colors"
-        >
-          写入项目文件
-        </button>
+      {written ? (
+        <div className="mt-2 text-xs font-medium text-green-700">✓ 已写入项目文件</div>
+      ) : (
+        onWrite && (
+          <Button
+            onClick={onWrite}
+            size="sm"
+            className="mt-2 bg-amber-100 text-amber-800 hover:bg-amber-200"
+          >
+            写入项目文件
+          </Button>
+        )
       )}
     </div>
   );
@@ -129,6 +141,7 @@ export default function ChatArea({
   tabName,
   agentType,
   projectId,
+  existingFileNames,
   onWorkRecordRenamed,
   onFileSaved,
 }: ChatAreaProps) {
@@ -141,7 +154,8 @@ export default function ChatArea({
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
-  const lastSentContentRef = useRef<string>("");
+  // Last sent content — state, not a ref: it's read during render (retry button)
+  const [lastSentContent, setLastSentContent] = useState("");
 
   // File confirmation state
   const [fileToConfirm, setFileToConfirm] = useState<FileToConfirm | null>(null);
@@ -149,6 +163,44 @@ export default function ChatArea({
   const [savingFile, setSavingFile] = useState(false);
   // Track processed message IDs to avoid re-showing dialogs
   const processedFileMessageIds = useRef<Set<string>>(new Set());
+  // Messages whose file has actually been written (banner shows "已写入").
+  // State, not a ref — it's read during render.
+  const [writtenFileMessageIds, setWrittenFileMessageIds] = useState<Set<string>>(new Set());
+  // Which message triggered the currently open confirm dialog
+  const pendingWriteMessageId = useRef<string | null>(null);
+
+  // ── File marker parsing ──────────────────────────────────────────────────
+
+  const FILE_MARKER_RE =
+    /%%%FILE_BEGIN%%%\s*(.+?\.md)\s*\n([\s\S]*?)%%%FILE_END%%%/g;
+
+  /** Extract all file blocks from content. Returns array of {filename, content}. */
+  function extractFileMarkers(
+    content: string
+  ): FileToConfirm[] {
+    const results: FileToConfirm[] = [];
+    const regex = new RegExp(FILE_MARKER_RE.source, "g");
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(content)) !== null) {
+      results.push({ filename: match[1].trim(), content: match[2].trim() });
+    }
+    return results;
+  }
+
+  /** Check a message for file markers and trigger confirmation dialog. */
+  function checkAndShowFileDialog(message: ChatMessage) {
+    if (processedFileMessageIds.current.has(message.id)) return;
+    const markers = extractFileMarkers(message.content);
+    if (markers.length > 0) {
+      processedFileMessageIds.current.add(message.id);
+      // File already exists (e.g. after a page reload) — don't re-ask for a
+      // completed write (spec US39); the banner stays for intentional re-writes.
+      if (existingFileNames?.includes(markers[0].filename)) return;
+      pendingWriteMessageId.current = message.id;
+      setFileToConfirm(markers[0]); // Show first marker; user can process more later
+      setShowFileDialog(true);
+    }
+  }
 
   // ── Fetch message history on tab change ──────────────────────────────────
 
@@ -201,35 +253,6 @@ export default function ChatArea({
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingContent]);
 
-  // ── File marker parsing ───────────────────────────────────────────────────
-
-  const FILE_MARKER_RE =
-    /%%%FILE_BEGIN%%%\s*(.+?\.md)\s*\n([\s\S]*?)%%%FILE_END%%%/g;
-
-  /** Extract all file blocks from content. Returns array of {filename, content}. */
-  function extractFileMarkers(
-    content: string
-  ): FileToConfirm[] {
-    const results: FileToConfirm[] = [];
-    const regex = new RegExp(FILE_MARKER_RE.source, "g");
-    let match: RegExpExecArray | null;
-    while ((match = regex.exec(content)) !== null) {
-      results.push({ filename: match[1].trim(), content: match[2].trim() });
-    }
-    return results;
-  }
-
-  /** Check a message for file markers and trigger confirmation dialog. */
-  function checkAndShowFileDialog(message: ChatMessage) {
-    if (processedFileMessageIds.current.has(message.id)) return;
-    const markers = extractFileMarkers(message.content);
-    if (markers.length > 0) {
-      processedFileMessageIds.current.add(message.id);
-      setFileToConfirm(markers[0]); // Show first marker; user can process more later
-      setShowFileDialog(true);
-    }
-  }
-
   // ── File confirmation handlers ────────────────────────────────────────────
 
   async function handleConfirmFile() {
@@ -249,6 +272,12 @@ export default function ChatArea({
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "保存文件失败");
       }
+      // Mark the source message as written so its banner shows "已写入"
+      // (prevents accidental duplicate appends from re-clicking).
+      if (pendingWriteMessageId.current) {
+        const writtenId = pendingWriteMessageId.current;
+        setWrittenFileMessageIds((prev) => new Set(prev).add(writtenId));
+      }
       setShowFileDialog(false);
       setFileToConfirm(null);
       onFileSaved?.();
@@ -262,26 +291,6 @@ export default function ChatArea({
   function handleCancelFile() {
     setShowFileDialog(false);
     setFileToConfirm(null);
-  }
-
-  // ── Send message ─────────────────────────────────────────────────────────
-
-  const sendMessage = useCallback(async () => {
-    const trimmed = input.trim();
-    if (!trimmed || !tabId || isStreaming) return;
-
-    setInput("");
-    lastSentContentRef.current = trimmed;
-    await sendContent(trimmed);
-  }, [input, tabId, isStreaming, onWorkRecordRenamed]);
-
-  // ── Retry handler ────────────────────────────────────────────────────────
-
-  function handleRetry() {
-    const content = lastSentContentRef.current;
-    if (!content || !tabId || isStreaming) return;
-    setError("");
-    sendContent(content);
   }
 
   // ── Core send logic (shared by sendMessage and retry) ───────────────────
@@ -345,39 +354,39 @@ export default function ChatArea({
                 setStreamingContent(fullContent);
               }
               break;
-            case "done":
-              setMessages((prev) => {
-                const newMsg: ChatMessage = {
-                  id: event.messageId || `msg-${Date.now()}`,
-                  role: "assistant",
-                  content: fullContent,
-                  timestamp: new Date().toISOString(),
-                };
-                setTimeout(() => checkAndShowFileDialog(newMsg), 100);
-                return [...prev, newMsg];
-              });
+            case "done": {
+              const newMsg: ChatMessage = {
+                id: event.messageId || `msg-${Date.now()}`,
+                role: "assistant",
+                content: fullContent,
+                timestamp: new Date().toISOString(),
+              };
+              setMessages((prev) => [...prev, newMsg]);
+              setTimeout(() => checkAndShowFileDialog(newMsg), 100);
               setStreamingContent("");
               if (event.newName && onWorkRecordRenamed) {
                 onWorkRecordRenamed(event.newName);
               }
               break;
+            }
             case "error":
               setError(event.message || "请求发生错误");
-              if (fullContent) {
+              if (event.messageId && fullContent) {
+                // Server persisted the partial — append with the real message
+                // id so a later history fetch doesn't duplicate it.
                 setMessages((prev) => [
                   ...prev,
                   {
-                    id: `error-${Date.now()}`,
+                    id: event.messageId!,
                     role: "assistant",
                     content: fullContent,
                     timestamp: new Date().toISOString(),
                   },
                 ]);
-              } else {
-                setMessages((prev) =>
-                  prev.filter((m) => m.id !== optimisticUser.id)
-                );
               }
+              // Without a server id: the user message was already persisted
+              // server-side, so keep the optimistic copy — deleting it would
+              // make it (and the failed state) reappear after a refresh.
               setStreamingContent("");
               break;
           }
@@ -393,6 +402,26 @@ export default function ChatArea({
     }
   }
 
+  // ── Send message ─────────────────────────────────────────────────────────
+
+  const sendMessage = useCallback(async () => {
+    const trimmed = input.trim();
+    if (!trimmed || !tabId || isStreaming) return;
+
+    setInput("");
+    setLastSentContent(trimmed);
+    await sendContent(trimmed);
+  }, [input, tabId, isStreaming, onWorkRecordRenamed]);
+
+  // ── Retry handler ────────────────────────────────────────────────────────
+
+  function handleRetry() {
+    const content = lastSentContent;
+    if (!content || !tabId || isStreaming) return;
+    setError("");
+    void sendContent(content);
+  }
+
   // ── Keyboard handler ────────────────────────────────────────────────────
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -404,30 +433,36 @@ export default function ChatArea({
 
   // ── Extract file markers from content ───────────────────────────────────
 
-  function renderContentWithMarkers(content: string) {
+  function renderContentWithMarkers(content: string, messageId: string) {
+    // Strip internal markers (e.g. %%%SCOPE_FROZEN%%%) that must not reach the user.
+    const cleanContent = content.replace(/%%%SCOPE_FROZEN%%%/g, "");
     const markerRegex = /%%%FILE_BEGIN%%%\s*(.+?\.md)\s*\n([\s\S]*?)%%%FILE_END%%%/g;
     const parts: React.ReactNode[] = [];
     let lastIndex = 0;
     let match: RegExpExecArray | null;
     let key = 0;
 
-    while ((match = markerRegex.exec(content)) !== null) {
+    while ((match = markerRegex.exec(cleanContent)) !== null) {
+      // Capture in loop-local constants — the onWrite closure below runs long
+      // after the loop, when `match` is already null.
+      const filename = match[1].trim();
+      const fileContent = match[2].trim();
+
       // Text before marker
       if (match.index > lastIndex) {
         parts.push(
-          <span key={key++}>{content.slice(lastIndex, match.index)}</span>
+          <span key={key++}>{cleanContent.slice(lastIndex, match.index)}</span>
         );
       }
       // File marker
       parts.push(
         <FileMarkerBanner
           key={key++}
-          filename={match[1]}
+          filename={filename}
+          written={writtenFileMessageIds.has(messageId)}
           onWrite={() => {
-            setFileToConfirm({
-              filename: match![1].trim(),
-              content: match![2].trim(),
-            });
+            pendingWriteMessageId.current = messageId;
+            setFileToConfirm({ filename, content: fileContent });
             setShowFileDialog(true);
           }}
         />
@@ -435,18 +470,18 @@ export default function ChatArea({
       // File content (shown inline for now — Ticket 5 will save to filesystem)
       parts.push(
         <span key={key++} className="text-gray-500">
-          {match[2]}
+          {fileContent}
         </span>
       );
       lastIndex = match.index + match[0].length;
     }
 
     // Remaining text
-    if (lastIndex < content.length) {
-      parts.push(<span key={key++}>{content.slice(lastIndex)}</span>);
+    if (lastIndex < cleanContent.length) {
+      parts.push(<span key={key++}>{cleanContent.slice(lastIndex)}</span>);
     }
 
-    return parts.length > 0 ? parts : content;
+    return parts.length > 0 ? parts : cleanContent;
   }
 
   // ── Empty state: no tab selected ────────────────────────────────────────
@@ -490,21 +525,25 @@ export default function ChatArea({
               <div className="flex items-center justify-between gap-2">
                 <span className="flex-1">{error}</span>
                 <div className="flex items-center gap-1">
-                  {lastSentContentRef.current && (
-                    <button
+                  {lastSentContent && (
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={handleRetry}
                       disabled={isStreaming}
-                      className="rounded border border-red-300 bg-white px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-100 disabled:opacity-50 transition-colors"
+                      className="rounded border-red-300 text-red-700 hover:bg-red-100"
                     >
                       重试
-                    </button>
+                    </Button>
                   )}
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => setError("")}
-                    className="text-red-400 hover:text-red-600 transition-colors"
+                    className="p-1 text-red-400 hover:text-red-600"
                   >
                     ✕
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -543,7 +582,7 @@ export default function ChatArea({
                     </div>
                     <div className="rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm leading-relaxed text-gray-900">
                       <div className="whitespace-pre-wrap break-words">
-                        {renderContentWithMarkers(msg.content)}
+                        {renderContentWithMarkers(msg.content, msg.id)}
                       </div>
                     </div>
                   </div>
@@ -591,7 +630,7 @@ export default function ChatArea({
       <div className="border-t border-gray-200 bg-white px-4 py-3">
         <div className="mx-auto max-w-3xl">
           <div className="flex items-end gap-2">
-            <textarea
+            <Textarea
               ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -599,7 +638,7 @@ export default function ChatArea({
               placeholder="输入消息，Enter 发送，Shift+Enter 换行..."
               rows={1}
               disabled={isStreaming}
-              className="flex-1 resize-none rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm placeholder-gray-400 focus:border-indigo-400 focus:bg-white focus:outline-none focus:ring-1 focus:ring-indigo-400 disabled:opacity-50"
+              className="flex-1 rounded-lg bg-muted px-4 py-2.5"
               style={{ maxHeight: "8rem" }}
               onInput={(e) => {
                 const el = e.currentTarget;
@@ -607,10 +646,10 @@ export default function ChatArea({
                 el.style.height = Math.min(el.scrollHeight, 128) + "px";
               }}
             />
-            <button
+            <Button
               onClick={sendMessage}
               disabled={!input.trim() || isStreaming}
-              className="shrink-0 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="shrink-0 rounded-lg px-4 py-2.5 disabled:cursor-not-allowed"
             >
               {isStreaming ? (
                 <span className="flex items-center gap-1">
@@ -620,7 +659,7 @@ export default function ChatArea({
               ) : (
                 "发送"
               )}
-            </button>
+            </Button>
           </div>
           <p className="mt-1.5 text-xs text-gray-400">
             Enter 发送 · Shift+Enter 换行
