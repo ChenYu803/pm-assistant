@@ -15,7 +15,7 @@
 - [x] LLM 错误处理：对话中 API 超时/失败 → 显示错误提示 + "重试"按钮。重试重发最后一条用户消息
 - [x] 文件树右键菜单（或内嵌操作按钮）：预览、加载到当前 Agent、在线编辑、下载
 - [x] 视觉打磨：shadcn/ui 组件一致化、间距统一、颜色协调
-- [ ] 端到端验证：走通 happy path（注册 → 创建项目 → 创建记录 → 需求分析 → 产出需求分析.md → PRD Agent 自动加载 → 产出 prd.md）
+- [x] 端到端验证：走通 happy path（注册 → 创建项目 → 创建记录 → 需求分析 → 产出需求分析.md → PRD Agent 自动加载 → 产出 prd.md）
 
 ## Comments
 
@@ -35,5 +35,6 @@
 - 通过 `impeccable detect` 扫描全部组件，清零设计反模式
 - 3 个 gray-on-color 误报已通过 `.impeccable/config.json` 排除（均为 hover 态下文字颜色被正确覆盖的场景）
 
-待完成（非阻塞）：
-- 端到端验证：需启动 MongoDB + DeepSeek API 后手动走通完整流程
+E2E 验证（2026-08-05）：
+- 完整走通 happy path：注册 → 创建项目 → 创建记录 → 需求分析对话 → 产出需求分析.md → MVP-PRD 标签页自动加载 → 范围冻结 → 产出 prd.md → 文件预览/编辑/润色/下载
+- 发现并修复问题：服务端/客户端边界拆分、文件列表不含 content 导致预览崩溃、max_tokens 不足截断 PRD 输出
