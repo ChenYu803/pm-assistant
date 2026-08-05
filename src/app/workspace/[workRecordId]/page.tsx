@@ -6,8 +6,11 @@ import Link from "next/link";
 import TabBar from "@/components/TabBar";
 import ChatArea from "@/components/ChatArea";
 import AgentTypeDialog from "@/components/AgentTypeDialog";
+import FileTree from "@/components/FileTree";
+import FilePreviewPanel from "@/components/FilePreviewPanel";
 import { AGENT_TYPES, AGENT_TYPE_LABELS, AGENT_TYPE_DESCRIPTIONS, type AgentType } from "@/lib/agent-constants";
 import type { TabData } from "@/lib/agent-constants";
+import type { ProjectFileData } from "@/lib/file-helpers";
 
 interface WorkRecord {
   id: string;
@@ -37,6 +40,16 @@ export default function WorkspacePage() {
   const [creating, setCreating] = useState(false);
   const [workRecord, setWorkRecord] = useState<WorkRecord | null>(null);
   const [project, setProject] = useState<Project | null>(null);
+
+  // File tree state
+  const [files, setFiles] = useState<ProjectFileData[]>([]);
+  const [filesLoading, setFilesLoading] = useState(false);
+  const [filesError, setFilesError] = useState("");
+
+  // File preview state
+  const [selectedFile, setSelectedFile] = useState<ProjectFileData | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [savingFile, setSavingFile] = useState(false);
 
   // Fetch tabs
   const fetchTabs = useCallback(async () => {
@@ -96,6 +109,36 @@ export default function WorkspacePage() {
       cancelled = true;
     };
   }, [workRecord]);
+
+  // Fetch files when project is loaded
+  const fetchFiles = useCallback(async () => {
+    if (!project) return;
+    setFilesLoading(true);
+    setFilesError("");
+    try {
+      const res = await fetch(`/api/projects/${project.id}/files`);
+      if (!res.ok) throw new Error("获取文件列表失败");
+      const data = await res.json();
+      setFiles(data);
+      // Clear preview if selected file is no longer in the list
+      setSelectedFile((prev) => {
+        if (prev && !data.some((f: ProjectFileData) => f.id === prev.id)) {
+          return null;
+        }
+        return prev;
+      });
+    } catch (err) {
+      setFilesError(err instanceof Error ? err.message : "获取文件列表失败");
+    } finally {
+      setFilesLoading(false);
+    }
+  }, [project]);
+
+  useEffect(() => {
+    if (project) {
+      fetchFiles();
+    }
+  }, [project, fetchFiles]);
 
   useEffect(() => {
     fetchTabs();
@@ -210,6 +253,41 @@ export default function WorkspacePage() {
     }
   }
 
+  function handleSelectFile(file: ProjectFileData) {
+    setSelectedFile(file);
+    setPreviewOpen(true);
+  }
+
+  async function handleSaveEdit(fileId: string, content: string) {
+    if (!project) return;
+    setSavingFile(true);
+    try {
+      const res = await fetch(
+        `/api/projects/${project.id}/files/${fileId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content }),
+        }
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "保存文件失败");
+      }
+      const updated = await res.json();
+      // Update file in local state
+      setFiles((prev) =>
+        prev.map((f) => (f.id === fileId ? updated : f))
+      );
+      setSelectedFile(updated);
+      setPreviewOpen(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "保存文件失败");
+    } finally {
+      setSavingFile(false);
+    }
+  }
+
   // --- Render: Loading state ---
   if (loading) {
     return (
@@ -274,16 +352,14 @@ export default function WorkspacePage() {
 
       {/* Main workspace area: file tree + chat */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left: File tree placeholder (Ticket 5) */}
-        <aside className="hidden w-56 shrink-0 border-r border-gray-200 bg-white md:block">
-          <div className="flex h-full items-center justify-center p-4">
-            <div className="text-center">
-              <div className="mb-2 text-3xl">📁</div>
-              <p className="text-xs text-gray-400">文件树</p>
-              <p className="text-xs text-gray-300">后续迭代中实现</p>
-            </div>
-          </div>
-        </aside>
+        {/* Left: File tree */}
+        <FileTree
+          files={files}
+          loading={filesLoading}
+          error={filesError}
+          selectedFileId={selectedFile?.id ?? null}
+          onSelect={handleSelectFile}
+        />
 
         {/* Right: Tab bar + Chat area */}
         <div className="flex flex-1 flex-col overflow-hidden">
@@ -347,14 +423,26 @@ export default function WorkspacePage() {
               tabId={activeTab?.id ?? null}
               tabName={activeTab?.display_name ?? null}
               agentType={activeTab?.agent_type ?? null}
+              projectId={project?.id ?? null}
               onWorkRecordRenamed={(newName) => {
                 setWorkRecord((prev) =>
                   prev ? { ...prev, name: newName } : prev
                 );
               }}
+              onFileSaved={fetchFiles}
             />
           )}
         </div>
+
+        {/* Right: File preview panel */}
+        <FilePreviewPanel
+          file={selectedFile}
+          open={previewOpen}
+          saving={savingFile}
+          onClose={() => setPreviewOpen(false)}
+          onSaveEdit={handleSaveEdit}
+          projectId={project?.id ?? ""}
+        />
       </div>
 
       {/* Agent type selection dialog */}

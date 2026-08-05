@@ -3,6 +3,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { AgentType } from "@/lib/agent-constants";
 import { AGENT_TYPE_LABELS } from "@/lib/agent-constants";
+import FileConfirmDialog, {
+  type FileToConfirm,
+} from "@/components/FileConfirmDialog";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -17,7 +20,9 @@ interface ChatAreaProps {
   tabId: string | null;
   tabName: string | null;
   agentType: AgentType | null;
+  projectId: string | null;
   onWorkRecordRenamed?: (newName: string) => void;
+  onFileSaved?: () => void; // notify parent to refresh file list
 }
 
 interface SseEvent {
@@ -90,18 +95,29 @@ function MessageBubble({
 
 // ─── File marker banner ──────────────────────────────────────────────────────
 
-function FileMarkerBanner({ filename }: { filename: string }) {
+function FileMarkerBanner({
+  filename,
+  onWrite,
+}: {
+  filename: string;
+  onWrite?: () => void;
+}) {
   return (
     <div className="mx-auto mb-4 max-w-[80%] rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
       <div className="flex items-center gap-2 text-sm text-amber-800">
         <span className="text-base">📄</span>
         <span>
-          Agent 准备产出文件：<strong>{filename}</strong>
+          Agent 产出文件：<strong>{filename}</strong>
         </span>
       </div>
-      <p className="mt-1 text-xs text-amber-600">
-        文件将在后续迭代中保存到工作区
-      </p>
+      {onWrite && (
+        <button
+          onClick={onWrite}
+          className="mt-2 rounded-md bg-amber-100 px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-200 transition-colors"
+        >
+          写入项目文件
+        </button>
+      )}
     </div>
   );
 }
@@ -112,7 +128,9 @@ export default function ChatArea({
   tabId,
   tabName,
   agentType,
+  projectId,
   onWorkRecordRenamed,
+  onFileSaved,
 }: ChatAreaProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -123,6 +141,13 @@ export default function ChatArea({
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  // File confirmation state
+  const [fileToConfirm, setFileToConfirm] = useState<FileToConfirm | null>(null);
+  const [showFileDialog, setShowFileDialog] = useState(false);
+  const [savingFile, setSavingFile] = useState(false);
+  // Track processed message IDs to avoid re-showing dialogs
+  const processedFileMessageIds = useRef<Set<string>>(new Set());
 
   // ── Fetch message history on tab change ──────────────────────────────────
 
@@ -143,6 +168,12 @@ export default function ChatArea({
         const data = await res.json();
         if (!cancelled) {
           setMessages(data.messages);
+          // Check existing messages for file markers (for tab re-open)
+          for (const msg of data.messages) {
+            if (msg.role === "assistant") {
+              checkAndShowFileDialog(msg);
+            }
+          }
         }
       } catch (err) {
         if (!cancelled) {
@@ -168,6 +199,69 @@ export default function ChatArea({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingContent]);
+
+  // ── File marker parsing ───────────────────────────────────────────────────
+
+  const FILE_MARKER_RE =
+    /%%%FILE_BEGIN%%%\s*(.+?\.md)\s*\n([\s\S]*?)%%%FILE_END%%%/g;
+
+  /** Extract all file blocks from content. Returns array of {filename, content}. */
+  function extractFileMarkers(
+    content: string
+  ): FileToConfirm[] {
+    const results: FileToConfirm[] = [];
+    const regex = new RegExp(FILE_MARKER_RE.source, "g");
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(content)) !== null) {
+      results.push({ filename: match[1].trim(), content: match[2].trim() });
+    }
+    return results;
+  }
+
+  /** Check a message for file markers and trigger confirmation dialog. */
+  function checkAndShowFileDialog(message: ChatMessage) {
+    if (processedFileMessageIds.current.has(message.id)) return;
+    const markers = extractFileMarkers(message.content);
+    if (markers.length > 0) {
+      processedFileMessageIds.current.add(message.id);
+      setFileToConfirm(markers[0]); // Show first marker; user can process more later
+      setShowFileDialog(true);
+    }
+  }
+
+  // ── File confirmation handlers ────────────────────────────────────────────
+
+  async function handleConfirmFile() {
+    if (!fileToConfirm || !projectId || !agentType) return;
+    setSavingFile(true);
+    try {
+      const res = await fetch(`/api/projects/${projectId}/files`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: fileToConfirm.filename,
+          content: fileToConfirm.content,
+          agent_type: agentType,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "保存文件失败");
+      }
+      setShowFileDialog(false);
+      setFileToConfirm(null);
+      onFileSaved?.();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "保存文件失败");
+    } finally {
+      setSavingFile(false);
+    }
+  }
+
+  function handleCancelFile() {
+    setShowFileDialog(false);
+    setFileToConfirm(null);
+  }
 
   // ── Send message ─────────────────────────────────────────────────────────
 
@@ -236,15 +330,17 @@ export default function ChatArea({
               }
               break;
             case "done":
-              setMessages((prev) => [
-                ...prev,
-                {
+              setMessages((prev) => {
+                const newMsg: ChatMessage = {
                   id: event.messageId || `msg-${Date.now()}`,
                   role: "assistant",
                   content: fullContent,
                   timestamp: new Date().toISOString(),
-                },
-              ]);
+                };
+                // Check for file markers in the completed message
+                setTimeout(() => checkAndShowFileDialog(newMsg), 100);
+                return [...prev, newMsg];
+              });
               setStreamingContent("");
               // Check for auto-name result
               if (event.newName && onWorkRecordRenamed) {
@@ -312,7 +408,17 @@ export default function ChatArea({
       }
       // File marker
       parts.push(
-        <FileMarkerBanner key={key++} filename={match[1]} />
+        <FileMarkerBanner
+          key={key++}
+          filename={match[1]}
+          onWrite={() => {
+            setFileToConfirm({
+              filename: match![1].trim(),
+              content: match![2].trim(),
+            });
+            setShowFileDialog(true);
+          }}
+        />
       );
       // File content (shown inline for now — Ticket 5 will save to filesystem)
       parts.push(
@@ -498,6 +604,15 @@ export default function ChatArea({
           </p>
         </div>
       </div>
+
+      {/* File confirmation dialog */}
+      <FileConfirmDialog
+        open={showFileDialog}
+        file={fileToConfirm}
+        saving={savingFile}
+        onConfirm={handleConfirmFile}
+        onCancel={handleCancelFile}
+      />
     </div>
   );
 }
