@@ -223,15 +223,16 @@ export default function WorkRecordList({ projectId }: WorkRecordListProps) {
                   className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 hover:border-gray-300 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
-                    <span
-                      className={`font-medium ${
+                    <Link
+                      href={`/workspace/${record.id}`}
+                      className={`font-medium hover:text-gray-600 hover:underline underline-offset-2 transition-colors ${
                         record.name === "未命名"
                           ? "text-gray-400 italic"
                           : "text-gray-900"
                       }`}
                     >
                       {record.name}
-                    </span>
+                    </Link>
                     <span className="ml-3 text-xs text-gray-400">
                       {new Date(record.created_at).toLocaleDateString("zh-CN")}
                     </span>
