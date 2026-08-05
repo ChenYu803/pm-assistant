@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PM Assistant — Auth Flow Prototype</title>
+<!--
+  PROTOTYPE — THROWAWAY
+  Demonstrates the Issue 01 auth scaffold: register → login → projects → logout.
+  Open directly in browser. No server, no MongoDB, no dependencies.
+  State lives in memory only. Refresh to reset.
+
+  Question answered: "What does the auth flow look and feel like?"
+  Covers: register, login, navbar states, empty projects page, error states,
+          form validation, and page transitions.
+-->
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --red-50: #fef2f2;
+    --red-600: #dc2626;
+    --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --font-mono: 'Geist Mono', 'SF Mono', 'Fira Code', monospace;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--gray-50);
+    color: var(--gray-900);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Navbar ── */
+  nav {
+    background: #fff;
+    border-bottom: 1px solid var(--gray-200);
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 52px;
+    flex-shrink: 0;
+  }
+  nav.hidden { display: none; }
+  nav .logo {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--gray-900);
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: inherit;
+  }
+  nav .right { display: flex; align-items: center; gap: 12px; }
+  nav .email { font-size: 13px; color: var(--gray-600); }
+  nav .logout-btn {
+    font-size: 13px;
+    background: var(--gray-100);
+    color: var(--gray-700);
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+  nav .logout-btn:hover { background: var(--gray-200); }
+  nav .loading-text { font-size: 13px; color: var(--gray-400); }
+
+  /* ── Page container ── */
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Auth pages (login / register) ── */
+  .auth-page {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .auth-card {
+    width: 100%;
+    max-width: 360px;
+  }
+  .auth-card h1 {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 28px;
+    color: var(--gray-900);
+  }
+  .field {
+    margin-bottom: 16px;
+  }
+  .field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-700);
+    margin-bottom: 6px;
+  }
+  .field input {
+    width: 100%;
+    border: 1px solid var(--gray-300);
+    border-radius: 7px;
+    padding: 9px 12px;
+    font-size: 13px;
+    font-family: inherit;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .field input::placeholder { color: var(--gray-400); }
+  .field input:focus {
+    border-color: var(--gray-900);
+    box-shadow: 0 0 0 1px var(--gray-900);
+  }
+  .error-msg {
+    font-size: 13px;
+    color: var(--red-600);
+    background: var(--red-50);
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 16px;
+  }
+  .submit-btn {
+    width: 100%;
+    background: var(--gray-900);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, opacity 0.15s;
+  }
+  .submit-btn:hover:not(:disabled) { background: var(--gray-800); }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .demo-hint {
+    text-align: center;
+    font-size: 12px;
+    color: var(--gray-400);
+    margin-top: 10px;
+    line-height: 1.6;
+  }
+  .demo-hint code {
+    background: var(--gray-100);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+  }
+  /* Prototype badge */
+  .proto-badge {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    background: #fbbf24;
+    color: #78350f;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 4px 10px;
+    border-radius: 4px;
+    z-index: 400;
+    pointer-events: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .auth-link {
+    text-align: center;
+    font-size: 13px;
+    color: var(--gray-500);
+    margin-top: 22px;
+  }
+  .auth-link a {
+    color: var(--gray-900);
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+
+  /* ── Projects page ── */
+  .projects-page {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    text-align: center;
+  }
+  .empty-state .icon { font-size: 44px; margin-bottom: 14px; }
+  .empty-state h2 { font-size: 19px; font-weight: 600; color: var(--gray-900); margin-bottom: 6px; }
+  .empty-state p { font-size: 13px; color: var(--gray-500); margin-bottom: 22px; }
+  .empty-state .cta {
+    display: inline-block;
+    background: var(--gray-900);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+    text-decoration: none;
+  }
+  .empty-state .cta:hover { background: var(--gray-800); }
+  .user-info {
+    margin-top: 28px;
+    font-size: 12px;
+    color: var(--gray-400);
+  }
+
+  /* ── State debug panel ── */
+  .debug-panel {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    background: var(--gray-900);
+    color: #fff;
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.6;
+    max-width: 280px;
+    z-index: 100;
+    opacity: 0.92;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  }
+  .debug-panel .title {
+    font-weight: 600;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #9ca3af;
+    margin-bottom: 4px;
+  }
+  .debug-panel .key { color: #93c5fd; }
+  .debug-panel .val-true { color: #86efac; }
+  .debug-panel .val-false { color: #fca5a5; }
+  .debug-panel .val-email { color: #fde68a; }
+
+  /* ── Toast for demo actions ── */
+  .toast {
+    position: fixed;
+    top: 68px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gray-900);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: var(--font-sans);
+    z-index: 200;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .toast.show { opacity: 1; }
+
+  /* ── "Create project" modal stub ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 300;
+  }
+  .modal-overlay.hidden { display: none; }
+  .modal-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  }
+  .modal-box h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+  .modal-box p { font-size: 13px; color: var(--gray-500); margin-bottom: 16px; }
+  .modal-box .actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .modal-box .btn-cancel {
+    background: var(--gray-100);
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .modal-box .btn-confirm {
+    background: var(--gray-900);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ PROTOTYPE BADGE ═══ -->
+<div class="proto-badge">🔬 PROTOTYPE — THROWAWAY</div>
+
+<!-- ═══ NAVBAR ═══ -->
+<nav id="navbar">
+  <button class="logo" onclick="navigate('projects')">PM Assistant</button>
+  <div class="right" id="navbar-right"></div>
+</nav>
+
+<!-- ═══ MAIN CONTENT ═══ -->
+<main id="main-content"></main>
+
+<!-- ═══ STATE DEBUG PANEL ═══ -->
+<div class="debug-panel" id="debug">
+  <div class="title">📐 App State</div>
+  <div id="debug-content"></div>
+</div>
+
+<!-- ═══ TOAST ═══ -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══ CREATE-PROJECT STUB MODAL ═══ -->
+<div class="modal-overlay hidden" id="create-project-modal">
+  <div class="modal-box">
+    <h3>创建新项目</h3>
+    <p>此功能将在 Issue 02 中实现（项目 CRUD）。当前为原型占位。</p>
+    <div class="actions">
+      <button class="btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn-confirm" onclick="closeModal(); toast('📋 项目创建将在 Issue 02 实现')">知道了</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// PROTOTYPE — In-memory state machine
+// ═══════════════════════════════════════════════
+
+const STATE = {
+  // Auth
+  isLoggedIn: false,
+  user: null,          // { email } | null
+  isAuthLoading: false,
+
+  // Navigation
+  currentPage: 'login', // 'login' | 'register' | 'projects'
+
+  // Form state (ephemeral)
+  form: {
+    email: '',
+    password: '',
+    confirmPassword: '',
+    error: '',
+    loading: false,
+  },
+
+  // Simulated registered users (in-memory DB stub)
+  _users: new Map(),   // email → { email, password_hash }
+};
+
+// ── Render ────────────────────────────────────
+
+function render() {
+  renderNavbar();
+  renderPage();
+  renderDebug();
+}
+
+// ── Navbar ────────────────────────────────────
+
+function renderNavbar() {
+  const nav = document.getElementById('navbar');
+  const right = document.getElementById('navbar-right');
+
+  if (STATE.currentPage === 'login' || STATE.currentPage === 'register') {
+    nav.classList.add('hidden');
+    return;
+  }
+
+  nav.classList.remove('hidden');
+
+  if (STATE.isAuthLoading) {
+    right.innerHTML = '<span class="loading-text">加载中...</span>';
+  } else if (STATE.isLoggedIn && STATE.user) {
+    right.innerHTML = `
+      <span class="email">${esc(STATE.user.email)}</span>
+      <button class="logout-btn" onclick="logout()">退出</button>
+    `;
+  } else {
+    right.innerHTML = '';
+  }
+}
+
+// ── Page router ───────────────────────────────
+
+function renderPage() {
+  const main = document.getElementById('main-content');
+
+  switch (STATE.currentPage) {
+    case 'login':    renderLogin(main); break;
+    case 'register': renderRegister(main); break;
+    case 'projects': renderProjects(main); break;
+    default:         renderLogin(main);
+  }
+}
+
+// ── Login page ────────────────────────────────
+
+function renderLogin(main) {
+  const f = STATE.form;
+  main.innerHTML = `
+    <div class="auth-page">
+      <div class="auth-card">
+        <h1>登录 PM Assistant</h1>
+        <form onsubmit="handleLogin(event)" autocomplete="on">
+          <div class="field">
+            <label for="login-email">邮箱</label>
+            <input id="login-email" type="email" value="${escAttr(f.email)}"
+                   placeholder="you@example.com" autocomplete="email"
+                   oninput="STATE.form.email=this.value">
+          </div>
+          <div class="field">
+            <label for="login-password">密码</label>
+            <input id="login-password" type="password" value="${escAttr(f.password)}"
+                   placeholder="输入密码" autocomplete="current-password"
+                   oninput="STATE.form.password=this.value">
+          </div>
+          ${f.error ? `<div class="error-msg">${esc(f.error)}</div>` : ''}
+          <button type="submit" class="submit-btn" ${f.loading ? 'disabled' : ''}>
+            ${f.loading ? '登录中...' : '登录'}
+          </button>
+        </form>
+        <p class="auth-link">
+          还没有账号？ <a onclick="goRegister()">注册</a>
+        </p>
+        <p class="demo-hint">
+          💡 演示账号：<code>demo@pm.dev</code> / <code>demo123</code>
+        </p>
+      </div>
+    </div>
+  `;
+}
+
+// ── Register page ──────────────────────────────
+
+function renderRegister(main) {
+  const f = STATE.form;
+  main.innerHTML = `
+    <div class="auth-page">
+      <div class="auth-card">
+        <h1>注册 PM Assistant</h1>
+        <form onsubmit="handleRegister(event)" autocomplete="on">
+          <div class="field">
+            <label for="reg-email">邮箱</label>
+            <input id="reg-email" type="email" value="${escAttr(f.email)}"
+                   placeholder="you@example.com" autocomplete="email"
+                   oninput="STATE.form.email=this.value">
+          </div>
+          <div class="field">
+            <label for="reg-password">密码</label>
+            <input id="reg-password" type="password" value="${escAttr(f.password)}"
+                   placeholder="至少 6 位密码" autocomplete="new-password"
+                   oninput="STATE.form.password=this.value">
+          </div>
+          <div class="field">
+            <label for="reg-confirm">确认密码</label>
+            <input id="reg-confirm" type="password" value="${escAttr(f.confirmPassword)}"
+                   placeholder="再次输入密码" autocomplete="new-password"
+                   oninput="STATE.form.confirmPassword=this.value">
+          </div>
+          ${f.error ? `<div class="error-msg">${esc(f.error)}</div>` : ''}
+          <button type="submit" class="submit-btn" ${f.loading ? 'disabled' : ''}>
+            ${f.loading ? '注册中...' : '注册'}
+          </button>
+        </form>
+        <p class="auth-link">
+          已有账号？ <a onclick="goLogin()">登录</a>
+        </p>
+      </div>
+    </div>
+  `;
+}
+
+// ── Projects page ──────────────────────────────
+
+function renderProjects(main) {
+  const user = STATE.user;
+  main.innerHTML = `
+    <div class="projects-page">
+      <div class="empty-state">
+        <div class="icon">📋</div>
+        <h2>还没有项目</h2>
+        <p>创建你的第一个项目，开始用 AI 驱动产品工作流</p>
+        <button class="cta" onclick="openCreateProjectModal()">
+          创建第一个项目
+        </button>
+        ${user ? `<p class="user-info">当前登录：${esc(user.email)}</p>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+// ── Debug panel ────────────────────────────────
+
+function renderDebug() {
+  document.getElementById('debug-content').innerHTML = `
+    <span class="key">page</span>:       ${STATE.currentPage}<br>
+    <span class="key">loggedIn</span>:   <span class="${STATE.isLoggedIn ? 'val-true' : 'val-false'}">${STATE.isLoggedIn}</span><br>
+    <span class="key">user</span>:       ${STATE.user ? `<span class="val-email">${esc(STATE.user.email)}</span>` : '<span class="val-false">null</span>'}<br>
+    <span class="key">usersInDB</span>:  ${STATE._users.size}<br>
+    <span class="key">form.error</span>: ${STATE.form.error ? `<span class="val-false">"${esc(STATE.form.error)}"</span>` : '<span class="val-false">null</span>'}<br>
+    <span class="key">form.loading</span>: <span class="${STATE.form.loading ? 'val-true' : 'val-false'}">${STATE.form.loading}</span>
+  `;
+}
+
+// ── Navigation ────────────────────────────────
+
+function navigate(page) {
+  if (page === 'projects' && !STATE.isLoggedIn) {
+    page = 'login';
+  }
+  STATE.currentPage = page;
+  STATE.form.error = '';
+  STATE.form.loading = false;
+  render();
+}
+
+function goLogin() {
+  STATE.currentPage = 'login';
+  STATE.form = { email: '', password: '', confirmPassword: '', error: '', loading: false };
+  render();
+}
+
+function goRegister() {
+  STATE.currentPage = 'register';
+  STATE.form = { email: '', password: '', confirmPassword: '', error: '', loading: false };
+  render();
+}
+
+// ── Auth actions ──────────────────────────────
+
+async function handleLogin(e) {
+  e.preventDefault();
+  STATE.form.error = '';
+  render();
+
+  const { email, password } = STATE.form;
+
+  // ── Client-side validation (mirrors real form logic) ──
+  if (!email || !password) {
+    STATE.form.error = '请填写邮箱和密码';
+    render();
+    return;
+  }
+
+  STATE.form.loading = true;
+  render();
+
+  // ── Simulate network delay ──
+  await sleep(600);
+
+  // ── Auth logic (mirrors NextAuth Credentials provider) ──
+  const normalizedEmail = email.toLowerCase().trim();
+  const storedUser = STATE._users.get(normalizedEmail);
+
+  if (!storedUser) {
+    STATE.form.error = '邮箱或密码错误';
+    STATE.form.loading = false;
+    render();
+    return;
+  }
+
+  // In real app: bcrypt.compare. Here: plain string match.
+  if (password !== storedUser.password) {
+    STATE.form.error = '邮箱或密码错误';
+    STATE.form.loading = false;
+    render();
+    return;
+  }
+
+  // ── Success: set session ──
+  STATE.isLoggedIn = true;
+  STATE.user = { email: normalizedEmail };
+  STATE.form = { email: '', password: '', confirmPassword: '', error: '', loading: false };
+
+  toast('✅ 登录成功！跳转到项目列表');
+  navigate('projects');
+  render();
+}
+
+async function handleRegister(e) {
+  e.preventDefault();
+  STATE.form.error = '';
+  render();
+
+  const { email, password, confirmPassword } = STATE.form;
+
+  // ── Client-side validation (mirrors real register page) ──
+  if (!email || !password || !confirmPassword) {
+    STATE.form.error = '请填写所有字段';
+    render();
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    STATE.form.error = '两次输入的密码不一致';
+    render();
+    return;
+  }
+
+  if (password.length < 6) {
+    STATE.form.error = '密码长度至少为 6 位';
+    render();
+    return;
+  }
+
+  // ── Server-side validation (mirrors API route) ──
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    STATE.form.error = '邮箱格式不正确';
+    render();
+    return;
+  }
+
+  STATE.form.loading = true;
+  render();
+
+  // ── Simulate network delay + bcrypt hash ──
+  await sleep(800);
+
+  const normalizedEmail = email.toLowerCase().trim();
+
+  // Check duplicate
+  if (STATE._users.has(normalizedEmail)) {
+    STATE.form.error = '该邮箱已被注册';
+    STATE.form.loading = false;
+    render();
+    return;
+  }
+
+  // ── Create user (mirrors POST /api/auth/register) ──
+  STATE._users.set(normalizedEmail, {
+    email: normalizedEmail,
+    password, // In real app: bcrypt.hash(password, 12). Here: plain text.
+  });
+
+  toast('✅ 注册成功！自动登录中...');
+
+  // ── Auto-login after register (mirrors register page behavior) ──
+  STATE.isLoggedIn = true;
+  STATE.user = { email: normalizedEmail };
+  STATE.form = { email: '', password: '', confirmPassword: '', error: '', loading: false };
+
+  navigate('projects');
+  render();
+}
+
+function logout() {
+  STATE.isLoggedIn = false;
+  STATE.user = null;
+  STATE.form = { email: '', password: '', confirmPassword: '', error: '', loading: false };
+  STATE.currentPage = 'login';
+  toast('👋 已退出登录');
+  render();
+}
+
+// ── Modal ─────────────────────────────────────
+
+function openCreateProjectModal() {
+  document.getElementById('create-project-modal').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('create-project-modal').classList.add('hidden');
+}
+
+// ── Toast ─────────────────────────────────────
+
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ── Helpers ──────────────────────────────────
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── Keyboard navigation ──────────────────────
+
+document.addEventListener('keydown', (e) => {
+  // Skip when focused on input
+  const tag = document.activeElement?.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+
+  if (e.key === '1') goLogin();
+  if (e.key === '2') goRegister();
+  if (e.key === '3' && STATE.isLoggedIn) navigate('projects');
+});
+
+// ── Pre-seed a demo user so the user can just click "Login" ──
+STATE._users.set('demo@pm.dev', { email: 'demo@pm.dev', password: 'demo123' });
+
+// ── Boot ─────────────────────────────────────
+render();
+</script>
+
+</body>
+</html>
