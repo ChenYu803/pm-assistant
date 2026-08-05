@@ -343,7 +343,16 @@ export default function WorkspacePage() {
             </div>
           ) : (
             /* Chat area for active tab */
-            <ChatArea tabName={activeTab?.display_name ?? null} />
+            <ChatArea
+              tabId={activeTab?.id ?? null}
+              tabName={activeTab?.display_name ?? null}
+              agentType={activeTab?.agent_type ?? null}
+              onWorkRecordRenamed={(newName) => {
+                setWorkRecord((prev) =>
+                  prev ? { ...prev, name: newName } : prev
+                );
+              }}
+            />
           )}
         </div>
       </div>
