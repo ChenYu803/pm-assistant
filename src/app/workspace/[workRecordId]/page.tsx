@@ -8,6 +8,8 @@ import ChatArea from "@/components/ChatArea";
 import AgentTypeDialog from "@/components/AgentTypeDialog";
 import FileTree from "@/components/FileTree";
 import FilePreviewPanel from "@/components/FilePreviewPanel";
+import PipelineProgressIndicator from "@/components/PipelineProgressIndicator";
+import AgentContextPanel, { type ContextFile } from "@/components/AgentContextPanel";
 import { AGENT_TYPES, AGENT_TYPE_LABELS, AGENT_TYPE_DESCRIPTIONS, type AgentType } from "@/lib/agent-constants";
 import type { TabData } from "@/lib/agent-constants";
 import type { ProjectFileData } from "@/lib/file-helpers";
@@ -51,6 +53,10 @@ export default function WorkspacePage() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [savingFile, setSavingFile] = useState(false);
 
+  // Agent context state
+  const [contextFiles, setContextFiles] = useState<ContextFile[]>([]);
+  const [contextLoading, setContextLoading] = useState(false);
+
   // Fetch tabs
   const fetchTabs = useCallback(async () => {
     try {
@@ -68,6 +74,83 @@ export default function WorkspacePage() {
       setLoading(false);
     }
   }, [workRecordId]);
+
+  // Fetch context files for active tab
+  const fetchContextFiles = useCallback(async () => {
+    if (!activeTabId) {
+      setContextFiles([]);
+      return;
+    }
+    setContextLoading(true);
+    try {
+      const res = await fetch(`/api/tabs/${activeTabId}/files`);
+      if (res.ok) {
+        const data = await res.json();
+        setContextFiles(data.files || []);
+      }
+    } catch {
+      // Silently fail — non-critical
+    } finally {
+      setContextLoading(false);
+    }
+  }, [activeTabId]);
+
+  useEffect(() => {
+    fetchContextFiles();
+  }, [fetchContextFiles]);
+
+  async function handleLoadFileToContext(file: ProjectFileData) {
+    if (!activeTabId) return;
+    try {
+      const res = await fetch(`/api/tabs/${activeTabId}/files`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ file_id: file.id }),
+      });
+      if (res.ok) {
+        await fetchContextFiles();
+      } else if (res.status === 409) {
+        // Already in context — no error needed
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "加载文件失败");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "加载文件失败");
+    }
+  }
+
+  async function handleRemoveFileFromContext(fileId: string) {
+    if (!activeTabId) return;
+    try {
+      const res = await fetch(`/api/tabs/${activeTabId}/files/${fileId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        await fetchContextFiles();
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "移除文件失败");
+    }
+  }
+
+  function handleEditFile(file: ProjectFileData) {
+    setSelectedFile(file);
+    setPreviewOpen(true);
+    // Preview panel has the edit button — a slight delay to open preview first,
+    // then let the user click edit. Alternatively, we could open the editor directly.
+    // For now, opening preview is the simpler UX.
+  }
+
+  function handleDownloadFile(file: ProjectFileData) {
+    if (!project) return;
+    const a = document.createElement("a");
+    a.href = `/api/projects/${project.id}/files/${file.id}/download`;
+    a.download = file.filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
 
   // Fetch work record info (for breadcrumb and project ID)
   useEffect(() => {
@@ -184,11 +267,18 @@ export default function WorkspacePage() {
         const data = await res.json();
         throw new Error(data.error || "创建标签页失败");
       }
-      const newTab = await res.json();
+      const responseData = await res.json();
+      // Handle new response shape: { tab, context_files } or legacy flat tab
+      const newTab: TabData = responseData.tab ?? responseData;
+      const autoLoadedFiles: ContextFile[] = responseData.context_files ?? [];
       // Persist immediately so the restore effect won't override
       localStorage.setItem(storageKey, newTab.id);
       setTabs((prev) => [...prev, newTab]);
       setActiveTabId(newTab.id);
+      // Update context files if any were auto-loaded
+      if (autoLoadedFiles.length > 0) {
+        setContextFiles(autoLoadedFiles);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "创建标签页失败");
     } finally {
@@ -319,7 +409,7 @@ export default function WorkspacePage() {
   // --- Render: Workspace ---
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
-      {/* Top bar: breadcrumb + work record name */}
+      {/* Top bar: breadcrumb + pipeline indicator + work record name */}
       <div className="flex items-center gap-2 border-b border-gray-200 bg-white px-4 py-2">
         <nav className="flex items-center gap-1 text-sm text-gray-500">
           <Link
@@ -345,12 +435,22 @@ export default function WorkspacePage() {
           </span>
         </nav>
 
+        {/* Pipeline progress indicator */}
+        {activeTab && (
+          <div className="ml-4">
+            <PipelineProgressIndicator
+              agentType={activeTab.agent_type}
+              scopeFrozen={activeTab.scope_frozen}
+            />
+          </div>
+        )}
+
         {creating && (
           <span className="ml-auto text-xs text-gray-400">创建中...</span>
         )}
       </div>
 
-      {/* Main workspace area: file tree + chat */}
+      {/* Main workspace area: file tree + context panel + chat */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left: File tree */}
         <FileTree
@@ -359,7 +459,20 @@ export default function WorkspacePage() {
           error={filesError}
           selectedFileId={selectedFile?.id ?? null}
           onSelect={handleSelectFile}
+          activeTabId={activeTabId}
+          onLoadToAgent={handleLoadFileToContext}
+          onEdit={handleEditFile}
+          onDownload={handleDownloadFile}
         />
+
+        {/* Agent context panel (only when a tab is active) */}
+        {activeTabId && (
+          <AgentContextPanel
+            contextFiles={contextFiles}
+            loading={contextLoading}
+            onRemove={handleRemoveFileFromContext}
+          />
+        )}
 
         {/* Right: Tab bar + Chat area */}
         <div className="flex flex-1 flex-col overflow-hidden">

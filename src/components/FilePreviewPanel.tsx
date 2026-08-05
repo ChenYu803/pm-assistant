@@ -114,6 +114,8 @@ export default function FilePreviewPanel({
         saving={saving}
         onSave={handleSave}
         onClose={() => setShowEditor(false)}
+        projectId={projectId}
+        fileId={file.id}
       />
     </>
   );

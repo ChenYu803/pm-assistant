@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import Tab from "@/models/Tab";
+import ProjectFile from "@/models/ProjectFile";
+import AgentFileContext from "@/models/AgentFileContext";
 import { AGENT_TYPES, AGENT_TYPE_LABELS, type AgentType } from "@/lib/agent-constants";
 import { findOwnedWorkRecord } from "@/lib/ownership";
 import { serializeTab } from "@/lib/tab-helpers";
@@ -91,7 +93,38 @@ export async function POST(
       work_record_id: workRecord._id,
     });
 
-    return NextResponse.json(serializeTab(tab), { status: 201 });
+    // Auto-load 需求分析.md into context for MVP-PRD Agent tabs
+    let contextFiles: { id: string; filename: string }[] = [];
+    if (agent_type === "mvp_prd") {
+      try {
+        const reqFile = await ProjectFile.findOne({
+          project_id: workRecord.project_id,
+          filename: "需求分析.md",
+        });
+        if (reqFile) {
+          await AgentFileContext.create({
+            tab_id: tab._id,
+            file_id: reqFile._id,
+          });
+          contextFiles = [
+            { id: reqFile._id.toString(), filename: reqFile.filename },
+          ];
+        }
+      } catch (err) {
+        // Duplicate key (11000) is fine — context already exists
+        if ((err as { code?: number }).code !== 11000) {
+          console.error("Auto-load context failed:", err);
+        }
+      }
+    }
+
+    return NextResponse.json(
+      {
+        tab: serializeTab(tab),
+        context_files: contextFiles,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("POST /api/work-records/[id]/tabs error:", error);
     return NextResponse.json(
