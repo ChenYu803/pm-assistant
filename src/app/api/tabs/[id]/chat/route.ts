@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
+import type OpenAI from "openai";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import Tab from "@/models/Tab";
@@ -9,6 +9,7 @@ import { AGENT_SYSTEM_PROMPTS } from "@/lib/agent-prompts";
 import { autoNameWorkRecord } from "@/lib/auto-name";
 import { stripChangelogHeader } from "@/lib/file-helpers";
 import { getLoadedContextFiles } from "@/lib/context-files";
+import { createDeepSeekClient, DEEPSEEK_MODEL } from "@/lib/deepseek";
 
 const encoder = new TextEncoder();
 
@@ -16,7 +17,9 @@ function sseEvent(type: string, data: Record<string, unknown>): Uint8Array {
   return encoder.encode(`data: ${JSON.stringify({ type, ...data })}\n\n`);
 }
 
-const MODEL = "deepseek-chat";
+/** Affirmative replies that count as a user's scope-freeze confirmation. */
+const SCOPE_FREEZE_CONFIRM_RE =
+  /确认|可以|没问题|同意|好的|好|行|OK|ok|Yes|yes|是/;
 
 export async function POST(
   request: Request,
@@ -85,13 +88,21 @@ export async function POST(
       .sort({ timestamp: 1 })
       .lean();
 
-    // Save user message
-    await Message.create({
-      role: "user",
-      content: content.trim(),
-      tab_id: tab._id,
-      timestamp: new Date(),
-    });
+    // Save user message. Retrying a failed request re-sends the same content —
+    // if the trailing history message is an identical user message (the failed
+    // attempt), skip saving so retry doesn't duplicate it.
+    const lastHistoryMessage = historyMessages[historyMessages.length - 1];
+    const isRetryDup =
+      lastHistoryMessage?.role === "user" &&
+      lastHistoryMessage.content === content.trim();
+    if (!isRetryDup) {
+      await Message.create({
+        role: "user",
+        content: content.trim(),
+        tab_id: tab._id,
+        timestamp: new Date(),
+      });
+    }
 
     // Build messages: system prompt + history + new user message
     const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
@@ -106,10 +117,7 @@ export async function POST(
       { role: "user", content: content.trim() },
     ];
 
-    const openai = new OpenAI({
-      apiKey,
-      baseURL: "https://api.deepseek.com",
-    });
+    const openai = createDeepSeekClient();
 
     // Create streaming response
     const stream = new ReadableStream({
@@ -118,7 +126,7 @@ export async function POST(
 
         try {
           const deepseekStream = await openai.chat.completions.create({
-            model: MODEL,
+            model: DEEPSEEK_MODEL,
             max_tokens: 8192,
             messages,
             stream: true,
@@ -132,14 +140,26 @@ export async function POST(
             }
           }
 
-          // Detect scope-frozen marker in PRD Agent responses
+          // Scope-freeze gate: the marker only counts if the user actually
+          // confirmed — the message immediately before this response must be
+          // an affirmative user reply (spec US24: 手动确认后才继续落地版).
           if (
             tab.agent_type === "mvp_prd" &&
             !tab.scope_frozen &&
             fullContent.includes("%%%SCOPE_FROZEN%%%")
           ) {
-            tab.scope_frozen = true;
-            await tab.save();
+            const lastMessage = historyMessages[historyMessages.length - 1];
+            const userConfirmed =
+              lastMessage?.role === "user" &&
+              SCOPE_FREEZE_CONFIRM_RE.test(lastMessage.content);
+            if (userConfirmed) {
+              tab.scope_frozen = true;
+              await tab.save();
+            } else {
+              // Agent emitted the marker without user confirmation — strip it
+              // so it doesn't leak into chat history or the PRD file.
+              fullContent = fullContent.replace(/%%%SCOPE_FROZEN%%%/g, "");
+            }
           }
 
           // Save assistant message
@@ -166,30 +186,19 @@ export async function POST(
           );
         } catch (err) {
           console.error("Stream error:", err);
-          // Save partial content if any tokens were received
+          // Persist partial content if any tokens were received — the user's
+          // work is kept (spec US38). With no tokens, the user message stays
+          // as-is; no raw error text is ever written to history.
+          let partialMessageId: string | undefined;
           if (fullContent) {
             try {
-              await Message.create({
+              const savedPartial = await Message.create({
                 role: "assistant",
                 content: fullContent + "\n\n[回复因错误中断]",
                 tab_id: tab._id,
                 timestamp: new Date(),
               });
-            } catch {
-              // Best effort
-            }
-          } else {
-            // No tokens received at all — save an error message so the
-            // user message isn't left orphaned in the database.
-            try {
-              await Message.create({
-                role: "assistant",
-                content:
-                  "[AI 请求失败]" +
-                  (err instanceof Error ? ` — ${err.message}` : ""),
-                tab_id: tab._id,
-                timestamp: new Date(),
-              });
+              partialMessageId = savedPartial._id.toString();
             } catch {
               // Best effort
             }
@@ -198,6 +207,7 @@ export async function POST(
             sseEvent("error", {
               message:
                 err instanceof Error ? err.message : "AI 请求失败，请稍后重试",
+              ...(partialMessageId ? { messageId: partialMessageId } : {}),
             })
           );
         } finally {

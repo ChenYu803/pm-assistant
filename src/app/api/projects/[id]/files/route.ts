@@ -6,9 +6,23 @@ import ProjectFile, {
   parseChangelog,
   countRequirements,
   type ChangelogEntry,
+  type IProjectFileDocument,
 } from "@/models/ProjectFile";
 import { findOwnedProject } from "@/lib/ownership";
-import { serializeProjectFile } from "@/lib/file-helpers";
+import { serializeProjectFile, stripChangelogHeader } from "@/lib/file-helpers";
+
+/**
+ * Renumber every top-level "## " section in a 需求分析.md body sequentially
+ * (numbered or not), so appended requirements compose into a single coherent
+ * list regardless of what number the agent happened to output.
+ */
+function normalizeRequirementSections(body: string): string {
+  let n = 0;
+  return body.replace(/^##\s+(?:\d+[\.、]\s*)?(.+)$/gm, (_m, title: string) => {
+    n += 1;
+    return `## ${n}. ${title.trim()}`;
+  });
+}
 
 export async function GET(
   request: Request,
@@ -36,7 +50,7 @@ export async function GET(
 
     return NextResponse.json(
       files.map((f) => {
-        const serialized = serializeProjectFile(f as Parameters<typeof serializeProjectFile>[0]);
+        const serialized = serializeProjectFile(f as unknown as IProjectFileDocument);
         // Omit content from list endpoint — call GET /files/:id for full content
         const { content: _, ...rest } = serialized;
         return rest;
@@ -114,10 +128,25 @@ export async function POST(
       existingIteration = parsed ? parsed.entry.iteration : 0;
     }
 
+    // 需求分析 Agent appends each requirement to the shared whiteboard file
+    // (spec US20: 每条需求独立确认后追加入需求分析.md). PRD Agent replaces.
+    const isRequirementAppend = agent_type === "requirement_analyst";
+
     // Build new changelog
     const nextIteration =
-      iteration ?? (existingIteration + 1);
-    const bodyContent = content; // content as provided (assumed to be body only, no changelog)
+      iteration ?? (isRequirementAppend ? existingIteration || 1 : existingIteration + 1);
+
+    let bodyContent = content; // content as provided (assumed to be body only, no changelog)
+    if (isRequirementAppend) {
+      const existingBody = file
+        ? (parseChangelog(file.content)?.bodyContent ?? stripChangelogHeader(file.content))
+        : "";
+      const newSection = normalizeRequirementSections(content);
+      bodyContent = existingBody.trimEnd()
+        ? `${existingBody.trimEnd()}\n\n${newSection}`
+        : `# 需求分析文档\n\n${newSection}`;
+    }
+
     const requirementCount = countRequirements(bodyContent);
 
     const changelogEntry: ChangelogEntry = {
