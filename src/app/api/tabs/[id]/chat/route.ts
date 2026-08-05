@@ -119,7 +119,7 @@ export async function POST(
         try {
           const deepseekStream = await openai.chat.completions.create({
             model: MODEL,
-            max_tokens: 4096,
+            max_tokens: 8192,
             messages,
             stream: true,
           });
