@@ -18,7 +18,7 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
   const html = renderMarkdown(displayContent);
   return (
     <div
-      className="prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-li:text-gray-700 prose-code:rounded prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:text-sm prose-pre:rounded-lg prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-a:text-indigo-600 prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-gray-600"
+      className="prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-li:text-gray-700 prose-code:rounded prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:text-sm prose-pre:rounded-lg prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-a:text-indigo-600 prose-blockquote:border-l-2 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-gray-600"
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
@@ -120,7 +120,7 @@ function renderMarkdown(md: string): string {
         i++;
       }
       result.push(
-        `<blockquote class="border-l-4 border-gray-300 pl-4 italic text-gray-600 my-2">${renderMarkdownInline(quoteLines.join("\n"))}</blockquote>`
+        `<blockquote class="border-l-2 border-gray-300 pl-4 italic text-gray-600 my-2">${renderMarkdownInline(quoteLines.join("\n"))}</blockquote>`
       );
       continue;
     }
