@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "bounce-easing",
+        "value": "animate-bounce",
+        "createdAt": "2026-08-05T09:47:34.540Z",
+        "reason": "Bouncing dots are the standard chat thinking indicator pattern, not a physics simulation"
+      }
+    ]
+  }
+}
