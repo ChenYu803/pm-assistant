@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import mongoose from "mongoose";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import AgentFileContext from "@/models/AgentFileContext";
@@ -16,13 +15,6 @@ export async function DELETE(
 
     const { id: tabId, fileId } = await params;
 
-    if (!mongoose.Types.ObjectId.isValid(fileId)) {
-      return NextResponse.json(
-        { error: "无效的文件 ID" },
-        { status: 400 }
-      );
-    }
-
     await dbConnect();
 
     const tab = await findOwnedTab(tabId, userId);
@@ -35,7 +27,7 @@ export async function DELETE(
 
     const result = await AgentFileContext.deleteOne({
       tab_id: tab._id,
-      file_id: new mongoose.Types.ObjectId(fileId),
+      file_id: fileId,
     });
 
     if (result.deletedCount === 0) {

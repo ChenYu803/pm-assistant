@@ -4,12 +4,10 @@ import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import Tab from "@/models/Tab";
 import Message from "@/models/Message";
-import AgentFileContext from "@/models/AgentFileContext";
-import type { IProjectFileDocument } from "@/models/ProjectFile";
 import { findOwnedTab } from "@/lib/ownership";
 import { AGENT_SYSTEM_PROMPTS } from "@/lib/agent-prompts";
 import { autoNameWorkRecord } from "@/lib/auto-name";
-import { stripChangelogHeader } from "@/lib/file-helpers";
+import { stripChangelogHeader, getLoadedContextFiles } from "@/lib/file-helpers";
 
 const encoder = new TextEncoder();
 
@@ -60,26 +58,16 @@ export async function POST(
     let systemPrompt = AGENT_SYSTEM_PROMPTS[tab.agent_type];
 
     // Inject loaded file context into system prompt
-    const contextEntries = await AgentFileContext.find({ tab_id: tab._id })
-      .populate<{ file_id: IProjectFileDocument }>("file_id")
-      .lean();
+    const contextFiles = await getLoadedContextFiles(tab._id);
 
-    if (contextEntries.length > 0) {
-      const fileBlocks: string[] = [];
-      for (const entry of contextEntries) {
-        const file = entry.file_id as unknown as IProjectFileDocument | null;
-        if (file && file.content) {
-          const body = stripChangelogHeader(file.content);
-          fileBlocks.push(
-            `### ${file.filename}\n\`\`\`markdown\n${body}\n\`\`\``
-          );
-        }
-      }
-      if (fileBlocks.length > 0) {
-        systemPrompt +=
-          "\n\n## 已加载的项目文件\n\n以下文件已加载到你的上下文中，请基于这些文件的内容进行工作：\n\n" +
-          fileBlocks.join("\n\n");
-      }
+    if (contextFiles.length > 0) {
+      const fileBlocks = contextFiles.map((file) => {
+        const body = stripChangelogHeader(file.content);
+        return `### ${file.filename}\n\`\`\`markdown\n${body}\n\`\`\``;
+      });
+      systemPrompt +=
+        "\n\n## 已加载的项目文件\n\n以下文件已加载到你的上下文中，请基于这些文件的内容进行工作：\n\n" +
+        fileBlocks.join("\n\n");
     }
 
     // Scope-freeze gate for MVP-PRD Agent

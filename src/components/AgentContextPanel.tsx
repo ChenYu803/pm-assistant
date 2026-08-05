@@ -41,7 +41,7 @@ export default function AgentContextPanel({
         <div className="flex items-center gap-1.5">
           <span className="text-xs">📎</span>
           <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-            Agent 上下文
+            当前 Agent 已加载的文件
           </h3>
         </div>
         <button
@@ -64,7 +64,12 @@ export default function AgentContextPanel({
         )}
 
         {!loading && contextFiles.length === 0 && (
-          <EmptyState />
+          <div className="flex flex-col items-center px-2 py-6 text-center">
+            <div className="mb-2 text-xl">📎</div>
+            <p className="text-xs leading-relaxed text-gray-400">
+              点击文件树中的文件加载到 Agent 上下文
+            </p>
+          </div>
         )}
 
         {!loading && contextFiles.length > 0 && (
@@ -98,13 +103,3 @@ export default function AgentContextPanel({
   );
 }
 
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center px-2 py-6 text-center">
-      <div className="mb-2 text-xl">📎</div>
-      <p className="text-xs leading-relaxed text-gray-400">
-        点击文件树中的文件加载到 Agent 上下文
-      </p>
-    </div>
-  );
-}

@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import AgentFileContext from "@/models/AgentFileContext";
-import ProjectFile from "@/models/ProjectFile";
 import { findOwnedTab, findOwnedProjectFile } from "@/lib/ownership";
+import { getLoadedContextFiles } from "@/lib/file-helpers";
 
 /** List files loaded in a tab's agent context. */
 export async function GET(
@@ -26,31 +26,16 @@ export async function GET(
       );
     }
 
-    const entries = await AgentFileContext.find({ tab_id: tab._id })
-      .populate("file_id")
-      .lean();
+    const loadedFiles = await getLoadedContextFiles(tab._id);
 
-    const files = [];
-    for (const entry of entries) {
-      // Populated field may be an ObjectId or a full document
-      const file = entry.file_id as unknown as {
-        _id: { toString(): string };
-        filename?: string;
-        content?: string;
-        project_id?: { toString(): string };
-        created_at?: Date;
-        updated_at?: Date;
-      } | null;
-      if (file && file.filename) {
-        files.push({
-          id: file._id.toString(),
-          filename: file.filename,
-          project_id: file.project_id?.toString(),
-          created_at: file.created_at,
-          updated_at: file.updated_at,
-        });
-      }
-    }
+    // Omit content from list endpoint (consistent with GET /api/projects/:id/files)
+    const files = loadedFiles.map(({ content: _, ...rest }) => ({
+      id: rest._id,
+      filename: rest.filename,
+      project_id: rest.project_id,
+      created_at: rest.created_at,
+      updated_at: rest.updated_at,
+    }));
 
     return NextResponse.json({ files });
   } catch (error) {
