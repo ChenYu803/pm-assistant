@@ -17,4 +17,5 @@ export interface TabData {
   agent_type: AgentType;
   display_name: string;
   position: number;
+  scope_frozen: boolean;
 }

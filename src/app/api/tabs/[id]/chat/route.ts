@@ -4,9 +4,12 @@ import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import Tab from "@/models/Tab";
 import Message from "@/models/Message";
+import AgentFileContext from "@/models/AgentFileContext";
+import type { IProjectFileDocument } from "@/models/ProjectFile";
 import { findOwnedTab } from "@/lib/ownership";
 import { AGENT_SYSTEM_PROMPTS } from "@/lib/agent-prompts";
 import { autoNameWorkRecord } from "@/lib/auto-name";
+import { stripChangelogHeader } from "@/lib/file-helpers";
 
 const encoder = new TextEncoder();
 
@@ -54,7 +57,39 @@ export async function POST(
       );
     }
 
-    const systemPrompt = AGENT_SYSTEM_PROMPTS[tab.agent_type];
+    let systemPrompt = AGENT_SYSTEM_PROMPTS[tab.agent_type];
+
+    // Inject loaded file context into system prompt
+    const contextEntries = await AgentFileContext.find({ tab_id: tab._id })
+      .populate<{ file_id: IProjectFileDocument }>("file_id")
+      .lean();
+
+    if (contextEntries.length > 0) {
+      const fileBlocks: string[] = [];
+      for (const entry of contextEntries) {
+        const file = entry.file_id as unknown as IProjectFileDocument | null;
+        if (file && file.content) {
+          const body = stripChangelogHeader(file.content);
+          fileBlocks.push(
+            `### ${file.filename}\n\`\`\`markdown\n${body}\n\`\`\``
+          );
+        }
+      }
+      if (fileBlocks.length > 0) {
+        systemPrompt +=
+          "\n\n## 已加载的项目文件\n\n以下文件已加载到你的上下文中，请基于这些文件的内容进行工作：\n\n" +
+          fileBlocks.join("\n\n");
+      }
+    }
+
+    // Scope-freeze gate for MVP-PRD Agent
+    if (
+      tab.agent_type === "mvp_prd" &&
+      tab.scope_frozen
+    ) {
+      systemPrompt +=
+        "\n\n## 范围冻结提醒\n\n当前 PRD 范围已冻结。如果用户提出新的功能需求，请礼貌地提醒用户范围已冻结，并建议将新需求放入后续迭代。不要修改已冻结的 PRD 范围。";
+    }
 
     // Fetch history
     const historyMessages = await Message.find({ tab_id: tab._id })
@@ -106,6 +141,16 @@ export async function POST(
               fullContent += delta;
               controller.enqueue(sseEvent("token", { content: delta }));
             }
+          }
+
+          // Detect scope-frozen marker in PRD Agent responses
+          if (
+            tab.agent_type === "mvp_prd" &&
+            !tab.scope_frozen &&
+            fullContent.includes("%%%SCOPE_FROZEN%%%")
+          ) {
+            tab.scope_frozen = true;
+            await tab.save();
           }
 
           // Save assistant message

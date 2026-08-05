@@ -6,6 +6,7 @@ interface ITab {
   display_name: string;
   position: number;
   work_record_id: mongoose.Types.ObjectId;
+  scope_frozen: boolean;
   created_at: Date;
 }
 
@@ -35,6 +36,10 @@ const TabSchema = new mongoose.Schema<ITabDocument>(
       ref: "WorkRecord",
       required: true,
       index: true,
+    },
+    scope_frozen: {
+      type: Boolean,
+      default: false,
     },
     created_at: {
       type: Date,

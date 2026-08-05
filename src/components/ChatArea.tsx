@@ -141,6 +141,7 @@ export default function ChatArea({
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const lastSentContentRef = useRef<string>("");
 
   // File confirmation state
   const [fileToConfirm, setFileToConfirm] = useState<FileToConfirm | null>(null);
@@ -270,13 +271,30 @@ export default function ChatArea({
     if (!trimmed || !tabId || isStreaming) return;
 
     setInput("");
+    lastSentContentRef.current = trimmed;
+    await sendContent(trimmed);
+  }, [input, tabId, isStreaming, onWorkRecordRenamed]);
+
+  // ── Retry handler ────────────────────────────────────────────────────────
+
+  function handleRetry() {
+    const content = lastSentContentRef.current;
+    if (!content || !tabId || isStreaming) return;
+    setError("");
+    sendContent(content);
+  }
+
+  // ── Core send logic (shared by sendMessage and retry) ───────────────────
+
+  async function sendContent(content: string) {
+    if (!tabId || isStreaming) return;
+
     setError("");
 
-    // Optimistic: add user message to local state
     const optimisticUser: ChatMessage = {
       id: `temp-${Date.now()}`,
       role: "user",
-      content: trimmed,
+      content,
       timestamp: new Date().toISOString(),
     };
     setMessages((prev) => [...prev, optimisticUser]);
@@ -291,7 +309,7 @@ export default function ChatArea({
       const res = await fetch(`/api/tabs/${tabId}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: trimmed }),
+        body: JSON.stringify({ content }),
         signal: controller.signal,
       });
 
@@ -313,9 +331,7 @@ export default function ChatArea({
 
         buffer += decoder.decode(value, { stream: true });
 
-        // Split by SSE double-newline
         const parts = buffer.split("\n\n");
-        // Keep the last incomplete part in the buffer
         buffer = parts.pop() || "";
 
         for (const part of parts) {
@@ -337,19 +353,16 @@ export default function ChatArea({
                   content: fullContent,
                   timestamp: new Date().toISOString(),
                 };
-                // Check for file markers in the completed message
                 setTimeout(() => checkAndShowFileDialog(newMsg), 100);
                 return [...prev, newMsg];
               });
               setStreamingContent("");
-              // Check for auto-name result
               if (event.newName && onWorkRecordRenamed) {
                 onWorkRecordRenamed(event.newName);
               }
               break;
             case "error":
               setError(event.message || "请求发生错误");
-              // If we have partial content, save it
               if (fullContent) {
                 setMessages((prev) => [
                   ...prev,
@@ -361,7 +374,6 @@ export default function ChatArea({
                   },
                 ]);
               } else {
-                // Remove the optimistic user message if no response at all
                 setMessages((prev) =>
                   prev.filter((m) => m.id !== optimisticUser.id)
                 );
@@ -379,7 +391,7 @@ export default function ChatArea({
       setIsStreaming(false);
       abortRef.current = null;
     }
-  }, [input, tabId, isStreaming, onWorkRecordRenamed]);
+  }
 
   // ── Keyboard handler ────────────────────────────────────────────────────
 
@@ -475,14 +487,25 @@ export default function ChatArea({
           {/* Error banner */}
           {error && (
             <div className="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-700">
-              <div className="flex items-center justify-between">
-                <span>{error}</span>
-                <button
-                  onClick={() => setError("")}
-                  className="ml-2 text-red-400 hover:text-red-600"
-                >
-                  ✕
-                </button>
+              <div className="flex items-center justify-between gap-2">
+                <span className="flex-1">{error}</span>
+                <div className="flex items-center gap-1">
+                  {lastSentContentRef.current && (
+                    <button
+                      onClick={handleRetry}
+                      disabled={isStreaming}
+                      className="rounded border border-red-300 bg-white px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-100 disabled:opacity-50 transition-colors"
+                    >
+                      重试
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setError("")}
+                    className="text-red-400 hover:text-red-600 transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
             </div>
           )}
