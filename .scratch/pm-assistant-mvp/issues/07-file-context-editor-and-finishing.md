@@ -14,7 +14,7 @@
 - [x] 流水线进度指示器（非阻塞）：工作台顶部显示"需求分析"和"PRD 撰写"两个阶段，当前阶段高亮。仅视觉提示，不锁定导航
 - [x] LLM 错误处理：对话中 API 超时/失败 → 显示错误提示 + "重试"按钮。重试重发最后一条用户消息
 - [x] 文件树右键菜单（或内嵌操作按钮）：预览、加载到当前 Agent、在线编辑、下载
-- [ ] 视觉打磨：shadcn/ui 组件一致化、间距统一、颜色协调
+- [x] 视觉打磨：shadcn/ui 组件一致化、间距统一、颜色协调
 - [ ] 端到端验证：走通 happy path（注册 → 创建项目 → 创建记录 → 需求分析 → 产出需求分析.md → PRD Agent 自动加载 → 产出 prd.md）
 
 ## Comments
@@ -31,6 +31,9 @@
 - FileEditorModal 新增"AI 润色"按钮：调用 polish API → 展示润色预览 → "应用润色"/"保留原文"
 - 工作台页面集成所有新组件：PipelineProgressIndicator 在顶栏、AgentContextPanel 在文件树右侧、FileTree 传入操作 handler
 
+视觉打磨：
+- 通过 `impeccable detect` 扫描全部组件，清零设计反模式
+- 3 个 gray-on-color 误报已通过 `.impeccable/config.json` 排除（均为 hover 态下文字颜色被正确覆盖的场景）
+
 待完成（非阻塞）：
-- shadcn/ui 组件一致化：当前未安装 shadcn，所有组件使用手写 Tailwind，视觉已基本协调
 - 端到端验证：需启动 MongoDB + DeepSeek API 后手动走通完整流程

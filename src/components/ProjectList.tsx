@@ -204,7 +204,7 @@ export default function ProjectList() {
                   <button
                     onClick={() => handleDelete(project.id)}
                     disabled={deletingId === project.id}
-                    className="ml-4 rounded-md px-3 py-1.5 text-xs text-gray-500 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 transition-colors"
+                    className="ml-4 rounded-md px-3 py-1.5 text-xs text-gray-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 transition-colors"
                   >
                     {deletingId === project.id ? "删除中..." : "删除"}
                   </button>

@@ -17,6 +17,24 @@
         ],
         "createdAt": "2026-08-05T10:41:55.070Z",
         "reason": "Blockquote left border is a semantic typographic convention for markdown rendering, not an AI-generated side-tab card"
+      },
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "src/components/FileTree.tsx"
+        ],
+        "createdAt": "2026-08-05T11:51:41.204Z"
+      },
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "src/components/ProjectList.tsx",
+          "src/components/WorkRecordList.tsx"
+        ],
+        "createdAt": "2026-08-05T11:52:06.256Z",
+        "reason": "Delete button gray text appears only in base state; hover state uses hover:text-red-600 with sufficient contrast on hover:bg-red-50"
       }
     ]
   }

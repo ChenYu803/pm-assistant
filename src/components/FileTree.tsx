@@ -87,7 +87,7 @@ export default function FileTree({
                           e.stopPropagation();
                           onLoadToAgent(file);
                         }}
-                        className="rounded p-1 text-gray-400 hover:bg-indigo-100 hover:text-indigo-600 transition-colors"
+                        className="rounded p-1 text-gray-500 hover:bg-indigo-100 hover:text-indigo-600 transition-colors"
                         title="加载到 Agent"
                       >
                         <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
