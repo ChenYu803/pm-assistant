@@ -9,8 +9,8 @@ interface FileEditorModalProps {
   saving: boolean;
   onSave: (content: string) => void;
   onClose: () => void;
-  projectId?: string;
-  fileId?: string;
+  /** 传入 projectId + fileId 后会显示「AI 润色」按钮 */
+  polishTarget?: { projectId: string; fileId: string };
 }
 
 export default function FileEditorModal({
@@ -20,8 +20,7 @@ export default function FileEditorModal({
   saving,
   onSave,
   onClose,
-  projectId,
-  fileId,
+  polishTarget,
 }: FileEditorModalProps) {
   const [content, setContent] = useState(initialContent);
   const [isPolishing, setIsPolishing] = useState(false);
@@ -38,12 +37,12 @@ export default function FileEditorModal({
   }, [open, initialContent]);
 
   async function handlePolish() {
-    if (!projectId || !fileId || !content.trim()) return;
+    if (!polishTarget || !content.trim()) return;
     setIsPolishing(true);
     setPolishError("");
     try {
       const res = await fetch(
-        `/api/projects/${projectId}/files/${fileId}/polish`,
+        `/api/projects/${polishTarget.projectId}/files/${polishTarget.fileId}/polish`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -142,7 +141,7 @@ export default function FileEditorModal({
         <div className="flex items-center justify-between border-t border-gray-200 px-5 py-3">
           <div className="flex items-center gap-2">
             <p className="text-xs text-gray-400">支持 Markdown 格式</p>
-            {projectId && fileId && (
+            {polishTarget && (
               <button
                 onClick={handlePolish}
                 disabled={saving || isPolishing}

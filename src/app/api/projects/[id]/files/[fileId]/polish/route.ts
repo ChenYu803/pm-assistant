@@ -28,20 +28,12 @@ export async function POST(
     const { fileId } = await params;
 
     const body = await request.json();
-    const { content } = body as { content: string };
+    const { content } = body;
 
     if (!content || typeof content !== "string" || !content.trim()) {
       return NextResponse.json(
         { error: "内容不能为空" },
         { status: 400 }
-      );
-    }
-
-    const apiKey = process.env.DEEPSEEK_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json(
-        { error: "AI 服务未配置，请联系管理员设置 DEEPSEEK_API_KEY" },
-        { status: 500 }
       );
     }
 
@@ -53,6 +45,14 @@ export async function POST(
       return NextResponse.json(
         { error: "文件不存在或无权访问" },
         { status: 404 }
+      );
+    }
+
+    const apiKey = process.env.DEEPSEEK_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: "AI 服务未配置，请联系管理员设置 DEEPSEEK_API_KEY" },
+        { status: 500 }
       );
     }
 

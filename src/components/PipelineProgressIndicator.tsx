@@ -16,13 +16,13 @@ export default function PipelineProgressIndicator({
   agentType,
   scopeFrozen,
 }: PipelineProgressIndicatorProps) {
-  const currentPhaseIndex = agentType === "mvp_prd" ? 1 : 0;
-  const currentSubLabel =
-    agentType === "mvp_prd"
-      ? scopeFrozen
-        ? "落地版"
-        : "精简版"
-      : null;
+  const isPrdPhase = agentType === "mvp_prd";
+  const currentPhaseIndex = isPrdPhase ? 1 : 0;
+  const currentSubLabel = isPrdPhase
+    ? scopeFrozen
+      ? "落地版"
+      : "精简版"
+    : null;
 
   return (
     <div className="flex items-center gap-1.5">
