@@ -7,7 +7,8 @@ import Message from "@/models/Message";
 import { findOwnedTab } from "@/lib/ownership";
 import { AGENT_SYSTEM_PROMPTS } from "@/lib/agent-prompts";
 import { autoNameWorkRecord } from "@/lib/auto-name";
-import { stripChangelogHeader, getLoadedContextFiles } from "@/lib/file-helpers";
+import { stripChangelogHeader } from "@/lib/file-helpers";
+import { getLoadedContextFiles } from "@/lib/context-files";
 
 const encoder = new TextEncoder();
 

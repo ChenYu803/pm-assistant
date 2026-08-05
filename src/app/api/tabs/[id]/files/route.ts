@@ -3,7 +3,7 @@ import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import AgentFileContext from "@/models/AgentFileContext";
 import { findOwnedTab, findOwnedProjectFile } from "@/lib/ownership";
-import { getLoadedContextFiles } from "@/lib/file-helpers";
+import { getLoadedContextFiles } from "@/lib/context-files";
 
 /** List files loaded in a tab's agent context. */
 export async function GET(
