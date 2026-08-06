@@ -51,6 +51,9 @@ export default function WorkspacePage() {
   const [creating, setCreating] = useState(false);
   // 关闭标签页确认弹窗的目标
   const [pendingCloseTab, setPendingCloseTab] = useState<TabData | null>(null);
+  // 删除文件确认弹窗的目标
+  const [pendingDeleteFile, setPendingDeleteFile] = useState<ProjectFileData | null>(null);
+  const [deletingFile, setDeletingFile] = useState(false);
   const [workRecord, setWorkRecord] = useState<WorkRecord | null>(null);
   const [project, setProject] = useState<Project | null>(null);
 
@@ -379,6 +382,38 @@ export default function WorkspacePage() {
     void openFileFull(file);
   }
 
+  /** 点击删除按钮 → 打开确认弹窗。 */
+  function requestDeleteFile(file: ProjectFileData) {
+    setPendingDeleteFile(file);
+  }
+
+  /** 确认弹窗的「删除」动作：删除文件并清理引用。 */
+  async function confirmDeleteFile() {
+    const file = pendingDeleteFile;
+    if (!file || !project) return;
+    setDeletingFile(true);
+    try {
+      const res = await fetch(
+        `/api/projects/${project.id}/files/${file.id}`,
+        { method: "DELETE" }
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "删除文件失败");
+      }
+      // 文件树刷新（fetchFiles 会自动清掉已删除文件的预览状态）
+      await fetchFiles();
+      // 刷新当前标签页的上下文面板，移除已删除文件的引用
+      if (activeTabId) await fetchContextFiles();
+      setPendingDeleteFile(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "删除文件失败");
+      setPendingDeleteFile(null);
+    } finally {
+      setDeletingFile(false);
+    }
+  }
+
   async function handleSaveEdit(fileId: string, content: string) {
     if (!project) return;
     setSavingFile(true);
@@ -492,6 +527,7 @@ export default function WorkspacePage() {
           onLoadToAgent={handleLoadFileToContext}
           onEdit={handleEditFile}
           onDownload={handleDownloadFile}
+          onDelete={requestDeleteFile}
         />
 
         {/* Agent context panel (only when a tab is active) */}
@@ -595,6 +631,36 @@ export default function WorkspacePage() {
         onClose={() => setShowAgentDialog(false)}
         onSelect={handleCreateTab}
       />
+
+      {/* 删除文件确认弹窗 */}
+      <AlertDialog
+        open={pendingDeleteFile !== null}
+        onOpenChange={(o) => {
+          if (!o && !deletingFile) setPendingDeleteFile(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogTitle>确定删除该文件？</AlertDialogTitle>
+          <AlertDialogDescription>
+            文件「{pendingDeleteFile?.filename}」将被永久删除，此操作不可恢复。
+            若该文件已加载到 Agent 上下文，相关引用也会一并清理。
+          </AlertDialogDescription>
+          <div className="mt-4 flex justify-end gap-2">
+            <AlertDialogCancel asChild>
+              <Button variant="outline" disabled={deletingFile}>取消</Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                variant="destructive"
+                onClick={confirmDeleteFile}
+                disabled={deletingFile}
+              >
+                {deletingFile ? "删除中..." : "删除"}
+              </Button>
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* 关闭标签页确认弹窗 */}
       <AlertDialog
