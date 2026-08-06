@@ -6,7 +6,13 @@ import { AGENT_TYPE_LABELS } from "@/lib/agent-constants";
 import FileConfirmDialog, {
   type FileToConfirm,
 } from "@/components/FileConfirmDialog";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -25,6 +31,10 @@ interface ChatAreaProps {
   projectId: string | null;
   /** Filenames already present in the project — used to skip re-confirming completed writes. */
   existingFileNames?: string[];
+  /** True once the project file list has loaded. History is only scanned for
+   *  file markers after this — otherwise a slow file fetch would make us
+   *  re-ask for a write the user already confirmed. */
+  filesReady?: boolean;
   onWorkRecordRenamed?: (newName: string) => void;
   onFileSaved?: () => void; // notify parent to refresh file list
 }
@@ -35,6 +45,32 @@ interface SseEvent {
   messageId?: string;
   message?: string;
   newName?: string;
+}
+
+/**
+ * 配置类错误（API key 无效/未配置等）无法通过重试解决，走弹窗提示；
+ * 其余错误（网络中断、超时等）保留对话区 banner + 重试。
+ */
+function isConfigError(message: string): boolean {
+  return /401|authentication|api[ _-]?key|DEEPSEEK_API_KEY|invalid_api_key/i.test(
+    message
+  );
+}
+
+// ─── File marker parsing ─────────────────────────────────────────────────────
+
+const FILE_MARKER_RE =
+  /%%%FILE_BEGIN%%%\s*(.+?\.md)\s*\n([\s\S]*?)%%%FILE_END%%%/g;
+
+/** Extract all file blocks from content. Returns array of {filename, content}. */
+function extractFileMarkers(content: string): FileToConfirm[] {
+  const results: FileToConfirm[] = [];
+  const regex = new RegExp(FILE_MARKER_RE.source, "g");
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(content)) !== null) {
+    results.push({ filename: match[1].trim(), content: match[2].trim() });
+  }
+  return results;
 }
 
 // ─── SSE line parser ─────────────────────────────────────────────────────────
@@ -142,6 +178,7 @@ export default function ChatArea({
   agentType,
   projectId,
   existingFileNames,
+  filesReady = true,
   onWorkRecordRenamed,
   onFileSaved,
 }: ChatAreaProps) {
@@ -151,6 +188,8 @@ export default function ChatArea({
   const [streamingContent, setStreamingContent] = useState("");
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [error, setError] = useState("");
+  // 配置类错误（API key 无效/未配置）——弹窗提示，不进对话区，也不提供重试
+  const [configError, setConfigError] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -169,38 +208,25 @@ export default function ChatArea({
   // Which message triggered the currently open confirm dialog
   const pendingWriteMessageId = useRef<string | null>(null);
 
-  // ── File marker parsing ──────────────────────────────────────────────────
-
-  const FILE_MARKER_RE =
-    /%%%FILE_BEGIN%%%\s*(.+?\.md)\s*\n([\s\S]*?)%%%FILE_END%%%/g;
-
-  /** Extract all file blocks from content. Returns array of {filename, content}. */
-  function extractFileMarkers(
-    content: string
-  ): FileToConfirm[] {
-    const results: FileToConfirm[] = [];
-    const regex = new RegExp(FILE_MARKER_RE.source, "g");
-    let match: RegExpExecArray | null;
-    while ((match = regex.exec(content)) !== null) {
-      results.push({ filename: match[1].trim(), content: match[2].trim() });
-    }
-    return results;
-  }
+  // ── File marker parsing (extractFileMarkers lives at module level) ────────
 
   /** Check a message for file markers and trigger confirmation dialog. */
-  function checkAndShowFileDialog(message: ChatMessage) {
-    if (processedFileMessageIds.current.has(message.id)) return;
-    const markers = extractFileMarkers(message.content);
-    if (markers.length > 0) {
-      processedFileMessageIds.current.add(message.id);
-      // File already exists (e.g. after a page reload) — don't re-ask for a
-      // completed write (spec US39); the banner stays for intentional re-writes.
-      if (existingFileNames?.includes(markers[0].filename)) return;
-      pendingWriteMessageId.current = message.id;
-      setFileToConfirm(markers[0]); // Show first marker; user can process more later
-      setShowFileDialog(true);
-    }
-  }
+  const checkAndShowFileDialog = useCallback(
+    (message: ChatMessage) => {
+      if (processedFileMessageIds.current.has(message.id)) return;
+      const markers = extractFileMarkers(message.content);
+      if (markers.length > 0) {
+        processedFileMessageIds.current.add(message.id);
+        // File already exists (e.g. after a page reload) — don't re-ask for a
+        // completed write (spec US39); the banner stays for intentional re-writes.
+        if (existingFileNames?.includes(markers[0].filename)) return;
+        pendingWriteMessageId.current = message.id;
+        setFileToConfirm(markers[0]); // Show first marker; user can process more later
+        setShowFileDialog(true);
+      }
+    },
+    [existingFileNames]
+  );
 
   // ── Fetch message history on tab change ──────────────────────────────────
 
@@ -221,12 +247,6 @@ export default function ChatArea({
         const data = await res.json();
         if (!cancelled) {
           setMessages(data.messages);
-          // Check existing messages for file markers (for tab re-open)
-          for (const msg of data.messages) {
-            if (msg.role === "assistant") {
-              checkAndShowFileDialog(msg);
-            }
-          }
         }
       } catch (err) {
         if (!cancelled) {
@@ -252,6 +272,22 @@ export default function ChatArea({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingContent]);
+
+  // ── Scan history for file markers (tab re-open) ─────────────────────────
+  // Waits for the project file list to finish loading (filesReady): otherwise
+  // a slow file fetch would race the message history and re-ask for a write
+  // the user already confirmed (the file simply isn't in existingFileNames yet).
+  useEffect(() => {
+    if (!tabId || !filesReady || loadingHistory) return;
+    // setTimeout 延迟到宏任务：effect 内同步 setState 会触发级联渲染（lint 规则），
+    // 弹窗推迟一帧对用户无感知；与 done 事件的 setTimeout 先例一致。
+    const t = setTimeout(() => {
+      for (const msg of messages) {
+        if (msg.role === "assistant") checkAndShowFileDialog(msg);
+      }
+    }, 0);
+    return () => clearTimeout(t);
+  }, [tabId, filesReady, loadingHistory, messages, checkAndShowFileDialog]);
 
   // ── File confirmation handlers ────────────────────────────────────────────
 
@@ -324,7 +360,13 @@ export default function ChatArea({
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || "发送消息失败");
+        const errMsg = errData.error || "发送消息失败";
+        // 配置类错误直接弹窗，不写入对话区
+        if (isConfigError(errMsg)) {
+          setConfigError(errMsg);
+          return;
+        }
+        throw new Error(errMsg);
       }
 
       const reader = res.body?.getReader();
@@ -369,8 +411,13 @@ export default function ChatArea({
               }
               break;
             }
-            case "error":
-              setError(event.message || "请求发生错误");
+            case "error": {
+              const errMsg = event.message || "请求发生错误";
+              if (isConfigError(errMsg)) {
+                setConfigError(errMsg);
+              } else {
+                setError(errMsg);
+              }
               if (event.messageId && fullContent) {
                 // Server persisted the partial — append with the real message
                 // id so a later history fetch doesn't duplicate it.
@@ -389,6 +436,7 @@ export default function ChatArea({
               // make it (and the failed state) reappear after a refresh.
               setStreamingContent("");
               break;
+            }
           }
         }
       }
@@ -451,7 +499,10 @@ export default function ChatArea({
       // Text before marker
       if (match.index > lastIndex) {
         parts.push(
-          <span key={key++}>{cleanContent.slice(lastIndex, match.index)}</span>
+          <MarkdownRenderer
+            key={key++}
+            content={cleanContent.slice(lastIndex, match.index)}
+          />
         );
       }
       // File marker
@@ -468,20 +519,25 @@ export default function ChatArea({
         />
       );
       // File content (shown inline for now — Ticket 5 will save to filesystem)
-      parts.push(
-        <span key={key++} className="text-gray-500">
-          {fileContent}
-        </span>
-      );
+      parts.push(<MarkdownRenderer key={key++} content={fileContent} />);
       lastIndex = match.index + match[0].length;
     }
 
     // Remaining text
     if (lastIndex < cleanContent.length) {
-      parts.push(<span key={key++}>{cleanContent.slice(lastIndex)}</span>);
+      parts.push(
+        <MarkdownRenderer
+          key={key++}
+          content={cleanContent.slice(lastIndex)}
+        />
+      );
     }
 
-    return parts.length > 0 ? parts : cleanContent;
+    return parts.length > 0 ? (
+      parts
+    ) : (
+      <MarkdownRenderer content={cleanContent} />
+    );
   }
 
   // ── Empty state: no tab selected ────────────────────────────────────────
@@ -505,9 +561,10 @@ export default function ChatArea({
   // ── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-1 flex-col bg-gray-50">
+    // min-h-0：聊天内容超过视口时收缩到容器内，内部消息列表才独立滚动
+    <div className="flex min-h-0 flex-1 flex-col bg-gray-50">
       {/* Message list */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6">
         <div className="mx-auto max-w-3xl">
           {/* Loading history */}
           {loadingHistory && (
@@ -675,6 +732,31 @@ export default function ChatArea({
         onConfirm={handleConfirmFile}
         onCancel={handleCancelFile}
       />
+
+      {/* AI 服务配置错误弹窗：不进对话区，不提供重试 */}
+      <Dialog
+        open={!!configError}
+        onOpenChange={(o) => {
+          if (!o) setConfigError("");
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogTitle className="text-base">AI 服务连接失败</DialogTitle>
+          <p className="mt-2 text-sm text-muted-foreground">
+            API Key 无效或未配置，无法调用 AI 服务。请检查
+            <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">
+              DEEPSEEK_API_KEY
+            </code>
+            配置后重试。
+          </p>
+          <p className="mt-3 max-h-24 overflow-y-auto rounded-md bg-muted px-3 py-2 font-mono text-xs text-gray-500">
+            {configError}
+          </p>
+          <div className="mt-4 flex justify-end">
+            <Button onClick={() => setConfigError("")}>知道了</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
