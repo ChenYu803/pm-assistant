@@ -82,33 +82,11 @@ function renderMarkdown(md: string): string {
       continue;
     }
 
-    // Unordered list
-    if (/^[\s]*[-*+]\s+/.test(line)) {
-      const items: string[] = [];
-      while (i < lines.length && /^[\s]*[-*+]\s+/.test(lines[i])) {
-        items.push(
-          `<li class="ml-5 list-disc">${inlineMarkup(lines[i].replace(/^[\s]*[-*+]\s+/, ""))}</li>`
-        );
-        i++;
-      }
-      result.push(
-        `<ul class="my-2 space-y-1">${items.join("")}</ul>`
-      );
-      continue;
-    }
-
-    // Ordered list
-    if (/^[\s]*\d+[\.\、]\s+/.test(line)) {
-      const items: string[] = [];
-      while (i < lines.length && /^[\s]*\d+[\.\、]\s+/.test(lines[i])) {
-        items.push(
-          `<li class="ml-5 list-decimal">${inlineMarkup(lines[i].replace(/^[\s]*\d+[\.\、]\s+/, ""))}</li>`
-        );
-        i++;
-      }
-      result.push(
-        `<ol class="my-2 space-y-1">${items.join("")}</ol>`
-      );
+    // List (unordered/ordered — nested, Chinese punctuation, task checkboxes)
+    if (LIST_ITEM_RE.test(line)) {
+      const block = renderListBlock(lines, i);
+      result.push(block.html);
+      i = block.nextIndex;
       continue;
     }
 
@@ -136,7 +114,7 @@ function renderMarkdown(md: string): string {
     while (
       i < lines.length &&
       lines[i].trim() !== "" &&
-      !/^(#{1,6}\s|```|[-*+]\s|\d+[\.\、]\s|^>\s|-{3,}|\*{3,}|_{3,})/.test(lines[i])
+      !/^(#{1,6}\s|```|[-*+]\s|\d+[\.、\)）]|^>\s|-{3,}|\*{3,}|_{3,})/.test(lines[i])
     ) {
       paraLines.push(lines[i]);
       i++;
@@ -154,6 +132,93 @@ function renderMarkdown(md: string): string {
 function renderCodeBlock(code: string, lang: string): string {
   const escaped = escapeHtml(code);
   return `<pre class="rounded-lg bg-gray-900 p-4 my-3 overflow-x-auto"><code class="text-sm text-gray-100">${escaped}</code></pre>`;
+}
+
+// ─── List parsing ──────────────────────────────────────────────────────────────
+
+/**
+ * 列表项：无序符号（- * +）或序号（数字后接 . 、 ) ），
+ * 中文顿号/右括号后允许无空格（如「1、方案一」）。允许前置缩进（嵌套）。
+ */
+const LIST_ITEM_RE = /^(\s*)([-*+]|\d+[\.、\)）])\s*/;
+
+interface ListEntry {
+  text: string;
+  sublist: ListBlock | null;
+}
+
+interface ListBlock {
+  kind: "ul" | "ol";
+  items: ListEntry[];
+}
+
+/**
+ * 解析从 start 开始的连续列表行（含缩进），返回 HTML 与下一个未消费的行号。
+ * 支持：嵌套列表（缩进层级）、中文标点序号、task checkbox（- [ ] / - [x]）。
+ */
+function renderListBlock(
+  lines: string[],
+  start: number
+): { html: string; nextIndex: number } {
+  const rows: { indent: number; text: string; kind: "ul" | "ol" }[] = [];
+  let i = start;
+  while (i < lines.length && LIST_ITEM_RE.test(lines[i])) {
+    const raw = lines[i];
+    const indent = (raw.match(/^\s*/) ?? [""])[0].length;
+    const trimmed = raw.trim();
+    rows.push({
+      indent,
+      text: trimmed.replace(LIST_ITEM_RE, ""),
+      kind: /^\d+[\.、\)）]/.test(trimmed) ? "ol" : "ul",
+    });
+    i++;
+  }
+
+  // 缩进栈组装嵌套结构：栈内缩进严格递增。
+  // 同缩进行留在当前块；更深的行挂到栈顶最后一条 entry 下开子块；更浅的出栈。
+  const root: ListBlock = { kind: rows[0]?.kind ?? "ul", items: [] };
+  const stack: { block: ListBlock; indent: number }[] = [
+    { block: root, indent: rows[0]?.indent ?? -1 },
+  ];
+  for (const row of rows) {
+    while (stack.length > 1 && row.indent < stack[stack.length - 1].indent) {
+      stack.pop();
+    }
+    const top = stack[stack.length - 1];
+    const entry: ListEntry = { text: row.text, sublist: null };
+    if (row.indent > top.indent) {
+      // 更深缩进：挂到栈顶最后一条 entry 下作为子列表
+      const parentEntry = top.block.items[top.block.items.length - 1];
+      parentEntry.sublist = { kind: row.kind, items: [] };
+      stack.push({ block: parentEntry.sublist, indent: row.indent });
+    }
+    stack[stack.length - 1].block.items.push(entry);
+  }
+
+  return { html: renderListHtml(root), nextIndex: i };
+}
+
+/** 递归生成列表 HTML。nested 为 true 时附加子列表缩进。 */
+function renderListHtml(block: ListBlock, nested = false): string {
+  const tag = block.kind === "ol" ? "ol" : "ul";
+  const listClass = nested ? "my-2 ml-4 space-y-1" : "my-2 space-y-1";
+  const items = block.items.map((entry) => {
+    const taskMatch = entry.text.match(/^\[([ xX])\]/);
+    const isTask = !!taskMatch;
+    const cleaned = entry.text.replace(/^\[([ xX])\]\s*/, "");
+    // task 项不带符号；普通项按列表类型带 disc/decimal
+    const liClass = isTask
+      ? "ml-5"
+      : block.kind === "ol"
+        ? "ml-5 list-decimal"
+        : "ml-5 list-disc";
+    const content = isTask
+      ? `${taskMatch![1] === " " ? '<span class="text-gray-400">☐</span>' : '<span class="text-green-600">☑</span>'} ${inlineMarkup(cleaned)}`
+      : inlineMarkup(entry.text);
+    const sub = entry.sublist ? renderListHtml(entry.sublist, true) : "";
+    return `<li class="${liClass}">${content}${sub}</li>`;
+  });
+  return `<${tag} class="${listClass}">${items.join("")}</${tag}>`;
 }
 
 function renderMarkdownInline(md: string): string {
