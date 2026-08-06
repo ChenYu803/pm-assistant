@@ -27,7 +27,7 @@
 | prd.md format | Two-part: 精简版 (三视角二次确认 + 概念版PRD ≤300字 + 范围冻结) → 落地版 (五个维度详述每个功能: 用户流程/状态机/字段规范/文案规范/异常处理) | PRD Agent二次确认需求分析的结论，不重新讨论；落地版可直接vibe coding |
 | PRD 的读者 | **AI**（「只会执行的程序员」）——「直接拿去 vibe coding」是字面要求，不是「稍作补充」 | v1.0 定稿（见 ADR-0002）；现有五维度结构对人友好、对 AI 太粗犷，v1.0 将重构 PRD 结构 |
 | v1.0 完成标志 | 作者本人（唯一用户）从零走完「想法 → 需求分析.md → prd.md」，拿到的 PRD 实际 vibe coding 一次跑通 | Dogfooding 兼作验收：PRD 质量是产品唯一北极星，一切 Agent 均为 PRD 撰写/更新服务 |
-| v1.0 工作方式 | 「AI 执行版 PRD 骨架设计」是独立 issue（`.scratch/pm-assistant-v1/issues/01-prd-ai-execution-skeleton.md`），需要一个空旷的上下文窗口专门讨论——大设计问题不在 grilling 会话中挤决策 | 该问题巨大且重要，挤在对话里只会得到残缺决策（2026-08-06 grilling 确认） |
+| v1.0 核心课题 | **AI 执行版 PRD 结构设计**——独立 issue 排队（`.scratch/pm-assistant-v1/issues/01-prd-ai-execution-structure.md`），grilling 阶段仅登记不展开，to-spec 阶段用空旷上下文专门讨论 | 巨大且重要的问题，混在 grilling 里会稀释焦点 |
 
 ### Information architecture
 
