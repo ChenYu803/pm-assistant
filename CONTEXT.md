@@ -19,6 +19,10 @@
 | 目标用户群 | **求职 PM**（无 PM 工作经验的求职者；产品作者本人即典型用户）。原「在职 PM」定位作废（见 ADR-0001） | Dogfooding 兼作简历叙事；MVP 已验证流水线概念，v1.0 验证「新人也走得通」 |
 | 增长策略（三步走） | ① 自己作为唯一用户，把产品打磨成「自己想要的样子」 ② 以教学之名经营小红书等社群，引流其他求职 PM 使用 ③ 未来随用户群成长回在职 PM 市场 | 先做深单点再扩张；教学是引流手段，产品价值是「从想法到 PRD 的完整产出」 |
 | 核心体验目标 | 新人无引导也能走完「想法 → 需求分析.md → prd.md」并导出成果 | 求职 PM 不懂 PM 流程，产品必须自己教会他们；需模板案例、新手引导、成果导出支撑 |
+| 核心产出物 | **PRD 是产品唯一的最终产出物**；需求分析、竞品分析、技术顾问等一切 Agent 都是「PRD 撰写/更新」的上下游（喂素材 / 验证 / 补全） | 产品定位从「PM 工作流工具」收窄为「PRD 生产工具」；避免每个 Agent 各为其政 |
+| PRD 的读者 | **AI（vibe coding 时的执行者），不是人** | 「只会执行的程序员」读 PRD；因此 PRD 结构必须面向 AI 消费（页面清单/数据模型/API 契约/状态机/边界），MVP 的五维度结构对 AI 太粗犷，v1.0 重构 |
+| v1.0 范围 | 只服务作者本人（唯一用户）；教学/培训在社群侧完成，产品不做老师 | Dogfooding 阶段；完成标志：作者从零走完简单想法 → PRD 直接可 vibe coding |
+| v1.0 验收 | 拿真实 PRD 实际 vibe coding 一次，**Claude 猜测偏差 = 0**（凡 AI 猜着做且猜错处均为 PRD 缺口） | 可操作的质量反馈循环；每发现一个偏差即知 PRD 结构缺什么 |
 | Agent design | Each agent has a baked-in system prompt for its specific role | User never writes "you are a PM" — they just describe their situation |
 | AI backend | DeepSeek API (`deepseek-chat`) via OpenAI-compatible SDK | 成本最低的选择；DeepSeek V3 在中文 PM 场景下表现优秀 |
 | MVP agents | ① 需求分析 Agent — Requirement Analyst ② MVP-PRD Agent — MVP Scope & PRD Writer | Two agents; validates both specialization AND handoff |
