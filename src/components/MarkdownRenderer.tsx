@@ -82,6 +82,19 @@ function renderMarkdown(md: string): string {
       continue;
     }
 
+    // Table (GFM pipe tables: header row + separator row)
+    if (/^\s*\|/.test(line) && i + 1 < lines.length && TABLE_SEP_RE.test(lines[i + 1])) {
+      const headerCells = parseTableRow(line);
+      i += 2; // skip header + separator
+      const bodyRows: string[][] = [];
+      while (i < lines.length && /^\s*\|/.test(lines[i])) {
+        bodyRows.push(parseTableRow(lines[i]));
+        i++;
+      }
+      result.push(renderTable(headerCells, bodyRows));
+      continue;
+    }
+
     // List (unordered/ordered — nested, Chinese punctuation, task checkboxes)
     if (LIST_ITEM_RE.test(line)) {
       const block = renderListBlock(lines, i);
@@ -132,6 +145,38 @@ function renderMarkdown(md: string): string {
 function renderCodeBlock(code: string, lang: string): string {
   const escaped = escapeHtml(code);
   return `<pre class="rounded-lg bg-gray-900 p-4 my-3 overflow-x-auto"><code class="text-sm text-gray-100">${escaped}</code></pre>`;
+}
+
+// ─── Table parsing ─────────────────────────────────────────────────────────────
+
+/** 表格分隔行：`| --- | :---: | ---: |`（支持左右对齐冒号）。 */
+const TABLE_SEP_RE =
+  /^\s*\|?\s*:?-{1,}:?\s*(\|\s*:?-{1,}:?\s*)+\|?\s*$/;
+
+/** 解析一行 `| a | b |` 为单元格数组（去掉首尾管道与空白）。 */
+function parseTableRow(line: string): string[] {
+  return line
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split("|")
+    .map((cell) => cell.trim())
+    .map((cell) => inlineMarkup(cell));
+}
+
+function renderTable(headers: string[], bodyRows: string[][]): string {
+  const th = headers
+    .map((h) => `<th class="border border-gray-200 bg-gray-50 px-2 py-1.5 text-left font-medium">${h}</th>`)
+    .join("");
+  const trs = bodyRows
+    .map(
+      (cells) =>
+        `<tr>${cells
+          .map((c) => `<td class="border border-gray-200 px-2 py-1.5">${c}</td>`)
+          .join("")}</tr>`
+    )
+    .join("");
+  return `<div class="my-3 overflow-x-auto"><table class="w-full border-collapse text-sm"><thead><tr>${th}</tr></thead><tbody>${trs}</tbody></table></div>`;
 }
 
 // ─── List parsing ──────────────────────────────────────────────────────────────
