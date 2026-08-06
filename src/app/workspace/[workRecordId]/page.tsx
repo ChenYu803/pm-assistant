@@ -56,7 +56,9 @@ export default function WorkspacePage() {
 
   // File tree state
   const [files, setFiles] = useState<ProjectFileData[]>([]);
-  const [filesLoading, setFilesLoading] = useState(false);
+  // 初始为 true：project 加载完成前文件列表视为「未就绪」，
+  // ChatArea 据此延迟扫描历史消息，避免误弹已写入文件的确认框
+  const [filesLoading, setFilesLoading] = useState(true);
   const [filesError, setFilesError] = useState("");
 
   // File preview state
@@ -434,7 +436,8 @@ export default function WorkspacePage() {
 
   // --- Render: Workspace ---
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    // min-h-0：允许高度收缩到视口内，聊天区才有独立的滚动容器
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       {/* Top bar: breadcrumb + pipeline indicator + work record name */}
       <div className="flex items-center gap-2 border-b border-gray-200 bg-white px-4 py-2">
         <nav className="flex items-center gap-1 text-sm text-gray-500">
@@ -477,7 +480,7 @@ export default function WorkspacePage() {
       </div>
 
       {/* Main workspace area: file tree + context panel + chat */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
         {/* Left: File tree */}
         <FileTree
           files={files}
@@ -564,6 +567,7 @@ export default function WorkspacePage() {
               agentType={activeTab?.agent_type ?? null}
               projectId={project?.id ?? null}
               existingFileNames={files.map((f) => f.filename)}
+              filesReady={!filesLoading}
               onWorkRecordRenamed={(newName) => {
                 setWorkRecord((prev) =>
                   prev ? { ...prev, name: newName } : prev
