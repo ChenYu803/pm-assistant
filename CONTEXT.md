@@ -28,7 +28,9 @@
 | PRD 的读者 | **AI**（「只会执行的程序员」）——「直接拿去 vibe coding」是字面要求，不是「稍作补充」 | v1.0 定稿（见 ADR-0002）；现有五维度结构对人友好、对 AI 太粗犷，v1.0 将重构 PRD 结构 |
 | v1.0 完成标志 | 作者本人（唯一用户）从零走完「想法 → 需求分析.md → prd.md」，拿到的 PRD 实际 vibe coding 一次跑通 | Dogfooding 兼作验收：PRD 质量是产品唯一北极星，一切 Agent 均为 PRD 撰写/更新服务 |
 | v1.0 核心课题 | **AI 执行版 PRD 结构设计**——grilling 阶段仅登记不展开，to-spec 阶段用空旷上下文专门讨论（届时按流程登记为 ticket） | 巨大且重要的问题，混在 grilling 里会稀释焦点 |
-| v1.0 范围（已划线） | 进：PRD 结构重构、方案 B 输出保障（显式确认推进 / 一次只问一个问题 / 输出完整性保障）、新增 Agent（具体待 grill）。出：模板案例、新手引导、成果导出（下载功能 MVP 已有） | 只服务作者本人走通流程拿到可 vibe coding 的 PRD |
+| v1.0 范围（已划线） | 进：PRD 结构重构、方案 B 输出保障（一次只问一个问题 / 显式确认推进 / 输出完整性保障 / 表格控制）、新增 Agent（具体待 grill）。出：模板案例、新手引导、成果导出（下载功能 MVP 已有） | 只服务作者本人走通流程拿到可 vibe coding 的 PRD |
+| 需求分析.md 定位 | 四段结构保留；「成功指标」即使 AI 执行版 PRD 用不上也保留——对用户本人（学习 / 求职作品叙事）有独立价值 | 需求分析.md 不只是 PRD 的素材，自身是独立交付物 |
+| 新增 Agent 选择标准 | v1.0 新增 Agent 以「提升 PRD 质量」为第一标准；为新手引导性/环节丰富度是第二标准，不因「看起来丰富」而加 | 完成标志 = 作者拿到能 vibe coding 的 PRD |
 | Prompt 重写原则 | 大方参考公开优秀 skills（如 grill-me 的 relentless interview：一次一问、聚焦追问、不跳步），不闭门造车 | 需求分析 Agent 本质是 interviewer，直接借鉴成熟 interview 纪律 |
 
 ### Information architecture
