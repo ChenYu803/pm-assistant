@@ -8,11 +8,7 @@
 //       DEEPSEEK_API_KEY 有效（对话冒烟需要）
 // 用法: node scripts/verify-agent-types.mjs
 import { chromium } from "playwright-core";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, "..");
 const BASE = "http://localhost:3000";
 
 const email = `verify-types-${Date.now()}@test.local`;

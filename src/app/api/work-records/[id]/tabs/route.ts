@@ -9,6 +9,15 @@ import { findOwnedWorkRecord } from "@/lib/ownership";
 import { serializeTab } from "@/lib/tab-helpers";
 import type { ITabDocument } from "@/models/Tab";
 
+// 各 Agent 类型创建 tab 时自动加载进上下文的文件（spec: Implementation Decisions）
+// prototype → 需求分析.md；mvp_prd → 需求分析.md + 原型.md；ticket_splitter → prd.md + 需求分析.md
+// 仅加载「存在时」的文件，缺失不报错
+const AUTO_LOAD_FILES: Partial<Record<AgentType, string[]>> = {
+  prototype: ["需求分析.md"],
+  mvp_prd: ["需求分析.md", "原型.md"],
+  ticket_splitter: ["prd.md", "需求分析.md"],
+};
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -95,15 +104,6 @@ export async function POST(
       position,
       work_record_id: workRecord._id,
     });
-
-    // Auto-load files into context by agent type (spec: Implementation Decisions)
-    // prototype → 需求分析.md；mvp_prd → 需求分析.md + 原型.md；ticket_splitter → prd.md + 需求分析.md
-    // 仅加载「存在时」的文件，缺失不报错
-    const AUTO_LOAD_FILES: Partial<Record<AgentType, string[]>> = {
-      prototype: ["需求分析.md"],
-      mvp_prd: ["需求分析.md", "原型.md"],
-      ticket_splitter: ["prd.md", "需求分析.md"],
-    };
 
     let contextFiles: { id: string; filename: string }[] = [];
     const filesToLoad = AUTO_LOAD_FILES[agent_type as AgentType] ?? [];
