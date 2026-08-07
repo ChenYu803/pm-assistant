@@ -29,6 +29,8 @@ for (const [key, rel] of Object.entries(SRC_PATHS)) {
 const FILE_BEGIN = "%%%FILE_BEGIN%%%";
 const FILE_END = "%%%FILE_END%%%";
 const SCOPE_FROZEN = "%%%SCOPE_FROZEN%%%";
+const HTML_BEGIN = "%%%HTML_BEGIN%%%";
+const HTML_END = "%%%HTML_END%%%";
 
 // 注释行（代码文件的 // 或 * 行）——注释里的字面量不算数：
 // 改坏代码行而注释没改时不得误判为「标记仍在」
@@ -50,7 +52,7 @@ function linesOf(content, literal, skipComments = false) {
 // 协议行完整性：代码文件中任何含 %%% 的非注释行必须包含至少一个完整
 // 已知标记——「改坏成新字符串」（如 %%%SCOPE_FROZE%%%）时精确报出改坏行号
 function incompleteProtocolLines(content) {
-  const known = [FILE_BEGIN, FILE_END, SCOPE_FROZEN];
+  const known = [FILE_BEGIN, FILE_END, SCOPE_FROZEN, HTML_BEGIN, HTML_END];
   const out = [];
   content.split("\n").forEach((line, i) => {
     if (isCommentLine(line)) return;
@@ -135,6 +137,39 @@ check(
   `标记 ${FILE_BEGIN}/${FILE_END}：③ ChatArea 内成对出现`,
   paired,
   `(期望: BEGIN 与 END 出现在相同行；实际: BEGIN 行 ${beginInChat.join(",") || "无"} / END 行 ${endInChat.join(",") || "无"})`
+);
+
+// ── 检查 1b：HTML 原型快照标记 %%%HTML_BEGIN%%% / %%%HTML_END%%% ───────────
+// 参与方：① prompt 定义 + ③ ChatArea 解析（② route 不执法——HTML 快照不走
+// 服务端冻结逻辑，前端 Blob 下载即弃，不进文件树）
+for (const marker of [HTML_BEGIN, HTML_END]) {
+  checkPresence(marker, "prompt", "① prompt 定义处");
+  checkPresence(marker, "chat_area", "③ ChatArea 解析处");
+}
+
+const htmlBeginInPrompt = linesOf(sources.prompt, HTML_BEGIN);
+const htmlEndInPrompt = linesOf(sources.prompt, HTML_END);
+const htmlPromptPaired =
+  htmlBeginInPrompt.length === htmlEndInPrompt.length &&
+  htmlBeginInPrompt.every((b, i) => b < htmlEndInPrompt[i]);
+check(
+  `标记 ${HTML_BEGIN}/${HTML_END}：① prompt 内实例成对`,
+  htmlPromptPaired,
+  `(期望: 每个 BEGIN 对应后置的 END；实际: BEGIN ${htmlBeginInPrompt.length} 处 行 ${htmlBeginInPrompt.join(",") || "无"} / END ${htmlEndInPrompt.length} 处 行 ${htmlEndInPrompt.join(",") || "无"})`
+);
+
+// ChatArea 内 BEGIN/END 必须成对出现（联合正则同一行定义）——只改坏其中一个
+// 定义、另一个未同步时，行号集合即失去对称
+const htmlBeginInChat = linesOf(sources.chat_area, HTML_BEGIN, true);
+const htmlEndInChat = linesOf(sources.chat_area, HTML_END, true);
+const htmlChatPaired =
+  htmlBeginInChat.length === htmlEndInChat.length &&
+  htmlBeginInChat.every((n) => htmlEndInChat.includes(n)) &&
+  htmlEndInChat.every((n) => htmlBeginInChat.includes(n));
+check(
+  `标记 ${HTML_BEGIN}/${HTML_END}：③ ChatArea 内成对出现`,
+  htmlChatPaired,
+  `(期望: BEGIN 与 END 出现在相同行；实际: BEGIN 行 ${htmlBeginInChat.join(",") || "无"} / END 行 ${htmlEndInChat.join(",") || "无"})`
 );
 
 // ── 检查 2：范围冻结标记 %%%SCOPE_FROZEN%%% ───────────────────────────────

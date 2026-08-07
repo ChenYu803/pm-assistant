@@ -6,6 +6,7 @@ import Tab from "@/models/Tab";
 import Message from "@/models/Message";
 import { findOwnedTab } from "@/lib/ownership";
 import { AGENT_SYSTEM_PROMPTS } from "@/lib/agent-prompts";
+import type { AgentType } from "@/lib/agent-constants";
 import { autoNameWorkRecord } from "@/lib/auto-name";
 import { stripChangelogHeader } from "@/lib/file-helpers";
 import { getLoadedContextFiles } from "@/lib/context-files";
@@ -19,7 +20,18 @@ function sseEvent(type: string, data: Record<string, unknown>): Uint8Array {
 
 /** Affirmative replies that count as a user's scope-freeze confirmation. */
 const SCOPE_FREEZE_CONFIRM_RE =
-  /确认|可以|没问题|同意|好的|好|行|OK|ok|Yes|yes|是/;
+  /确认|可以|没问题|同意|好的|好|行|OK|ok|Yes|yes|是|完满/;
+
+/** 各冻结 Agent 的「范围已冻结」系统提醒文案（注入 system prompt）。
+ *  **键存在即成员**——同时承担「哪些 Agent 类型走冻结协议」的成员判定
+ *  （spec: SCOPE_FROZEN 语义泛化为该 tab 的流程冻结标记；覆盖 mvp_prd
+ *  的 PRD 范围冻结与 prototype 的原型「完满」冻结）。键拼错 = 编译错。 */
+const FROZEN_REMINDERS: Partial<Record<AgentType, string>> = {
+  mvp_prd:
+    "当前 PRD 范围已冻结。如果用户提出新的功能需求，请礼貌地提醒用户范围已冻结，并建议将新需求放入后续迭代。不要修改已冻结的 PRD 范围。",
+  prototype:
+    "当前原型方案已冻结（用户已确认「完满」）。如果用户提出新的修改意见，请礼貌地提醒用户原型已冻结，并建议将修改放入下一轮迭代。不要修改已冻结的原型。",
+};
 
 export async function POST(
   request: Request,
@@ -81,13 +93,10 @@ export async function POST(
         fileBlocks.join("\n\n");
     }
 
-    // Scope-freeze gate for MVP-PRD Agent
-    if (
-      tab.agent_type === "mvp_prd" &&
-      tab.scope_frozen
-    ) {
-      systemPrompt +=
-        "\n\n## 范围冻结提醒\n\n当前 PRD 范围已冻结。如果用户提出新的功能需求，请礼貌地提醒用户范围已冻结，并建议将新需求放入后续迭代。不要修改已冻结的 PRD 范围。";
+    // Scope-freeze gate for agents with freeze protocol (MVP-PRD / prototype)
+    const frozenReminder = tab.scope_frozen ? FROZEN_REMINDERS[tab.agent_type] : undefined;
+    if (frozenReminder) {
+      systemPrompt += `\n\n## 范围冻结提醒\n\n${frozenReminder}`;
     }
 
     // Fetch history
@@ -148,17 +157,17 @@ export async function POST(
           }
 
           // Scope-freeze gate: the marker only counts if the user actually
-          // confirmed — the message immediately before this response must be
-          // an affirmative user reply (spec US24: 手动确认后才继续落地版).
+          // confirmed — the message immediately before this response is the
+          // current user message (content). historyMessages was fetched before
+          // the current user message was saved, so its last entry is the
+          // *previous* message, not the confirmation (spec US24: 手动确认后
+          // 才继续落地版)。
           if (
-            tab.agent_type === "mvp_prd" &&
+            FROZEN_REMINDERS[tab.agent_type] !== undefined &&
             !tab.scope_frozen &&
             fullContent.includes("%%%SCOPE_FROZEN%%%")
           ) {
-            const lastMessage = historyMessages[historyMessages.length - 1];
-            const userConfirmed =
-              lastMessage?.role === "user" &&
-              SCOPE_FREEZE_CONFIRM_RE.test(lastMessage.content);
+            const userConfirmed = SCOPE_FREEZE_CONFIRM_RE.test(content);
             if (userConfirmed) {
               tab.scope_frozen = true;
               await tab.save();

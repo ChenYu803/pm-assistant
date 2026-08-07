@@ -193,6 +193,46 @@ function FileMarkerBanner({
   );
 }
 
+/**
+ * HTML 原型快照横幅：Agent 以 %%%HTML_BEGIN%%%/%%%HTML_END%%% 输出的单文件 HTML
+ * 在对话流中不渲染源码（保对话形态），只展示下载按钮——Blob 下载后浏览器打开，
+ * HTML 只是可视化媒介，不进文件树、不参与交付（spec: Implementation Decisions）。
+ */
+function HtmlSnapshotBanner({ html }: { html: string }) {
+  const [downloaded, setDownloaded] = useState(false);
+  const handleDownload = () => {
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    // 固定文件名——多份快照同名下载时浏览器自动编号（(1)(2)…），
+    // 避免跨消息序号重置导致重名覆盖
+    a.download = "原型快照.html";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    setDownloaded(true);
+  };
+  return (
+    <div className="mx-auto mb-4 max-w-[80%] rounded-lg border border-sky-200 bg-sky-50 px-4 py-3">
+      <div className="flex items-center gap-2 text-sm text-sky-800">
+        <span className="text-base">🖼️</span>
+        <span>
+          HTML 原型快照已生成（<strong>下载后浏览器打开</strong>）
+        </span>
+      </div>
+      <Button
+        onClick={handleDownload}
+        size="sm"
+        className="mt-2 bg-sky-100 text-sky-800 hover:bg-sky-200"
+      >
+        {downloaded ? "✓ 已下载" : "下载 HTML 原型"}
+      </Button>
+    </div>
+  );
+}
+
 // ─── ChatArea ────────────────────────────────────────────────────────────────
 
 export default function ChatArea({
@@ -543,7 +583,14 @@ export default function ChatArea({
   function renderContentWithMarkers(content: string, messageId: string) {
     // Strip internal markers (e.g. %%%SCOPE_FROZEN%%%) that must not reach the user.
     const cleanContent = content.replace(/%%%SCOPE_FROZEN%%%/g, "");
-    const markerRegex = /%%%FILE_BEGIN%%%\s*(.+?\.md)\s*\n([\s\S]*?)%%%FILE_END%%%/g;
+    // 文件标记与 HTML 快照标记联合匹配：两条分支显式展开（不用交替组），
+    // 保证 %%%FILE_BEGIN%%% / %%%HTML_BEGIN%%% 字面量完整出现
+    // （verify-protocols 按「字面量在行内出现」断言三处一致）。
+    // FILE 分支保持与 extractFileMarkers 完全同形的语义（(.+?\.md)\s*\n），
+    // 避免双正则漂移；HTML 分支无文件名槽——HTML_BEGIN 后首个非空行即快照
+    // 正文（不得吞进捕获组，否则丢首行如 <!DOCTYPE html>）
+    const markerRegex =
+      /%%%FILE_BEGIN%%%\s*(.+?\.md)\s*\n([\s\S]*?)%%%FILE_END%%%|%%%HTML_BEGIN%%%\s*\n?([\s\S]*?)%%%HTML_END%%%/g;
     const parts: React.ReactNode[] = [];
     let lastIndex = 0;
     let match: RegExpExecArray | null;
@@ -552,8 +599,10 @@ export default function ChatArea({
     while ((match = markerRegex.exec(cleanContent)) !== null) {
       // Capture in loop-local constants — the onWrite closure below runs long
       // after the loop, when `match` is already null.
-      const filename = match[1].trim();
-      const fileContent = match[2].trim();
+      // FILE 分支命中时 group 1/2 有值；HTML 分支命中时 group 3 有值
+      const kind = match[1] !== undefined ? "FILE" : "HTML";
+      const filename = (match[1] ?? "").trim();
+      const markerContent = (match[2] ?? match[3] ?? "").trim();
 
       // Text before marker
       if (match.index > lastIndex) {
@@ -564,21 +613,28 @@ export default function ChatArea({
           />
         );
       }
-      // File marker
-      parts.push(
-        <FileMarkerBanner
-          key={key++}
-          filename={filename}
-          written={writtenFileMessageIds.has(messageId)}
-          onWrite={() => {
-            pendingWriteMessageId.current = messageId;
-            setFileToConfirm({ filename, content: fileContent });
-            setShowFileDialog(true);
-          }}
-        />
-      );
-      // File content (shown inline for now — Ticket 5 will save to filesystem)
-      parts.push(<MarkdownRenderer key={key++} content={fileContent} />);
+      if (kind === "HTML") {
+        // HTML 原型快照：不渲染源码，只提供下载按钮（保对话形态）
+        parts.push(
+          <HtmlSnapshotBanner key={key++} html={markerContent} />
+        );
+      } else {
+        // File marker
+        parts.push(
+          <FileMarkerBanner
+            key={key++}
+            filename={filename}
+            written={writtenFileMessageIds.has(messageId)}
+            onWrite={() => {
+              pendingWriteMessageId.current = messageId;
+              setFileToConfirm({ filename, content: markerContent });
+              setShowFileDialog(true);
+            }}
+          />
+        );
+        // File content (shown inline for now — Ticket 5 will save to filesystem)
+        parts.push(<MarkdownRenderer key={key++} content={markerContent} />);
+      }
       lastIndex = match.index + match[0].length;
     }
 
