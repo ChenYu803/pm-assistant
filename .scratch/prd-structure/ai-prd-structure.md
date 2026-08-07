@@ -2,7 +2,7 @@
 
 > 生成时间:2026-08-07 · 分支自 grilling 会话(问题 5「新增什么 Agent」因课题岔出,经 `/handoff` 双向桥接)
 > 用途:带回原 grilling 会话继续问题 5;后续 to-spec 阶段展开
-> 状态:分支侧已敲定,待原会话确认后写入 CONTEXT.md
+> 状态:已敲定;**CONTEXT.md 与 ADR-0003/0004 已由分支侧写入(2026-08-07)**,原会话核对 git diff 确认即可
 
 ## 课题一句话
 
@@ -147,7 +147,7 @@ v1.0 重构 PRD 结构(读者是 AI),并推导「所需信息 → 所需 Agent�
 ## 回原 grilling 会话的接续清单
 
 1. 把本成果(或 Temp 交接文档)带回去,继续问题 5:已敲定**原型 Agent + 任务拆分 Agent 两个新增**,选择标准修订,原型 Agent 进 v1.0(范围划线修改)
-2. 将新决策写入 CONTEXT.md:PRD 六章结构、精简版文档退役、需求分析功能范围充实、原型 Agent(设计要点)、任务拆分 Agent、选择标准修订、v1.0 范围划线更新
+2. ~~将新决策写入 CONTEXT.md~~——**分支侧已完成**(2026-08-07):CONTEXT.md 决策表更新(9 行 + file tree)+ ADR-0003/0004;原会话核对 git diff 确认即可
 3. 后续流程:to-spec(六章模板精确化 + 原型/任务拆分实现细节 + 待定项)→ to-tickets → implement(prompt 重写参考公开 skills)
 
 ## 建议 skills
