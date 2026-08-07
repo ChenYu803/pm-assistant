@@ -28,7 +28,9 @@ function normalizeRequirementSections(body: string): string {
   });
 }
 
-/** 排除清单段标题（一级标题，normalize 只重编号 "## "，不会动它）。 */
+/** 排除清单段标题（一级标题，normalize 只重编号 "## "，不会动它）。
+ *  自带一个前导 \n 作解析锚点；join 处需再补一个 \n 保证标题前有空行，
+ *  否则 markdown 会把「# 排除清单」并进上一段落而不渲染为标题。 */
 const EXCLUSION_LIST_HEADING = "\n# 排除清单";
 
 /**
@@ -62,8 +64,8 @@ function appendRequirement(existingBody: string, newSection: string): string {
       return body ? `${rest}\n\n${body}` : rest;
     }
     return body
-      ? `${rest}\n\n${body}${EXCLUSION_LIST_HEADING}\n${exclusionEntries}`
-      : `${rest}${EXCLUSION_LIST_HEADING}\n${exclusionEntries}`;
+      ? `${rest}\n\n${body}\n${EXCLUSION_LIST_HEADING}\n${exclusionEntries}`
+      : `${rest}\n${EXCLUSION_LIST_HEADING}\n${exclusionEntries}`;
   }
   // 旧清单存在：需求主体插到清单前；新排除条目追加到旧清单后（避免重复段）
   const existingList = existingBody
@@ -74,8 +76,8 @@ function appendRequirement(existingBody: string, newSection: string): string {
     .join("\n");
   const head = existingBody.slice(0, idx).trimEnd();
   return body
-    ? `${head}\n\n${body}${EXCLUSION_LIST_HEADING}\n${mergedList}`
-    : `${head}${EXCLUSION_LIST_HEADING}\n${mergedList}`;
+    ? `${head}\n\n${body}\n${EXCLUSION_LIST_HEADING}\n${mergedList}`
+    : `${head}\n${EXCLUSION_LIST_HEADING}\n${mergedList}`;
 }
 
 export async function GET(
