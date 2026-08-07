@@ -8,21 +8,24 @@ interface PipelineProgressIndicatorProps {
 }
 
 const PHASES = [
-  { key: "requirements", label: "需求分析", agentType: "requirement_analyst" as const },
-  { key: "prd", label: "PRD 撰写", agentType: "mvp_prd" as const },
+  { key: "requirements", label: "需求分析", agentType: "requirement_analyst" },
+  { key: "prototype", label: "原型", agentType: "prototype" },
+  { key: "prd", label: "PRD 撰写", agentType: "mvp_prd" },
+  { key: "tickets", label: "任务拆分", agentType: "ticket_splitter" },
 ] as const;
+
+// 由 PHASES 派生（agentType → 阶段序号），避免与 PHASES 双份数据漂移
+const PHASE_INDEX_BY_AGENT = Object.fromEntries(
+  PHASES.map((phase, index) => [phase.agentType, index])
+) as Record<AgentType, number>;
 
 export default function PipelineProgressIndicator({
   agentType,
   scopeFrozen,
 }: PipelineProgressIndicatorProps) {
-  const isPrdPhase = agentType === "mvp_prd";
-  const currentPhaseIndex = isPrdPhase ? 1 : 0;
-  const currentSubLabel = isPrdPhase
-    ? scopeFrozen
-      ? "落地版"
-      : "精简版"
-    : null;
+  const currentPhaseIndex = agentType ? PHASE_INDEX_BY_AGENT[agentType] : 0;
+  const currentSubLabel =
+    agentType === "mvp_prd" ? (scopeFrozen ? "落地版" : "精简版") : null;
 
   return (
     <div className="flex items-center gap-1.5">

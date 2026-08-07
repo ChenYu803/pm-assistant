@@ -96,27 +96,37 @@ export async function POST(
       work_record_id: workRecord._id,
     });
 
-    // Auto-load 需求分析.md into context for MVP-PRD Agent tabs
+    // Auto-load files into context by agent type (spec: Implementation Decisions)
+    // prototype → 需求分析.md；mvp_prd → 需求分析.md + 原型.md；ticket_splitter → prd.md + 需求分析.md
+    // 仅加载「存在时」的文件，缺失不报错
+    const AUTO_LOAD_FILES: Partial<Record<AgentType, string[]>> = {
+      prototype: ["需求分析.md"],
+      mvp_prd: ["需求分析.md", "原型.md"],
+      ticket_splitter: ["prd.md", "需求分析.md"],
+    };
+
     let contextFiles: { id: string; filename: string }[] = [];
-    if (agent_type === "mvp_prd") {
+    const filesToLoad = AUTO_LOAD_FILES[agent_type as AgentType] ?? [];
+    for (const filename of filesToLoad) {
       try {
-        const reqFile = await ProjectFile.findOne({
+        const file = await ProjectFile.findOne({
           project_id: workRecord.project_id,
-          filename: "需求分析.md",
+          filename,
         });
-        if (reqFile) {
+        if (file) {
           await AgentFileContext.create({
             tab_id: tab._id,
-            file_id: reqFile._id,
+            file_id: file._id,
           });
-          contextFiles = [
-            { id: reqFile._id.toString(), filename: reqFile.filename },
-          ];
+          contextFiles.push({
+            id: file._id.toString(),
+            filename: file.filename,
+          });
         }
       } catch (err) {
         // Duplicate key (11000) is fine — context already exists
         if ((err as { code?: number }).code !== 11000) {
-          console.error("Auto-load context failed:", err);
+          console.error(`Auto-load context failed (${filename}):`, err);
         }
       }
     }

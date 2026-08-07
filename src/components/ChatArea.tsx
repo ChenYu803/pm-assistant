@@ -15,6 +15,28 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 
+// ─── Empty states ────────────────────────────────────────────────────────────
+
+/** 各 Agent 类型的空态提示（icon + 职责文案），见 spec 需求 40。 */
+const EMPTY_STATE_BY_AGENT: Record<AgentType, { icon: string; hint: string }> = {
+  requirement_analyst: {
+    icon: "📋",
+    hint: "请描述您想做的产品或想解决的问题，我将通过系统化的流程帮您梳理需求。",
+  },
+  mvp_prd: {
+    icon: "📝",
+    hint: "请提供需求分析文档，我将帮您生成 MVP 版本的 PRD。",
+  },
+  prototype: {
+    icon: "🎨",
+    hint: "需求分析完成后，我将基于需求分析为您产出页面清单与用户流程的原型方案。",
+  },
+  ticket_splitter: {
+    icon: "✂️",
+    hint: "PRD 完成后，我将把 PRD 拆分为按依赖排序、可直接实施的开发任务。",
+  },
+};
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface ChatMessage {
@@ -611,7 +633,7 @@ export default function ChatArea({
             <div className="flex items-center justify-center py-16">
               <div className="text-center">
                 <div className="mb-4 text-5xl">
-                  {agentType === "requirement_analyst" ? "📋" : "📝"}
+                  {agentType ? EMPTY_STATE_BY_AGENT[agentType].icon : "📝"}
                 </div>
                 <h2 className="mb-2 text-xl font-semibold text-gray-900">
                   {tabName}
@@ -620,9 +642,7 @@ export default function ChatArea({
                   {agentType && AGENT_TYPE_LABELS[agentType]} 已就绪
                 </p>
                 <p className="text-xs text-gray-400">
-                  {agentType === "requirement_analyst"
-                    ? "请描述您想做的产品或想解决的问题，我将通过系统化的流程帮您梳理需求。"
-                    : "请提供需求分析文档，我将帮您生成 MVP 版本的 PRD。"}
+                  {agentType ? EMPTY_STATE_BY_AGENT[agentType].hint : ""}
                 </p>
               </div>
             </div>
