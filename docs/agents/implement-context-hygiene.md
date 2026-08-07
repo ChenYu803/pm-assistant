@@ -38,8 +38,9 @@
 
 ## 协议三处耦合点现状快照
 
-**日期**：2026-08-07（01-verify-protocols 开工时）。03/05 重构会动 prompt，届时由对应 implement Agent 更新本快照。
+**日期**：2026-08-07（02-agent-type-infrastructure 完成后，行号已随 02 改动校准）。03/05 重构、04/06 新增协议时，由对应 implement Agent 更新本快照。
 
-- `%%%FILE_BEGIN%%%` / `%%%FILE_END%%%`：prompt 定义处 `agent-prompts.ts:46,48,151,153`；前端解析处 `ChatArea.tsx:63,487`（route 不处理 FILE markers）
-- `%%%SCOPE_FROZEN%%%`：`agent-prompts.ts:130`；`chat/route.ts:149,161`；`ChatArea.tsx:486`
-- 肯定词清单：prompt 处 `agent-prompts.ts:81,129`（**最小契约**）；执法处 `chat/route.ts:22` 的 `SCOPE_FREEZE_CONFIRM_RE`（**超集**，多 好/行/是/ok/Yes）；前端不校验肯定词
+- `%%%FILE_BEGIN%%%` / `%%%FILE_END%%%`：prompt 定义处 `agent-prompts.ts:46,48,151,153`（仅 requirement_analyst 与 mvp_prd 两个**正式** prompt 含）；前端解析处 `ChatArea.tsx:85,509`（route 不处理 FILE markers）
+- `%%%SCOPE_FROZEN%%%`：`agent-prompts.ts:130`；`chat/route.ts:149,154,161`；`ChatArea.tsx:508`
+- 肯定词清单：prompt 处 `agent-prompts.ts:81,129`（**最小契约**）；执法处 `chat/route.ts:21` 的 `SCOPE_FREEZE_CONFIRM_RE`（**超集**，多 好/行/是/ok/Yes）；前端不校验肯定词
+- **02 新增占位 prompt**：`prototype`（`agent-prompts.ts:191-198`）与 `ticket_splitter`（`agent-prompts.ts:200-207`）**不含任何协议标记**——04（原型）/06（任务拆分）落地正式协议时需补 FILE markers / SCOPE_FROZEN / 肯定词，并同步三处；占位期间无冻结执法（chat route 的冻结逻辑仅对 `mvp_prd` 特判，`chat/route.ts:79,147`）
