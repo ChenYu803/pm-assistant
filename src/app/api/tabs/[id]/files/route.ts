@@ -4,6 +4,7 @@ import dbConnect from "@/lib/mongodb";
 import AgentFileContext from "@/models/AgentFileContext";
 import { findOwnedTab, findOwnedProjectFile } from "@/lib/ownership";
 import { getLoadedContextFiles } from "@/lib/context-files";
+import { isWorkingDocFile } from "@/lib/file-helpers";
 
 /** List files loaded in a tab's agent context. */
 export async function GET(
@@ -84,6 +85,14 @@ export async function POST(
       return NextResponse.json(
         { error: "文件不存在或无权访问" },
         { status: 404 }
+      );
+    }
+
+    // 工作文档是中间过程快照，不可加载进任何 Agent 的上下文（03 mini 会决策）
+    if (isWorkingDocFile(file.filename)) {
+      return NextResponse.json(
+        { error: "工作文档为中间过程快照，不可加载进 Agent 上下文" },
+        { status: 400 }
       );
     }
 

@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { isWorkingDocFile } from "@/lib/file-helpers";
 
 // ─── Empty states ────────────────────────────────────────────────────────────
 
@@ -232,6 +233,51 @@ export default function ChatArea({
 
   // ── File marker parsing (extractFileMarkers lives at module level) ────────
 
+  /** 写文件到项目文件树。返回是否成功；成功时标记来源消息为「已写入」。
+   *  工作文档静默写入与正式文件确认后写入共用此函数。
+   *  必须 useCallback 且定义在 checkAndShowFileDialog 之前：它出现在后者的
+   *  依赖数组里（依赖数组求值时 const 尚未初始化会 ReferenceError）；且缓存
+   *  闭包若捕获旧渲染的 projectId/agentType（首次渲染可能为 null），静默写入
+   *  会静默失败——useCallback 依赖 [projectId, agentType, onFileSaved] 保证
+   *  这些值变化时重建。 */
+  const writeFileToServer = useCallback(
+    async (
+      file: FileToConfirm,
+      sourceMessageId: string | null
+    ): Promise<boolean> => {
+      if (!projectId || !agentType) return false;
+      setSavingFile(true);
+      try {
+        const res = await fetch(`/api/projects/${projectId}/files`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            filename: file.filename,
+            content: file.content,
+            agent_type: agentType,
+          }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || "保存文件失败");
+        }
+        // Mark the source message as written so its banner shows "已写入"
+        // (prevents accidental duplicate appends from re-clicking).
+        if (sourceMessageId) {
+          setWrittenFileMessageIds((prev) => new Set(prev).add(sourceMessageId));
+        }
+        onFileSaved?.();
+        return true;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "保存文件失败");
+        return false;
+      } finally {
+        setSavingFile(false);
+      }
+    },
+    [projectId, agentType, onFileSaved]
+  );
+
   /** Check a message for file markers and trigger confirmation dialog. */
   const checkAndShowFileDialog = useCallback(
     (message: ChatMessage) => {
@@ -239,15 +285,27 @@ export default function ChatArea({
       const markers = extractFileMarkers(message.content);
       if (markers.length > 0) {
         processedFileMessageIds.current.add(message.id);
-        // File already exists (e.g. after a page reload) — don't re-ask for a
-        // completed write (spec US39); the banner stays for intentional re-writes.
-        if (existingFileNames?.includes(markers[0].filename)) return;
-        pendingWriteMessageId.current = message.id;
-        setFileToConfirm(markers[0]); // Show first marker; user can process more later
-        setShowFileDialog(true);
+        // 同一回复可能同时带工作文档与正式文件 marker（如推进时既更新工作文档
+        // 又输出需求分析.md）：工作文档静默写入，正式文件弹确认框（取第一个）。
+        let firstRealFile: FileToConfirm | null = null;
+        for (const m of markers) {
+          if (isWorkingDocFile(m.filename)) {
+            void writeFileToServer(m, message.id);
+            continue;
+          }
+          // File already exists (e.g. after a page reload) — don't re-ask for a
+          // completed write (spec US39); the banner stays for intentional re-writes.
+          if (existingFileNames?.includes(m.filename)) continue;
+          if (!firstRealFile) firstRealFile = m;
+        }
+        if (firstRealFile) {
+          pendingWriteMessageId.current = message.id;
+          setFileToConfirm(firstRealFile);
+          setShowFileDialog(true);
+        }
       }
     },
-    [existingFileNames]
+    [existingFileNames, writeFileToServer]
   );
 
   // ── Fetch message history on tab change ──────────────────────────────────
@@ -315,34 +373,13 @@ export default function ChatArea({
 
   async function handleConfirmFile() {
     if (!fileToConfirm || !projectId || !agentType) return;
-    setSavingFile(true);
-    try {
-      const res = await fetch(`/api/projects/${projectId}/files`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          filename: fileToConfirm.filename,
-          content: fileToConfirm.content,
-          agent_type: agentType,
-        }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "保存文件失败");
-      }
-      // Mark the source message as written so its banner shows "已写入"
-      // (prevents accidental duplicate appends from re-clicking).
-      if (pendingWriteMessageId.current) {
-        const writtenId = pendingWriteMessageId.current;
-        setWrittenFileMessageIds((prev) => new Set(prev).add(writtenId));
-      }
+    const ok = await writeFileToServer(
+      fileToConfirm,
+      pendingWriteMessageId.current
+    );
+    if (ok) {
       setShowFileDialog(false);
       setFileToConfirm(null);
-      onFileSaved?.();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "保存文件失败");
-    } finally {
-      setSavingFile(false);
     }
   }
 

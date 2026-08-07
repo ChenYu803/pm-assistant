@@ -38,9 +38,10 @@
 
 ## 协议三处耦合点现状快照
 
-**日期**：2026-08-07（02-agent-type-infrastructure 完成后，行号已随 02 改动校准）。03/05 重构、04/06 新增协议时，由对应 implement Agent 更新本快照。
+**日期**：2026-08-07（03-requirement-analyst-discipline 完成后，行号已随 03 改动校准）。04/06 新增协议时，由对应 implement Agent 更新本快照。
 
-- `%%%FILE_BEGIN%%%` / `%%%FILE_END%%%`：prompt 定义处 `agent-prompts.ts:46,48,151,153`（仅 requirement_analyst 与 mvp_prd 两个**正式** prompt 含）；前端解析处 `ChatArea.tsx:85,509`（route 不处理 FILE markers）
-- `%%%SCOPE_FROZEN%%%`：`agent-prompts.ts:130`；`chat/route.ts:149,154,161`；`ChatArea.tsx:508`
-- 肯定词清单：prompt 处 `agent-prompts.ts:81,129`（**最小契约**）；执法处 `chat/route.ts:21` 的 `SCOPE_FREEZE_CONFIRM_RE`（**超集**，多 好/行/是/ok/Yes）；前端不校验肯定词
-- **02 新增占位 prompt**：`prototype`（`agent-prompts.ts:191-198`）与 `ticket_splitter`（`agent-prompts.ts:200-207`）**不含任何协议标记**——04（原型）/06（任务拆分）落地正式协议时需补 FILE markers / SCOPE_FROZEN / 肯定词，并同步三处；占位期间无冻结执法（chat route 的冻结逻辑仅对 `mvp_prd` 特判，`chat/route.ts:79,147`）
+- `%%%FILE_BEGIN%%%` / `%%%FILE_END%%%`：prompt 定义处 `agent-prompts.ts:50,52,60,62,174,176`（requirement_analyst 含两对：工作文档 + 需求分析.md；mvp_prd 一对：prd.md；prototype/ticket_splitter 占位 prompt 不含）；前端解析处 `ChatArea.tsx:85-86,537`（route 不处理 FILE markers）
+- `%%%SCOPE_FROZEN%%%`：`agent-prompts.ts:153`；`chat/route.ts:153,158,165`；`ChatArea.tsx:536`
+- 肯定词清单：prompt 处 `agent-prompts.ts:10,104,152`（**最小契约**，requirement_analyst 在 10 行、mvp_prd 在 104/152）；执法处 `chat/route.ts:21` 的 `SCOPE_FREEZE_CONFIRM_RE`（**超集**，多 好/行/是/ok/Yes）；前端不校验肯定词
+- **03 新增工作文档机制**：文件名含「工作文档」即识别（`file-helpers.ts` 的 `isWorkingDocFile`）——写入 API 整文件替换 + 无 changelog 头 + 排除清单段前插入（`files/route.ts`）；ChatArea 静默写入不弹确认框（`ChatArea.tsx` 静默分支）；文件树琥珀色 📝 标记 + 隐藏「加载到 Agent」（`FileTree.tsx`）；不可加载进上下文（`tabs/[id]/files/route.ts` POST 400 + `context-files.ts` 过滤）。route 注入 `tab.display_name` 到 system prompt（`chat/route.ts`，「当前标签页」节），Agent 用它命名工作文档
+- **02 新增占位 prompt**：`prototype`（`agent-prompts.ts:214-222`）与 `ticket_splitter`（`agent-prompts.ts:223-231`）**不含任何协议标记**——04（原型）/06（任务拆分）落地正式协议时需补 FILE markers / SCOPE_FROZEN / 肯定词，并同步三处；占位期间无冻结执法（chat route 的冻结逻辑仅对 `mvp_prd` 特判，`chat/route.ts:83,151`）

@@ -9,7 +9,11 @@ import ProjectFile, {
   type IProjectFileDocument,
 } from "@/models/ProjectFile";
 import { findOwnedProject } from "@/lib/ownership";
-import { serializeProjectFile, stripChangelogHeader } from "@/lib/file-helpers";
+import {
+  serializeProjectFile,
+  stripChangelogHeader,
+  isWorkingDocFile,
+} from "@/lib/file-helpers";
 
 /**
  * Renumber every top-level "## " section in a 需求分析.md body sequentially
@@ -22,6 +26,56 @@ function normalizeRequirementSections(body: string): string {
     n += 1;
     return `## ${n}. ${title.trim()}`;
   });
+}
+
+/** 排除清单段标题（一级标题，normalize 只重编号 "## "，不会动它）。 */
+const EXCLUSION_LIST_HEADING = "\n# 排除清单";
+
+/**
+ * 从 Agent 输出的新段落中拆出「排除清单」段（Agent 每轮输出都自带该段，
+ * 见 agent-prompts.ts 文件产出规范）：返回剩余的需求主体与新排除条目。
+ */
+function splitExclusionList(
+  newSection: string
+): { body: string; exclusionEntries: string } {
+  const idx = newSection.indexOf(EXCLUSION_LIST_HEADING);
+  if (idx === -1) return { body: newSection, exclusionEntries: "" };
+  return {
+    body: newSection.slice(0, idx).trimEnd(),
+    exclusionEntries: newSection
+      .slice(idx + EXCLUSION_LIST_HEADING.length)
+      .trim(),
+  };
+}
+
+/**
+ * 追加新需求到已有正文：需求主体插到已有「# 排除清单」段之前；Agent 新输出的
+ * 排除条目合并进旧清单（追加到旧清单末尾）。保证文件结构恒定：
+ * 需求条目在前、单一「# 排除清单」段在末尾（多次会话追加不产生重复段）。
+ */
+function appendRequirement(existingBody: string, newSection: string): string {
+  const { body, exclusionEntries } = splitExclusionList(newSection);
+  const idx = existingBody.indexOf(EXCLUSION_LIST_HEADING);
+  if (idx === -1) {
+    const rest = existingBody.trimEnd();
+    if (!exclusionEntries) {
+      return body ? `${rest}\n\n${body}` : rest;
+    }
+    return body
+      ? `${rest}\n\n${body}${EXCLUSION_LIST_HEADING}\n${exclusionEntries}`
+      : `${rest}${EXCLUSION_LIST_HEADING}\n${exclusionEntries}`;
+  }
+  // 旧清单存在：需求主体插到清单前；新排除条目追加到旧清单后（避免重复段）
+  const existingList = existingBody
+    .slice(idx + EXCLUSION_LIST_HEADING.length)
+    .trim();
+  const mergedList = [existingList, exclusionEntries]
+    .filter(Boolean)
+    .join("\n");
+  const head = existingBody.slice(0, idx).trimEnd();
+  return body
+    ? `${head}\n\n${body}${EXCLUSION_LIST_HEADING}\n${mergedList}`
+    : `${head}${EXCLUSION_LIST_HEADING}\n${mergedList}`;
 }
 
 export async function GET(
@@ -130,34 +184,37 @@ export async function POST(
 
     // 需求分析 Agent appends each requirement to the shared whiteboard file
     // (spec US20: 每条需求独立确认后追加入需求分析.md). PRD Agent replaces.
-    const isRequirementAppend = agent_type === "requirement_analyst";
-
-    // Build new changelog
-    const nextIteration =
-      iteration ?? (isRequirementAppend ? existingIteration || 1 : existingIteration + 1);
+    // 工作文档（文件名含「工作文档」）是中间过程快照：整文件替换、无 changelog 头。
+    const isWorkingDoc = isWorkingDocFile(trimmedFilename);
+    const isRequirementAppend = agent_type === "requirement_analyst" && !isWorkingDoc;
 
     let bodyContent = content; // content as provided (assumed to be body only, no changelog)
-    if (isRequirementAppend) {
+    if (isWorkingDoc) {
+      bodyContent = content.trim();
+    } else if (isRequirementAppend) {
       const existingBody = file
         ? (parseChangelog(file.content)?.bodyContent ?? stripChangelogHeader(file.content))
         : "";
       const newSection = normalizeRequirementSections(content);
       bodyContent = existingBody.trimEnd()
-        ? `${existingBody.trimEnd()}\n\n${newSection}`
+        ? appendRequirement(existingBody, newSection)
         : `# 需求分析文档\n\n${newSection}`;
     }
 
-    const requirementCount = countRequirements(bodyContent);
-
-    const changelogEntry: ChangelogEntry = {
-      requirement_count: requirementCount,
-      iteration: nextIteration,
-      last_editor: agent_type || "unknown",
-      timestamp: new Date(),
-    };
-
-    const fullContent =
-      formatChangelogHeader(changelogEntry) + "\n" + bodyContent;
+    // 工作文档（中间快照）无 changelog 头；正式文件计算 changelog 头
+    let fullContent = bodyContent;
+    if (!isWorkingDoc) {
+      const requirementCount = countRequirements(bodyContent);
+      const changelogEntry: ChangelogEntry = {
+        requirement_count: requirementCount,
+        iteration:
+          iteration ??
+          (isRequirementAppend ? existingIteration || 1 : existingIteration + 1),
+        last_editor: agent_type || "unknown",
+        timestamp: new Date(),
+      };
+      fullContent = formatChangelogHeader(changelogEntry) + "\n" + bodyContent;
+    }
 
     if (file) {
       file.content = fullContent;

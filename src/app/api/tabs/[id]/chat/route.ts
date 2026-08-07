@@ -61,6 +61,13 @@ export async function POST(
 
     let systemPrompt = AGENT_SYSTEM_PROMPTS[tab.agent_type];
 
+    // Inject tab identity for 需求分析 Agent only — it needs its own tab name
+    // to name its working-doc file (需求分析-工作文档（{tab name}）.md). Other
+    // agents have no per-tab placeholders; keep the injection surface minimal.
+    if (tab.agent_type === "requirement_analyst") {
+      systemPrompt += `\n\n## 当前标签页\n\n当前标签页名称：${tab.display_name}。`;
+    }
+
     // Inject loaded file context into system prompt
     const contextFiles = await getLoadedContextFiles(tab._id);
 

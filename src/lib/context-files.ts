@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import AgentFileContext from "@/models/AgentFileContext";
 import type { IProjectFileDocument } from "@/models/ProjectFile";
+import { isWorkingDocFile } from "@/lib/file-helpers";
 
 /** Lightweight file info returned by getLoadedContextFiles. */
 export interface LoadedFileInfo {
@@ -27,7 +28,8 @@ export async function getLoadedContextFiles(
   const files: LoadedFileInfo[] = [];
   for (const entry of entries) {
     const file = entry.file_id as unknown as IProjectFileDocument | null;
-    if (file && file.filename) {
+    // 工作文档不可加载进 Agent 上下文——即使历史残留了加载记录也过滤掉
+    if (file && file.filename && !isWorkingDocFile(file.filename)) {
       files.push({
         _id: file._id.toString(),
         filename: file.filename,
