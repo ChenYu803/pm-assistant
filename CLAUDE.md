@@ -12,6 +12,10 @@ Uses the five canonical triage labels from mattpocock/skills. See `docs/agents/t
 
 Single-context layout — one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
 
+### Implement context
+
+Every `/implement` session must read `docs/agents/implement-context-hygiene.md` before doing anything else — it exists to keep the context window from being wasted on irrelevant files.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
