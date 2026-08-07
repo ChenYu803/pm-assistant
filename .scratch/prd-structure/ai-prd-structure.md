@@ -153,8 +153,8 @@ v1.0 重构 PRD 结构(读者是 AI),并推导「所需信息 → 所需 Agent�
 ## 建议 skills
 
 1. **handoff** — 本分支的接续通道已用;回原会话同样用它带成果
-2. **grill-with-docs / grill-me** — 待定项(测试维度/外部依赖位置)在 to-spec 前如需 interview
-3. **research** — 如查「AI 读 PRD 能力边界 / Testing Decisions 对 vibe coding 的价值」
+2. **grill-with-docs / grill-me** — 剩余待定项(文案基调细节等)在 to-spec 前如需 interview
+3. **research** — 如查「AI 读 PRD 能力边界」等外部资料
 4. **to-spec** — 六章模板落成规格(参考其克制原则与模板结构)
 
 （敏感信息已脱敏;git auto-save 已提交本文档)
