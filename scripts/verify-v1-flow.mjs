@@ -169,6 +169,7 @@ const RA_OPENING =
   "目标用户：本校大学生。使用场景：毕业季清理闲置、日常买卖二手书和生活用品。\n" +
   "当前痛点：只能靠微信群发图卖二手，无检索、无信用体系、交易全靠私聊。\n" +
   "功能想法：商品发布、分类浏览搜索、站内私聊、用户评价。\n" +
+  "四条功能需求均已确认保留，无需再逐条取舍验证，请直接完成四段分析并输出文档。\n" +
   "确定不做：不搞物流配送、不做担保交易、不做移动 App 只做网页。\n请开始。";
 const RA_PUSH_POOL = [
   "我们已经讨论得比较充分了。请汇总结论：补齐四段分析（用户与场景/用户故事/功能范围/成功指标），把确定不做的列入排除清单，然后输出需求分析.md。",
@@ -177,9 +178,22 @@ const RA_PUSH_POOL = [
 /** 引导式应答：按 Agent 本轮回复的关键词给出针对性回答（同 03，模拟配合的新手用户） */
 let lastReplyBranch = "";
 function replyFor(lastContent) {
+  // 尾段强推（在 generic 分支之前）：Agent 回复常以「XX 已确认。我们继续推进…」开场，
+  // 若落入 generic「已确认」分支，回复无实质推进内容，10 轮会耗在逐项复述上。
+  // Agent 指出需求未裁决（卡点）：显式裁决四条需求全部保留并直接要求输出
+  if (/(私聊|评价).{0,40}(未|待定|尚未|无法|需要.{0,6}裁决)/.test(lastContent)) {
+    return "确认：站内私聊、用户评价与发布、搜索一样都保留（四条功能需求均已确认保留）。所有结论已确认完毕，请直接输出完整的需求分析.md。";
+  }
+  // 四段分析对齐阶段（含最后一项）：确认 + 明确要求对齐后直接输出文档
+  if (/四段分析对齐|最后一项|第 4 项/.test(lastContent)) {
+    return "确认。四段结论按已确认内容来，请逐项对齐后直接输出完整的需求分析.md。";
+  }
+  if (/成功指标/.test(lastContent)) {
+    return "确认，成功指标没问题。四段分析已全部对齐，请基于所有已确认结论直接输出完整的需求分析.md。";
+  }
   const branches = [
-    [/记录|已收到|重复|无需修改|已完整|已确认/, "recorded", "好的，这条已确认，请继续推进下一步。"],
-    [/首页|形态|布局/, "home", "首页形态按你的建议来：分类导航式为主。"],
+    [/已收到|重复|无需修改|已完整/, "recorded", "好的，这条已确认，请继续推进下一步。"],
+    [/首页|形态|布局/, "home", "好，按你建议的来。请继续推进下一步。"],
     [/卖方|买方|10个学生|画像/, "priority", "卖方优先吧，发布是核心，先解决有没有货的问题。"],
     [/频率|多久|高频|低频/, "freq", "商品发布和搜索是高频（毕业季几乎每天），私聊中频，评价中频。"],
     [/取舍|保留|排除|不做|真实/, "triage", "四条功能需求（发布/搜索/私聊/评价）都保留，按你的分析来。明确排除：物流配送、担保交易、移动 App。"],
@@ -187,7 +201,7 @@ function replyFor(lastContent) {
     [/功能范围|做 X|MVP|优先级/, "scope", "功能就做：商品发布、分类浏览搜索、站内私聊、用户评价，发布和搜索是 P0。"],
     [/成功指标|衡量/, "metric", "成功指标：上线 1 个月内发布商品 100 件、完成交易 30 笔。"],
     [/用户故事|作为/, "story", "是，用户故事按你复述的来。"],
-    [/确认|可以吗|对吗|对吧|理解得对吗|没问题/, "confirm", "确认，没问题。"],
+    [/确认|可以吗|对吗|对吧|理解得对吗|没问题/, "confirm", "确认，没问题。按你推荐的方向来，请继续推进下一步。"],
     [/输出|写入|汇总|收尾|需求分析/, "write", "确认，请输出需求分析.md。"],
   ];
   for (const [re, key, answer] of branches) {
@@ -210,8 +224,19 @@ for (let i = 0; i < MAX_ROUNDS.ra - 1; i++) {
     raFinished = true;
     break;
   }
-  const text = i >= 3 && !/[？?]/.test(last) ? RA_PUSH_POOL[i % RA_PUSH_POOL.length] : replyFor(last);
+  let text;
+  if (/(私聊|评价).{0,40}(未|待定|尚未|无法|需要.{0,6}裁决)/.test(last)) {
+    // Agent 指出需求未裁决（卡点）：显式裁决四条需求全部保留并直接要求输出
+    text = "确认：站内私聊、用户评价与发布、搜索一样都保留（四条功能需求均已确认保留）。所有结论已确认完毕，请直接输出完整的需求分析.md。";
+  } else {
+    text = i >= 3 && !/[？?]/.test(last) ? RA_PUSH_POOL[i % RA_PUSH_POOL.length] : replyFor(last);
+  }
   await sendAndWait(text, i + 2);
+}
+// 最后一轮（第 MAX_ROUNDS 轮）sendAndWait 完成后循环即退出，补一次 marker 检测
+{
+  const last = ring.rawReplies[ring.rawReplies.length - 1] ?? "";
+  if (/%%%FILE_BEGIN%%%\s*需求分析\.md/.test(last)) raFinished = true;
 }
 
 // ── 第一环断言：结构与数据（03 断言核心）──────────────
@@ -244,10 +269,13 @@ if (raDoc) {
   const scopeMatch = raBody.match(/### 功能范围\n([\s\S]*?)(?=\n### |\n# 排除清单|$)/);
   const scopeSection = scopeMatch ? scopeMatch[1] : "";
   check("功能范围段内含排除项（不做 Y）", /不做|排除/.test(scopeSection), `(段内容=${scopeSection.slice(0, 60)})`);
+  // 排除项条目（「不做 Y：」之后的行）须附理由（因为/理由/（/— 等标记）。
+  // 实际格式：理由与条目同行，如「- 公开联系方式（微信/QQ）— 避免绕过站内私聊」
+  const noItems = (scopeSection.match(/不做[^：:]*[：:]([\s\S]*?)(?=\n### |\n## |$)/) ?? [])[1] ?? scopeSection;
   check(
     "功能范围段排除项附理由",
-    /(?:不做|排除)[^。\n]*(?:因为|理由|（|—)/.test(scopeSection),
-    `(段内容=${scopeSection.slice(0, 120)})`
+    /(?:因为|理由|（|—)/.test(noItems),
+    `(排除项内容=${noItems.slice(0, 120)})`
   );
   check("「# 排除清单」段恰好出现一次", (raBody.match(/# 排除清单/g) ?? []).length === 1);
   check("需求分析.md 有 changelog 头（正式文件规范）", /^<!--\nchangelog:/.test(await readRaw(projectId, raDoc)));
@@ -322,6 +350,11 @@ for (let i = 0; i < MAX_ROUNDS.pt - 1; i++) {
     text = "完满。请按自检清单检查后输出原型.md。";
   }
   await sendAndWait(text, i + 2);
+}
+// 最后一轮（第 MAX_ROUNDS 轮）sendAndWait 完成后循环即退出，补一次 marker 检测
+{
+  const last = ring.rawReplies[ring.rawReplies.length - 1] ?? "";
+  if (/%%%FILE_BEGIN%%%\s*原型\.md/.test(last)) ptFinished = true;
 }
 
 // ── 第二环断言：结构与数据（04 断言核心）──────────────
@@ -423,7 +456,9 @@ for (let i = 0; i < MAX_ROUNDS.prd - 1; i++) {
   // 只有「**概念版** + 外部依赖声明」同时出现才说明概念版真正落到了回复里
   if (conceptRound === -1 && /外部依赖声明/.test(last) && /概念版/.test(last)) {
     conceptRound = ring.rawReplies.length;
-    text = "确认。范围没问题，开始详细撰写。";
+    // 明确要求概念版先落盘为独立文件（prompt 规定用户确认后同一回复完成三件事：
+    // 概念版文件 + SCOPE_FROZEN + 冻结；若只回「开始详细撰写」，Agent 可能跳过文件直接撰写）
+    text = "确认。范围没问题。请先把概念版写入独立文件供回看，再冻结范围，然后开始详细撰写。";
   } else if (/%%%FILE_BEGIN%%%/.test(last)) {
     text = "继续。";
   } else {
@@ -431,6 +466,11 @@ for (let i = 0; i < MAX_ROUNDS.prd - 1; i++) {
     text = "确认，没有遗漏。所有未决业务决策点授权你按合理默认值推断并在文档中标注为推断值；按你的方案继续。";
   }
   await sendAndWait(text, i + 2);
+}
+// 最后一轮（第 MAX_ROUNDS 轮）sendAndWait 完成后循环即退出，补一次 marker 检测
+{
+  const last = ring.rawReplies[ring.rawReplies.length - 1] ?? "";
+  if (/%%%FILE_BEGIN%%%\s*prd\.md/.test(last)) prdFinished = true;
 }
 
 // ── 第三环断言：结构与数据（05 断言核心）──────────────
@@ -513,50 +553,107 @@ check("prd.md 有 changelog 头（正式文件规范）", prdDoc ? /^<!--\nchang
 
 // 第 3、5 章与原型.md 零转换一致性：原型.md 每个「## 页面名」块 ∈ 第 3 章；
 // 每个「## 用户流程：[场景]」块 ∈ 第 5 章（结构措辞原样，不重写）
-function splitSections(body) {
-  const blocks = [];
+/**
+ * 零转换一致性校验：原型.md 每个内容块必须逐字出现在 prd.md 第 3/5 章中。
+ * 兼容两种合法格式（模型输出不稳定）：
+ *   A)「## 页面清单」+「### 首页」/「## 用户流程」+「### 用户流程：买家找货」
+ *   B)「## 首页」/「## 用户流程：买家找货」直接二级标题（prompt 模板格式）
+ * prd.md 侧二级标题带章节号（「## 3. 页面清单」），按「### 」子块 / 「## 页面名」块
+ * 比较即可忽略章节号差异；第 5 章在每个流程块后追加「#### 验收标准」，不影响
+ * 块原文的包含关系。归类：块标题或所属容器含「用户流程」→ 流程块 ∈ 第 5 章；
+ * 其余 → 页面块 ∈ 第 3 章。空容器（「## 页面清单」/「## 用户流程」单独成块）不参与校验。
+ */
+function splitProtoBlocks(body) {
+  const top = [];
   let cur = null;
+  let sub = null;
+  const closeSub = () => {
+    if (sub) {
+      cur.subs.push(sub);
+      sub = null;
+    }
+  };
+  const closeTop = () => {
+    if (cur) {
+      closeSub();
+      top.push(cur);
+      cur = null;
+    }
+  };
   for (const line of body.split("\n")) {
-    if (line.startsWith("## ")) {
-      if (cur) blocks.push({ title: cur.title, text: cur.text });
-      cur = { title: line, text: line };
+    if (/^---\s*$/.test(line)) continue; // 水平分隔线（原型.md 块间分隔；prd.md 无）不参与校验
+    if (/^# /.test(line)) {
+      closeTop(); // 一级标题段（如原型.md 末尾「# 排除清单」）非页面/流程块，跳过
+      continue;
+    }
+    if (/^## /.test(line)) {
+      closeTop();
+      cur = { title: line, text: line, subs: [] };
+    } else if (/^### /.test(line)) {
+      if (cur) {
+        closeSub();
+        cur.text += "\n" + line;
+        sub = { title: line, text: line };
+      }
     } else if (cur) {
       cur.text += "\n" + line;
+      if (sub) sub.text += "\n" + line;
     }
   }
-  if (cur) blocks.push({ title: cur.title, text: cur.text });
-  return blocks;
+  closeTop();
+  return top;
 }
 const ch3 = prdBody.match(/##\s*3[.、]\s*页面清单[\s\S]*?(?=##\s*4[.、])/)?.[0] ?? "";
 const ch5 = prdBody.match(/##\s*5[.、]\s*用户流程[\s\S]*?(?=##\s*6[.、])/)?.[0] ?? "";
-const protoBlocks = splitSections(protoBody);
-let pageBlockMismatch = 0;
-let flowBlockMismatch = 0;
-for (const block of protoBlocks) {
-  const text = block.text.trim();
-  if (block.title.startsWith("## 用户流程：")) {
-    if (!ch5.includes(text)) flowBlockMismatch++;
+const protoBlocks = splitProtoBlocks(protoBody);
+let pageMismatch = 0;
+let flowMismatch = 0;
+let pageCount = 0;
+let flowCount = 0;
+for (const top of protoBlocks) {
+  if (top.subs.length === 0) {
+    // 空容器（「## 页面清单」/「## 用户流程」）或无子块的独立块：独立块整块参与校验
+    if (top.title === "## 页面清单" || top.title === "## 用户流程") continue;
+    const text = top.text.trim();
+    const isFlow = top.title.startsWith("## 用户流程");
+    if (isFlow) {
+      flowCount++;
+      if (!ch5.includes(text)) flowMismatch++;
+    } else {
+      pageCount++;
+      if (!ch3.includes(text)) pageMismatch++;
+    }
   } else {
-    if (!ch3.includes(text)) pageBlockMismatch++;
+    for (const b of top.subs) {
+      const text = b.text.trim();
+      const isFlow = b.title.startsWith("## 用户流程") || top.title.startsWith("## 用户流程");
+      if (isFlow) {
+        flowCount++;
+        if (!ch5.includes(text)) flowMismatch++;
+      } else {
+        pageCount++;
+        if (!ch3.includes(text)) pageMismatch++;
+      }
+    }
   }
 }
 check(
   "第 3 章 = 原型.md 页面清单段原文（零转换嵌入）",
-  pageBlockMismatch === 0 && protoBlocks.some((b) => !b.title.startsWith("## 用户流程：")),
-  `(不一致块 ${pageBlockMismatch} 个；原型.md 块数=${protoBlocks.length})`
+  pageMismatch === 0 && pageCount > 0,
+  `(不一致块 ${pageMismatch} 个；原型.md 页面块=${pageCount})`
 );
 check(
   "第 5 章 = 原型.md 用户流程段原文（零转换嵌入）",
-  flowBlockMismatch === 0 && protoBlocks.some((b) => b.title.startsWith("## 用户流程：")),
-  `(不一致块 ${flowBlockMismatch} 个)`
+  flowMismatch === 0 && flowCount > 0,
+  `(不一致块 ${flowMismatch} 个；原型.md 流程块=${flowCount})`
 );
 
 // 外部依赖声明只在概念章出现一次（spec US31 单源）；概念版内容不写入 prd.md
 const afterCh1 = prdBody.replace(/##\s*1[.、]\s*概念[\s\S]*?(?=##\s*2[.、])/, "");
 check(
   "外部依赖声明只在概念章出现一次（单源）",
-  /##\s*1[.、]\s*概念[\s\S]*外部依赖/.test(prdBody) && !afterCh1.includes("外部依赖"),
-  `(第 2-6 章含「外部依赖」=${afterCh1.includes("外部依赖")})`
+  /##\s*1[.、]\s*概念[\s\S]*外部依赖/.test(prdBody) && !afterCh1.includes("外部依赖声明"),
+  `(第 2-6 章含「外部依赖声明」=${afterCh1.includes("外部依赖声明")}; 纯措辞引用「与外部依赖声明自洽」不视为重复声明)`
 );
 check("概念版内容不写入 prd.md", !prdBody.includes("概念版"), `(prd.md 含「概念版」=${prdBody.includes("概念版")})`);
 const prdReplies = ring.rawReplies.slice(); // 本环回复快照（下一环 sendAndWait 会重置）
@@ -601,6 +698,11 @@ for (let i = 0; i < MAX_ROUNDS.ts - 1; i++) {
     text = "确认，按你的方案拆分，请输出 issues 文件集。";
   }
   await sendAndWait(text, i + 2, "none");
+}
+// 最后一轮（第 MAX_ROUNDS 轮）sendAndWait 完成后循环即退出，补一次 marker 检测
+{
+  const last = ring.rawReplies[ring.rawReplies.length - 1] ?? "";
+  if (/%%%FILE_BEGIN%%%\s*issues\//.test(last)) tsFinished = true;
 }
 
 // ── 第四环断言：结构与数据（06 断言核心）──────────────
@@ -680,11 +782,13 @@ if (issueDocs.length === 1) {
     check(`issue 四字段：${name}`, re.test(body), `(正文头 80 字=${body.slice(0, 80).replace(/\n/g, " ")})`);
   }
   check("issue 标题 # NN —", /^# \d{2} — /m.test(body), `(应含「# 01 — …」标题)`);
-  // 引用格式校验：出现 prd.md 章节引用时必须为「见 prd.md 第 X 章」格式（纯 UI 切片无引用合规）
-  const prdRefs = [...body.matchAll(/见?\s*prd\.md\s*第\s*\d+\s*章/g)].map((m) => m[0]);
+  // 引用格式校验：出现 prd.md 章节引用时必须为「（见/引自/详见/参考/引用…）prd.md 第 X 章」
+  // 格式（纯 UI 切片无引用合规）。prompt 意图是「引用章节而非复制内容」，措辞允许变体；
+  // 仍要求明确章节号（不带章节号的模糊引用不算）。
+  const prdRefs = [...body.matchAll(/(?:见|引自|详见|参考|引用|依据)\s*prd\.md\s*第\s*\d+\s*章/g)].map((m) => m[0]);
   check(
-    "issue 引用 prd.md 章节（若有引用则格式为「见 prd.md 第 X 章」）",
-    prdRefs.every((r) => /^见 prd\.md 第 \d+ 章$/.test(r)),
+    "issue 引用 prd.md 章节（若有引用则格式为「（见/引自…）prd.md 第 X 章」）",
+    prdRefs.every((r) => /^(?:见|引自|详见|参考|引用|依据) prd\.md 第 \d+ 章$/.test(r)),
     `(引用=${prdRefs.join("、") || "无"})`
   );
   if (/^issues\/01-/.test(doc.filename)) {
