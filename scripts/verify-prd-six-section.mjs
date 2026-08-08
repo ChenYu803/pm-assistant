@@ -198,7 +198,9 @@ for (let i = 0; i < MAX_ROUNDS - 1; i++) {
   // 已产出 prd.md（六章齐全文档）——完成
   if (/%%%FILE_BEGIN%%%\s*prd\.md/.test(last)) break;
   let text;
-  if (conceptRound === -1 && /概念版/.test(last)) {
+  // 概念版输出轮判定要精确：LLM 的二次确认轮也可能提「概念版」字样（流程预告），
+  // 只有「**概念版** + 外部依赖声明」同时出现才说明概念版真正落到了回复里
+  if (conceptRound === -1 && /外部依赖声明/.test(last) && /概念版/.test(last)) {
     conceptRound = rawReplies.length;
     // 概念版已输出（断言在循环外），用户确认范围
     text = "确认。范围没问题，开始详细撰写。";
@@ -206,8 +208,9 @@ for (let i = 0; i < MAX_ROUNDS - 1; i++) {
     // 概念版刚写入 + 冻结 → 推进
     text = "继续。";
   } else {
-    // 复述确认 / grilling 补缺 / 验收标准确认——万能肯定推进
-    text = "确认，没有遗漏，按你的方案继续。";
+    // 复述确认 / grilling 补缺 / 验收标准确认——确认 + 授权推断未决决策点（
+    // grilling 轮 LLM 常一次抛多个业务决策问题，纯「确认」无法终结循环，需显式授权推断）
+    text = "确认，没有遗漏。所有未决业务决策点授权你按合理默认值推断并在文档中标注为推断值；按你的方案继续。";
   }
   await sendAndWait(text, i + 2);
 }
@@ -225,11 +228,14 @@ check(
   `(概念版轮次=${conceptRound}; 对话长度=${allReplies.length})`
 );
 if (conceptRound !== -1) {
-  const conceptText = rawReplies[conceptRound - 1] ?? "";
+  const conceptReply = rawReplies[conceptRound - 1] ?? "";
   // 概念版格式字段齐全（spec US28：三视角确认 → 概念版 ≤300 字 → 范围冻结）
   const fields = ["核心用户", "要解决的一件事", "产品形态", "MVP 功能", "本版本不做什么", "商业模式", "外部依赖声明"];
-  const missing = fields.filter((f) => !conceptText.includes(f));
+  const missing = fields.filter((f) => !conceptReply.includes(f));
   check("概念版格式字段齐全", missing.length === 0, `(缺 ${missing.join("、") || "无"})`);
+  // 长度只量概念版主体：整条回复还含二次确认复述与提问，「**概念版**」→「以上范围是否确认」之间才是概念版
+  const m = conceptReply.match(/\*\*概念版\*\*([\s\S]*?)(?:以上范围是否确认)/);
+  const conceptText = (m ? m[1].trim() : conceptReply) ?? "";
   check("概念版 ≤300 字", conceptText.length <= 650, `(实际 ${conceptText.length} 字符，含格式外壳；核心内容应 ≤300 字)`);
 }
 check(
@@ -278,6 +284,7 @@ check("Agent 输出 prd.md（FILE marker）", /%%%FILE_BEGIN%%%\s*prd\.md/.test(
 
 const prdDoc = fileByName("prd.md");
 check("prd.md 落盘并出现在文件树", !!prdDoc, `(文件列表=${files.map((f) => f.filename).join("、")})`);
+const protoDoc = fileByName("原型.md");
 
 async function readBody(pid, file) {
   const data = await page.evaluate(async ({ pid, fid }) => {
@@ -290,7 +297,7 @@ async function readBody(pid, file) {
 }
 
 const prdBody = prdDoc ? await readBody(projectId, prdDoc) : "";
-const protoBody = await readBody(projectId, protoDoc);
+const protoBody = protoDoc ? await readBody(projectId, protoDoc) : "";
 const conceptBody = conceptDoc ? await readBody(projectId, conceptDoc) : "";
 
 // 六章齐全（spec US30：缺任何一章 = 输出未完成）
