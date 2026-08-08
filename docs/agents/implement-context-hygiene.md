@@ -58,7 +58,7 @@
 
 **日期**：2026-08-08（05-prd-six-section 完成后，行号已随 05 改动校准）。06 新增协议时，由对应 implement Agent 更新本快照。
 
-- `%%%FILE_BEGIN%%%` / `%%%FILE_END%%%`：prompt 定义处 BEGIN `agent-prompts.ts:50,60,143,178,272`、END `agent-prompts.ts:52,62,145,180,274`（requirement_analyst 两对：工作文档 + 需求分析.md；mvp_prd 两对：概念版（Tab N）.md + prd.md；prototype 一对：原型.md）；前端解析处 `ChatArea.tsx:86,593`（route 不处理 FILE markers）
+- `%%%FILE_BEGIN%%%` / `%%%FILE_END%%%`：prompt 定义处 BEGIN `agent-prompts.ts:50,60,143,178,268`、END `agent-prompts.ts:52,62,145,180,270`（requirement_analyst 两对：工作文档 + 需求分析.md；mvp_prd 两对：概念版（Tab N）.md + prd.md；prototype 一对：原型.md）；前端解析处 `ChatArea.tsx:86,593`（route 不处理 FILE markers）
 - `%%%HTML_BEGIN%%%` / `%%%HTML_END%%%`（**04 新增**，原型 HTML 快照）：prompt 定义处 `agent-prompts.ts:243,245`（prototype）；前端解析处 `ChatArea.tsx:593`（与 FILE 标记同处联合正则，显式双分支保证字面量完整；HTML 分支**无文件名槽**——首行不得吞进捕获组）；route 不执法——HTML 快照前端 Blob 下载即弃、不进文件树
 - `%%%SCOPE_FROZEN%%%`：`agent-prompts.ts:147,266`（mvp_prd + prototype 各一）；`chat/route.ts:171,175,182`；`ChatArea.tsx:585`
 - 肯定词清单：prompt 处 `agent-prompts.ts:10,105,230`（**最小契约**，requirement_analyst 在 10 行、mvp_prd 在 105、prototype 在 230 含「完满」）；执法处 `chat/route.ts:22` 的 `SCOPE_FREEZE_CONFIRM_RE`（**超集**，多 好/行/是/ok/Yes，04 起含「完满」）；前端不校验肯定词
