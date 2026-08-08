@@ -1,7 +1,7 @@
 "use client";
 
 import type { ProjectFileData } from "@/lib/file-helpers";
-import { isWorkingDocFile } from "@/lib/file-helpers";
+import { isConceptDocFile, isWorkingDocFile } from "@/lib/file-helpers";
 import { Button } from "@/components/ui/button";
 
 interface FileTreeProps {
@@ -62,7 +62,9 @@ export default function FileTree({
               const isSelected = file.id === selectedFileId;
               const timeAgo = formatTimeAgo(file.updated_at);
               // 工作文档（中间过程快照）：琥珀色视觉标记 + 不可加载进上下文（03 mini 会决策）
+              // 概念版（流程确认产物）：正式文件样式，同样不可加载进上下文（05 mini 会决策）
               const isWorkingDoc = isWorkingDocFile(file.filename);
+              const isConceptDoc = isConceptDocFile(file.filename);
               return (
                 <li key={file.id} className="group relative">
                   <button
@@ -97,8 +99,8 @@ export default function FileTree({
 
                   {/* Hover action buttons */}
                   <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 rounded bg-white/80 px-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {/* Load to agent（工作文档不可加载） */}
-                    {activeTabId && !isWorkingDoc && (
+                    {/* Load to agent（工作文档 / 概念版不可加载） */}
+                    {activeTabId && !isWorkingDoc && !isConceptDoc && (
                       <Button
                         variant="ghost"
                         size="icon"

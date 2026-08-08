@@ -73,10 +73,15 @@ export async function POST(
 
     let systemPrompt = AGENT_SYSTEM_PROMPTS[tab.agent_type];
 
-    // Inject tab identity for 需求分析 Agent only — it needs its own tab name
-    // to name its working-doc file (需求分析-工作文档（{tab name}）.md). Other
-    // agents have no per-tab placeholders; keep the injection surface minimal.
-    if (tab.agent_type === "requirement_analyst") {
+    // Inject tab identity for agents that need their own tab name: 需求分析
+    // Agent names its working-doc file (需求分析-工作文档（{tab name}）.md);
+    // PRD Agent names its concept-doc file (概念版（{tab name}）.md, 05 mini 会
+    // 决策「概念版（Tab N）.md」落盘——display_name 即 Tab N). Other agents
+    // have no per-tab placeholders; keep the injection surface minimal.
+    if (
+      tab.agent_type === "requirement_analyst" ||
+      tab.agent_type === "mvp_prd"
+    ) {
       systemPrompt += `\n\n## 当前标签页\n\n当前标签页名称：${tab.display_name}。`;
     }
 

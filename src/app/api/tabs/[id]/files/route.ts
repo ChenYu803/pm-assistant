@@ -4,7 +4,7 @@ import dbConnect from "@/lib/mongodb";
 import AgentFileContext from "@/models/AgentFileContext";
 import { findOwnedTab, findOwnedProjectFile } from "@/lib/ownership";
 import { getLoadedContextFiles } from "@/lib/context-files";
-import { isWorkingDocFile } from "@/lib/file-helpers";
+import { isConceptDocFile, isWorkingDocFile } from "@/lib/file-helpers";
 
 /** List files loaded in a tab's agent context. */
 export async function GET(
@@ -88,10 +88,11 @@ export async function POST(
       );
     }
 
-    // 工作文档是中间过程快照，不可加载进任何 Agent 的上下文（03 mini 会决策）
-    if (isWorkingDocFile(file.filename)) {
+    // 工作文档 / 概念版是中间过程产物，不可加载进任何 Agent 的上下文
+    // （03 mini 会决策工作文档；05 mini 会决策概念版——AI 侧单源不破）
+    if (isWorkingDocFile(file.filename) || isConceptDocFile(file.filename)) {
       return NextResponse.json(
-        { error: "工作文档为中间过程快照，不可加载进 Agent 上下文" },
+        { error: "工作文档/概念版为中间过程产物，不可加载进 Agent 上下文" },
         { status: 400 }
       );
     }

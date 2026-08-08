@@ -46,3 +46,14 @@ export function isWorkingDocFile(filename: string): boolean {
   return filename.includes("工作文档");
 }
 
+// ─── 概念版文档 识别 ──────────────────────────────────────────────────────────
+// 概念版 = PRD 流程确认产物（「概念版（标签页名）.md」），对话内确认后落盘为
+// 文件树独立文件，供人侧回看（04 mini 会修订 ADR-0003「对话内完成、不落盘」）：
+// 正式文件样式（📄）、写入需弹确认框（非工作文档）、但不可加载进 Agent 上下文
+// （AI 侧单源不破——prd.md 概念章才是正式单源）。文件名含「概念版」即识别。
+
+/** 文件名是否标识概念版文档（流程确认产物，人侧回看锚点，不可加载进 Agent 上下文）。 */
+export function isConceptDocFile(filename: string): boolean {
+  return filename.includes("概念版");
+}
+

@@ -56,12 +56,13 @@
 
 ## 协议三处耦合点现状快照
 
-**日期**：2026-08-07（04-prototype-agent 完成后，行号已随 04 改动校准）。06 新增协议时，由对应 implement Agent 更新本快照。
+**日期**：2026-08-08（05-prd-six-section 完成后，行号已随 05 改动校准）。06 新增协议时，由对应 implement Agent 更新本快照。
 
-- `%%%FILE_BEGIN%%%` / `%%%FILE_END%%%`：prompt 定义处 BEGIN `agent-prompts.ts:50,60,174,260`、END `agent-prompts.ts:52,62,176,262`（requirement_analyst 两对：工作文档 + 需求分析.md；mvp_prd 一对：prd.md；prototype 一对：原型.md）；前端解析处 `ChatArea.tsx:86,593`（route 不处理 FILE markers）
-- `%%%HTML_BEGIN%%%` / `%%%HTML_END%%%`（**04 新增**，原型 HTML 快照）：prompt 定义处 `agent-prompts.ts:235,237`（prototype）；前端解析处 `ChatArea.tsx:593`（与 FILE 标记同处联合正则，显式双分支保证字面量完整；HTML 分支**无文件名槽**——首行不得吞进捕获组）；route 不执法——HTML 快照前端 Blob 下载即弃、不进文件树
-- `%%%SCOPE_FROZEN%%%`：`agent-prompts.ts:153,258`（mvp_prd + prototype 各一）；`chat/route.ts:166-168,177`；`ChatArea.tsx:585`
-- 肯定词清单：prompt 处 `agent-prompts.ts:10,104,152,222`（**最小契约**，requirement_analyst 在 10 行、mvp_prd 在 104/152、prototype 在 222 含「完满」）；执法处 `chat/route.ts:22` 的 `SCOPE_FREEZE_CONFIRM_RE`（**超集**，多 好/行/是/ok/Yes，04 起含「完满」）；前端不校验肯定词
-- **04 冻结执法泛化**：`FROZEN_REMINDERS`（`chat/route.ts:29`）键即成员覆盖 mvp_prd + prototype，按类型注入「范围已冻结」提醒（97 行进 system prompt）；成员判定 + marker 校验 + strip 在 `chat/route.ts:166-168,177`。新增冻结 Agent 时：改 `FROZEN_REMINDERS` + prompt 肯定词，两处同步
+- `%%%FILE_BEGIN%%%` / `%%%FILE_END%%%`：prompt 定义处 BEGIN `agent-prompts.ts:50,60,143,178,272`、END `agent-prompts.ts:52,62,145,180,274`（requirement_analyst 两对：工作文档 + 需求分析.md；mvp_prd 两对：概念版（Tab N）.md + prd.md；prototype 一对：原型.md）；前端解析处 `ChatArea.tsx:86,593`（route 不处理 FILE markers）
+- `%%%HTML_BEGIN%%%` / `%%%HTML_END%%%`（**04 新增**，原型 HTML 快照）：prompt 定义处 `agent-prompts.ts:247,249`（prototype）；前端解析处 `ChatArea.tsx:593`（与 FILE 标记同处联合正则，显式双分支保证字面量完整；HTML 分支**无文件名槽**——首行不得吞进捕获组）；route 不执法——HTML 快照前端 Blob 下载即弃、不进文件树
+- `%%%SCOPE_FROZEN%%%`：`agent-prompts.ts:147,270`（mvp_prd + prototype 各一）；`chat/route.ts:171,175,182`；`ChatArea.tsx:585`
+- 肯定词清单：prompt 处 `agent-prompts.ts:10,105,234`（**最小契约**，requirement_analyst 在 10 行、mvp_prd 在 105、prototype 在 234 含「完满」）；执法处 `chat/route.ts:22` 的 `SCOPE_FREEZE_CONFIRM_RE`（**超集**，多 好/行/是/ok/Yes，04 起含「完满」）；前端不校验肯定词
+- **04 冻结执法泛化**：`FROZEN_REMINDERS`（`chat/route.ts:29`）键即成员覆盖 mvp_prd + prototype，按类型注入「范围已冻结」提醒（102 行进 system prompt）；成员判定 + marker 校验 + strip 在 `chat/route.ts:171-175,182`。新增冻结 Agent 时：改 `FROZEN_REMINDERS` + prompt 肯定词，两处同步
 - **03 工作文档机制**（不变）：文件名含「工作文档」即识别（`file-helpers.ts` 的 `isWorkingDocFile`）——写入 API 整文件替换 + 无 changelog 头 + 排除清单段前插入（`files/route.ts`）；ChatArea 静默写入不弹确认框（静默分支）；文件树琥珀色 📝 标记 + 隐藏「加载到 Agent」（`FileTree.tsx`）；不可加载进上下文（`tabs/[id]/files/route.ts` POST 400 + `context-files.ts` 过滤）。route 注入 `tab.display_name` 到 system prompt（`chat/route.ts`，「当前标签页」节），Agent 用它命名工作文档
+- **05 概念版机制**（新增，修订 ADR-0003「不落盘」）：文件名含「概念版」即识别（`file-helpers.ts` 的 `isConceptDocFile`）——概念版 = PRD 流程确认产物「概念版（Tab N）.md」，对话内确认后落盘文件树独立文件供人回看，**不可加载进 Agent 上下文**（AI 侧单源不破，prd.md 概念章为正式单源）。与工作文档的差异：**弹确认框**（ChatArea 弹框判定保持 `isWorkingDocFile` 不动——概念版非工作文档 → 走确认框分支，05 定案「写入前复用需求分析.md 的显式确认弹窗」零代码）；**正式文件样式**（FileTree 不加琥珀色）；写入 API 走整文件替换 + 有 changelog 头（按 agent_type=mvp_prd 替换模式，零代码）。「不可加载」判定泛化为 工作文档||概念版，三处：`context-files.ts` 过滤 + `FileTree.tsx` 隐藏「加载到 Agent」+ `tabs/[id]/files/route.ts` POST 400。route 注入「当前标签页」节现覆盖 requirement_analyst + mvp_prd 两个 agent（`chat/route.ts:82-86`）
 - **02 占位 prompt**：`ticket_splitter`（`agent-prompts.ts` 末尾）**不含任何协议标记**——06（任务拆分）落地正式协议时需补 FILE markers / SCOPE_FROZEN / 肯定词，并同步三处；占位期间无冻结执法（`FROZEN_REMINDERS` 不含 ticket_splitter）
