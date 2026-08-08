@@ -261,6 +261,12 @@ export default function ChatArea({
 
   // File confirmation state
   const [fileToConfirm, setFileToConfirm] = useState<FileToConfirm | null>(null);
+  // 待确认队列（06: 任务拆分 Agent 一次输出多个 issue 文件，按序逐个弹确认框，
+  // 用户逐个确认/拒绝——拒绝的不落盘；spec US18）。队首显示为 fileToConfirm，
+  // 确认/取消后由队列 effect 弹下一个。
+  const [fileQueue, setFileQueue] = useState<
+    { file: FileToConfirm; messageId: string | null }[]
+  >([]);
   const [showFileDialog, setShowFileDialog] = useState(false);
   const [savingFile, setSavingFile] = useState(false);
   // Track processed message IDs to avoid re-showing dialogs
@@ -326,8 +332,9 @@ export default function ChatArea({
       if (markers.length > 0) {
         processedFileMessageIds.current.add(message.id);
         // 同一回复可能同时带工作文档与正式文件 marker（如推进时既更新工作文档
-        // 又输出需求分析.md）：工作文档静默写入，正式文件弹确认框（取第一个）。
-        let firstRealFile: FileToConfirm | null = null;
+        // 又输出需求分析.md）：工作文档静默写入，正式文件入队逐个弹确认框
+        // （06: 任务拆分 Agent 一次输出多个 issue 文件，按序逐个确认/拒绝）。
+        const pending: { file: FileToConfirm; messageId: string | null }[] = [];
         for (const m of markers) {
           if (isWorkingDocFile(m.filename)) {
             void writeFileToServer(m, message.id);
@@ -336,17 +343,32 @@ export default function ChatArea({
           // File already exists (e.g. after a page reload) — don't re-ask for a
           // completed write (spec US39); the banner stays for intentional re-writes.
           if (existingFileNames?.includes(m.filename)) continue;
-          if (!firstRealFile) firstRealFile = m;
+          pending.push({ file: m, messageId: message.id });
         }
-        if (firstRealFile) {
-          pendingWriteMessageId.current = message.id;
-          setFileToConfirm(firstRealFile);
+        if (pending.length > 0) {
+          setFileQueue((prev) => [...prev, ...pending]);
           setShowFileDialog(true);
         }
       }
     },
     [existingFileNames, writeFileToServer]
   );
+
+  // ── File confirmation queue ────────────────────────────────────────────────
+  // 队列化确认（06）:弹窗显示队首文件，确认/取消后弹下一个；队列空时关闭。
+  // 条件 fileToConfirm 为空才弹——banner 手动写入直接 setFileToConfirm（非空），
+  // 不会与队列抢占弹窗。
+  useEffect(() => {
+    if (!showFileDialog || fileToConfirm) return;
+    if (fileQueue.length === 0) {
+      setShowFileDialog(false);
+      return;
+    }
+    const next = fileQueue[0];
+    setFileQueue((prev) => prev.slice(1));
+    pendingWriteMessageId.current = next.messageId;
+    setFileToConfirm(next.file);
+  }, [showFileDialog, fileToConfirm, fileQueue]);
 
   // ── Fetch message history on tab change ──────────────────────────────────
 
@@ -418,13 +440,13 @@ export default function ChatArea({
       pendingWriteMessageId.current
     );
     if (ok) {
-      setShowFileDialog(false);
+      // 清空当前项，队列 effect 弹下一个（或队列空时关闭）
       setFileToConfirm(null);
     }
   }
 
   function handleCancelFile() {
-    setShowFileDialog(false);
+    // 拒绝写入 → 该文件不落盘；队列 effect 弹下一个（或队列空时关闭）
     setFileToConfirm(null);
   }
 

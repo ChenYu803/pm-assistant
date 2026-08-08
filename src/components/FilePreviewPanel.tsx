@@ -4,6 +4,7 @@ import { useState } from "react";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import FileEditorModal from "@/components/FileEditorModal";
 import type { ProjectFileData } from "@/lib/file-helpers";
+import { downloadFilename } from "@/lib/file-helpers";
 import { Button } from "@/components/ui/button";
 
 interface FilePreviewPanelProps {
@@ -31,7 +32,8 @@ export default function FilePreviewPanel({
     // Trigger download via the API endpoint
     const a = document.createElement("a");
     a.href = `/api/projects/${projectId}/files/${file!.id}/download`;
-    a.download = file!.filename;
+    // 子路径文件名（issues/…）下载时取文件名段（download 属性不支持路径分隔符）
+    a.download = downloadFilename(file!.filename);
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

@@ -13,6 +13,7 @@ import AgentContextPanel, { type ContextFile } from "@/components/AgentContextPa
 import { AGENT_TYPES, AGENT_TYPE_LABELS, AGENT_TYPE_DESCRIPTIONS, type AgentType } from "@/lib/agent-constants";
 import type { TabData } from "@/lib/agent-constants";
 import type { ProjectFileData } from "@/lib/file-helpers";
+import { downloadFilename } from "@/lib/file-helpers";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -177,7 +178,8 @@ export default function WorkspacePage() {
     if (!project) return;
     const a = document.createElement("a");
     a.href = `/api/projects/${project.id}/files/${file.id}/download`;
-    a.download = file.filename;
+    // 子路径文件名（issues/…）下载时取文件名段（download 属性不支持路径分隔符）
+    a.download = downloadFilename(file.filename);
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

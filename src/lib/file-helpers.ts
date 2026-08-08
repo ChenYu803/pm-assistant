@@ -57,3 +57,22 @@ export function isConceptDocFile(filename: string): boolean {
   return filename.includes("概念版");
 }
 
+// ─── 子路径文件名（issues/NN-<slug>.md）识别 ─────────────────────────────────
+// 任务拆分 Agent 的产物落在 issues/ 子路径下（spec: Issues 文件集）——
+// 文件名含目录前缀即子路径文件，文件树以子目录分组展示。
+
+/** 文件名是否带子路径前缀（如 issues/01-用户注册.md）。 */
+export function isSubpathFile(filename: string): boolean {
+  return filename.includes("/");
+}
+
+/** 文件树展示名：去掉子路径前缀，仅显示文件名段。 */
+export function displayName(filename: string): string {
+  return isSubpathFile(filename) ? filename.split("/").pop() || filename : filename;
+}
+
+/** 下载文件名：去掉子路径前缀——浏览器 download 属性不支持路径分隔符。 */
+export function downloadFilename(filename: string): string {
+  return displayName(filename);
+}
+

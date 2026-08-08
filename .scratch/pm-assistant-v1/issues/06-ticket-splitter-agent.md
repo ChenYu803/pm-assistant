@@ -6,14 +6,24 @@
 
 **Status:** ready-for-agent
 
-- [ ] 任务拆分 tab 创建时自动加载 prd.md + 需求分析.md（存在时）
-- [ ] 切分前先 quiz 用户（粒度/依赖/合并偏好）
-- [ ] 输出 issues 文件集：NN-<slug>.md 按依赖序编号
-- [ ] 每 issue 含 what to build（用户视角端到端行为）+ acceptance criteria + blocked by
-- [ ] issue 正文引用 PRD 章节（如「见 prd.md 第 3 章 页面 2」），不复制内容
-- [ ] 写入 API 支持 issues/ 子路径文件名；文件树子目录展示；可下载
-- [ ] 用户逐个确认/拒绝 issue 写入（拒绝的不落盘）
-- [ ] 验证脚本覆盖：切片格式 / blocked by / 引用非复制 / 编号序断言
+- [x] 任务拆分 tab 创建时自动加载 prd.md + 需求分析.md（存在时）
+- [x] 切分前先 quiz 用户（粒度/依赖/合并偏好）
+- [x] 输出 issues 文件集：NN-<slug>.md 按依赖序编号
+- [x] 每 issue 含 what to build（用户视角端到端行为）+ acceptance criteria + blocked by
+- [x] issue 正文引用 PRD 章节（如「见 prd.md 第 3 章 页面 2」），不复制内容
+- [x] 写入 API 支持 issues/ 子路径文件名；文件树子目录展示；可下载
+- [x] 用户逐个确认/拒绝 issue 写入（拒绝的不落盘）
+- [x] 验证脚本覆盖：切片格式 / blocked by / 引用非复制 / 编号序断言
+
+## Comments
+
+### 实施完成记录（2026-08-08，已全量验证通过）
+
+- **切分流程照抄 to-tickets**：草案（标题/Blocked by/交付行为三要素编号列表）→ quiz 三问（粒度/blocking edges/合并拆分）→ 迭代至批准 → 按依赖序一次输出 issues 文件集 → 回复末尾简述 frontier。
+- **无 %%%SCOPE_FROZEN%%%**：切分批准 = 「必须确认」prompt 纪律（对标 requirement_analyst 模式），不落盘由前端弹框兜底；US19 要求批准输出后仍可重新切分，冻结与之冲突——已记入协议快照。
+- **验收标准直接带走**（第 5 章 AC 行复制是 prompt 明文要求的合规行为，非「引用非复制」违规；引用非复制约束的是 schema/状态机等决策编码）。
+- **实现**：prompt 重写（`agent-prompts.ts` 末尾）；ChatArea 确认弹窗队列化（逐个确认/拒绝）；FileTree 子目录分组展示；下载取 basename；写入 API 零改动（唯一索引天然支持 `issues/` 子路径）。
+- **验证**：`scripts/verify-ticket-splitter.mjs` 绿 22/22（真实对话 3 轮，断言：四字段 / blocked by / 编号序 / 引用非复制含 AC 例外 / 逐个确认拒绝不落盘 / 重切分无冻结）；回归 verify-protocols 27/27、verify-agent-types 18/18、verify-prototype-agent 20/20、verify-prd-six-section 27/27（其脚本已适配确认队列：循环点掉全部弹窗）。
 
 **备注：** 部分产品决策——开始前需与用户确认：quiz 的问题设计、垂直切片的粒度直觉（页面级 vs 功能级）、what to build 的叙事口径。切分规则学习公开 /to-tickets 技能（垂直切片、blocking edges）。
 

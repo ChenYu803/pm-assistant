@@ -167,15 +167,22 @@ async function sendAndWait(text, roundNo) {
     { timeout: 180000 }
   );
   console.log(`  [对话] 第 ${roundNo} 轮回复完成`);
-  // 回复完成后可能出现文件确认框（概念版 / prd.md 是正式落盘文件，弹确认框）——点掉
-  try {
+  // 回复完成后可能出现文件确认框（概念版 / prd.md 是正式落盘文件，弹确认框）——点掉。
+  // 06 队列化（spec US18）后，同一回复的多个正式文件按序逐个弹确认框
+  // （如 LLM 把概念版与 prd.md 放进了同一条回复），须循环点掉队列里的全部弹窗：
+  // 点完一个 → 写入完成 → 队列 effect 弹下一个 → 继续，直到 4s 内无新弹窗。
+  for (let i = 0; i < 10; i++) {
     const confirmBtn = page.getByRole("button", { name: "确认写入" });
-    await confirmBtn.waitFor({ state: "visible", timeout: 4000 });
+    try {
+      await confirmBtn.waitFor({ state: "visible", timeout: 4000 });
+    } catch {
+      break; // 无确认框（本轮回复未产出文件，或队列已全部点完）
+    }
     await confirmBtn.click();
     console.log(`  [对话] 第 ${roundNo} 轮点击了「确认写入」`);
-    await page.waitForTimeout(400);
-  } catch {
-    // 无确认框（本轮回复未产出文件）
+    // 等待写入完成 + 队列 effect 弹下一个弹窗。写入中按钮文案为「写入中」，
+    // 名称不再匹配「确认写入」；若写入失败弹窗不关闭，下一轮迭代会重试点击。
+    await page.waitForTimeout(1200);
   }
   // 记录当前所有 assistant 原始消息（含 markers）
   const msgs = await page.evaluate(async (tid) => {

@@ -1,7 +1,12 @@
 "use client";
 
 import type { ProjectFileData } from "@/lib/file-helpers";
-import { isConceptDocFile, isWorkingDocFile } from "@/lib/file-helpers";
+import {
+  displayName,
+  isConceptDocFile,
+  isSubpathFile,
+  isWorkingDocFile,
+} from "@/lib/file-helpers";
 import { Button } from "@/components/ui/button";
 
 interface FileTreeProps {
@@ -29,6 +34,128 @@ export default function FileTree({
   onDownload,
   onDelete,
 }: FileTreeProps) {
+  // 子目录分组（issues/NN-<slug>.md 等子路径文件）：根文件平铺在前，
+  // 子路径文件按第一段目录分组展示（spec: Issues 文件集 → 文件树子目录展示）
+  const rootFiles = files.filter((f) => !isSubpathFile(f.filename));
+  const dirGroups = new Map<string, ProjectFileData[]>();
+  for (const file of files) {
+    if (!isSubpathFile(file.filename)) continue;
+    const dir = file.filename.split("/")[0];
+    if (!dirGroups.has(dir)) dirGroups.set(dir, []);
+    dirGroups.get(dir)!.push(file);
+  }
+
+  /** 单行文件条目（根目录与子目录组内共用；子目录组内缩进 + 显示文件名段）。 */
+  function renderFileRow(file: ProjectFileData, indented: boolean) {
+    const isSelected = file.id === selectedFileId;
+    const timeAgo = formatTimeAgo(file.updated_at);
+    // 工作文档（中间过程快照）：琥珀色视觉标记 + 不可加载进上下文（03 mini 会决策）
+    // 概念版（流程确认产物）：正式文件样式，同样不可加载进上下文（05 mini 会决策）
+    const isWorkingDoc = isWorkingDocFile(file.filename);
+    const isConceptDoc = isConceptDocFile(file.filename);
+    return (
+      <li key={file.id} className="group relative">
+        <button
+          onClick={() => onSelect(file)}
+          className={`w-full py-2 text-left transition-colors ${
+            indented ? "pl-6" : "px-3"
+          } ${
+            isSelected
+              ? "bg-accent text-foreground"
+              : isWorkingDoc
+                ? "text-muted-foreground hover:bg-amber-50"
+                : "text-muted-foreground hover:bg-muted"
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-sm">{isWorkingDoc ? "📝" : "📄"}</span>
+            <span
+              className={`truncate text-sm font-medium ${
+                isWorkingDoc ? "text-amber-700" : ""
+              }`}
+            >
+              {displayName(file.filename)}
+            </span>
+            {isWorkingDoc && (
+              <span className="shrink-0 rounded bg-amber-100 px-1 py-0.5 text-[10px] font-medium text-amber-700">
+                工作文档
+              </span>
+            )}
+          </div>
+          <p className={`mt-0.5 pl-6 text-xs ${isWorkingDoc ? "text-amber-600/70" : "text-gray-400"}`}>
+            {timeAgo}
+          </p>
+        </button>
+
+        {/* Hover action buttons */}
+        <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 rounded bg-white/80 px-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+          {/* Load to agent（工作文档 / 概念版不可加载） */}
+          {activeTabId && !isWorkingDoc && !isConceptDoc && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                onLoadToAgent(file);
+              }}
+              className="rounded p-1 text-gray-500 hover:bg-indigo-100 hover:text-indigo-600"
+              title="加载到 Agent"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m0 0l-6-6m6 6l6-6" />
+              </svg>
+            </Button>
+          )}
+          {/* Edit */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(file);
+            }}
+            className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+            title="编辑"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </Button>
+          {/* Download */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDownload(file);
+            }}
+            className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+            title="下载"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </Button>
+          {/* Delete */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(file);
+            }}
+            className="rounded p-1 text-gray-400 hover:bg-red-100 hover:text-red-600"
+            title="删除"
+          >
+            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </Button>
+        </div>
+      </li>
+    );
+  }
+
   return (
     <aside className="flex h-full w-56 shrink-0 flex-col border-r border-gray-200 bg-white">
       {/* Header */}
@@ -58,113 +185,19 @@ export default function FileTree({
 
         {!loading && files.length > 0 && (
           <ul className="py-1">
-            {files.map((file) => {
-              const isSelected = file.id === selectedFileId;
-              const timeAgo = formatTimeAgo(file.updated_at);
-              // 工作文档（中间过程快照）：琥珀色视觉标记 + 不可加载进上下文（03 mini 会决策）
-              // 概念版（流程确认产物）：正式文件样式，同样不可加载进上下文（05 mini 会决策）
-              const isWorkingDoc = isWorkingDocFile(file.filename);
-              const isConceptDoc = isConceptDocFile(file.filename);
-              return (
-                <li key={file.id} className="group relative">
-                  <button
-                    onClick={() => onSelect(file)}
-                    className={`w-full px-3 py-2 text-left transition-colors ${
-                      isSelected
-                        ? "bg-accent text-foreground"
-                        : isWorkingDoc
-                          ? "text-muted-foreground hover:bg-amber-50"
-                          : "text-muted-foreground hover:bg-muted"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">{isWorkingDoc ? "📝" : "📄"}</span>
-                      <span
-                        className={`truncate text-sm font-medium ${
-                          isWorkingDoc ? "text-amber-700" : ""
-                        }`}
-                      >
-                        {file.filename}
-                      </span>
-                      {isWorkingDoc && (
-                        <span className="shrink-0 rounded bg-amber-100 px-1 py-0.5 text-[10px] font-medium text-amber-700">
-                          工作文档
-                        </span>
-                      )}
-                    </div>
-                    <p className={`mt-0.5 pl-6 text-xs ${isWorkingDoc ? "text-amber-600/70" : "text-gray-400"}`}>
-                      {timeAgo}
-                    </p>
-                  </button>
-
-                  {/* Hover action buttons */}
-                  <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 rounded bg-white/80 px-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {/* Load to agent（工作文档 / 概念版不可加载） */}
-                    {activeTabId && !isWorkingDoc && !isConceptDoc && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onLoadToAgent(file);
-                        }}
-                        className="rounded p-1 text-gray-500 hover:bg-indigo-100 hover:text-indigo-600"
-                        title="加载到 Agent"
-                      >
-                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m0 0l-6-6m6 6l6-6" />
-                        </svg>
-                      </Button>
-                    )}
-                    {/* Edit */}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEdit(file);
-                      }}
-                      className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
-                      title="编辑"
-                    >
-                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
-                    </Button>
-                    {/* Download */}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDownload(file);
-                      }}
-                      className="rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
-                      title="下载"
-                    >
-                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </Button>
-                    {/* Delete */}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete(file);
-                      }}
-                      className="rounded p-1 text-gray-400 hover:bg-red-100 hover:text-red-600"
-                      title="删除"
-                    >
-                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </Button>
-                  </div>
-                </li>
-              );
-            })}
+            {rootFiles.map((file) => renderFileRow(file, false))}
+            {Array.from(dirGroups).map(([dir, groupFiles]) => (
+              <li key={dir} className="mt-1">
+                <div className="flex items-center gap-1.5 px-3 pb-0.5 pt-2 text-xs font-medium text-gray-400">
+                  <span>📂</span>
+                  <span className="truncate">{dir}/</span>
+                  <span className="shrink-0 text-[10px] text-gray-300">
+                    {groupFiles.length}
+                  </span>
+                </div>
+                {groupFiles.map((file) => renderFileRow(file, true))}
+              </li>
+            ))}
           </ul>
         )}
       </div>
