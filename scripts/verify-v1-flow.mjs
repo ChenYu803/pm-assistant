@@ -637,7 +637,10 @@ for (const top of protoBlocks) {
     const nt = normTitle(top.title);
     if (nt === "## 页面清单" || nt === "## 用户流程" || /^## .*排除/.test(nt)) continue;
     const text = top.text.trim();
+    // 内容标记白名单（黑名单打地鼠修了三轮变体：排除项段/中文编号/依赖段 → 换白名单）：
+    // 页面块必有五字段标记（目的/元素/操作/入口·出口/依赖），流程块标题必含「用户流程」
     const isFlow = nt.startsWith("## 用户流程");
+    if (!isFlow && !/\*\*目的\*\*|\*\*元素\*\*/.test(text)) continue;
     if (isFlow) {
       flowCount++;
       if (!ch5.includes(text)) flowMismatch++;

@@ -200,17 +200,25 @@ const OPENING =
 await sendAndWait(OPENING, 1);
 
 let conceptRound = -1; // 概念版轮次（1-based）
+let scopeFrozenSeen = false; // 冻结序列是否已出现（%%%SCOPE_FROZEN%%% 已发出）
 for (let i = 0; i < MAX_ROUNDS - 1; i++) {
   const last = rawReplies[rawReplies.length - 1] ?? "";
   // 已产出 prd.md（六章齐全文档）——完成
   if (/%%%FILE_BEGIN%%%\s*prd\.md/.test(last)) break;
+  if (/%%%SCOPE_FROZEN%%%/.test(last)) scopeFrozenSeen = true;
   let text;
   // 概念版输出轮判定要精确：LLM 的二次确认轮也可能提「概念版」字样（流程预告），
   // 只有「**概念版** + 外部依赖声明」同时出现才说明概念版真正落到了回复里
   if (conceptRound === -1 && /外部依赖声明/.test(last) && /概念版/.test(last)) {
     conceptRound = rawReplies.length;
-    // 概念版已输出（断言在循环外），用户确认范围
-    text = "确认。范围没问题，开始详细撰写。";
+    // 概念版已输出（断言在循环外），用户确认范围；驱动口径与 v1 环3 一致：
+    // 显式要求概念版先落盘为独立文件再冻结，否则 LLM 可能跳过文件直接写六章
+    // （实测 3 次运行 2 次因此失败——「开始详细撰写」无文件要求是失败根因）
+    text = "确认。范围没问题。请先把概念版写入独立文件供回看，再冻结范围，然后开始详细撰写。";
+  } else if (conceptRound !== -1 && conceptRound === rawReplies.length - 1 && !scopeFrozenSeen) {
+    // 冻结纠正轮（同 v1 环3 机制）：用户确认后 LLM 仍可能跳过冻结序列直接写六章，
+    // 发「完满」命中 SCOPE_FREEZE_CONFIRM_RE 纠正，要求先冻结再写
+    text = "完满。请先按自检清单检查并输出 %%%SCOPE_FROZEN%%% 范围冻结标记，再输出六章 prd.md。";
   } else if (/%%%FILE_BEGIN%%%/.test(last)) {
     // 概念版刚写入 + 冻结 → 推进
     text = "继续。";
