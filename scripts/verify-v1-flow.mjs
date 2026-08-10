@@ -271,13 +271,12 @@ if (raDoc) {
   const scopeMatch = raBody.match(/### 功能范围\n([\s\S]*?)(?=\n### |\n# 排除清单|$)/);
   const scopeSection = scopeMatch ? scopeMatch[1] : "";
   check("功能范围段内含排除项（不做 Y）", /不做|排除/.test(scopeSection), `(段内容=${scopeSection.slice(0, 60)})`);
-  // 排除项条目（「不做 Y：」之后的行）须附理由（因为/理由/（/— 等标记）。
-  // 实际格式：理由与条目同行，如「- 公开联系方式（微信/QQ）— 避免绕过站内私聊」
-  const noItems = (scopeSection.match(/不做[^：:]*[：:]([\s\S]*?)(?=\n### |\n## |$)/) ?? [])[1] ?? scopeSection;
+  // 排除项附理由：整段扫「不做/排除 … 因为/理由/（/—」同行形态（同 03 断言核心；
+  // 不用逐条捕获——Agent 条目格式有波动（如 **不做 X：** 加粗），逐条捕获易误伤）
   check(
     "功能范围段排除项附理由",
-    /(?:因为|理由|（|—)/.test(noItems),
-    `(排除项内容=${noItems.slice(0, 120)})`
+    /(?:不做|排除)[^。\n]*(?:因为|理由|（|—)/.test(scopeSection),
+    `(段内容=${scopeSection.slice(0, 120)})`
   );
   check("「# 排除清单」段恰好出现一次", (raBody.match(/# 排除清单/g) ?? []).length === 1);
   check("需求分析.md 有 changelog 头（正式文件规范）", /^<!--\nchangelog:/.test(await readRaw(projectId, raDoc)));
