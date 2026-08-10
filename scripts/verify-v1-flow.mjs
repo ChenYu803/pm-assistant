@@ -578,6 +578,11 @@ check("prd.md 有 changelog 头（正式文件规范）", prdDoc ? /^<!--\nchang
  * 块原文的包含关系。归类：块标题或所属容器含「用户流程」→ 流程块 ∈ 第 5 章；
  * 其余 → 页面块 ∈ 第 3 章。空容器（「## 页面清单」/「## 用户流程」单独成块）不参与校验。
  */
+/** 块标题归一化：剥掉中文编号前缀（「## 一、页面清单」→「## 页面清单」）——
+ *  原型.md 标题编号格式有波动（04 真实对话产物：无编号 / 一、二、等），
+ *  分类只看语义容器/流程，不看编号 */
+const normTitle = (t) => t.replace(/^(##\s*)[一二三四五六七八九十]+[、.．]?\s*/, "$1");
+
 function splitProtoBlocks(body) {
   const top = [];
   let cur = null;
@@ -627,10 +632,12 @@ let pageCount = 0;
 let flowCount = 0;
 for (const top of protoBlocks) {
   if (top.subs.length === 0) {
-    // 空容器（「## 页面清单」/「## 用户流程」）或无子块的独立块：独立块整块参与校验
-    if (top.title === "## 页面清单" || top.title === "## 用户流程") continue;
+    // 空容器（「## 页面清单」/「## 用户流程」，可带编号前缀）与排除项段（排除项在
+    // prd.md 第 2 章而非第 3/5 章）不参与校验
+    const nt = normTitle(top.title);
+    if (nt === "## 页面清单" || nt === "## 用户流程" || /^## .*排除/.test(nt)) continue;
     const text = top.text.trim();
-    const isFlow = top.title.startsWith("## 用户流程");
+    const isFlow = nt.startsWith("## 用户流程");
     if (isFlow) {
       flowCount++;
       if (!ch5.includes(text)) flowMismatch++;
@@ -641,7 +648,7 @@ for (const top of protoBlocks) {
   } else {
     for (const b of top.subs) {
       const text = b.text.trim();
-      const isFlow = b.title.startsWith("## 用户流程") || top.title.startsWith("## 用户流程");
+      const isFlow = normTitle(b.title).startsWith("## 用户流程") || normTitle(top.title).startsWith("## 用户流程");
       if (isFlow) {
         flowCount++;
         if (!ch5.includes(text)) flowMismatch++;

@@ -258,3 +258,251 @@ See this log for the ancestor stack trace.
  GET /api/work-records/6a798368ea13043b48599bb4/tabs 200 in 19ms (next.js: 3ms, proxy.ts: 6ms, application-code: 10ms)
  GET /api/tabs/6a798437ea13043b48599bd9/messages 200 in 35ms (next.js: 3ms, proxy.ts: 6ms, application-code: 26ms)
  GET /api/tabs/6a798393ea13043b48599bc1/messages 200 in 27ms (next.js: 3ms, proxy.ts: 6ms, application-code: 17ms)
+ GET /register 200 in 42ms (next.js: 3ms, proxy.ts: 5ms, application-code: 34ms)
+ GET /api/auth/session 200 in 57ms (next.js: 47ms, proxy.ts: 6ms, application-code: 4ms)
+ GET /api/auth/session 200 in 12ms (next.js: 4ms, proxy.ts: 5ms, application-code: 3ms)
+ GET /api/auth/session 200 in 13ms (next.js: 4ms, proxy.ts: 5ms, application-code: 4ms)
+ GET /api/auth/session 200 in 12ms (next.js: 4ms, proxy.ts: 5ms, application-code: 3ms)
+ POST /api/auth/register 201 in 260ms (next.js: 2ms, proxy.ts: 5ms, application-code: 253ms)
+ GET /api/auth/providers 200 in 10ms (next.js: 3ms, proxy.ts: 4ms, application-code: 3ms)
+ GET /api/auth/csrf 200 in 12ms (next.js: 4ms, proxy.ts: 5ms, application-code: 3ms)
+ POST /api/auth/callback/credentials? 200 in 261ms (next.js: 8ms, proxy.ts: 4ms, application-code: 248ms)
+ GET /api/auth/session 200 in 20ms (next.js: 3ms, proxy.ts: 6ms, application-code: 11ms)
+ GET /projects 200 in 49ms (next.js: 4ms, proxy.ts: 27ms, application-code: 18ms)
+ GET /projects 200 in 29ms (next.js: 3ms, proxy.ts: 9ms, application-code: 17ms)
+ GET /projects 200 in 67ms (next.js: 4ms, proxy.ts: 19ms, application-code: 45ms)
+ GET /api/projects 200 in 66ms (next.js: 39ms, proxy.ts: 15ms, application-code: 11ms)
+ GET /api/projects 200 in 36ms (next.js: 3ms, proxy.ts: 14ms, application-code: 18ms)
+ GET /api/auth/session 200 in 37ms (next.js: 9ms, proxy.ts: 14ms, application-code: 14ms)
+ GET /api/projects 200 in 38ms (next.js: 3ms, proxy.ts: 13ms, application-code: 21ms)
+ GET /api/auth/session 200 in 36ms (next.js: 14ms, proxy.ts: 11ms, application-code: 11ms)
+ GET /api/auth/session 200 in 19ms (next.js: 5ms, proxy.ts: 7ms, application-code: 7ms)
+ GET /api/auth/session 200 in 19ms (next.js: 3ms, proxy.ts: 9ms, application-code: 6ms)
+ POST /api/projects 201 in 29ms (next.js: 4ms, proxy.ts: 10ms, application-code: 15ms)
+ GET /api/projects 200 in 30ms (next.js: 2ms, proxy.ts: 9ms, application-code: 18ms)
+ GET /projects 200 in 35ms (next.js: 4ms, proxy.ts: 10ms, application-code: 22ms)
+ GET /projects/6a79847fea13043b48599be2 200 in 59ms (next.js: 38ms, proxy.ts: 6ms, application-code: 15ms)
+ GET /api/projects/6a79847fea13043b48599be2 200 in 118ms (next.js: 85ms, proxy.ts: 13ms, application-code: 19ms)
+ GET /api/projects/6a79847fea13043b48599be2/work-records 200 in 121ms (next.js: 47ms, proxy.ts: 14ms, application-code: 60ms)
+ GET /api/projects/6a79847fea13043b48599be2 200 in 42ms (next.js: 10ms, proxy.ts: 16ms, application-code: 16ms)
+ GET /api/projects/6a79847fea13043b48599be2/work-records 200 in 47ms (next.js: 13ms, proxy.ts: 16ms, application-code: 17ms)
+ POST /api/projects/6a79847fea13043b48599be2/work-records 201 in 46ms (next.js: 6ms, proxy.ts: 10ms, application-code: 30ms)
+ GET /api/projects/6a79847fea13043b48599be2/work-records 200 in 40ms (next.js: 4ms, proxy.ts: 9ms, application-code: 27ms)
+ GET /workspace/6a79847fea13043b48599be3 200 in 64ms (next.js: 39ms, proxy.ts: 8ms, application-code: 17ms)
+ GET /api/work-records/6a79847fea13043b48599be3 200 in 117ms (next.js: 46ms, proxy.ts: 17ms, application-code: 53ms)
+ GET /api/work-records/6a79847fea13043b48599be3/tabs 200 in 122ms (next.js: 83ms, proxy.ts: 16ms, application-code: 23ms)
+ GET /api/work-records/6a79847fea13043b48599be3 200 in 55ms (next.js: 10ms, proxy.ts: 15ms, application-code: 30ms)
+ GET /api/work-records/6a79847fea13043b48599be3/tabs 200 in 62ms (next.js: 13ms, proxy.ts: 14ms, application-code: 35ms)
+ GET /api/work-records/6a79847fea13043b48599be3 200 in 60ms (next.js: 11ms, proxy.ts: 23ms, application-code: 26ms)
+ GET /api/projects/6a79847fea13043b48599be2 200 in 55ms (next.js: 6ms, proxy.ts: 31ms, application-code: 19ms)
+ POST /api/work-records/6a79847fea13043b48599be3/tabs 201 in 108ms (next.js: 13ms, proxy.ts: 13ms, application-code: 83ms)
+ GET /api/projects/6a79847fea13043b48599be2/files 200 in 105ms (next.js: 60ms, proxy.ts: 24ms, application-code: 21ms)
+ GET /workspace/6a79847fea13043b48599be3 200 in 79ms (next.js: 8ms, proxy.ts: 13ms, application-code: 58ms)
+ GET /api/auth/session 200 in 109ms (next.js: 63ms, proxy.ts: 25ms, application-code: 21ms)
+ GET /api/work-records/6a79847fea13043b48599be3 200 in 129ms (next.js: 13ms, proxy.ts: 31ms, application-code: 85ms)
+ GET /api/work-records/6a79847fea13043b48599be3/tabs 200 in 132ms (next.js: 16ms, proxy.ts: 26ms, application-code: 90ms)
+ GET /api/auth/session 200 in 116ms (next.js: 17ms, proxy.ts: 40ms, application-code: 59ms)
+ GET /api/work-records/6a79847fea13043b48599be3 200 in 129ms (next.js: 24ms, proxy.ts: 33ms, application-code: 72ms)
+ GET /api/work-records/6a79847fea13043b48599be3/tabs 200 in 137ms (next.js: 37ms, proxy.ts: 30ms, application-code: 70ms)
+ GET /api/tabs/6a798480ea13043b48599be4/messages 200 in 253ms (next.js: 67ms, proxy.ts: 67ms, application-code: 120ms)
+ GET /api/auth/session 200 in 230ms (next.js: 72ms, proxy.ts: 109ms, application-code: 49ms)
+ GET /api/tabs/6a798480ea13043b48599be4/files 200 in 362ms (next.js: 123ms, proxy.ts: 60ms, application-code: 180ms)
+ GET /api/projects/6a79847fea13043b48599be2 200 in 269ms (next.js: 92ms, proxy.ts: 102ms, application-code: 74ms)
+ GET /api/auth/session 200 in 39ms (next.js: 7ms, proxy.ts: 23ms, application-code: 9ms)
+ GET /api/projects/6a79847fea13043b48599be2/files 200 in 42ms (next.js: 5ms, proxy.ts: 9ms, application-code: 28ms)
+ POST /api/tabs/6a798480ea13043b48599be4/chat 200 in 1999ms (next.js: 36ms, proxy.ts: 6ms, application-code: 1956ms)
+ GET /api/tabs/6a798480ea13043b48599be4/messages 200 in 50ms (next.js: 33ms, proxy.ts: 6ms, application-code: 11ms)
+ POST /api/tabs/6a798480ea13043b48599be4/chat 200 in 2.6s (next.js: 34ms, proxy.ts: 6ms, application-code: 2.5s)
+ GET /api/projects/6a79847fea13043b48599be2 200 in 53ms (next.js: 33ms, proxy.ts: 7ms, application-code: 13ms)
+ GET /api/projects/6a79847fea13043b48599be2/files 200 in 53ms (next.js: 36ms, proxy.ts: 6ms, application-code: 11ms)
+ GET /api/tabs/6a798480ea13043b48599be4/messages 200 in 74ms (next.js: 33ms, proxy.ts: 24ms, application-code: 17ms)
+ POST /api/tabs/6a798480ea13043b48599be4/chat 200 in 3.2s (next.js: 34ms, proxy.ts: 7ms, application-code: 3.2s)
+ GET /api/tabs/6a798480ea13043b48599be4/messages 200 in 59ms (next.js: 33ms, proxy.ts: 12ms, application-code: 15ms)
+ POST /api/tabs/6a798480ea13043b48599be4/chat 200 in 4.9s (next.js: 35ms, proxy.ts: 6ms, application-code: 4.9s)
+ POST /api/projects/6a79847fea13043b48599be2/files 201 in 55ms (next.js: 33ms, proxy.ts: 7ms, application-code: 15ms)
+ GET /api/projects/6a79847fea13043b48599be2/files 200 in 27ms (next.js: 4ms, proxy.ts: 5ms, application-code: 18ms)
+ GET /api/tabs/6a798480ea13043b48599be4/messages 200 in 53ms (next.js: 32ms, proxy.ts: 6ms, application-code: 16ms)
+ GET /api/projects/6a79847fea13043b48599be2/files 200 in 56ms (next.js: 33ms, proxy.ts: 5ms, application-code: 18ms)
+ GET /api/projects/6a79847fea13043b48599be2/files/6a79849bea13043b48599bed 200 in 59ms (next.js: 35ms, proxy.ts: 5ms, application-code: 19ms)
+ GET /api/projects/6a79847fea13043b48599be2/files/6a79849bea13043b48599bed 200 in 46ms (next.js: 6ms, proxy.ts: 11ms, application-code: 29ms)
+ POST /api/work-records/6a79847fea13043b48599be3/tabs 201 in 65ms (next.js: 37ms, proxy.ts: 9ms, application-code: 19ms)
+ GET /workspace/6a79847fea13043b48599be3 200 in 80ms (next.js: 39ms, proxy.ts: 9ms, application-code: 32ms)
+ GET /api/auth/session 200 in 119ms (next.js: 87ms, proxy.ts: 17ms, application-code: 16ms)
+ GET /api/work-records/6a79847fea13043b48599be3 200 in 133ms (next.js: 41ms, proxy.ts: 20ms, application-code: 71ms)
+ GET /api/work-records/6a79847fea13043b48599be3/tabs 200 in 137ms (next.js: 45ms, proxy.ts: 19ms, application-code: 74ms)
+ GET /api/auth/session 200 in 88ms (next.js: 11ms, proxy.ts: 26ms, application-code: 50ms)
+ GET /api/work-records/6a79847fea13043b48599be3 200 in 99ms (next.js: 16ms, proxy.ts: 23ms, application-code: 61ms)
+ GET /api/work-records/6a79847fea13043b48599be3/tabs 200 in 104ms (next.js: 22ms, proxy.ts: 19ms, application-code: 62ms)
+ GET /api/tabs/6a798480ea13043b48599be4/messages 200 in 187ms (next.js: 24ms, proxy.ts: 54ms, application-code: 109ms)
+ GET /api/tabs/6a798480ea13043b48599be4/files 200 in 180ms (next.js: 63ms, proxy.ts: 52ms, application-code: 66ms)
+ GET /api/auth/session 200 in 213ms (next.js: 19ms, proxy.ts: 101ms, application-code: 93ms)
+ GET /api/projects/6a79847fea13043b48599be2 200 in 194ms (next.js: 69ms, proxy.ts: 96ms, application-code: 29ms)
+ GET /api/auth/session 200 in 33ms (next.js: 5ms, proxy.ts: 19ms, application-code: 10ms)
+ GET /api/projects/6a79847fea13043b48599be2/files 200 in 41ms (next.js: 6ms, proxy.ts: 10ms, application-code: 25ms)
+ GET /api/tabs/6a7984a1ea13043b48599bee/messages 200 in 90ms (next.js: 46ms, proxy.ts: 18ms, application-code: 25ms)
+ GET /api/tabs/6a7984a1ea13043b48599bee/files 200 in 93ms (next.js: 50ms, proxy.ts: 18ms, application-code: 25ms)
+ POST /api/tabs/6a7984a1ea13043b48599bee/chat 200 in 2.6s (next.js: 35ms, proxy.ts: 6ms, application-code: 2.5s)
+ GET /api/tabs/6a7984a1ea13043b48599bee/messages 200 in 50ms (next.js: 33ms, proxy.ts: 6ms, application-code: 11ms)
+ POST /api/tabs/6a7984a1ea13043b48599bee/chat 200 in 12.5s (next.js: 33ms, proxy.ts: 6ms, application-code: 12.4s)
+ GET /api/tabs/6a7984a1ea13043b48599bee/messages 200 in 60ms (next.js: 33ms, proxy.ts: 11ms, application-code: 17ms)
+ POST /api/tabs/6a7984a1ea13043b48599bee/chat 200 in 12.3s (next.js: 33ms, proxy.ts: 6ms, application-code: 12.3s)
+ GET /api/tabs/6a7984a1ea13043b48599bee/messages 200 in 52ms (next.js: 33ms, proxy.ts: 6ms, application-code: 13ms)
+ POST /api/tabs/6a7984a1ea13043b48599bee/chat 200 in 13.0s (next.js: 34ms, proxy.ts: 7ms, application-code: 13.0s)
+ POST /api/projects/6a79847fea13043b48599be2/files 201 in 56ms (next.js: 34ms, proxy.ts: 7ms, application-code: 15ms)
+ GET /api/projects/6a79847fea13043b48599be2/files 200 in 27ms (next.js: 3ms, proxy.ts: 6ms, application-code: 18ms)
+ GET /api/tabs/6a7984a1ea13043b48599bee/messages 200 in 66ms (next.js: 34ms, proxy.ts: 7ms, application-code: 25ms)
+ GET /api/work-records/6a79847fea13043b48599be3/tabs 200 in 63ms (next.js: 34ms, proxy.ts: 6ms, application-code: 22ms)
+ GET /api/projects/6a79847fea13043b48599be2/files 200 in 58ms (next.js: 35ms, proxy.ts: 6ms, application-code: 18ms)
+ GET /api/projects/6a79847fea13043b48599be2/files/6a7984d8ea13043b48599bf8 200 in 58ms (next.js: 35ms, proxy.ts: 6ms, application-code: 17ms)
+ GET /api/projects/6a79847fea13043b48599be2/files/6a7984d8ea13043b48599bf8 200 in 28ms (next.js: 4ms, proxy.ts: 7ms, application-code: 17ms)
+ POST /api/work-records/6a79847fea13043b48599be3/tabs 201 in 36ms (next.js: 4ms, proxy.ts: 7ms, application-code: 24ms)
+ GET /workspace/6a79847fea13043b48599be3 200 in 93ms (next.js: 41ms, proxy.ts: 6ms, application-code: 45ms)
+ GET /api/auth/session 200 in 133ms (next.js: 93ms, proxy.ts: 17ms, application-code: 24ms)
+ GET /api/work-records/6a79847fea13043b48599be3 200 in 147ms (next.js: 44ms, proxy.ts: 20ms, application-code: 83ms)
+ GET /api/work-records/6a79847fea13043b48599be3/tabs 200 in 152ms (next.js: 48ms, proxy.ts: 18ms, application-code: 85ms)
+ GET /api/auth/session 200 in 106ms (next.js: 19ms, proxy.ts: 49ms, application-code: 38ms)
+ GET /api/work-records/6a79847fea13043b48599be3 200 in 119ms (next.js: 25ms, proxy.ts: 44ms, application-code: 50ms)
+ GET /api/work-records/6a79847fea13043b48599be3/tabs 200 in 129ms (next.js: 32ms, proxy.ts: 41ms, application-code: 56ms)
+ GET /api/tabs/6a798480ea13043b48599be4/messages 200 in 191ms (next.js: 34ms, proxy.ts: 50ms, application-code: 107ms)
+ GET /api/tabs/6a798480ea13043b48599be4/files 200 in 186ms (next.js: 79ms, proxy.ts: 48ms, application-code: 59ms)
+ GET /api/auth/session 200 in 215ms (next.js: 19ms, proxy.ts: 109ms, application-code: 87ms)
+ GET /api/projects/6a79847fea13043b48599be2 200 in 191ms (next.js: 70ms, proxy.ts: 93ms, application-code: 27ms)
+ GET /api/auth/session 200 in 34ms (next.js: 5ms, proxy.ts: 19ms, application-code: 10ms)
+ GET /api/projects/6a79847fea13043b48599be2/files 200 in 31ms (next.js: 4ms, proxy.ts: 11ms, application-code: 16ms)
+ GET /api/tabs/6a7984ddea13043b48599bf9/messages 200 in 79ms (next.js: 43ms, proxy.ts: 14ms, application-code: 23ms)
+ GET /api/tabs/6a7984ddea13043b48599bf9/files 200 in 82ms (next.js: 47ms, proxy.ts: 13ms, application-code: 22ms)
+ POST /api/tabs/6a7984ddea13043b48599bf9/chat 200 in 2.4s (next.js: 35ms, proxy.ts: 7ms, application-code: 2.3s)
+ GET /api/tabs/6a7984ddea13043b48599bf9/messages 200 in 61ms (next.js: 33ms, proxy.ts: 6ms, application-code: 23ms)
+ POST /api/tabs/6a7984ddea13043b48599bf9/chat 200 in 4.0s (next.js: 34ms, proxy.ts: 7ms, application-code: 4.0s)
+ GET /api/tabs/6a7984ddea13043b48599bf9/messages 200 in 59ms (next.js: 32ms, proxy.ts: 10ms, application-code: 17ms)
+ POST /api/tabs/6a7984ddea13043b48599bf9/chat 200 in 7.2s (next.js: 33ms, proxy.ts: 6ms, application-code: 7.1s)
+ POST /api/projects/6a79847fea13043b48599be2/files 201 in 57ms (next.js: 35ms, proxy.ts: 8ms, application-code: 15ms)
+ GET /api/projects/6a79847fea13043b48599be2/files 200 in 26ms (next.js: 4ms, proxy.ts: 7ms, application-code: 16ms)
+ GET /api/tabs/6a7984ddea13043b48599bf9/messages 200 in 49ms (next.js: 32ms, proxy.ts: 6ms, application-code: 10ms)
+ POST /api/tabs/6a7984ddea13043b48599bf9/chat 200 in 13.2s (next.js: 35ms, proxy.ts: 6ms, application-code: 13.2s)
+ GET /api/tabs/6a7984ddea13043b48599bf9/messages 200 in 51ms (next.js: 33ms, proxy.ts: 7ms, application-code: 12ms)
+ POST /api/tabs/6a7984ddea13043b48599bf9/chat 200 in 26.5s (next.js: 35ms, proxy.ts: 6ms, application-code: 26.4s)
+ POST /api/projects/6a79847fea13043b48599be2/files 201 in 54ms (next.js: 35ms, proxy.ts: 8ms, application-code: 12ms)
+ GET /api/projects/6a79847fea13043b48599be2/files 200 in 25ms (next.js: 4ms, proxy.ts: 7ms, application-code: 15ms)
+ GET /api/tabs/6a7984ddea13043b48599bf9/messages 200 in 53ms (next.js: 32ms, proxy.ts: 6ms, application-code: 15ms)
+ GET /api/work-records/6a79847fea13043b48599be3/tabs 200 in 60ms (next.js: 33ms, proxy.ts: 6ms, application-code: 21ms)
+ GET /api/projects/6a79847fea13043b48599be2/files 200 in 82ms (next.js: 62ms, proxy.ts: 9ms, application-code: 11ms)
+ POST /api/tabs/6a7984ddea13043b48599bf9/files 400 in 60ms (next.js: 36ms, proxy.ts: 6ms, application-code: 18ms)
+ GET /api/projects/6a79847fea13043b48599be2/files/6a7984f5ea13043b48599c02 200 in 58ms (next.js: 41ms, proxy.ts: 7ms, application-code: 11ms)
+ GET /api/projects/6a79847fea13043b48599be2/files/6a798527ea13043b48599c07 200 in 37ms (next.js: 4ms, proxy.ts: 7ms, application-code: 26ms)
+ GET /api/projects/6a79847fea13043b48599be2/files/6a7984d8ea13043b48599bf8 200 in 24ms (next.js: 4ms, proxy.ts: 7ms, application-code: 13ms)
+ GET /api/projects/6a79847fea13043b48599be2/files/6a798527ea13043b48599c07 200 in 26ms (next.js: 3ms, proxy.ts: 7ms, application-code: 16ms)
+ POST /api/work-records/6a79847fea13043b48599be3/tabs 201 in 35ms (next.js: 4ms, proxy.ts: 8ms, application-code: 24ms)
+ GET /workspace/6a79847fea13043b48599be3 200 in 87ms (next.js: 37ms, proxy.ts: 7ms, application-code: 43ms)
+ GET /api/auth/session 200 in 140ms (next.js: 99ms, proxy.ts: 20ms, application-code: 21ms)
+ GET /api/work-records/6a79847fea13043b48599be3 200 in 156ms (next.js: 45ms, proxy.ts: 25ms, application-code: 87ms)
+ GET /api/work-records/6a79847fea13043b48599be3/tabs 200 in 163ms (next.js: 51ms, proxy.ts: 23ms, application-code: 89ms)
+ GET /api/auth/session 200 in 117ms (next.js: 19ms, proxy.ts: 38ms, application-code: 60ms)
+ GET /api/work-records/6a79847fea13043b48599be3 200 in 131ms (next.js: 25ms, proxy.ts: 33ms, application-code: 73ms)
+ GET /api/work-records/6a79847fea13043b48599be3/tabs 200 in 135ms (next.js: 32ms, proxy.ts: 30ms, application-code: 73ms)
+ GET /api/tabs/6a798480ea13043b48599be4/messages 200 in 151ms (next.js: 20ms, proxy.ts: 71ms, application-code: 61ms)
+ GET /api/tabs/6a798480ea13043b48599be4/files 200 in 140ms (next.js: 24ms, proxy.ts: 63ms, application-code: 53ms)
+ GET /api/auth/session 200 in 177ms (next.js: 18ms, proxy.ts: 59ms, application-code: 100ms)
+ GET /api/projects/6a79847fea13043b48599be2 200 in 153ms (next.js: 79ms, proxy.ts: 48ms, application-code: 25ms)
+ GET /api/auth/session 200 in 32ms (next.js: 6ms, proxy.ts: 16ms, application-code: 9ms)
+ GET /api/projects/6a79847fea13043b48599be2/files 200 in 38ms (next.js: 8ms, proxy.ts: 9ms, application-code: 21ms)
+ GET /api/tabs/6a79852cea13043b48599c08/messages 200 in 126ms (next.js: 45ms, proxy.ts: 13ms, application-code: 69ms)
+ GET /api/tabs/6a79852cea13043b48599c08/files 200 in 133ms (next.js: 85ms, proxy.ts: 12ms, application-code: 36ms)
+ POST /api/tabs/6a79852cea13043b48599c08/chat 200 in 9.3s (next.js: 38ms, proxy.ts: 7ms, application-code: 9.2s)
+ GET /api/tabs/6a79852cea13043b48599c08/messages 200 in 56ms (next.js: 33ms, proxy.ts: 7ms, application-code: 16ms)
+ POST /api/tabs/6a79852cea13043b48599c08/chat 200 in 9.8s (next.js: 33ms, proxy.ts: 11ms, application-code: 9.7s)
+ GET /api/tabs/6a79852cea13043b48599c08/messages 200 in 52ms (next.js: 34ms, proxy.ts: 6ms, application-code: 12ms)
+ POST /api/projects/6a79847fea13043b48599be2/files 201 in 51ms (next.js: 34ms, proxy.ts: 6ms, application-code: 12ms)
+ GET /api/projects/6a79847fea13043b48599be2/files 200 in 34ms (next.js: 4ms, proxy.ts: 6ms, application-code: 23ms)
+[browser] In HTML, <li> cannot be a descendant of <li>.
+This will cause a hydration error.
+
+  ...
+    <RedirectBoundary>
+      <RedirectErrorBoundary router={{...}}>
+        <InnerLayoutRouter url="/workspace..." tree={[...]} params={{...}} cacheNode={{rsc:{...}, ...}} ...>
+          <SegmentViewNode type="page" pagePath="workspace/...">
+            <SegmentTrieNode>
+            <ClientPageRoot Component={function WorkspacePage} serverProvidedParams={{...}}>
+              <WorkspacePage params={Promise} searchParams={Promise}>
+                <div className="flex min-h...">
+                  <div>
+                  <div className="flex min-h...">
+                    <FileTree files={[...]} loading={false} error="" selectedFileId={null} ...>
+                      <aside className="flex h-ful...">
+                        <div>
+                        <div className="flex-1 ove...">
+                          <ul className="py-1">
+                            <li>
+                            <li>
+                            <li>
+                            <li>
+>                           <li className="mt-1">
+                              <div>
+>                             <li className="group relative">
+                    ...
+                  ...
+          ...
+        ...
+ 
+[browser] <li> cannot contain a nested <li>.
+See this log for the ancestor stack trace. 
+ GET /api/projects/6a79847fea13043b48599be2/files 200 in 53ms (next.js: 34ms, proxy.ts: 8ms, application-code: 11ms)
+ GET /api/projects/6a79847fea13043b48599be2/files/6a798541ea13043b48599c0f 200 in 57ms (next.js: 34ms, proxy.ts: 7ms, application-code: 16ms)
+ GET /api/projects/6a79847fea13043b48599be2/files/6a798541ea13043b48599c0f 200 in 25ms (next.js: 4ms, proxy.ts: 6ms, application-code: 15ms)
+ GET /api/projects/6a79847fea13043b48599be2/files 200 in 28ms (next.js: 3ms, proxy.ts: 7ms, application-code: 18ms)
+ GET /workspace/6a79847fea13043b48599be3 200 in 73ms (next.js: 36ms, proxy.ts: 7ms, application-code: 31ms)
+ GET /api/auth/session 200 in 140ms (next.js: 108ms, proxy.ts: 16ms, application-code: 17ms)
+ GET /api/work-records/6a79847fea13043b48599be3 200 in 152ms (next.js: 40ms, proxy.ts: 18ms, application-code: 95ms)
+ GET /api/work-records/6a79847fea13043b48599be3/tabs 200 in 157ms (next.js: 74ms, proxy.ts: 16ms, application-code: 67ms)
+ GET /api/auth/session 200 in 92ms (next.js: 11ms, proxy.ts: 28ms, application-code: 54ms)
+ GET /api/work-records/6a79847fea13043b48599be3 200 in 127ms (next.js: 16ms, proxy.ts: 24ms, application-code: 87ms)
+ GET /api/work-records/6a79847fea13043b48599be3/tabs 200 in 132ms (next.js: 21ms, proxy.ts: 21ms, application-code: 89ms)
+ GET /api/tabs/6a798480ea13043b48599be4/messages 200 in 246ms (next.js: 65ms, proxy.ts: 78ms, application-code: 103ms)
+ GET /api/tabs/6a798480ea13043b48599be4/files 200 in 243ms (next.js: 118ms, proxy.ts: 70ms, application-code: 55ms)
+ GET /api/auth/session 200 in 217ms (next.js: 13ms, proxy.ts: 167ms, application-code: 37ms)
+ GET /api/projects/6a79847fea13043b48599be2 200 in 169ms (next.js: 61ms, proxy.ts: 92ms, application-code: 15ms)
+ GET /api/auth/session 200 in 27ms (next.js: 5ms, proxy.ts: 14ms, application-code: 8ms)
+ GET /api/projects/6a79847fea13043b48599be2/files 200 in 28ms (next.js: 4ms, proxy.ts: 9ms, application-code: 14ms)
+[browser] In HTML, <li> cannot be a descendant of <li>.
+This will cause a hydration error.
+
+  ...
+    <RedirectBoundary>
+      <RedirectErrorBoundary router={{...}}>
+        <InnerLayoutRouter url="/workspace..." tree={[...]} params={{...}} cacheNode={{rsc:{...}, ...}} ...>
+          <SegmentViewNode type="page" pagePath="workspace/...">
+            <SegmentTrieNode>
+            <ClientPageRoot Component={function WorkspacePage} serverProvidedParams={{...}}>
+              <WorkspacePage params={Promise} searchParams={Promise}>
+                <div className="flex min-h...">
+                  <div>
+                  <div className="flex min-h...">
+                    <FileTree files={[...]} loading={false} error="" selectedFileId={null} ...>
+                      <aside className="flex h-ful...">
+                        <div>
+                        <div className="flex-1 ove...">
+                          <ul className="py-1">
+                            <li>
+                            <li>
+                            <li>
+                            <li>
+>                           <li className="mt-1">
+                              <div>
+>                             <li className="group relative">
+                    ...
+                  ...
+          ...
+        ...
+ 
+[browser] <li> cannot contain a nested <li>.
+See this log for the ancestor stack trace. 
+ GET /api/work-records/6a79847fea13043b48599be3/tabs 200 in 66ms (next.js: 41ms, proxy.ts: 6ms, application-code: 19ms)
+ GET /api/tabs/6a798480ea13043b48599be4/messages 200 in 52ms (next.js: 33ms, proxy.ts: 6ms, application-code: 13ms)
+ GET /api/work-records/6a79847fea13043b48599be3/tabs 200 in 34ms (next.js: 3ms, proxy.ts: 6ms, application-code: 24ms)
+ GET /api/tabs/6a7984a1ea13043b48599bee/messages 200 in 28ms (next.js: 4ms, proxy.ts: 7ms, application-code: 18ms)
+ GET /api/work-records/6a79847fea13043b48599be3/tabs 200 in 25ms (next.js: 4ms, proxy.ts: 6ms, application-code: 15ms)
+ GET /api/tabs/6a7984ddea13043b48599bf9/messages 200 in 29ms (next.js: 4ms, proxy.ts: 7ms, application-code: 18ms)
+ GET /api/work-records/6a79847fea13043b48599be3/tabs 200 in 26ms (next.js: 4ms, proxy.ts: 6ms, application-code: 16ms)
+ GET /api/tabs/6a79852cea13043b48599c08/messages 200 in 28ms (next.js: 4ms, proxy.ts: 6ms, application-code: 18ms)
+ GET /api/tabs/6a7984a1ea13043b48599bee/messages 200 in 28ms (next.js: 3ms, proxy.ts: 6ms, application-code: 19ms)
