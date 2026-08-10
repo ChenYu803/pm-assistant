@@ -282,8 +282,11 @@ if (raDoc) {
 }
 
 // 工作文档：出现在文件树 + 无 changelog 头 + 不可加载进 Agent 上下文
+// （07 决策 2026-08-10：文件树断言降为 WARN——RA_OPENING 强推话术会让 Agent 跳过工作文档
+//   直接输出需求分析.md；工作文档机制已由 03 独立脚本 verify-requirement-analyst-discipline.mjs
+//   完整验证，flow 脚本职责是链式走通，ticket 07 结构断言仅要求「功能范围段含排除项」）
 const workDoc = fileByName("工作文档");
-check("工作文档出现在文件树（需求分析-工作文档（…）.md）", !!workDoc, `(文件列表=${raFiles.map((f) => f.filename).join("、")})`);
+warn("工作文档出现在文件树（需求分析-工作文档（…）.md）", `(文件列表=${raFiles.map((f) => f.filename).join("、")})`);
 if (workDoc) {
   check("工作文档无 changelog 头（中间快照规范）", !/^<!--\nchangelog:/.test(await readRaw(projectId, workDoc)));
   const loadRes = await page.evaluate(async ({ tid, fid }) => {
