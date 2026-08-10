@@ -13,3 +13,4 @@
  GET /api/auth/session 200 in 1092ms (next.js: 1061ms, proxy.ts: 5ms, application-code: 26ms)
  GET / 307 in 42ms (next.js: 3ms, proxy.ts: 5ms, application-code: 34ms)
  GET / 307 in 58ms (next.js: 7ms, proxy.ts: 6ms, application-code: 45ms)
+[?25h
