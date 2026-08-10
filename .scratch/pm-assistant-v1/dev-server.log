@@ -758,3 +758,4 @@ See this log for the ancestor stack trace.
  GET /api/work-records/6a79863aea13043b48599c12/tabs 200 in 45ms (next.js: 5ms, proxy.ts: 7ms, application-code: 33ms)
  GET /api/tabs/6a798718ea13043b48599c3b/messages 200 in 23ms (next.js: 3ms, proxy.ts: 6ms, application-code: 13ms)
  GET /api/tabs/6a798669ea13043b48599c1f/messages 200 in 26ms (next.js: 4ms, proxy.ts: 7ms, application-code: 16ms)
+[?25h

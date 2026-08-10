@@ -58,7 +58,7 @@
 
 ## 环境
 
-- dev server 运行中（本会话重启过），localhost:3000；MongoDB + DEEPSEEK_API_KEY 在 `.env.local`
+- dev server：**若已停需自行启动** `npm run dev`（后台），localhost:3000；MongoDB + DEEPSEEK_API_KEY 在 `.env.local`
 - 幂等：脚本每轮注册新用户（`verify-flow-${Date.now()}@test.local`），可重复跑
 
 ## 教训（本会话血泪）
