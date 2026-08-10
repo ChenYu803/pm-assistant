@@ -1,0 +1,12 @@
+
+> pm-assistant@0.1.0 dev
+> next dev
+
+▲ Next.js 16.3.0 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://172.29.46.97:3000
+- Environments: .env.local
+✓ Ready in 463ms
+✓ Running next.config.ts took 46ms
+
+ GET / 307 in 816ms (next.js: 97ms, proxy.ts: 557ms, application-code: 162ms)
