@@ -337,7 +337,18 @@ for (let i = 0; i < MAX_ROUNDS.pt - 1; i++) {
   const last = ring.rawReplies[ring.rawReplies.length - 1] ?? "";
   // 已产出原型.md（精确匹配 marker + 文件名）
   if (/%%%FILE_BEGIN%%%\s*原型\.md/.test(last)) {
-    ptFinished = true;
+    // 04 已知 LLM 波动：Agent 偶发跳过 %%%SCOPE_FROZEN%%% 冻结标记直接输出原型.md
+    //（route 冻结门 = 「Agent 回复含标记」+「用户消息命中肯定词」双条件）。
+    // 纠正一轮：重申「完满」（命中 SCOPE_FREEZE_CONFIRM_RE）+ 要求补全冻结序列。
+    if (!/%%%SCOPE_FROZEN%%%/.test(ring.rawReplies.join(""))) {
+      await sendAndWait(
+        "完满。你直接输出了原型.md，但缺少 %%%SCOPE_FROZEN%%% 范围冻结标记——请先输出自检清单与 %%%SCOPE_FROZEN%%% 标记，再输出原型.md。",
+        i + 2
+      );
+      ptFinished = /%%%FILE_BEGIN%%%\s*原型\.md/.test(ring.rawReplies[ring.rawReplies.length - 1] ?? "");
+    } else {
+      ptFinished = true;
+    }
     break;
   }
   const hCount = htmlCount();
