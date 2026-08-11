@@ -43,6 +43,7 @@
 ## 项目文件地图
 
 ### 实现输入（值得读）
+- `PROGRESS.md` — **项目状态单点真相：开始必读（当前阶段/本次任务/坑），结束必写（已完成成果 + frontier 推进）**
 - `.scratch/<feature-slug>/spec.md` — 需求总纲，唯一必须通读的文档
 - `.scratch/<feature-slug>/issues/NN-<slug>.md` — 当前 ticket，唯一必须通读的 ticket（依赖看 `Blocked by:` 行）
 - `CONTEXT.md`、`docs/adr/`（当前 ticket 引用到的部分）
