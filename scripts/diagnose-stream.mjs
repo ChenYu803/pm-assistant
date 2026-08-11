@@ -104,30 +104,53 @@ try {
   );
   console.log("✅ 流式已开始（textarea disabled）");
 
-  // 等流式结束（最长 12 分钟，覆盖完整 HTML 输出）
-  await page.waitForFunction(
-    () => {
-      const ta = document.querySelector("textarea");
-      return ta && !ta.disabled;
-    },
-    null,
-    { timeout: 720000 }
-  );
-  console.log("✅ 流式结束（textarea 恢复可用）");
+  // 通用：等流式结束，然后检查源码泄漏
+  async function waitStreamEnd(label) {
+    await page.waitForFunction(
+      () => {
+        const ta = document.querySelector("textarea");
+        return ta && !ta.disabled;
+      },
+      null,
+      { timeout: 720000 }
+    );
+    console.log(`✅ [${new Date().toLocaleTimeString("zh-CN", { hour12: false })}] ${label} 流式结束`);
+    const bodyText = await page.evaluate(() => document.body.innerText.slice(0, 400));
+    const htmlLeak = bodyText.includes("<!DOCTYPE") || bodyText.includes("<html");
+    console.log(htmlLeak ? `❌ ${label} 页面仍显示 HTML 源码！` : `✅ ${label} 页面无 HTML 源码泄漏`);
+    // 点掉可能出现的文件确认框
+    try {
+      const confirmBtn = page.getByRole("button", { name: "确认写入" });
+      await confirmBtn.waitFor({ state: "visible", timeout: 4000 });
+      await confirmBtn.click();
+      console.log(`✅ ${label} 点击了「确认写入」`);
+      await page.waitForTimeout(400);
+    } catch {
+      // 无确认框
+    }
+  }
 
-  // 流式结束后再测一次响应性 + 截图
-  await page.evaluate(() => 1 + 1);
+  await waitStreamEnd("第 1 轮（方案+HTML）");
+
+  // 第 2 轮：指正 → 修订 + 重新生成 HTML
+  console.log(`[${new Date().toLocaleTimeString("zh-CN", { hour12: false })}] 发送第 2 轮指正…`);
+  await page.locator("textarea").fill(
+    "整体方向可以。请修订一处：发布流程太繁琐，把「发布商品」合并为单页表单（标题、描述、价格、图片一步填完），去掉分步填写。请修订结构化文本并重新生成 HTML 原型快照。"
+  );
+  await page.getByRole("button", { name: "发送" }).click();
+  await waitStreamEnd("第 2 轮（修订+HTML）");
+
+  // 第 3 轮：完满确认 → 自检 + 原型.md
+  console.log(`[${new Date().toLocaleTimeString("zh-CN", { hour12: false })}] 发送第 3 轮完满…`);
+  await page.locator("textarea").fill("完满。请按自检清单检查后输出原型.md。");
+  await page.getByRole("button", { name: "发送" }).click();
+  await waitStreamEnd("第 3 轮（完满+原型.md）");
+
+  console.log("✅ 完整 3 轮流程走通，无卡死");
   await page.screenshot({ path: "scripts/diag-final.png", fullPage: true });
   console.log("截图已存 scripts/diag-final.png");
-
-  // 检查屏幕上有没有流式残留源码（HTML 不应逐字显示）
-  const bodyText = await page.evaluate(() => document.body.innerText.slice(0, 500));
-  console.log("--- 页面正文开头 ---");
-  console.log(bodyText);
-  const htmlLeak = bodyText.includes("<!DOCTYPE") || bodyText.includes("<html");
-  console.log(htmlLeak ? "❌ 页面仍显示 HTML 源码！" : "✅ 页面无 HTML 源码泄漏");
 } catch (e) {
-  console.log("❌ 脚本异常:", e.message.slice(0, 300));
+  console.log(`❌ [${new Date().toLocaleTimeString("zh-CN", { hour12: false })}] 脚本异常:`, e.message.slice(0, 300));
 } finally {
   stopProbe();
   console.log("--- JS 错误汇总 ---");
