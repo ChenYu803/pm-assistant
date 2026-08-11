@@ -15,7 +15,11 @@
 | File storage | Server-side, per-user project spaces | Auto-archiving, zero-friction handoff between agents; downloads also available |
 | Target workflow | 需求收集 → 需求分析 → 原型产出 → PRD撰写/迭代 → 任务拆分 (用户外部 vibe coding 为终点) | 四环 v1 pipeline,= matt 主流程产品化(grill / prototype / to-spec / to-tickets) |
 | Navigation mode | Hybrid — light progress indicator shows current phase, but user is never locked; skip/back/jump-in always allowed | Guides novices without constraining experienced users |
+| 空状态引导 | 新工作记录无标签页时展示四步流水线全景（需求分析→原型→PRD→任务拆分，每步职责一句话），仅「需求分析」可点击创建，后三步锁定显示「完成前置步骤后开启」；点击锁定步骤给轻提示。已有标签页后，TabBar「+」开新 tab 仍走完整 Agent 选择 | v1.1 决策（2026-08-11）：新人只被引导做第一步，同时看得见完整旅程 |
+| v1.1 范围（2026-08-11 grill-with-docs 敲定） | ① 体验改进 4 项：工作记录手动命名 / 空状态引导 / Agent 自我说明 / 对话框功能 ② 补充 4 项：文件批量确认 / 上下文长度预警 / 工作记录创建一步化 / 重生成与文件一致性提示 ③ Bug 修复：已写入文件无法更新（见下） | 每子版本解决一类问题；v1.2+ 才轮到各 Agent 专属 bug |
+| 文件更新 bug（v1.1 修复） | 正式文件（需求分析.md/原型.md/prd.md）写入后，后续对话中 Agent 输出同名 marker 不再触发写入判定——前端 `existingFileNames.includes(filename)` 拦截（US39 刷新去重误伤正常更新），文件永不更新。工作文档（静默写入路径）不受影响；issues/ 编号文件概率低。**修复方向**：判定依据从「文件名已存在」改为「该消息是否已写入」，仅历史重放扫描用文件名兜底 | 2026-08-11 用户实测发现；服务端 POST /files 本就支持更新（需求分析 append / 其他 replace） |
 | v1 priority | Process efficiency ("B") to 90 points; agent output quality ("A") as baseline; history ("C") limited | Flow is the moat; prompt quality can improve incrementally |
+| Agent 自我说明 | 选择标签页时（AgentTypeDialog）：每个 Agent 重写一句话「干什么」+ 结构化四段说明（职责一句话 / 需要你提供什么 / 会产出什么 / 在流水线中的位置）。tab 空状态保留「现在该说什么」的操作提示并重写更直白；四段说明不在 tab 内重复 | v1.1 决策（2026-08-11）：强引导性——求职 PM 不懂 PM 流程，得知道「我带什么来、能带走什么」 |
 | 目标用户群 | **求职 PM**（无 PM 工作经验的求职者；产品作者本人即典型用户）。原「在职 PM」定位作废（见 ADR-0001） | Dogfooding 兼作简历叙事；MVP 已验证流水线概念，v1.0 验证「新人也走得通」 |
 | 增长策略（三步走） | ① 自己作为唯一用户，把产品打磨成「自己想要的样子」 ② 以教学之名经营小红书等社群，引流其他求职 PM 使用 ③ 未来随用户群成长回在职 PM 市场 | 先做深单点再扩张；教学是引流手段，产品价值是「从想法到 PRD 的完整产出」 |
 | 核心体验目标 | 新人无引导也能走完「想法 → 需求分析.md → 原型.md → prd.md → issues」并导出成果 | 求职 PM 不懂 PM 流程，产品必须自己教会他们；需模板案例、新手引导、成果导出支撑 |
@@ -33,6 +37,7 @@
 | v1.0 范围（已划线，更新版） | 进：PRD 结构重构（六章，精简版文档退役）、方案 B 输出保障（一次只问一个问题 / 显式确认推进 / 输出完整性保障 / 表格控制）、原型 Agent（新增）、任务拆分 Agent（新增）、需求分析 Agent 微调（功能范围段充实）。出（维持）：模板案例、新手引导、成果导出（下载功能 MVP 已有） | 只服务作者本人走通四环拿到可 vibe coding 的 PRD + issues |
 | 需求分析.md 定位 | 四段结构保留；「成功指标」即使 AI 执行版 PRD 用不上也保留——对用户本人（学习 / 求职作品叙事）有独立价值 | 需求分析.md 不只是 PRD 的素材，自身是独立交付物 |
 | 新增 Agent 选择标准 | 新增 Agent 以「提升『PRD → vibe coding 跑通』完整链路（PRD 质量本身 + 落地性）」为第一标准；新手引导性/环节丰富度为第二标准，不因「看起来丰富」而加 | 完成标志 = 作者拿到能 vibe coding 的 PRD + issues；PRD 质量高低由链路质量决定、由 vibe coding 成功与否评判 |
+| 对话框功能（v1.1） | ①复制：消息 hover 复制按钮，复制渲染后纯文本（剥离 marker）②重新输出：替换式——重生成最后一条 AI 回复，旧回复从对话移除，可多次 ③删除对话：删除单条消息（用户/AI 均可，确认弹窗，不可恢复）④中断输出：流式期间显式「停止生成」按钮，中断后保留已生成内容（标注中断，作为上下文一部分；不满意可删）⑤智能滚动：向上翻历史不被新 token 拽回底部 ⑥流式期间输入框不禁用（仅禁发送）⑦编辑并重新发送：编辑用户消息 → 删除其后所有消息 → 重新生成 | v1.1 决策（2026-08-11）：学习市面 LLM 聊天框标配；「中断保留 + 单条删除」互为支撑 |
 | Prompt 重写原则 | 大方参考公开优秀 skills（如 grill-me 的 relentless interview：一次一问、聚焦追问、不跳步），不闭门造车 | 需求分析 Agent 本质是 interviewer，直接借鉴成熟 interview 纪律 |
 
 ### Information architecture
@@ -65,7 +70,7 @@ Project (e.g., "校园二手交易平台")
 | Authentication | Email + password (NextAuth.js Credentials, bcrypt, JWT) | Simple, no external auth dependency |
 | File tree | Included in MVP — click to load file into agent context; drag to v2 | Core handoff visual; demonstrates the key differentiator |
 | MVP pages | ① Register ② Login ③ Project list ④ Session list ⑤ Workspace | 5 routes; standard web app structure |
-| Session naming | AI auto-generates name from first conversation turn | User doesn't need to think about it |
+| 工作记录命名 | 创建时可选填名称（留空为「未命名」）；改名入口 = 列表页行内按钮 + 工作区顶栏点击；AI 自动命名保留，仅对「未命名」生效，用户手动起名后不再覆盖 | v1.1 决策（2026-08-11）：用户要能自己起名，AI 命名降级为兜底 |
 | Tab naming | Auto: "Agent类型 #N", user can double-click to rename | Defaults sensible, flexibility available |
 | Empty states | ① Project list: "创建第一个项目" CTA ② Work record list: "新建工作记录" CTA ③ Workspace (no tabs): prompt to create a tab, list agent types ④ File tree (no files): explain files appear after agent interaction ⑤ Chat area: no proactive greeting, let user start | First 4 are UI states; agent stays quiet until spoken to |
 | User flow (happy path) | Register → Create project → Create session → Chat with 需求分析 Agent (grilling → 需求分析.md) → 原型 Agent tab (提案 + 可视化确认 → 原型.md) → PRD Agent tab (嵌入原型 → 确认 → prd.md) → 任务拆分 Agent tab (quiz → issues/) | Four-agent pipeline, validates the whole flow |
