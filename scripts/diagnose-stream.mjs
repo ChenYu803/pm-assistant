@@ -67,7 +67,7 @@ try {
   await page.getByRole("link", { name: /诊断流式渲染/ }).click();
   await page.waitForURL((u) => /\/projects\/[0-9a-f]{24}$/.test(u.pathname));
   await page.getByRole("button", { name: "新建工作记录" }).first().click();
-  await page.getByRole("button", { name: "确认创建" }).click();
+  await page.getByRole("button", { name: "创建", exact: true }).click();
   await page.getByRole("link", { name: /未命名/ }).click();
   await page.waitForURL((u) => u.pathname.startsWith("/workspace/"));
 

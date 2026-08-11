@@ -29,7 +29,7 @@ await page.getByRole("link", { name: /验收项目/ }).click();
 await page.waitForURL((u) => u.pathname.startsWith("/projects/"), { timeout: 15000 });
 const projectId = page.url().split("/").pop();
 await page.getByRole("button", { name: "新建工作记录" }).first().click();
-await page.getByRole("button", { name: "确认创建" }).click();
+await page.getByRole("button", { name: "创建", exact: true }).click();
 await page.getByRole("link", { name: /未命名/ }).click();
 await page.waitForURL((u) => u.pathname.startsWith("/workspace/"), { timeout: 15000 });
 await page.getByRole("button", { name: /需求分析/ }).first().click();

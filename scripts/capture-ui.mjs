@@ -46,7 +46,7 @@ const projectId = page.url().split("/").pop();
 await shot("04-workrecords-empty");
 await page.getByRole("button", { name: "新建工作记录" }).first().click();
 await shot("05-workrecords-confirm");
-await page.getByRole("button", { name: "确认创建" }).click();
+await page.getByRole("button", { name: "创建", exact: true }).click();
 // 创建后停留在列表页，点击工作记录卡片进入工作台
 await page.getByRole("link", { name: /未命名/ }).click();
 await page.waitForURL((u) => u.pathname.startsWith("/workspace/"), { timeout: 15000 });
