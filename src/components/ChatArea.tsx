@@ -233,6 +233,19 @@ function HtmlSnapshotBanner({ html }: { html: string }) {
   );
 }
 
+/**
+ * 流式期间 HTML 原型快照的占位提示：HTML 源码动辄 5-15K tokens，逐 token
+ * 流式渲染进对话框既拖慢滚动又让用户看不懂——流式中只显示「正在输出」状态；
+ * 回复完成存库后由 renderContentWithMarkers 替换为 HtmlSnapshotBanner 下载按钮。
+ */
+function StreamingHtmlPlaceholder() {
+  return (
+    <div className="flex items-center gap-2 text-sm text-sky-600">
+      <span className="animate-pulse">📄 正在输出HTML原型文件...</span>
+    </div>
+  );
+}
+
 // ─── ChatArea ────────────────────────────────────────────────────────────────
 
 export default function ChatArea({
@@ -677,6 +690,63 @@ export default function ChatArea({
     );
   }
 
+  /**
+   * 流式版 marker 渲染：与 renderContentWithMarkers 同构（同一 marker 语义），
+   * 唯一差异在 HTML 分支容忍未闭合——流式中 %%%HTML_END%%% 尚未到达时，
+   * 以文本末尾兜底，把 HTML_BEGIN 之后的内容整体视为 HTML 段渲染为占位，
+   * 不逐 token 显示源码。流式是幂等重渲染：END 到达的下一 chunk 会重新匹配，
+   * 占位与后续文本恢复正常。FILE 分支保持原样流式显示（历史行为，本次只
+   * 处理 HTML；仅影响前端显示，不改存储消息——verify 脚本断言走 API 数据）。
+   */
+  function renderStreamingContent(content: string) {
+    // Strip internal markers (e.g. %%%SCOPE_FROZEN%%%) that must not reach the user.
+    const cleanContent = content.replace(/%%%SCOPE_FROZEN%%%/g, "");
+    // FILE 分支与完成版完全同形；HTML 分支 END 可缺省（流式中尚未到达）
+    const markerRegex =
+      /%%%FILE_BEGIN%%%\s*(.+?\.md)\s*\n([\s\S]*?)%%%FILE_END%%%|%%%HTML_BEGIN%%%\s*\n?([\s\S]*?)(?:%%%HTML_END%%%|$)/g;
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+    let key = 0;
+
+    while ((match = markerRegex.exec(cleanContent)) !== null) {
+      const kind = match[1] !== undefined ? "FILE" : "HTML";
+      const markerContent = (match[2] ?? match[3] ?? "").trim();
+
+      // Text before marker
+      if (match.index > lastIndex) {
+        parts.push(
+          <MarkdownRenderer
+            key={key++}
+            content={cleanContent.slice(lastIndex, match.index)}
+          />
+        );
+      }
+      if (kind === "HTML") {
+        parts.push(<StreamingHtmlPlaceholder key={key++} />);
+      } else {
+        parts.push(<MarkdownRenderer key={key++} content={markerContent} />);
+      }
+      lastIndex = match.index + match[0].length;
+    }
+
+    // Remaining text
+    if (lastIndex < cleanContent.length) {
+      parts.push(
+        <MarkdownRenderer
+          key={key++}
+          content={cleanContent.slice(lastIndex)}
+        />
+      );
+    }
+
+    return parts.length > 0 ? (
+      parts
+    ) : (
+      <MarkdownRenderer content={cleanContent} />
+    );
+  }
+
   // ── Empty state: no tab selected ────────────────────────────────────────
 
   if (!tabId || !tabName) {
@@ -787,10 +857,18 @@ export default function ChatArea({
 
           {/* Streaming message */}
           {isStreaming && streamingContent && (
-            <MessageBubble
-              message={{ role: "assistant", content: streamingContent }}
-              isStreaming={true}
-            />
+            <div className="mb-4 flex justify-start">
+              <div className="flex max-w-[80%] gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-200 text-sm text-gray-700">
+                  AI
+                </div>
+                <div className="rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm leading-relaxed text-gray-900">
+                  <div className="whitespace-pre-wrap break-words">
+                    {renderStreamingContent(streamingContent)}
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
 
           {/* Thinking indicator (streaming started but no content yet) */}
