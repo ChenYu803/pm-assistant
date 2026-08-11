@@ -76,7 +76,7 @@ Project (e.g., "校园二手交易平台")
 | MVP pages | ① Register ② Login ③ Project list ④ Session list ⑤ Workspace | 5 routes; standard web app structure |
 | 工作记录命名 | 创建时可选填名称（留空为「未命名」）；改名入口 = 列表页行内按钮 + 工作区顶栏点击；AI 自动命名保留，仅对「未命名」生效，用户手动起名后不再覆盖 | v1.1 决策（2026-08-11）：用户要能自己起名，AI 命名降级为兜底 |
 | Tab naming | Auto: "Agent类型 #N", user can double-click to rename | Defaults sensible, flexibility available |
-| Empty states | ① Project list: "创建第一个项目" CTA ② Work record list: "新建工作记录" CTA ③ Workspace (no tabs): prompt to create a tab, list agent types ④ File tree (no files): explain files appear after agent interaction ⑤ Chat area: no proactive greeting, let user start | First 4 are UI states; agent stays quiet until spoken to |
+| Empty states | ① Project list: "创建第一个项目" CTA ② Work record list: "新建工作记录" CTA ③ Workspace (no tabs): 四步流水线全景 + 仅「需求分析」可点，后三步锁定（v1.1，见「空状态引导」行）④ File tree (no files): explain files appear after agent interaction ⑤ Chat area: no proactive greeting, let user start | First 4 are UI states; agent stays quiet until spoken to |
 | User flow (happy path) | Register → Create project → Create session → Chat with 需求分析 Agent (grilling → 需求分析.md) → 原型 Agent tab (提案 + 可视化确认 → 原型.md) → PRD Agent tab (嵌入原型 → 确认 → prd.md) → 任务拆分 Agent tab (quiz → issues/) | Four-agent pipeline, validates the whole flow |
 
 ## Deferred to implement phase
