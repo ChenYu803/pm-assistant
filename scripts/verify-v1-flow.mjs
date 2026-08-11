@@ -110,17 +110,17 @@ async function sendAndWait(text, roundNo, dialogMode = "confirm-all") {
   await page.locator("textarea").fill(text);
   await page.getByRole("button", { name: "发送" }).click();
   // 等待回复完成：textarea 重新可用
-  // 300s > route 上游超时 180s（src/app/api/tabs/[id]/chat/route.ts 的 timeout: 180_000）：
+  // 720s > route 上游超时 600s（src/app/api/tabs/[id]/chat/route.ts 的 timeout: 600_000）：
   // 停滞时 route 先发错误 SSE 恢复输入框（而非 harness 先崩溃），本环以「重试下一轮」继续，
   // 单次瞬态停滞不杀整轮运行（2026-08-10 决策）。两条超时是一对不变量——改一侧必须同步另一侧，
-  // 保持 harness 等待严格大于 route 上游超时。
+  // 保持 harness 等待严格大于 route 上游超时（600s 与 SDK 默认一致，覆盖 32K 上限的慢速长输出）。
   await page.waitForFunction(
     () => {
       const ta = document.querySelector("textarea");
       return ta && !ta.disabled;
     },
     null,
-    { timeout: 300000 }
+    { timeout: 720000 }
   );
   console.log(`  [对话] 第 ${roundNo} 轮回复完成`);
   if (dialogMode === "confirm-all") {

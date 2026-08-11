@@ -146,15 +146,21 @@ export async function POST(
         let fullContent = "";
 
         try {
-          // 上游流式请求显式超时（SDK 默认 10 分钟太久）：停滞转有界错误——
-          // 错误 SSE 恢复输入框，调用方可继续重试（verify-v1-flow 等待 300s）
-          const deepseekStream = await openai.chat.completions.create({
-            model: DEEPSEEK_MODEL,
-            max_tokens: 8192,
-            messages,
-            stream: true,
-            timeout: 180_000,
-          });
+          // 上游流式请求显式超时：停滞转有界错误——错误 SSE 恢复输入框，
+          // 调用方可继续重试。600s 与 SDK 默认一致：旧 180s 按 8K 输出上限
+          // 设计，32K 上限下慢速轮次（HTML 快照 8-16K tokens @ 20-30 tps）
+          // 需 530-800s，180s 会把正常长输出误杀（verify-v1-flow 等待 720s）。
+          // timeout 必须作为第二参 RequestOptions 传——放 body 里 SDK 不读，
+          // 运行时实际走 SDK 默认 10 分钟（2026-08-11 排查 tsc 类型错时发现）。
+          const deepseekStream = await openai.chat.completions.create(
+            {
+              model: DEEPSEEK_MODEL,
+              max_tokens: 32768,
+              messages,
+              stream: true,
+            },
+            { timeout: 600_000 }
+          );
 
           for await (const chunk of deepseekStream) {
             const delta = chunk.choices[0]?.delta?.content;

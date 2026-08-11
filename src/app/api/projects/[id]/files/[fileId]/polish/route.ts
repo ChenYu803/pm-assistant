@@ -58,7 +58,7 @@ export async function POST(
 
     const response = await openai.chat.completions.create({
       model: DEEPSEEK_MODEL,
-      max_tokens: 8192,
+      max_tokens: 32768,
       messages: [
         { role: "system", content: POLISH_SYSTEM_PROMPT },
         { role: "user", content: `请润色以下 Markdown 内容：\n\n${content}` },
