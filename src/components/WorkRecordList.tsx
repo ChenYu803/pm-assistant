@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import InlineNameInput from "@/components/InlineNameInput";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,6 +39,10 @@ export default function WorkRecordList({ projectId }: WorkRecordListProps) {
   const [showCreate, setShowCreate] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<WorkRecord | null>(null);
+  // 创建面板的名称输入（可选，留空 = 「未命名」+ AI 自动命名兜底）
+  const [newName, setNewName] = useState("");
+  // 行内改名的目标记录 id（配合 InlineNameInput 使用）
+  const [renamingId, setRenamingId] = useState<string | null>(null);
 
   const fetchRecords = useCallback(async () => {
     try {
@@ -84,18 +90,42 @@ export default function WorkRecordList({ projectId }: WorkRecordListProps) {
       const res = await fetch(`/api/projects/${projectId}/work-records`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ name: newName.trim() || undefined }),
       });
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || "创建失败");
       }
       setShowCreate(false);
+      setNewName("");
       await fetchRecords();
     } catch (err) {
       setError(err instanceof Error ? err.message : "创建工作记录失败");
     } finally {
       setCreating(false);
+    }
+  }
+
+  /** 行内改名：PATCH 成功后更新本地列表。 */
+  async function handleRename(id: string, newName: string) {
+    setRenamingId(null);
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+    try {
+      const res = await fetch(`/api/work-records/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: trimmed }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "改名失败");
+      }
+      setRecords((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, name: trimmed } : r))
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "改名失败");
     }
   }
 
@@ -178,17 +208,35 @@ export default function WorkRecordList({ projectId }: WorkRecordListProps) {
             </div>
           )}
 
-          {/* Create confirmation */}
+          {/* Create panel: 名称可选，输入 + 回车即创建（v1.1 创建一步化） */}
           {showCreate && (
             <div className="mb-6 rounded-lg border border-border bg-card p-4">
               <p className="mb-3 text-sm text-muted-foreground">
-                工作记录的名称将在首次对话后由 AI 自动生成。现在创建将显示为「未命名」。
+                输入名称后回车即创建；留空将显示「未命名」，首次对话后由 AI 自动命名（手动命名后 AI 不再覆盖）。
               </p>
               <div className="flex gap-2">
+                <Input
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleCreate();
+                    else if (e.key === "Escape") setShowCreate(false);
+                  }}
+                  placeholder="工作记录名称（可选）"
+                  autoFocus
+                  className="flex-1"
+                  disabled={creating}
+                />
                 <Button onClick={handleCreate} disabled={creating}>
-                  {creating ? "创建中..." : "确认创建"}
+                  {creating ? "创建中..." : "创建"}
                 </Button>
-                <Button variant="secondary" onClick={() => setShowCreate(false)}>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setShowCreate(false);
+                    setNewName("");
+                  }}
+                >
                   取消
                 </Button>
               </div>
@@ -220,16 +268,25 @@ export default function WorkRecordList({ projectId }: WorkRecordListProps) {
                   className="flex items-center justify-between rounded-lg border border-border bg-card p-4 transition-colors hover:border-gray-300"
                 >
                   <div className="min-w-0 flex-1">
-                    <Link
-                      href={`/workspace/${record.id}`}
-                      className={`font-medium underline-offset-2 transition-colors hover:text-muted-foreground hover:underline ${
-                        record.name === "未命名"
-                          ? "italic text-muted-foreground"
-                          : "text-foreground"
-                      }`}
-                    >
-                      {record.name}
-                    </Link>
+                    {renamingId === record.id ? (
+                      <InlineNameInput
+                        value={record.name}
+                        onSubmit={(n) => handleRename(record.id, n)}
+                        onCancel={() => setRenamingId(null)}
+                        className="w-48"
+                      />
+                    ) : (
+                      <Link
+                        href={`/workspace/${record.id}`}
+                        className={`font-medium underline-offset-2 transition-colors hover:text-muted-foreground hover:underline ${
+                          record.name === "未命名"
+                            ? "italic text-muted-foreground"
+                            : "text-foreground"
+                        }`}
+                      >
+                        {record.name}
+                      </Link>
+                    )}
                     <span className="ml-3 text-xs text-muted-foreground">
                       {new Date(record.created_at).toLocaleDateString("zh-CN")}
                     </span>
@@ -237,9 +294,18 @@ export default function WorkRecordList({ projectId }: WorkRecordListProps) {
                   <Button
                     variant="ghost"
                     size="sm"
+                    onClick={() => setRenamingId(record.id)}
+                    disabled={renamingId === record.id}
+                    className="ml-4 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                  >
+                    改名
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setPendingDelete(record)}
                     disabled={deletingId === record.id}
-                    className="ml-4 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                    className="ml-1 text-gray-500 hover:bg-red-50 hover:text-red-600"
                   >
                     {deletingId === record.id ? "删除中..." : "删除"}
                   </Button>

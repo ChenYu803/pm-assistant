@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { AgentType } from "@/lib/agent-constants";
-import { AGENT_TYPE_LABELS } from "@/lib/agent-constants";
+import { AGENT_TYPE_ICONS, AGENT_TYPE_LABELS } from "@/lib/agent-constants";
 import FileConfirmDialog, {
   type FileToConfirm,
 } from "@/components/FileConfirmDialog";
@@ -18,22 +18,18 @@ import { isWorkingDocFile } from "@/lib/file-helpers";
 
 // ─── Empty states ────────────────────────────────────────────────────────────
 
-/** 各 Agent 类型的空态提示（icon + 职责文案），见 spec 需求 40。 */
-const EMPTY_STATE_BY_AGENT: Record<AgentType, { icon: string; hint: string }> = {
+/** 各 Agent 类型的空态提示（icon 取 AGENT_TYPE_ICONS，职责文案），见 spec 需求 40。 */
+const EMPTY_STATE_BY_AGENT: Record<AgentType, { hint: string }> = {
   requirement_analyst: {
-    icon: "📋",
     hint: "请描述您想做的产品或想解决的问题，我将通过系统化的流程帮您梳理需求。",
   },
   mvp_prd: {
-    icon: "📝",
     hint: "请提供需求分析文档，我将帮您生成 MVP 版本的 PRD。",
   },
   prototype: {
-    icon: "🎨",
     hint: "需求分析完成后，我将基于需求分析为您产出页面清单与用户流程的原型方案。",
   },
   ticket_splitter: {
-    icon: "✂️",
     hint: "PRD 完成后，我将把 PRD 拆分为按依赖排序、可直接实施的开发任务。",
   },
 };
@@ -284,6 +280,12 @@ export default function ChatArea({
   const [savingFile, setSavingFile] = useState(false);
   // Track processed message IDs to avoid re-showing dialogs
   const processedFileMessageIds = useRef<Set<string>>(new Set());
+  // 本会话内实时产生（SSE done 事件）的 assistant 消息 id。历史重放扫描 effect
+  // 在 done 处理器的 setTimeout(100) 之前（effect 内 setTimeout(0)）就会跑，
+  // 若扫描把实时消息也当历史处理，「文件名已存在 → 跳过」的兜底会吞掉新消息
+  // 的写入判定——实时消息必须走「消息是否已写入」判定，不做文件名兜底
+  // （v1.1 文件更新修复）。id 全局唯一（ObjectId），切 tab 后无需清理。
+  const liveMessageIds = useRef<Set<string>>(new Set());
   // Messages whose file has actually been written (banner shows "已写入").
   // State, not a ref — it's read during render.
   const [writtenFileMessageIds, setWrittenFileMessageIds] = useState<Set<string>>(new Set());
@@ -337,9 +339,17 @@ export default function ChatArea({
     [projectId, agentType, onFileSaved]
   );
 
-  /** Check a message for file markers and trigger confirmation dialog. */
+  /**
+   * Check a message for file markers and trigger confirmation dialog.
+   * historyReplay = true：历史重放（页面刷新 / 重新加载）扫描路径，文件名已存在
+   * 视为「该消息的写入已落盘」→ 不重复弹确认框（文件名兜底，仅此路径使用）。
+   * 实时新消息（SSE done）不传此参数：正式文件总是重新触发写入判定——即使同名
+   * 文件已存在，也再弹确认框，确认后按既有语义更新（需求分析 append / 其他
+   * replace，服务端 files/route.ts），修复「已写入文件无法更新」bug（spec 文件
+   * 更新修复）。拒绝仍不落盘；工作文档静默写入路径不受影响。
+   */
   const checkAndShowFileDialog = useCallback(
-    (message: ChatMessage) => {
+    (message: ChatMessage, historyReplay = false) => {
       if (processedFileMessageIds.current.has(message.id)) return;
       const markers = extractFileMarkers(message.content);
       if (markers.length > 0) {
@@ -353,9 +363,11 @@ export default function ChatArea({
             void writeFileToServer(m, message.id);
             continue;
           }
-          // File already exists (e.g. after a page reload) — don't re-ask for a
-          // completed write (spec US39); the banner stays for intentional re-writes.
-          if (existingFileNames?.includes(m.filename)) continue;
+          if (historyReplay && existingFileNames?.includes(m.filename)) {
+            // 历史重放：文件名已存在 = 该消息的写入已落盘 → 不重复弹框；
+            // 横幅保留手动「写入项目文件」供有意重写（现状语义不变）。
+            continue;
+          }
           pending.push({ file: m, messageId: message.id });
         }
         if (pending.length > 0) {
@@ -432,13 +444,22 @@ export default function ChatArea({
   // Waits for the project file list to finish loading (filesReady): otherwise
   // a slow file fetch would race the message history and re-ask for a write
   // the user already confirmed (the file simply isn't in existingFileNames yet).
+  // 历史重放语义（historyReplay=true，文件名兜底）；实时消息（liveMessageIds）
+  // 跳过——由 done 事件处理器用「消息级已写入」判定处理（v1.1 文件更新修复，
+  // 否则 effect 的 setTimeout(0) 抢在 done 的 setTimeout(100) 前，文件名兜底
+  // 会吞掉新消息的写入判定）。
   useEffect(() => {
     if (!tabId || !filesReady || loadingHistory) return;
     // setTimeout 延迟到宏任务：effect 内同步 setState 会触发级联渲染（lint 规则），
     // 弹窗推迟一帧对用户无感知；与 done 事件的 setTimeout 先例一致。
     const t = setTimeout(() => {
       for (const msg of messages) {
-        if (msg.role === "assistant") checkAndShowFileDialog(msg);
+        if (
+          msg.role === "assistant" &&
+          !liveMessageIds.current.has(msg.id)
+        ) {
+          checkAndShowFileDialog(msg, true);
+        }
       }
     }, 0);
     return () => clearTimeout(t);
@@ -537,6 +558,10 @@ export default function ChatArea({
                 content: fullContent,
                 timestamp: new Date().toISOString(),
               };
+              // 先登记再 setMessages：历史扫描 effect 在 setMessages 触发的
+              // 重渲染后（setTimeout 0）就会跑，必须让它跳过这条实时消息，
+              // 由下面的 setTimeout(100) 以「消息级已写入」判定处理。
+              liveMessageIds.current.add(newMsg.id);
               setMessages((prev) => [...prev, newMsg]);
               setTimeout(() => checkAndShowFileDialog(newMsg), 100);
               setStreamingContent("");
@@ -818,7 +843,7 @@ export default function ChatArea({
             <div className="flex items-center justify-center py-16">
               <div className="text-center">
                 <div className="mb-4 text-5xl">
-                  {agentType ? EMPTY_STATE_BY_AGENT[agentType].icon : "📝"}
+                  {agentType ? AGENT_TYPE_ICONS[agentType] : "📝"}
                 </div>
                 <h2 className="mb-2 text-xl font-semibold text-gray-900">
                   {tabName}

@@ -67,8 +67,15 @@ export async function POST(
       );
     }
 
+    // 可选名称（v1.1 创建一步化）：填了用用户命名（AI 自动命名不会再覆盖，
+    // auto-name 只对「未命名」生效）；留空走默认「未命名」+ AI 自动命名兜底。
+    const body = await request.json().catch(() => ({}));
+    const { name } = body as { name?: unknown };
+    const trimmedName = typeof name === "string" ? name.trim() : "";
+
     const workRecord = await WorkRecord.create({
       project_id: project._id,
+      ...(trimmedName ? { name: trimmedName } : {}),
     });
 
     return NextResponse.json(

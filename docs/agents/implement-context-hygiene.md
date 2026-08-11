@@ -4,13 +4,27 @@
 
 **职责**：开始任何 implement 工作前，先读本文档，然后按它的规则规划阅读，再动手。
 
+## 开工路径（每个 implement 会话的第一步）
+
+按序阅读，读完 1-5 即可开工（开工前不通读任何源码）：
+
+| 序 | 读 | 获得 |
+|---|---|---|
+| 1 | `CLAUDE.md` | 验证分级与全局约定（自动加载，0 成本） |
+| 2 | 本文件 | 阅读纪律 + 协议耦合快照 |
+| 3 | `PROGRESS.md` | 当前阶段 / 本次任务（票号+要点）/ 已踩过的坑 |
+| 4 | 当前 ticket（`issues/NN-<slug>.md`） | 任务定义 + AC + Blocked by（由 PROGRESS「本次任务」指向） |
+| 5 | `spec.md` 相关章节 | 需求总纲（目的驱动：ticket 引用到的部分） |
+
+5 之后按需读核心源码（`agent-prompts.ts` / `chat/route.ts` / `ChatArea.tsx` 的相关部分）与相关 verify 脚本头尾（风格参考）。
+
 ## 铁律：目的驱动阅读
 
 读任何文件前先回答：**我需要它的什么信息？** 然后按答案选最小读取方式：
 
 | 需要什么 | 怎么读 |
 |---|---|
-| 只学**风格**（注释语言/命名/输出格式/退出码） | 只读文件头 ~30 行 + 尾部 ~20 行（`Read` 带 `offset`/`limit`，或 `head`/`tail`） |
+| 只学**风格**（注释语言/命名/输出格式/退出码） | 只读文件头 ~30 行 + 尾部 ~20 行（`Read` 带 `offset`/`limit`，或 `head`/`tail`）——如 verify-*.mjs 297 行只需头尾（约 250 行是 E2E 驱动逻辑，与静态脚本任务零相关） |
 | 只找**几个点**（协议标记/常量/函数位置） | 精准 grep + `-n` 行号；命中行够了就别读全文 |
 | **完整理解**（spec、当前 ticket、CONTEXT.md） | 才读全文 |
 
@@ -34,11 +48,11 @@
 
 ## 具体规则（来自真实教训）
 
-1. **不要为"学风格"通读既有 verify 脚本全文**。`scripts/verify-fixes.mjs` 297 行中约 250 行是 E2E 驱动逻辑（Playwright/MongoDB 造数据），与静态脚本任务零相关；风格信息（中文注释、✅/❌ 计数输出、`process.exit(fail>0?1:0)`）只出现在头尾 ~30 行。
-2. **grep 用符号锚定，不用中文普通词**。搜「确认/可以/同意」会命中大量 prompt 文案噪声（40 行命中里只有 2 行有用）。正确做法：搜常量名（如 `SCOPE_FREEZE_CONFIRM_RE`）、正则原文、或带 `%%%` 的协议标记。
+1. **grep 用符号锚定，不用中文普通词**。搜「确认/可以/同意」会命中大量 prompt 文案噪声（40 行命中里只有 2 行有用）。正确做法：搜常量名（如 `SCOPE_FREEZE_CONFIRM_RE`）、正则原文、或带 `%%%` 的协议标记。
+2. **识别并绕开历史文件**：`.scratch/pm-assistant-mvp/`（旧 MVP，已交付）、`.scratch/prd-structure/`（更早方案讨论）、`docs/adr/` 中当前 ticket 未引用的部分，都是背景资料不是实现输入，默认不读。
 3. **探索按层级推进，每层产出不够才进下一层**：① `ls` 目录拿清单 → ② 精准 grep 拿行号 → ③ 需要时才 `Read` 具体行段。不跳级。
-4. **识别并绕开历史文件**：`.scratch/pm-assistant-mvp/`（旧 MVP，已交付）、`.scratch/prd-structure/`（更早方案讨论）、`docs/adr/` 中当前 ticket 未引用的部分，都是背景资料不是实现输入，默认不读。
-5. **对齐时用最小证据**：向用户复述任务理解时，grep 命中行 + 文件头部就是够的证据，不需要全文背书。
+
+（「不要通读 verify 脚本全文」「对齐用最小证据」已并入上方目的驱动阅读表格——本清单只保留非重复的新教训。）
 
 ## 项目文件地图
 
@@ -57,7 +71,7 @@
 
 ## 协议三处耦合点现状快照
 
-**日期**：2026-08-08（06-ticket-splitter-agent 完成后，行号已随 06 改动校准）。06 新增协议时，由对应 implement Agent 更新本快照。
+**日期**：2026-08-08（06-ticket-splitter-agent 完成后，行号已随 06 改动校准）。06 新增协议时，由对应 implement Agent 更新本快照。**行号仅供参考**：快照日期后代码已有改动（如 chat/route.ts 的 timeout 参数 2026-08-11 修正），动手前用 grep 验证行号，勿盲信。
 
 - `%%%FILE_BEGIN%%%` / `%%%FILE_END%%%`：prompt 定义处 BEGIN `agent-prompts.ts:50,60,143,178,268,347`、END `agent-prompts.ts:52,62,145,180,270,358`（requirement_analyst 两对：工作文档 + 需求分析.md；mvp_prd 两对：概念版（Tab N）.md + prd.md；prototype 一对：原型.md；**ticket_splitter 一对（06 新增）**：issues/NN-<slug>.md 文件集示例）；前端解析处 `ChatArea.tsx:86,609,615`（route 不处理 FILE markers）
 - `%%%HTML_BEGIN%%%` / `%%%HTML_END%%%`（**04 新增**，原型 HTML 快照）：prompt 定义处 `agent-prompts.ts:243,245`（prototype）；前端解析处 `ChatArea.tsx:593`（与 FILE 标记同处联合正则，显式双分支保证字面量完整；HTML 分支**无文件名槽**——首行不得吞进捕获组）；route 不执法——HTML 快照前端 Blob 下载即弃、不进文件树

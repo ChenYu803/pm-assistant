@@ -6,11 +6,12 @@ import Link from "next/link";
 import TabBar from "@/components/TabBar";
 import ChatArea from "@/components/ChatArea";
 import AgentTypeDialog from "@/components/AgentTypeDialog";
+import InlineNameInput from "@/components/InlineNameInput";
 import FileTree from "@/components/FileTree";
 import FilePreviewPanel from "@/components/FilePreviewPanel";
 import PipelineProgressIndicator from "@/components/PipelineProgressIndicator";
 import AgentContextPanel, { type ContextFile } from "@/components/AgentContextPanel";
-import { AGENT_TYPES, AGENT_TYPE_LABELS, AGENT_TYPE_DESCRIPTIONS, type AgentType } from "@/lib/agent-constants";
+import { AGENT_TYPE_ICONS, AGENT_TYPE_LABELS, AGENT_TYPE_DESCRIPTIONS, PIPELINE_AGENT_TYPES, type AgentType } from "@/lib/agent-constants";
 import type { TabData } from "@/lib/agent-constants";
 import type { ProjectFileData } from "@/lib/file-helpers";
 import { downloadFilename } from "@/lib/file-helpers";
@@ -57,6 +58,10 @@ export default function WorkspacePage() {
   const [deletingFile, setDeletingFile] = useState(false);
   const [workRecord, setWorkRecord] = useState<WorkRecord | null>(null);
   const [project, setProject] = useState<Project | null>(null);
+  // 顶栏工作记录名是否处于行内改名状态（点击名称进入）
+  const [renamingRecord, setRenamingRecord] = useState(false);
+  // 空状态锁定步骤点击的轻提示文案（auto-clear）
+  const [lockedStepHint, setLockedStepHint] = useState("");
 
   // File tree state
   const [files, setFiles] = useState<ProjectFileData[]>([]);
@@ -318,6 +323,29 @@ export default function WorkspacePage() {
     }
   }
 
+  /** 顶栏改名：PATCH 后更新本地工作记录名（AI 自动命名只对「未命名」生效，
+   *  手动改名后不再覆盖——auto-name 服务端判定，此处无需额外处理）。 */
+  async function handleRenameRecord(newName: string) {
+    setRenamingRecord(false);
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+    try {
+      const res = await fetch(`/api/work-records/${workRecordId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: trimmed }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "改名失败");
+      }
+      const updated = await res.json();
+      setWorkRecord(updated);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "改名失败");
+    }
+  }
+
   async function handleRenameTab(tabId: string, newName: string) {
     // Optimistic update
     setTabs((prev) =>
@@ -496,9 +524,23 @@ export default function WorkspacePage() {
             </>
           )}
           <span>/</span>
-          <span className="font-medium text-gray-900">
-            {workRecord?.name || "工作台"}
-          </span>
+          {renamingRecord ? (
+            <InlineNameInput
+              value={workRecord?.name ?? "工作台"}
+              onSubmit={handleRenameRecord}
+              onCancel={() => setRenamingRecord(false)}
+              className="w-44"
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setRenamingRecord(true)}
+              title="点击改名"
+              className="rounded px-1 font-medium text-gray-900 transition-colors hover:bg-gray-100"
+            >
+              {workRecord?.name || "工作台"}
+            </button>
+          )}
         </nav>
 
         {/* Pipeline progress indicator */}
@@ -566,35 +608,81 @@ export default function WorkspacePage() {
             </div>
           )}
 
-          {/* Empty state: no tabs */}
+          {/* Empty state: no tabs — 四步流水线全景（v1.1 空状态引导） */}
           {!error && tabs.length === 0 ? (
-            <div className="flex flex-1 items-center justify-center bg-gray-50">
-              <div className="text-center">
+            <div className="flex flex-1 items-center justify-center overflow-y-auto bg-gray-50">
+              <div className="px-6 py-10 text-center">
                 <div className="mb-4 text-5xl">🚀</div>
                 <h2 className="mb-2 text-xl font-semibold text-gray-900">
-                  新建一个标签页开始工作
+                  从一个想法开始，四步走完产品闭环
                 </h2>
-                <p className="mb-6 text-sm text-gray-500">
-                  选择一个 AI Agent 类型来启动您的第一个工作标签页
+                <p className="mb-2 text-sm text-gray-500">
+                  按流水线顺序完成每一步，前一步的产出自动交给下一步
                 </p>
-                <ul className="mx-auto mb-6 max-w-sm space-y-2 text-left">
-                  {AGENT_TYPES.map((type) => (
-                    <li key={type}>
-                      <button
-                        onClick={() => handleCreateTab(type)}
-                        disabled={creating}
-                        className="w-full rounded-lg border border-gray-200 bg-white p-3 text-left hover:border-gray-400 hover:bg-gray-50 disabled:opacity-50 transition-colors"
-                      >
-                        <div className="font-medium text-gray-900">
-                          {AGENT_TYPE_LABELS[type]}
-                        </div>
-                        <div className="mt-0.5 text-xs text-gray-500">
-                          {AGENT_TYPE_DESCRIPTIONS[type]}
-                        </div>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                <p className="mb-8 text-xs text-gray-400">
+                  点击「需求分析」创建第一个标签页；已有标签页后可用右上角「+」选择任意 Agent
+                </p>
+
+                {/* 流水线全景：仅首步（需求分析）可点击创建，后三步锁定 */}
+                <div className="flex flex-wrap items-stretch justify-center gap-3">
+                  {PIPELINE_AGENT_TYPES.map((type, index) => {
+                    const locked = index > 0;
+                    return (
+                      <div key={type} className="flex items-center gap-3">
+                        {index > 0 && (
+                          <div className="hidden text-xl text-gray-300 sm:block">
+                            →
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (locked) {
+                              // 轻提示：锁定步骤点击提示原因
+                              setLockedStepHint(
+                                `「${AGENT_TYPE_LABELS[type]}」完成前置步骤后开启`
+                              );
+                              setTimeout(() => setLockedStepHint(""), 2500);
+                              return;
+                            }
+                            handleCreateTab(type);
+                          }}
+                          disabled={creating}
+                          className={`flex w-44 flex-col items-center gap-1.5 rounded-xl border p-4 transition-colors ${
+                            locked
+                              ? "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400"
+                              : "border-indigo-200 bg-white hover:border-indigo-400 hover:bg-indigo-50"
+                          }`}
+                        >
+                          <span className="text-3xl">{AGENT_TYPE_ICONS[type]}</span>
+                          <span className="text-sm font-medium">
+                            {AGENT_TYPE_LABELS[type]}
+                          </span>
+                          <span className="text-xs leading-relaxed text-gray-500">
+                            {AGENT_TYPE_DESCRIPTIONS[type]}
+                          </span>
+                          {locked && (
+                            <span className="mt-1 flex items-center gap-1 text-xs text-gray-400">
+                              🔒 完成前置步骤后开启
+                            </span>
+                          )}
+                          {!locked && (
+                            <span className="mt-1 text-xs font-medium text-indigo-600">
+                              ← 从这里开始
+                            </span>
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* 锁定步骤轻提示 */}
+                {lockedStepHint && (
+                  <div className="mx-auto mt-6 max-w-sm rounded-md bg-gray-800 px-4 py-2 text-xs text-white">
+                    {lockedStepHint}
+                  </div>
+                )}
               </div>
             </div>
           ) : (
