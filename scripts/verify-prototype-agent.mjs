@@ -140,13 +140,16 @@ async function sendAndWait(text, roundNo) {
   await page.locator("textarea").fill(text);
   await page.getByRole("button", { name: "发送" }).click();
   // 等待回复完成：textarea 重新可用
+  // 720s 与 verify-v1-flow 同族不变量：32K max_tokens 后一轮完整输出（方案 +
+  // HTML 快照 5-15K tokens @ 30-50 tps）可达 100-500s，旧 120s 会误杀（2026-08-11
+  // 首跑 32K 时代第 1 轮即超时）。route 上游超时 600s，保持 harness 等待 > 上游。
   await page.waitForFunction(
     () => {
       const ta = document.querySelector("textarea");
       return ta && !ta.disabled;
     },
     null,
-    { timeout: 120000 }
+    { timeout: 720000 }
   );
   console.log(`  [对话] 第 ${roundNo} 轮回复完成`);
   // 回复完成后可能出现文件确认框（原型.md 是正式交付物，弹确认框）——点掉
