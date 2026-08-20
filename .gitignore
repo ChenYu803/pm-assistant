@@ -47,6 +47,3 @@ next-env.d.ts
 # dev artifacts
 .scratch/dev-server.log
 .scratch/screenshots/
-
-# impeccable skill hook runtime cache (regenerated every session)
-.impeccable/hook.cache.json
