@@ -50,7 +50,6 @@ await page.getByRole("button", { name: "创建", exact: true }).click();
 // 创建后停留在列表页，点击工作记录卡片进入工作台
 await page.getByRole("link", { name: /未命名/ }).click();
 await page.waitForURL((u) => u.pathname.startsWith("/workspace/"), { timeout: 15000 });
-const workRecordId = page.url().split("/").pop();
 await page.waitForLoadState("networkidle");
 await shot("06-workspace-empty");
 

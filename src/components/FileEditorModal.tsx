@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -33,15 +33,6 @@ export default function FileEditorModal({
   const [isPolishing, setIsPolishing] = useState(false);
   const [polishedContent, setPolishedContent] = useState<string | null>(null);
   const [polishError, setPolishError] = useState("");
-
-  useEffect(() => {
-    if (open) {
-      setContent(initialContent);
-      setPolishedContent(null);
-      setPolishError("");
-      setIsPolishing(false);
-    }
-  }, [open, initialContent]);
 
   async function handlePolish() {
     if (!polishTarget || !content.trim()) return;

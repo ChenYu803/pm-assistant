@@ -24,6 +24,8 @@
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
   --radius: 0.625rem;
+  --font-app-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-app-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 .dark {
@@ -49,9 +51,9 @@
 }
 
 @theme inline {
-  /* Geist font vars from next/font — MUST stay intact */
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* 使用系统字体，避免构建阶段依赖外部字体服务。 */
+  --font-sans: var(--font-app-sans);
+  --font-mono: var(--font-app-mono);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -87,6 +89,6 @@
   body {
     background: var(--background);
     color: var(--foreground);
-    font-family: var(--font-geist-sans), system-ui, sans-serif;
+    font-family: var(--font-app-sans);
   }
 }

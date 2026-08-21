@@ -144,7 +144,8 @@ function renderMarkdown(md: string): string {
 
 function renderCodeBlock(code: string, lang: string): string {
   const escaped = escapeHtml(code);
-  return `<pre class="rounded-lg bg-gray-900 p-4 my-3 overflow-x-auto"><code class="text-sm text-gray-100">${escaped}</code></pre>`;
+  const languageClass = lang ? ` language-${escapeHtml(lang)}` : "";
+  return `<pre class="rounded-lg bg-gray-900 p-4 my-3 overflow-x-auto"><code class="text-sm text-gray-100${languageClass}">${escaped}</code></pre>`;
 }
 
 // ─── Table parsing ─────────────────────────────────────────────────────────────

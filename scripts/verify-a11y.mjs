@@ -35,9 +35,13 @@ await page.waitForURL((u) => u.pathname.startsWith("/workspace/"), { timeout: 15
 await page.getByRole("button", { name: /需求分析/ }).first().click();
 await page.waitForLoadState("networkidle");
 
-// 1. 字体检查：body 以 Geist 开头
+// 1. 字体检查：body 使用 globals.css 定义的离线系统字体契约
 const font = await page.evaluate(() => getComputedStyle(document.body).fontFamily);
-check("字体仍为 Geist", font.startsWith("var(--font-geist-sans)") || /Geist/.test(font), font);
+check(
+  "字体使用离线系统 fallback",
+  font.includes("system-ui") && font.includes("sans-serif") && !font.includes("Geist"),
+  font
+);
 
 // 2. AgentTypeDialog：Escape 关闭
 await page.getByRole("button", { name: "+", exact: true }).click();

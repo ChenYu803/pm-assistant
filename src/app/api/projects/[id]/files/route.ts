@@ -108,8 +108,8 @@ export async function GET(
       files.map((f) => {
         const serialized = serializeProjectFile(f as unknown as IProjectFileDocument);
         // Omit content from list endpoint — call GET /files/:id for full content
-        const { content: _, ...rest } = serialized;
-        return rest;
+        const { id, filename, project_id, created_at, updated_at } = serialized;
+        return { id, filename, project_id, created_at, updated_at };
       })
     );
   } catch (error) {

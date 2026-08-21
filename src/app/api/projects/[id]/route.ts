@@ -3,7 +3,6 @@ import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import WorkRecord from "@/models/WorkRecord";
 import ProjectFile from "@/models/ProjectFile";
-import AgentFileContext from "@/models/AgentFileContext";
 import { findOwnedProject } from "@/lib/ownership";
 
 export async function GET(

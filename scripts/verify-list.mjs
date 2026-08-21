@@ -20,16 +20,6 @@ const env = Object.fromEntries(
     })
 );
 await mongoose.connect(env.MONGODB_URI);
-const Tab = mongoose.model(
-  "VTab2",
-  new mongoose.Schema({
-    agent_type: String,
-    display_name: String,
-    work_record_id: mongoose.Schema.Types.ObjectId,
-    scope_frozen: Boolean,
-  }),
-  "tabs"
-);
 const Message = mongoose.model(
   "VMessage2",
   new mongoose.Schema({

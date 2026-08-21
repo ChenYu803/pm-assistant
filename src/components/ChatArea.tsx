@@ -120,6 +120,13 @@ function estimateContextTokens(messages: ChatMessage[], input: string): number |
 const FILE_MARKER_RE =
   /%%%FILE_BEGIN%%%\s*(.+?\.md)\s*\n([\s\S]*?)%%%FILE_END%%%/g;
 
+let clientMessageSequence = 0;
+
+function createClientMessageId(prefix: string): string {
+  clientMessageSequence += 1;
+  return `${prefix}-${Date.now()}-${clientMessageSequence}`;
+}
+
 /** Extract all file blocks from content. Returns array of {filename, content}. */
 function extractFileMarkers(content: string): FileToConfirm[] {
   const results: FileToConfirm[] = [];
@@ -688,7 +695,7 @@ export default function ChatArea({
       ? null
       : reusesLastUser
         ? lastVisibleMessage.id
-        : `temp-${Date.now()}`;
+        : createClientMessageId("temp");
     if (!regenerateMessageId && !reusesLastUser) {
       const optimisticUser: ChatMessage = {
         id: optimisticUserId!,
@@ -763,7 +770,7 @@ export default function ChatArea({
               break;
             case "done": {
               const newMsg: ChatMessage = {
-                id: event.messageId || `msg-${Date.now()}`,
+                id: event.messageId || createClientMessageId("msg"),
                 role: "assistant",
                 content: fullContent,
                 timestamp: new Date().toISOString(),

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
-import Tab from "@/models/Tab";
 import Message from "@/models/Message";
 import AgentFileContext from "@/models/AgentFileContext";
 import { findOwnedTab } from "@/lib/ownership";

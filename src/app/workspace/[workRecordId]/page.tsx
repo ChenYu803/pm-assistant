@@ -122,7 +122,10 @@ export default function WorkspacePage() {
   }, [activeTabId]);
 
   useEffect(() => {
-    fetchContextFiles();
+    const refresh = window.setTimeout(() => {
+      void fetchContextFiles();
+    }, 0);
+    return () => window.clearTimeout(refresh);
   }, [fetchContextFiles]);
 
   async function handleLoadFileToContext(file: ProjectFileData) {
@@ -261,28 +264,37 @@ export default function WorkspacePage() {
 
   useEffect(() => {
     if (project) {
-      fetchFiles();
+      const refresh = window.setTimeout(() => {
+        void fetchFiles();
+      }, 0);
+      return () => window.clearTimeout(refresh);
     }
   }, [project, fetchFiles]);
 
   useEffect(() => {
-    fetchTabs();
+    const refresh = window.setTimeout(() => {
+      void fetchTabs();
+    }, 0);
+    return () => window.clearTimeout(refresh);
   }, [fetchTabs]);
 
   // Restore active tab from localStorage when tabs change
   useEffect(() => {
-    if (tabs.length === 0) {
-      setActiveTabId(null);
-      return;
-    }
+    const restore = window.setTimeout(() => {
+      if (tabs.length === 0) {
+        setActiveTabId(null);
+        return;
+      }
 
-    const stored = localStorage.getItem(storageKey);
-    if (stored && tabs.some((t) => t.id === stored)) {
-      setActiveTabId(stored);
-    } else {
-      // Default to first tab
-      setActiveTabId(tabs[0].id);
-    }
+      const stored = localStorage.getItem(storageKey);
+      if (stored && tabs.some((t) => t.id === stored)) {
+        setActiveTabId(stored);
+      } else {
+        // Default to first tab
+        setActiveTabId(tabs[0].id);
+      }
+    }, 0);
+    return () => window.clearTimeout(restore);
   }, [tabs, storageKey]);
 
   // Persist active tab changes

@@ -117,6 +117,7 @@ export default function FilePreviewPanel({
 
       {/* Editor modal */}
       <FileEditorModal
+        key={`${file.id}:${showEditor}:${file.content}`}
         open={showEditor}
         filename={file.filename}
         initialContent={file.content}

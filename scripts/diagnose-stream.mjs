@@ -74,7 +74,7 @@ try {
   // 建原型 tab
   const wrId = page.url().split("/").pop();
   await page.evaluate(async (wid) => {
-    const res = await fetch(`/api/work-records/${wid}/tabs`, {
+    await fetch(`/api/work-records/${wid}/tabs`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ agent_type: "prototype" }),

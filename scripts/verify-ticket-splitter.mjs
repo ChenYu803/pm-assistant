@@ -2,7 +2,7 @@
 // - ticket_splitter tab 创建时自动加载 prd.md + 需求分析.md（02 已就位，顺带断言）
 // - 真实对话：先出草案（编号列表：标题/Blocked by/交付行为）→ quiz 三问 → 批准后输出
 // - 输出断言：一次输出多个 issues/NN-<slug>.md 文件（FILE markers）
-// - 逐个确认/拒绝：第一个「确认写入」、其余「取消」——拒绝的不落盘
+// - 单弹窗批量确认：仅勾选第一个 issue 写入，其余未勾选的不落盘
 // - issues 文件断言：四字段（What to build / Blocked by / Status: ready-for-agent / AC）
 // - blocked by 断言：首个 issue「None — can start immediately」；引用的编号 < 自身编号
 // - 编号序断言：NN 从 01 起、文件名递增、拓扑序（blockers first）
@@ -31,12 +31,6 @@ const check = (name, ok, detail = "") => {
     console.log(`  ❌ ${name} ${detail}`);
   }
 };
-let warnCount = 0;
-const warn = (name, detail = "") => {
-  warnCount++;
-  console.log(`  ⚠️ WARN ${name} ${detail}`);
-};
-
 const browser = await chromium.launch({ channel: "msedge", headless: true });
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 page.setDefaultTimeout(15000);
@@ -306,39 +300,40 @@ const nums = issueFilenames.map((f) => parseInt(f.match(/^issues\/(\d{2})-/)[1],
 const seqOk = nums.length >= 2 && nums[0] === 1 && nums.every((n, idx) => idx === 0 || n === nums[idx - 1] + 1);
 check("编号从 01 起递增且无跳号", seqOk, `(编号=${nums.join(",") || "无"})`);
 
-// ── 逐个确认/拒绝：第一个「确认写入」，其余「取消」（拒绝的不落盘）──
+// ── 单弹窗批量确认：只勾选第一个 issue 写入，其余不落盘 ──
 let confirmedCount = 0;
 let cancelledCount = 0;
 if (issuesRound !== -1) {
-  // 第一个弹窗：确认写入
   try {
-    const confirmBtn = page.getByRole("button", { name: "确认写入" }).first();
-    await confirmBtn.waitFor({ state: "visible", timeout: 8000 });
-    await confirmBtn.click();
-    confirmedCount++;
-    console.log("  [确认框] 第 1 个 issue 已确认写入");
-    await page.waitForTimeout(800);
-  } catch {
-    console.log("  [确认框] 未检测到确认弹窗（视作失败，走后续断言）");
-  }
-  // 后续弹窗（如有）：逐个取消（拒绝写入）
-  while (true) {
-    try {
-      const confirmBtn = page.getByRole("button", { name: "确认写入" }).first();
-      await confirmBtn.waitFor({ state: "visible", timeout: 2500 });
-    } catch {
-      break; // 无更多弹窗
+    const fileDialog = page
+      .getByRole("dialog")
+      .filter({ hasText: "Agent 产出文件" });
+    await fileDialog.waitFor({ state: "visible", timeout: 8000 });
+    const checkboxes = fileDialog.locator('input[type="checkbox"]');
+    const checkboxCount = await checkboxes.count();
+    if (checkboxCount !== issueFilenames.length) {
+      throw new Error(
+        `确认框文件数不匹配（checkbox=${checkboxCount}, issues=${issueFilenames.length}）`
+      );
     }
-    await page.getByRole("button", { name: "取消" }).first().click();
-    cancelledCount++;
-    console.log(`  [确认框] 第 ${confirmedCount + cancelledCount} 个 issue 已取消（拒绝）`);
-    await page.waitForTimeout(600);
+    for (let i = 1; i < checkboxCount; i++) {
+      await checkboxes.nth(i).uncheck();
+    }
+    await fileDialog.getByRole("button", { name: /批量写入/ }).click();
+    confirmedCount++;
+    cancelledCount = checkboxCount - 1;
+    console.log(
+      `  [确认框] 已批量写入第 1 个 issue，${cancelledCount} 个未勾选`
+    );
+    await page.waitForTimeout(800);
+  } catch (err) {
+    console.log(`  [确认框] 批量确认失败：${err.message}`);
   }
 }
 check(
-  "确认框逐个弹出（确认 1 个 + 拒绝 ≥1 个）",
+  "单弹窗批量确认（写入 1 个 + 未勾选 ≥1 个）",
   confirmedCount >= 1 && cancelledCount >= 1,
-  `(确认=${confirmedCount}，拒绝=${cancelledCount})`
+  `(写入=${confirmedCount}，未勾选=${cancelledCount})`
 );
 
 // ── 断言 2：落盘与文件内容 ────────────────────────────
@@ -434,13 +429,15 @@ if (issuesRound !== -1) {
   }
   // 重切分后可能再次弹确认框：清掉（不落盘，避免干扰后续）
   while (true) {
+    const fileDialog = page
+      .getByRole("dialog")
+      .filter({ hasText: "Agent 产出文件" });
     try {
-      const confirmBtn = page.getByRole("button", { name: "确认写入" }).first();
-      await confirmBtn.waitFor({ state: "visible", timeout: 2000 });
+      await fileDialog.waitFor({ state: "visible", timeout: 2000 });
     } catch {
       break;
     }
-    await page.getByRole("button", { name: "取消" }).first().click();
+    await fileDialog.getByRole("button", { name: "全部丢弃" }).click();
     await page.waitForTimeout(400);
   }
 }
@@ -451,6 +448,6 @@ check(
 );
 
 // ── 汇总 ────────────────────────────────────────────────────
-console.log(`\n结果: ${pass} 通过, ${fail} 失败${warnCount ? `, ${warnCount} 警告` : ""}`);
+console.log(`\n结果: ${pass} 通过, ${fail} 失败`);
 await browser.close();
 process.exit(fail > 0 ? 1 : 0);

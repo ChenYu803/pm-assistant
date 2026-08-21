@@ -76,7 +76,7 @@ function leftoverMarkers(content, known) {
     .split("\n")
     .map((line, i) => ({ n: i + 1, line }))
     .filter(
-      ({ n, line }) =>
+      ({ line }) =>
         !isCommentLine(line) &&
         line.includes("%%%") &&
         !isGenericMarkerCleanup(line) &&

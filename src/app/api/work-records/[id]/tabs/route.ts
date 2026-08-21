@@ -105,7 +105,7 @@ export async function POST(
       work_record_id: workRecord._id,
     });
 
-    let contextFiles: { id: string; filename: string }[] = [];
+    const contextFiles: { id: string; filename: string }[] = [];
     const filesToLoad = AUTO_LOAD_FILES[agent_type as AgentType] ?? [];
     for (const filename of filesToLoad) {
       try {

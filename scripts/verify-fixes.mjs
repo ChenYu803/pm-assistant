@@ -45,16 +45,6 @@ const check = (name, ok, detail = "") => {
 
 // ── 连接 Mongo（原生 schema，不依赖项目模型）────────────────────────
 await mongoose.connect(MONGODB_URI);
-const Tab = mongoose.model(
-  "VTab",
-  new mongoose.Schema({
-    agent_type: String,
-    display_name: String,
-    work_record_id: mongoose.Schema.Types.ObjectId,
-    scope_frozen: Boolean,
-  }),
-  "tabs"
-);
 const Message = mongoose.model(
   "VMessage",
   new mongoose.Schema({

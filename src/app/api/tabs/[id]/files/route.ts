@@ -30,12 +30,12 @@ export async function GET(
     const loadedFiles = await getLoadedContextFiles(tab._id);
 
     // Omit content from list endpoint (consistent with GET /api/projects/:id/files)
-    const files = loadedFiles.map(({ content: _, ...rest }) => ({
-      id: rest._id,
-      filename: rest.filename,
-      project_id: rest.project_id,
-      created_at: rest.created_at,
-      updated_at: rest.updated_at,
+    const files = loadedFiles.map((file) => ({
+      id: file._id,
+      filename: file.filename,
+      project_id: file.project_id,
+      created_at: file.created_at,
+      updated_at: file.updated_at,
     }));
 
     return NextResponse.json({ files });
