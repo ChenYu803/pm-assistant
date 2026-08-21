@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, type ReactNode } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  type ReactNode,
+} from "react";
 import type { AgentType } from "@/lib/agent-constants";
 import {
   AGENT_TYPE_ICONS,
@@ -72,6 +79,32 @@ function isConfigError(message: string): boolean {
   );
 }
 
+const CONTEXT_TOKEN_LIMIT = 32_768;
+const CONTEXT_WARNING_TOKENS = 24_000;
+
+/** 使用字符数粗估上下文，不发网络请求；异常时返回 null 以静默隐藏辅助位。 */
+function estimateContextTokens(messages: ChatMessage[], input: string): number | null {
+  try {
+    if (!Array.isArray(messages) || typeof input !== "string") {
+      return null;
+    }
+
+    const characterCount = messages.reduce((total, message) => {
+      if (!message || typeof message.content !== "string") {
+        throw new Error("消息内容不可估算");
+      }
+      return total + message.content.length;
+    }, input.length);
+
+    if (!Number.isSafeInteger(characterCount) || characterCount < 0) {
+      return null;
+    }
+    return Math.ceil(characterCount / 4);
+  } catch {
+    return null;
+  }
+}
+
 // ─── File marker parsing ─────────────────────────────────────────────────────
 
 const FILE_MARKER_RE =
@@ -130,12 +163,14 @@ function MessageBubble({
   children,
   onCopy,
   onDelete,
+  onRegenerate,
 }: {
   message: ChatMessage;
   isStreaming: boolean;
   children?: ReactNode;
   onCopy?: () => Promise<void>;
   onDelete?: () => void;
+  onRegenerate?: () => void;
 }) {
   const isUser = message.role === "user";
   const [copied, setCopied] = useState(false);
@@ -181,8 +216,21 @@ function MessageBubble({
           </div>
         </div>
 
-        {!isStreaming && (onCopy || onDelete) && (
+        {!isStreaming && (onCopy || onDelete || onRegenerate) && (
           <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+            {onRegenerate && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                aria-label="重新输出"
+                title="重新输出这条 AI 回复"
+                onClick={onRegenerate}
+                className="h-7 px-2 text-xs text-gray-500 hover:text-gray-900"
+              >
+                重新输出
+              </Button>
+            )}
             {onCopy && (
               <Button
                 type="button"
@@ -337,6 +385,12 @@ export default function ChatArea({
   const [pendingDeleteMessage, setPendingDeleteMessage] =
     useState<ChatMessage | null>(null);
   const [deletingMessage, setDeletingMessage] = useState(false);
+  const contextUsage = useMemo(
+    () => estimateContextTokens(messages, input),
+    [messages, input]
+  );
+  const contextNeedsWarning =
+    contextUsage !== null && contextUsage >= CONTEXT_WARNING_TOKENS;
 
   // File confirmation state
   // Agent 一次输出的多个文件在同一个弹窗中统一勾选处理。
@@ -548,19 +602,25 @@ export default function ChatArea({
 
   // ── Core send logic (shared by sendMessage and retry) ───────────────────
 
-  async function sendContent(content: string) {
+  async function sendContent(
+    content: string,
+    options?: { regenerateMessageId?: string }
+  ) {
     if (!tabId || isStreaming) return;
 
     setError("");
     stopRequestedRef.current = false;
 
-    const optimisticUser: ChatMessage = {
-      id: `temp-${Date.now()}`,
-      role: "user",
-      content,
-      timestamp: new Date().toISOString(),
-    };
-    setMessages((prev) => [...prev, optimisticUser]);
+    const regenerateMessageId = options?.regenerateMessageId;
+    if (!regenerateMessageId) {
+      const optimisticUser: ChatMessage = {
+        id: `temp-${Date.now()}`,
+        role: "user",
+        content,
+        timestamp: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, optimisticUser]);
+    }
 
     setIsStreaming(true);
     setStreamingContent("");
@@ -572,7 +632,11 @@ export default function ChatArea({
       const res = await fetch(`/api/tabs/${tabId}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify(
+          regenerateMessageId
+            ? { regenerate: true, messageId: regenerateMessageId }
+            : { content }
+        ),
         signal: controller.signal,
       });
 
@@ -585,6 +649,12 @@ export default function ChatArea({
           return;
         }
         throw new Error(errMsg);
+      }
+
+      if (regenerateMessageId) {
+        setMessages((prev) =>
+          prev.filter((message) => message.id !== regenerateMessageId)
+        );
       }
 
       const reader = res.body?.getReader();
@@ -625,7 +695,10 @@ export default function ChatArea({
               // 重渲染后（setTimeout 0）就会跑，必须让它跳过这条实时消息，
               // 由下面的 setTimeout(100) 以「消息级已写入」判定处理。
               liveMessageIds.current.add(newMsg.id);
-              setMessages((prev) => [...prev, newMsg]);
+              setMessages((prev) => [
+                ...prev.filter((message) => message.id !== regenerateMessageId),
+                newMsg,
+              ]);
               setTimeout(() => checkAndShowFileDialog(newMsg), 100);
               setStreamingContent("");
               if (event.newName && onWorkRecordRenamed) {
@@ -644,7 +717,7 @@ export default function ChatArea({
                 // Server persisted the partial — append with the real message
                 // id so a later history fetch doesn't duplicate it.
                 setMessages((prev) => [
-                  ...prev,
+                  ...prev.filter((message) => message.id !== regenerateMessageId),
                   {
                     id: event.messageId!,
                     role: "assistant",
@@ -762,6 +835,12 @@ export default function ChatArea({
     if (!content || !tabId || isStreaming) return;
     setError("");
     void sendContent(content);
+  }
+
+  async function regenerateMessage(messageId: string) {
+    if (!tabId || isStreaming) return;
+    setError("");
+    await sendContent("", { regenerateMessageId: messageId });
   }
 
   // ── Keyboard handler ────────────────────────────────────────────────────
@@ -1012,6 +1091,13 @@ export default function ChatArea({
               isStreaming={false}
               onCopy={() => copyMessage(msg.content)}
               onDelete={() => setPendingDeleteMessage(msg)}
+              onRegenerate={
+                !isStreaming &&
+                msg.role === "assistant" &&
+                msg.id === messages[messages.length - 1]?.id
+                  ? () => void regenerateMessage(msg.id)
+                  : undefined
+              }
             >
               {msg.role === "assistant"
                 ? renderContentWithMarkers(msg.content, msg.id)
@@ -1094,9 +1180,19 @@ export default function ChatArea({
               )}
             </Button>
           </div>
-          <p className="mt-1.5 text-xs text-gray-400">
-            Enter 发送 · Shift+Enter 换行
-          </p>
+          <div className="mt-1.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs">
+            <span className="text-gray-400">Enter 发送 · Shift+Enter 换行</span>
+            {contextUsage !== null && (
+              <span
+                data-testid="context-usage"
+                title="上下文用量为粗略估算"
+                className={contextNeedsWarning ? "font-medium text-amber-700" : "text-gray-400"}
+              >
+                上下文约 {contextUsage.toLocaleString("zh-CN")} / {CONTEXT_TOKEN_LIMIT.toLocaleString("zh-CN")} tokens
+                {contextNeedsWarning && <span className="ml-1">接近上限</span>}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
