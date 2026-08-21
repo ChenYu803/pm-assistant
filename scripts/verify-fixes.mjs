@@ -1,6 +1,7 @@
 // 验证四个修复：滚动条隔离 / Markdown 渲染 / 确认弹窗不重复 / 401 弹窗
 // 用法: node scripts/verify-fixes.mjs
-// 前置：dev server 运行在 localhost:3000，MongoDB 可连（.env.local 的 MONGODB_URI）
+// 前置：dev server 可通过 VERIFY_BASE_URL 指定地址（默认 localhost:3000），
+// MongoDB 可连（.env.local 的 MONGODB_URI）
 import { chromium } from "playwright-core";
 import mongoose from "mongoose";
 import fs from "node:fs";
@@ -9,7 +10,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
-const BASE = "http://localhost:3000";
+const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:3000";
 
 // ── 读 .env.local（纯 KEY=VALUE 解析）──────────────────────────────
 const envRaw = fs.readFileSync(path.join(ROOT, ".env.local"), "utf8");

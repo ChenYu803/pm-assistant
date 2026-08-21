@@ -39,6 +39,11 @@ function isCommentLine(line) {
   return t.startsWith("//") || t.startsWith("*");
 }
 
+// 这是清理任意协议标记的通用正则，不是一个待校验的协议字面量。
+function isGenericMarkerCleanup(line) {
+  return line.includes("%%%[A-Z_]+%%%");
+}
+
 // 字面量在文件中的所有出现行号（1-based），代码文件排除注释行
 function linesOf(content, literal, skipComments = false) {
   const hits = [];
@@ -57,6 +62,7 @@ function incompleteProtocolLines(content) {
   content.split("\n").forEach((line, i) => {
     if (isCommentLine(line)) return;
     if (!line.includes("%%%")) return;
+    if (isGenericMarkerCleanup(line)) return;
     if (!known.some((k) => line.includes(k))) out.push(i + 1);
   });
   return out;
@@ -72,6 +78,7 @@ function leftoverMarkers(content, known) {
       ({ n, line }) =>
         !isCommentLine(line) &&
         line.includes("%%%") &&
+        !isGenericMarkerCleanup(line) &&
         !known.some((k) => line.includes(k))
     )
     .map(({ n, line }) => `${n}:${line.trim().slice(0, 60)}`);
