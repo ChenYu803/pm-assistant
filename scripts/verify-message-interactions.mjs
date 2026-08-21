@@ -151,32 +151,149 @@ const regenerateUser = await Message.create({
 });
 const regenerateReply = await Message.create({
   role: "assistant",
-  content: "旧回复，应被替换",
+  content: "旧回复，应被替换\n\n%%%FILE_BEGIN%%% legacy.md\n# Legacy\n旧回复写入的文件\n%%%FILE_END%%%",
   tab_id: new mongoose.Types.ObjectId(tabId),
   timestamp: new Date(),
 });
+const legacyWrite = await page.evaluate(async (id) => {
+  const res = await fetch(`/api/projects/${id}/files`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      filename: "legacy.md",
+      content: "# Legacy\n旧回复写入的文件",
+      agent_type: "requirement_analyst",
+    }),
+  });
+  return res.ok;
+}, projectId);
+check("旧回复文件已写入项目", legacyWrite);
 await page.reload();
 await page.waitForLoadState("networkidle");
 const regenerateButtons = page.getByRole("button", { name: "重新输出" });
 check("只有最后一条 AI 回复显示重新输出", (await regenerateButtons.count()) === 1);
 await regenerateButtons.click();
+const consistencyDialog = page.getByRole("dialog");
+await consistencyDialog.getByText("已写入文件与新回复可能不同步").waitFor();
+check("旧文件缺失时出现一致性提示", true);
+check("一致性提示列出旧文件", (await consistencyDialog.getByText("legacy.md").count()) === 1);
+await consistencyDialog.getByRole("button", { name: "更新文件" }).click();
+const updateFileDialog = page.getByRole("dialog");
+await updateFileDialog.getByRole("button", { name: /批量写入/ }).waitFor();
+await updateFileDialog.getByRole("button", { name: /批量写入/ }).click();
+await updateFileDialog.waitFor({ state: "hidden" });
+const filesAfterUpdate = await page.evaluate(async (id) => (await fetch(`/api/projects/${id}/files`)).json(), projectId);
+const updatedRequirementFile = filesAfterUpdate.find((file) => file.filename === "需求分析.md");
+const updatedRequirementDetail = updatedRequirementFile
+  ? await page.evaluate(async ({ projectId: id, fileId }) => (await fetch(`/api/projects/${id}/files/${fileId}`)).json(), {
+      projectId,
+      fileId: updatedRequirementFile.id,
+    })
+  : null;
+check("选择更新后复用文件确认写入流程", updatedRequirementDetail?.content?.includes("本校大学生在毕业季") === true);
 await page.getByRole("button", { name: "重新输出" }).waitFor();
 const afterFirstRegenerate = await page.evaluate(async (id) => (await fetch(`/api/tabs/${id}/messages`)).json(), tabId);
 check("重新输出不新增用户消息", afterFirstRegenerate.messages.filter((message) => message.role === "user").length === 1);
 check("重新输出替换旧 AI 回复", afterFirstRegenerate.messages.filter((message) => message.role === "assistant").length === 2 && !afterFirstRegenerate.messages.some((message) => message.content.includes("旧回复，应被替换")));
-const regenerateDialog = page.getByRole("dialog");
-if (await regenerateDialog.count()) {
-  await regenerateDialog.getByRole("button", { name: "全部丢弃" }).click();
-  await regenerateDialog.waitFor({ state: "hidden" });
+
+// 旧回复的文件都已通过更新流程写入，新回复仍输出同名文件时不应出现一致性提示。
+await page.getByRole("button", { name: "重新输出" }).click();
+await page.getByRole("button", { name: "重新输出" }).waitFor();
+await page.waitForTimeout(300);
+const sameFilesDialog = page.getByRole("dialog");
+check("新回复仍输出已写入文件时不出现一致性提示", (await sameFilesDialog.getByText("已写入文件与新回复可能不同步").count()) === 0);
+if (await sameFilesDialog.count()) {
+  await sameFilesDialog.getByRole("button", { name: "全部丢弃" }).click();
+  await sameFilesDialog.waitFor({ state: "hidden" });
 }
+
+// 第二次构造一个已写入但新回复不再输出的文件，验证「保持不变」分支不触发写入。
+const afterSameFilesRegenerate = await page.evaluate(async (id) => (await fetch(`/api/tabs/${id}/messages`)).json(), tabId);
+const generatedReply = afterSameFilesRegenerate.messages.find(
+  (message) => message.role === "assistant" && message.content.includes("本校大学生在毕业季")
+);
+if (generatedReply) await Message.deleteOne({ _id: generatedReply.id });
+const keepUser = await Message.create({
+  role: "user",
+  content: "请重新生成另一版回复",
+  tab_id: new mongoose.Types.ObjectId(tabId),
+  timestamp: new Date(Date.now() + 1000),
+});
+const keepReply = await Message.create({
+  role: "assistant",
+  content: "另一条旧回复\n\n%%%FILE_BEGIN%%% keep-old.md\n# Keep original\n保持分支的旧文件\n%%%FILE_END%%%",
+  tab_id: new mongoose.Types.ObjectId(tabId),
+  timestamp: new Date(Date.now() + 2000),
+});
+await page.evaluate(async (id) => {
+  await fetch(`/api/projects/${id}/files`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      filename: "keep-old.md",
+      content: "# Keep original\n保持分支的旧文件",
+      agent_type: "requirement_analyst",
+    }),
+  });
+}, projectId);
+await page.reload();
+await page.waitForLoadState("networkidle");
+await page.getByRole("button", { name: "重新输出" }).click();
+const keepDialog = page.getByRole("dialog");
+await keepDialog.getByText("已写入文件与新回复可能不同步").waitFor();
+await keepDialog.getByRole("button", { name: "保持不变" }).click();
+await keepDialog.waitFor({ state: "hidden" });
+await page.waitForTimeout(300);
+check("选择保持后不打开文件写入确认", (await page.getByRole("dialog").count()) === 0);
+const filesAfterKeep = await page.evaluate(async (id) => (await fetch(`/api/projects/${id}/files`)).json(), projectId);
+const keptFile = filesAfterKeep.find((file) => file.filename === "keep-old.md");
+const keptFileDetail = keptFile
+  ? await page.evaluate(async ({ projectId: id, fileId }) => (await fetch(`/api/projects/${id}/files/${fileId}`)).json(), {
+      projectId,
+      fileId: keptFile.id,
+    })
+  : null;
+check("选择保持后旧文件内容不变", keptFileDetail?.content?.includes("保持分支的旧文件") === true);
+
 await page.getByRole("button", { name: "重新输出" }).click();
 await page.getByRole("button", { name: "重新输出" }).waitFor();
 const afterSecondRegenerate = await page.evaluate(async (id) => (await fetch(`/api/tabs/${id}/messages`)).json(), tabId);
-check("可以连续重新输出且历史不膨胀", afterSecondRegenerate.messages.filter((message) => message.role === "user").length === 1 && afterSecondRegenerate.messages.filter((message) => message.role === "assistant").length === 2);
+check("可以连续重新输出且历史不膨胀", afterSecondRegenerate.messages.filter((message) => message.role === "user").length === 2 && afterSecondRegenerate.messages.filter((message) => message.role === "assistant").length === 2);
+await page.waitForTimeout(300);
 const secondRegenerateDialog = page.getByRole("dialog");
 if (await secondRegenerateDialog.count()) {
   await secondRegenerateDialog.getByRole("button", { name: "全部丢弃" }).click();
   await secondRegenerateDialog.waitFor({ state: "hidden" });
+}
+
+// 旧回复含有但从未写入项目的文件，不应触发一致性提示。
+const unwrittenUser = await Message.create({
+  role: "user",
+  content: "请再生成一版但先不要写入旧文件",
+  tab_id: new mongoose.Types.ObjectId(tabId),
+  timestamp: new Date(Date.now() + 3000),
+});
+const unwrittenReply = await Message.create({
+  role: "assistant",
+  content: "未写入的旧回复\n\n%%%FILE_BEGIN%%% unwritten-old.md\n# Unwritten\n未落盘文件\n%%%FILE_END%%%",
+  tab_id: new mongoose.Types.ObjectId(tabId),
+  timestamp: new Date(Date.now() + 4000),
+});
+await page.reload();
+await page.waitForLoadState("networkidle");
+const unwrittenHistoryDialog = page.getByRole("dialog");
+if (await unwrittenHistoryDialog.count()) {
+  await unwrittenHistoryDialog.getByRole("button", { name: "全部丢弃" }).click();
+  await unwrittenHistoryDialog.waitFor({ state: "hidden" });
+}
+await page.getByRole("button", { name: "重新输出" }).click();
+await page.getByRole("button", { name: "重新输出" }).waitFor();
+await page.waitForTimeout(300);
+const unwrittenRegenerateDialog = page.getByRole("dialog");
+check("旧文件未写入时不出现一致性提示", (await unwrittenRegenerateDialog.getByText("已写入文件与新回复可能不同步").count()) === 0);
+if (await unwrittenRegenerateDialog.count()) {
+  await unwrittenRegenerateDialog.getByRole("button", { name: "全部丢弃" }).click();
+  await unwrittenRegenerateDialog.waitFor({ state: "hidden" });
 }
 
 // 重生成期间仍可停止，停止后前端保留 partial 并显示中断标记。
@@ -192,7 +309,7 @@ await Message.deleteMany({
   role: "assistant",
   content: { $regex: "本校大学生在毕业季" },
 });
-await Message.deleteMany({ _id: { $in: [priorReply._id, regenerateUser._id, regenerateReply._id] } });
+await Message.deleteMany({ _id: { $in: [priorReply._id, regenerateUser._id, regenerateReply._id, keepUser._id, keepReply._id, unwrittenUser._id, unwrittenReply._id] } });
 
 // 批量确认：同一回复的两个文件只出现一个列表弹窗，取消一个后只写入另一个。
 const batchMessage = await Message.create({

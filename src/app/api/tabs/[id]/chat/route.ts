@@ -117,7 +117,7 @@ export async function POST(
 
     // Fetch history
     let historyMessages = await Message.find({ tab_id: tab._id })
-      .sort({ timestamp: 1 })
+      .sort({ timestamp: 1, _id: 1 })
       .lean();
 
     if (isRegenerate) {
@@ -157,13 +157,17 @@ export async function POST(
       !isRegenerate &&
       lastHistoryMessage?.role === "user" &&
       lastHistoryMessage.content === content.trim();
+    let userMessageId: string | undefined;
     if (!isRegenerate && !isRetryDup) {
-      await Message.create({
+      const savedUserMessage = await Message.create({
         role: "user",
         content: content.trim(),
         tab_id: tab._id,
         timestamp: new Date(),
       });
+      userMessageId = savedUserMessage._id.toString();
+    } else if (!isRegenerate && lastHistoryMessage?.role === "user") {
+      userMessageId = lastHistoryMessage._id.toString();
     }
 
     // Build messages: system prompt + history + new user message
@@ -253,6 +257,7 @@ export async function POST(
           controller.enqueue(
             sseEvent("done", {
               messageId: savedMessage._id.toString(),
+              ...(userMessageId ? { userMessageId } : {}),
               ...(newName ? { newName } : {}),
             })
           );
@@ -289,6 +294,7 @@ export async function POST(
                     : "AI 请求失败，请稍后重试",
               interrupted,
               ...(partialMessageId ? { messageId: partialMessageId } : {}),
+              ...(userMessageId ? { userMessageId } : {}),
             })
           );
         } finally {

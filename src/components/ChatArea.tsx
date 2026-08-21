@@ -64,9 +64,19 @@ interface SseEvent {
   type: "token" | "done" | "error";
   content?: string;
   messageId?: string;
+  userMessageId?: string;
   message?: string;
   newName?: string;
   interrupted?: boolean;
+}
+
+interface FileConsistencyPrompt {
+  message: ChatMessage;
+  staleFileNames: string[];
+}
+
+function writtenFileKey(messageId: string, filename: string): string {
+  return `${messageId}\u0000${filename}`;
 }
 
 /**
@@ -163,6 +173,7 @@ function MessageBubble({
   children,
   onCopy,
   onDelete,
+  onEdit,
   onRegenerate,
 }: {
   message: ChatMessage;
@@ -170,6 +181,7 @@ function MessageBubble({
   children?: ReactNode;
   onCopy?: () => Promise<void>;
   onDelete?: () => void;
+  onEdit?: () => void;
   onRegenerate?: () => void;
 }) {
   const isUser = message.role === "user";
@@ -216,8 +228,21 @@ function MessageBubble({
           </div>
         </div>
 
-        {!isStreaming && (onCopy || onDelete || onRegenerate) && (
+        {!isStreaming && (onCopy || onDelete || onEdit || onRegenerate) && (
           <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+            {onEdit && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                aria-label="编辑"
+                title="编辑并重新发送这条消息"
+                onClick={onEdit}
+                className="h-7 px-2 text-xs text-gray-500 hover:text-gray-900"
+              >
+                编辑
+              </Button>
+            )}
             {onRegenerate && (
               <Button
                 type="button"
@@ -385,6 +410,8 @@ export default function ChatArea({
   const [pendingDeleteMessage, setPendingDeleteMessage] =
     useState<ChatMessage | null>(null);
   const [deletingMessage, setDeletingMessage] = useState(false);
+  const [editingMessage, setEditingMessage] = useState<ChatMessage | null>(null);
+  const editDraftRef = useRef("");
   const contextUsage = useMemo(
     () => estimateContextTokens(messages, input),
     [messages, input]
@@ -396,6 +423,8 @@ export default function ChatArea({
   // Agent 一次输出的多个文件在同一个弹窗中统一勾选处理。
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
   const [showFileDialog, setShowFileDialog] = useState(false);
+  const [fileConsistencyPrompt, setFileConsistencyPrompt] =
+    useState<FileConsistencyPrompt | null>(null);
   const [savingFile, setSavingFile] = useState(false);
   // Track processed message IDs to avoid re-showing dialogs
   const processedFileMessageIds = useRef<Set<string>>(new Set());
@@ -407,7 +436,7 @@ export default function ChatArea({
   const liveMessageIds = useRef<Set<string>>(new Set());
   // Messages whose file has actually been written (banner shows "已写入").
   // State, not a ref — it's read during render.
-  const [writtenFileMessageIds, setWrittenFileMessageIds] = useState<Set<string>>(new Set());
+  const [writtenFileKeys, setWrittenFileKeys] = useState<Set<string>>(new Set());
   const pendingFileSequence = useRef(0);
 
   // ── File marker parsing (extractFileMarkers lives at module level) ────────
@@ -440,10 +469,12 @@ export default function ChatArea({
           const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "保存文件失败");
         }
-        // Mark the source message as written so its banner shows "已写入"
-        // (prevents accidental duplicate appends from re-clicking).
+        // 精确记录来源消息与文件名的写入状态。一条回复可能包含多个文件，
+        // 用户也可能只选择其中一部分写入。
         if (sourceMessageId) {
-          setWrittenFileMessageIds((prev) => new Set(prev).add(sourceMessageId));
+          setWrittenFileKeys((prev) =>
+            new Set(prev).add(writtenFileKey(sourceMessageId, file.filename))
+          );
         }
         onFileSaved?.();
         return true;
@@ -600,11 +631,29 @@ export default function ChatArea({
     setShowFileDialog(false);
   }
 
+  function handleKeepFileConsistency() {
+    if (!fileConsistencyPrompt) return;
+    // 将新消息标记为本会话已处理，选择「保持不变」后不再弹出第二个普通文件弹窗。
+    processedFileMessageIds.current.add(fileConsistencyPrompt.message.id);
+    setFileConsistencyPrompt(null);
+  }
+
+  function handleUpdateFileConsistency() {
+    if (!fileConsistencyPrompt) return;
+    const message = fileConsistencyPrompt.message;
+    setFileConsistencyPrompt(null);
+    // 先关闭一致性弹窗，再进入新回复 marker 对应的既有文件确认流程。
+    window.setTimeout(() => checkAndShowFileDialog(message), 0);
+  }
+
   // ── Core send logic (shared by sendMessage and retry) ───────────────────
 
   async function sendContent(
     content: string,
-    options?: { regenerateMessageId?: string }
+    options?: {
+      regenerateMessageId?: string;
+      regenerateWrittenFileNames?: string[];
+    }
   ) {
     if (!tabId || isStreaming) return;
 
@@ -612,9 +661,19 @@ export default function ChatArea({
     stopRequestedRef.current = false;
 
     const regenerateMessageId = options?.regenerateMessageId;
-    if (!regenerateMessageId) {
+    const lastVisibleMessage = messages[messages.length - 1];
+    const reusesLastUser =
+      !regenerateMessageId &&
+      lastVisibleMessage?.role === "user" &&
+      lastVisibleMessage.content === content;
+    const optimisticUserId = regenerateMessageId
+      ? null
+      : reusesLastUser
+        ? lastVisibleMessage.id
+        : `temp-${Date.now()}`;
+    if (!regenerateMessageId && !reusesLastUser) {
       const optimisticUser: ChatMessage = {
-        id: `temp-${Date.now()}`,
+        id: optimisticUserId!,
         role: "user",
         content,
         timestamp: new Date().toISOString(),
@@ -696,10 +755,29 @@ export default function ChatArea({
               // 由下面的 setTimeout(100) 以「消息级已写入」判定处理。
               liveMessageIds.current.add(newMsg.id);
               setMessages((prev) => [
-                ...prev.filter((message) => message.id !== regenerateMessageId),
+                ...prev
+                  .filter((message) => message.id !== regenerateMessageId)
+                  .map((message) =>
+                    message.id === optimisticUserId && event.userMessageId
+                      ? { ...message, id: event.userMessageId }
+                      : message
+                  ),
                 newMsg,
               ]);
-              setTimeout(() => checkAndShowFileDialog(newMsg), 100);
+              const newFileNames = new Set(
+                extractFileMarkers(fullContent).map((file) => file.filename)
+              );
+              const staleFileNames = (
+                options?.regenerateWrittenFileNames ?? []
+              ).filter((filename) => !newFileNames.has(filename));
+              if (staleFileNames.length > 0) {
+                setFileConsistencyPrompt({
+                  message: newMsg,
+                  staleFileNames,
+                });
+              } else {
+                setTimeout(() => checkAndShowFileDialog(newMsg), 100);
+              }
               setStreamingContent("");
               if (event.newName && onWorkRecordRenamed) {
                 onWorkRecordRenamed(event.newName);
@@ -712,6 +790,15 @@ export default function ChatArea({
                 setConfigError(errMsg);
               } else {
                 setError(errMsg);
+              }
+              if (event.userMessageId && optimisticUserId) {
+                setMessages((prev) =>
+                  prev.map((message) =>
+                    message.id === optimisticUserId
+                      ? { ...message, id: event.userMessageId! }
+                      : message
+                  )
+                );
               }
               if (event.messageId && fullContent && !stopRequestedRef.current) {
                 // Server persisted the partial — append with the real message
@@ -817,11 +904,62 @@ export default function ChatArea({
     }
   }
 
+  function beginEditMessage(message: ChatMessage) {
+    if (message.role !== "user" || isStreaming) return;
+    editDraftRef.current = input;
+    setEditingMessage(message);
+    setInput(message.content);
+    setError("");
+    window.setTimeout(() => textareaRef.current?.focus(), 0);
+  }
+
+  function cancelEditMessage() {
+    if (!editingMessage) return;
+    setInput(editDraftRef.current);
+    setEditingMessage(null);
+    editDraftRef.current = "";
+  }
+
+  async function editAndResendMessage() {
+    const editedContent = input.trim();
+    const targetMessage = editingMessage;
+    if (!editedContent || !targetMessage || !tabId || isStreaming) return;
+
+    setError("");
+    try {
+      const res = await fetch(
+        `/api/tabs/${tabId}/messages?fromMessageId=${encodeURIComponent(targetMessage.id)}`,
+        { method: "DELETE" }
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "编辑消息失败");
+      }
+
+      setMessages((prev) => {
+        const targetIndex = prev.findIndex((message) => message.id === targetMessage.id);
+        return targetIndex === -1 ? prev : prev.slice(0, targetIndex);
+      });
+      setEditingMessage(null);
+      editDraftRef.current = "";
+      setInput("");
+      setLastSentContent(editedContent);
+      await sendContent(editedContent);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "编辑消息失败");
+    }
+  }
+
   // ── Send message ─────────────────────────────────────────────────────────
 
   async function sendMessage() {
     const trimmed = input.trim();
     if (!trimmed || !tabId || isStreaming) return;
+
+    if (editingMessage) {
+      await editAndResendMessage();
+      return;
+    }
 
     setInput("");
     setLastSentContent(trimmed);
@@ -839,8 +977,32 @@ export default function ChatArea({
 
   async function regenerateMessage(messageId: string) {
     if (!tabId || isStreaming) return;
+    const oldMessage = messages.find(
+      (message) => message.id === messageId && message.role === "assistant"
+    );
+    if (!oldMessage) return;
+
+    const regenerateWrittenFileNames = [
+      ...new Set(
+        extractFileMarkers(oldMessage.content)
+          .filter((file) => {
+            if (writtenFileKeys.has(writtenFileKey(oldMessage.id, file.filename))) {
+              return true;
+            }
+            // 页面刷新后，按历史重放语义从项目文件名重建消息级写入状态。
+            return (
+              !liveMessageIds.current.has(oldMessage.id) &&
+              existingFileNames?.includes(file.filename)
+            );
+          })
+          .map((file) => file.filename)
+      ),
+    ];
     setError("");
-    await sendContent("", { regenerateMessageId: messageId });
+    await sendContent("", {
+      regenerateMessageId: messageId,
+      regenerateWrittenFileNames,
+    });
   }
 
   // ── Keyboard handler ────────────────────────────────────────────────────
@@ -898,7 +1060,7 @@ export default function ChatArea({
           <FileMarkerBanner
             key={key++}
             filename={filename}
-            written={writtenFileMessageIds.has(messageId)}
+            written={writtenFileKeys.has(writtenFileKey(messageId, filename))}
               onWrite={() => {
               setPendingFiles([
                 {
@@ -1091,8 +1253,17 @@ export default function ChatArea({
               isStreaming={false}
               onCopy={() => copyMessage(msg.content)}
               onDelete={() => setPendingDeleteMessage(msg)}
+              onEdit={
+                msg.role === "user" &&
+                !isStreaming &&
+                !msg.id.startsWith("temp-") &&
+                !msg.id.startsWith("interrupted-")
+                  ? () => beginEditMessage(msg)
+                  : undefined
+              }
               onRegenerate={
                 !isStreaming &&
+                filesReady &&
                 msg.role === "assistant" &&
                 msg.id === messages[messages.length - 1]?.id
                   ? () => void regenerateMessage(msg.id)
@@ -1149,6 +1320,20 @@ export default function ChatArea({
       {/* Input area */}
       <div className="border-t border-gray-200 bg-white px-4 py-3">
         <div className="mx-auto max-w-3xl">
+          {editingMessage && (
+            <div className="mb-2 flex items-center justify-between gap-3 text-xs text-gray-500">
+              <span>正在编辑用户消息</span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={cancelEditMessage}
+                className="h-7 px-2 text-xs"
+              >
+                取消编辑
+              </Button>
+            </div>
+          )}
           <div className="flex items-end gap-2">
             <Textarea
               ref={textareaRef}
@@ -1166,7 +1351,13 @@ export default function ChatArea({
               }}
             />
             <Button
-              onClick={isStreaming ? stopGeneration : sendMessage}
+              onClick={
+                isStreaming
+                  ? stopGeneration
+                  : editingMessage
+                    ? () => void editAndResendMessage()
+                    : sendMessage
+              }
               disabled={!isStreaming && !input.trim()}
               className="shrink-0 rounded-lg px-4 py-2.5 disabled:cursor-not-allowed"
             >
@@ -1175,6 +1366,8 @@ export default function ChatArea({
                   <span aria-hidden="true">■</span>
                   停止生成
                 </span>
+              ) : editingMessage ? (
+                "重新发送"
               ) : (
                 "发送"
               )}
@@ -1195,6 +1388,41 @@ export default function ChatArea({
           </div>
         </div>
       </div>
+
+      {/* 重生成后的文件一致性提示 */}
+      <Dialog
+        open={fileConsistencyPrompt !== null}
+        onOpenChange={(open) => {
+          if (!open) handleKeepFileConsistency();
+        }}
+      >
+        <DialogContent
+          className="max-w-md"
+          onPointerDownOutside={(event) => event.preventDefault()}
+          onEscapeKeyDown={(event) => event.preventDefault()}
+        >
+          <DialogTitle className="text-base">
+            已写入文件与新回复可能不同步
+          </DialogTitle>
+          <p className="mt-2 text-sm text-muted-foreground">
+            新回复不再输出以下已写入文件：
+          </p>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-gray-700">
+            {fileConsistencyPrompt?.staleFileNames.map((filename) => (
+              <li key={filename}>{filename}</li>
+            ))}
+          </ul>
+          <p className="mt-3 text-xs text-muted-foreground">
+            更新文件将按新回复中的文件标记进入现有写入确认流程。
+          </p>
+          <div className="mt-5 flex justify-end gap-2">
+            <Button variant="outline" onClick={handleKeepFileConsistency}>
+              保持不变
+            </Button>
+            <Button onClick={handleUpdateFileConsistency}>更新文件</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* File confirmation dialog */}
       <FileConfirmDialog
