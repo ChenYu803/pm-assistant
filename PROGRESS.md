@@ -6,7 +6,7 @@
 
 ## 当前阶段
 
-**v1.1（使用体验改进）进行中** —— 票 01（体验基础批）已完成，frontier = 02。
+**v1.1（使用体验改进）进行中** —— 票 01（体验基础批）、票 02（消息交互）和票 03（Agent 自我说明）已完成，frontier = 04。
 v1.0 已验收（2026-08-11），四环流水线端到端走通。
 
 ## 已完成成果
@@ -18,10 +18,11 @@ v1.0 已验收（2026-08-11），四环流水线端到端走通。
 
 ## 本次任务
 
-**下一张票 02 — 消息交互**（`issues/02-message-interactions.md`，需先确认 Blocked by）
-- 票 01 收尾遗留：**verify-v1-flow 回归补跑**（L2 判定逻辑改动，PROGRESS.md 要求跑完才能算验收闭环；上次中断于第 1 轮对话，预计 15-25 分钟，跑前报备）。
+**下一张票 04 — 替换式重新输出**（`issues/04-regenerate-reply.md`，需先确认 Blocked by）
 
 **票 02 已完成（2026-08-21）**：消息 hover 复制/删除与确认弹窗、删除 API、停止生成及 partial 持久化、智能滚动、流式期间输入、单弹窗批量文件确认均已落地。固定回放 `verify-message-interactions.mjs` 11/11、`verify-protocols.mjs` 27/27、`verify-fixes.mjs` 10/10；tsc 与本次改动定向 lint 通过。全量 build 因环境无法访问 Google Fonts 未通过。
+
+**票 03 已完成（2026-08-21）**：Agent 结构化说明收敛到 `AGENT_TYPE_METADATA` 单一数据源，选择弹窗展示职责/输入/输出/流水线位置四段说明，标签页空态更新为「现在该说什么？」直白引导。固定回放 `verify-agent-types.mjs` 25/25，tsc 通过；定向 lint 仅保留工作区页面原有的 4 个 `setState-in-effect` 报错。
 
 ## 约束与坑（项目特有，实施中踩过的）
 
