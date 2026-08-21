@@ -9,7 +9,7 @@
 // 用法: node scripts/verify-agent-types.mjs
 import { chromium } from "playwright-core";
 
-const BASE = "http://localhost:3000";
+const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:3000";
 
 const email = `verify-types-${Date.now()}@test.local`;
 const password = "verify-pass-1234";

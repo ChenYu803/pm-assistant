@@ -56,6 +56,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return true;
       }
 
+      // 综合回放在发起聊天前检查服务端模式；生产环境不暴露此验证状态。
+      if (
+        process.env.NODE_ENV !== "production" &&
+        pathname === "/api/verify/replay-mode"
+      ) {
+        return true;
+      }
+
       // Allow login/register pages
       if (pathname === "/login" || pathname === "/register") {
         if (isLoggedIn) {
