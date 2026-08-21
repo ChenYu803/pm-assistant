@@ -9,6 +9,7 @@ type AIRequest = {
   maxTokens: number;
   timeoutMs: number;
   signal?: AbortSignal;
+  replayDelayMs?: number;
 };
 
 type ReplayChunk = {
@@ -285,10 +286,42 @@ function replayResponse(agentType: AgentType | undefined, messages: AIMessage[])
   return "回放模式已收到消息。";
 }
 
-function replayStream(content: string): AsyncIterable<ReplayChunk> {
+function replayAbortError(): Error {
+  const error = new Error("Replay stream aborted");
+  error.name = "AbortError";
+  return error;
+}
+
+function replayDelay(delayMs: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(replayAbortError());
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, delayMs);
+    const onAbort = () => {
+      clearTimeout(timer);
+      signal?.removeEventListener("abort", onAbort);
+      reject(replayAbortError());
+    };
+    signal?.addEventListener("abort", onAbort, { once: true });
+  });
+}
+
+function replayStream(
+  content: string,
+  delayMs = 0,
+  signal?: AbortSignal
+): AsyncIterable<ReplayChunk> {
   return (async function* () {
     for (let i = 0; i < content.length; i += 80) {
+      if (signal?.aborted) throw replayAbortError();
       yield { choices: [{ delta: { content: content.slice(i, i + 80) } }] };
+      if (delayMs > 0) await replayDelay(delayMs, signal);
     }
   })();
 }
@@ -299,9 +332,10 @@ export async function createAIStream({
   maxTokens,
   timeoutMs,
   signal,
+  replayDelayMs,
 }: AIRequest): Promise<AsyncIterable<ReplayChunk> | AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>> {
   if (!isLiveAI()) {
-    return replayStream(replayResponse(agentType, messages));
+    return replayStream(replayResponse(agentType, messages), replayDelayMs, signal);
   }
   return createAIClient().chat.completions.create(
     { model: AI_MODEL, max_tokens: maxTokens, messages, stream: true },

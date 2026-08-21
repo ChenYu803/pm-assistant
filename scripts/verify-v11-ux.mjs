@@ -16,6 +16,11 @@ if (aiMode !== "replay") {
   process.exit(1);
 }
 
+if (baseUrl !== "http://localhost:3000") {
+  console.error("综合入口需使用 http://localhost:3000，以复用既有验证脚本");
+  process.exit(1);
+}
+
 const suites = [
   {
     name: "票01迁移后审计（文件更新、命名、空状态）",
@@ -55,12 +60,9 @@ function runSuite({ name, file }) {
   return new Promise((resolve) => {
     const child = spawn(process.execPath, [script], {
       cwd: ROOT,
-      // 历史脚本分别采用 VERIFY_BASE_URL 或 BASE_URL；统一注入以支持非 3000 端口。
       env: {
         ...process.env,
         AI_MODE: "replay",
-        VERIFY_BASE_URL: baseUrl,
-        BASE_URL: baseUrl,
       },
       stdio: "inherit",
     });

@@ -52,18 +52,9 @@ await page.addInitScript(() => {
   window.fetch = async (input, init) => {
     const url = typeof input === "string" ? input : input.url;
     if (window.__verifySlowChat && url.endsWith("/chat")) {
-      const encoder = new TextEncoder();
-      const body = new ReadableStream({
-        start(controller) {
-          controller.enqueue(encoder.encode('data: {"type":"token","content":"正在生成"}\n\n'));
-          window.setTimeout(() => controller.enqueue(encoder.encode('data: {"type":"token","content":"中的内容"}\n\n')), 800);
-          window.setTimeout(() => {
-            controller.enqueue(encoder.encode('data: {"type":"done","messageId":"verify-stream"}\n\n'));
-            controller.close();
-          }, 3000);
-        },
-      });
-      return new Response(body, { headers: { "Content-Type": "text/event-stream" } });
+      const headers = new Headers(init?.headers);
+      headers.set("x-pm-verify-stream-delay", "1");
+      return originalFetch(input, { ...init, headers });
     }
     return originalFetch(input, init);
   };
@@ -102,6 +93,45 @@ const tabs = await page.evaluate(async (id) => (await fetch(`/api/work-records/$
 const tabId = tabs[0].id;
 const workRecord = await page.evaluate(async (id) => (await fetch(`/api/work-records/${id}`)).json(), workRecordId);
 const projectId = workRecord.project_id;
+
+async function lastAssistantId() {
+  return page.evaluate(async (id) => {
+    const data = await fetch(`/api/tabs/${id}/messages`).then((res) => res.json());
+    return data.messages.filter((message) => message.role === "assistant").at(-1)?.id ?? null;
+  }, tabId);
+}
+
+async function waitForStreamSettled() {
+  await page.waitForFunction(
+    () => {
+      const streaming = [...document.querySelectorAll("button")].some((button) =>
+        button.textContent?.includes("停止生成")
+      );
+      return !streaming;
+    },
+    undefined,
+    { polling: "raf", timeout: 30_000 }
+  );
+  await page.evaluate(
+    () =>
+      new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve))
+      )
+  );
+}
+
+async function waitForRegeneration(previousAssistantId) {
+  await page.waitForFunction(
+    async ({ id, previousId }) => {
+      const data = await fetch(`/api/tabs/${id}/messages`).then((res) => res.json());
+      const lastAssistant = data.messages.filter((message) => message.role === "assistant").at(-1);
+      return lastAssistant && lastAssistant.id !== previousId;
+    },
+    { id: tabId, previousId: previousAssistantId },
+    { polling: "raf", timeout: 30_000 }
+  );
+  await waitForStreamSettled();
+}
 
 // 复制：复制结果只保留用户可见正文，不泄漏 FILE/SCOPE 协议标记。
 const copyMessage = await Message.create({
@@ -172,7 +202,9 @@ await page.reload();
 await page.waitForLoadState("networkidle");
 const regenerateButtons = page.getByRole("button", { name: "重新输出" });
 check("只有最后一条 AI 回复显示重新输出", (await regenerateButtons.count()) === 1);
+const firstAssistantId = await lastAssistantId();
 await regenerateButtons.click();
+await waitForRegeneration(firstAssistantId);
 const consistencyDialog = page.getByRole("dialog");
 await consistencyDialog.getByText("已写入文件与新回复可能不同步").waitFor();
 check("旧文件缺失时出现一致性提示", true);
@@ -191,14 +223,14 @@ const updatedRequirementDetail = updatedRequirementFile
     })
   : null;
 check("选择更新后复用文件确认写入流程", updatedRequirementDetail?.content?.includes("本校大学生在毕业季") === true);
-await page.getByRole("button", { name: "重新输出" }).waitFor();
 const afterFirstRegenerate = await page.evaluate(async (id) => (await fetch(`/api/tabs/${id}/messages`)).json(), tabId);
 check("重新输出不新增用户消息", afterFirstRegenerate.messages.filter((message) => message.role === "user").length === 1);
 check("重新输出替换旧 AI 回复", afterFirstRegenerate.messages.filter((message) => message.role === "assistant").length === 2 && !afterFirstRegenerate.messages.some((message) => message.content.includes("旧回复，应被替换")));
 
 // 旧回复的文件都已通过更新流程写入，新回复仍输出同名文件时不应出现一致性提示。
+const sameFilesAssistantId = await lastAssistantId();
 await page.getByRole("button", { name: "重新输出" }).click();
-await page.getByRole("button", { name: "重新输出" }).waitFor();
+await waitForRegeneration(sameFilesAssistantId);
 await page.waitForTimeout(300);
 const sameFilesDialog = page.getByRole("dialog");
 check("新回复仍输出已写入文件时不出现一致性提示", (await sameFilesDialog.getByText("已写入文件与新回复可能不同步").count()) === 0);
@@ -238,7 +270,9 @@ await page.evaluate(async (id) => {
 }, projectId);
 await page.reload();
 await page.waitForLoadState("networkidle");
+const keepAssistantId = await lastAssistantId();
 await page.getByRole("button", { name: "重新输出" }).click();
+await waitForRegeneration(keepAssistantId);
 const keepDialog = page.getByRole("dialog");
 await keepDialog.getByText("已写入文件与新回复可能不同步").waitFor();
 await keepDialog.getByRole("button", { name: "保持不变" }).click();
@@ -255,8 +289,9 @@ const keptFileDetail = keptFile
   : null;
 check("选择保持后旧文件内容不变", keptFileDetail?.content?.includes("保持分支的旧文件") === true);
 
+const secondRegenerateAssistantId = await lastAssistantId();
 await page.getByRole("button", { name: "重新输出" }).click();
-await page.getByRole("button", { name: "重新输出" }).waitFor();
+await waitForRegeneration(secondRegenerateAssistantId);
 const afterSecondRegenerate = await page.evaluate(async (id) => (await fetch(`/api/tabs/${id}/messages`)).json(), tabId);
 check("可以连续重新输出且历史不膨胀", afterSecondRegenerate.messages.filter((message) => message.role === "user").length === 2 && afterSecondRegenerate.messages.filter((message) => message.role === "assistant").length === 2);
 await page.waitForTimeout(300);
@@ -286,8 +321,9 @@ if (await unwrittenHistoryDialog.count()) {
   await unwrittenHistoryDialog.getByRole("button", { name: "全部丢弃" }).click();
   await unwrittenHistoryDialog.waitFor({ state: "hidden" });
 }
+const unwrittenAssistantId = await lastAssistantId();
 await page.getByRole("button", { name: "重新输出" }).click();
-await page.getByRole("button", { name: "重新输出" }).waitFor();
+await waitForRegeneration(unwrittenAssistantId);
 await page.waitForTimeout(300);
 const unwrittenRegenerateDialog = page.getByRole("dialog");
 check("旧文件未写入时不出现一致性提示", (await unwrittenRegenerateDialog.getByText("已写入文件与新回复可能不同步").count()) === 0);
@@ -296,14 +332,6 @@ if (await unwrittenRegenerateDialog.count()) {
   await unwrittenRegenerateDialog.waitFor({ state: "hidden" });
 }
 
-// 重生成期间仍可停止，停止后前端保留 partial 并显示中断标记。
-await page.evaluate(() => { window.__verifySlowChat = true; });
-await page.getByRole("button", { name: "重新输出" }).click();
-await page.getByRole("button", { name: "停止生成" }).waitFor();
-await page.getByRole("button", { name: "停止生成" }).click();
-await page.getByText("[回复已中断]").waitFor();
-check("重新输出期间可以停止生成", true);
-await page.evaluate(() => { window.__verifySlowChat = false; });
 await Message.deleteMany({
   tab_id: new mongoose.Types.ObjectId(tabId),
   role: "assistant",
@@ -341,7 +369,7 @@ await Message.create({
 });
 await page.reload();
 await page.waitForLoadState("networkidle");
-const chatScroller = page.locator("div.min-h-0.overflow-y-auto").first();
+const chatScroller = page.locator("div.min-h-0.flex-1.overflow-y-auto.px-4.py-6");
 await chatScroller.evaluate((element) => {
   element.scrollTop = 0;
   element.dispatchEvent(new Event("scroll", { bubbles: true }));
@@ -350,16 +378,95 @@ await chatScroller.evaluate((element) => {
 // 流式期间用受控回放流制造一个可观察窗口，验证输入可编辑和停止按钮。
 await page.evaluate(() => { window.__verifySlowChat = true; });
 const textarea = page.locator("textarea");
+const priorReplayCount = await page.evaluate(
+  () => document.body.innerText.split("本校大学生在毕业季").length - 1
+);
 await textarea.fill("测试停止");
 await page.getByRole("button", { name: "发送" }).click();
 await page.getByRole("button", { name: "停止生成" }).waitFor();
+await page.waitForFunction(
+  (previous) => document.body.innerText.split("本校大学生在毕业季").length - 1 > previous,
+  priorReplayCount
+);
 const scrolledWhileReading = await chatScroller.evaluate((element) => element.scrollTop);
 check("向上翻历史时新 token 不强制滚动", scrolledWhileReading < 20);
 check("流式期间输入框保持可编辑", !(await textarea.isDisabled()));
 await textarea.fill("等待中的下一条消息");
-await page.getByRole("button", { name: "停止生成" }).click();
-await page.waitForTimeout(300);
+const stopButton = page.getByRole("button", { name: "停止生成" });
+await stopButton.click();
+await stopButton.waitFor({ state: "hidden" });
+await page.waitForTimeout(600);
 check("停止后保留 partial 并标注中断", (await page.getByText("[回复已中断]").count()) > 0);
+await page.reload();
+await page.waitForLoadState("networkidle");
+check("停止后刷新仍保留 partial", (await page.getByText("[回复已中断]").count()) > 0);
+
+const restoredScroller = page.locator("div.min-h-0.flex-1.overflow-y-auto.px-4.py-6");
+await restoredScroller.evaluate((element) => {
+  element.scrollTop = element.scrollHeight;
+  element.dispatchEvent(new Event("scroll", { bubbles: true }));
+});
+await page.evaluate(() => { window.__verifySlowChat = false; });
+const completedTextarea = page.locator("textarea");
+const messagesBeforeCompletion = await page.evaluate(
+  async (id) => (await fetch(`/api/tabs/${id}/messages`)).json(),
+  tabId
+);
+const assistantsBeforeCompletion = messagesBeforeCompletion.messages.filter(
+  (message) => message.role === "assistant"
+).length;
+await completedTextarea.fill("等待正常完成");
+await page.getByRole("button", { name: "发送" }).click();
+await page.waitForFunction(
+  async ({ id, count }) => {
+    const data = await fetch(`/api/tabs/${id}/messages`).then((res) => res.json());
+    return data.messages.filter((message) => message.role === "assistant").length > count;
+  },
+  { id: tabId, count: assistantsBeforeCompletion }
+);
+await waitForStreamSettled();
+await page.waitForFunction(
+  (selector) => {
+    const element = document.querySelector(selector);
+    return element && element.scrollHeight - element.scrollTop - element.clientHeight <= 96;
+  },
+  "div.min-h-0.flex-1.overflow-y-auto.px-4.py-6",
+  { polling: "raf" }
+);
+const bottomDistance = await restoredScroller.evaluate(
+  (element) => element.scrollHeight - element.scrollTop - element.clientHeight
+);
+check("回到接近底部后恢复自动跟随", bottomDistance <= 96, `(距离=${bottomDistance})`);
+check(
+  "生成完成后停止按钮消失",
+  (await page.getByRole("button", { name: "停止生成" }).count()) === 0
+);
+const completionDialog = page.getByRole("dialog").filter({
+  hasText: "Agent 产出文件",
+});
+await completionDialog
+  .waitFor({ state: "visible", timeout: 5000 })
+  .catch(() => undefined);
+if (await completionDialog.isVisible()) {
+  await completionDialog.getByRole("button", { name: "全部丢弃" }).click();
+  await completionDialog.waitFor({ state: "hidden" });
+}
+const messagesBeforeNextSend = await page.evaluate(
+  async (id) => (await fetch(`/api/tabs/${id}/messages`)).json(),
+  tabId
+);
+await completedTextarea.fill("完成后立即发送");
+const sendButton = page.getByRole("button", { name: "发送" });
+check("生成完成后发送按钮恢复可用", await sendButton.isEnabled());
+await page.getByRole("button", { name: "发送" }).click();
+await page.waitForFunction(
+  async ({ id, count }) => {
+    const data = await fetch(`/api/tabs/${id}/messages`).then((res) => res.json());
+    return data.messages.length > count;
+  },
+  { id: tabId, count: messagesBeforeNextSend.messages.length }
+);
+check("生成完成后可直接发送下一条消息", true);
 
 await browser.close();
 await mongoose.disconnect();

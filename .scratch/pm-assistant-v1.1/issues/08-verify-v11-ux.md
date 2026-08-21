@@ -13,5 +13,6 @@
 
 ## Comments
 
-- 2026-08-21：新增 `scripts/verify-v11-ux.mjs` 作为综合 replay 入口，顺序执行票 01 迁移审计、02/04/07 消息交互、03 Agent 自我说明、05 编辑重发、06 上下文预警和跨 Agent 协议安全网。新增内部票 01 审计脚本，覆盖文件更新、命名和空状态引导。入口强制 `AI_MODE=replay`，并统一兼容 `VERIFY_BASE_URL` / `BASE_URL`；调用聊天前通过仅开发环境的 `/api/verify/replay-mode` 确认服务端同为 replay，live 服务会被拒绝。
-- 验证：`AI_MODE=replay VERIFY_BASE_URL=http://localhost:3000 node scripts/verify-v11-ux.mjs` 全绿（6 个专项：17 + 24 + 25 + 12 + 6 + 27 条断言）。未调用真实模型；四环真实回归仍仅在发布候选或另行批准后执行。
+- 2026-08-21：新增 `scripts/verify-v11-ux.mjs` 作为综合 replay 入口，顺序执行票 01 迁移审计、02/04/07 消息交互、03 Agent 自我说明、05 编辑重发、06 上下文预警和跨 Agent 协议安全网。新增内部票 01 审计脚本，覆盖文件更新、命名和空状态引导。入口强制 `AI_MODE=replay` 并使用既有脚本约定的 `http://localhost:3000`；调用聊天前通过仅开发环境的 `/api/verify/replay-mode` 确认服务端同为 replay，live 服务会被拒绝。
+- 验证：`AI_MODE=replay VERIFY_BASE_URL=http://localhost:3000 node scripts/verify-v11-ux.mjs` 全绿（6 个专项：17 + 28 + 25 + 12 + 6 + 27 = 115 条断言）。未调用真实模型；四环真实回归仍仅在发布候选或另行批准后执行。
+- 2026-08-21 收尾校准：消息专项补强真实 replay 停止/partial/恢复自动跟随/完成后直接发送断言，并将重生成等待改为 assistant id 替换、停止按钮消失和跨两帧的 UI 完成条件；回放分块延迟响应 abort；修复 ChatArea 自动滚动 rAF 期间被布局 scroll 事件误判为用户上翻的竞态。消息专项 `28/28`，综合入口 `115/115` 全绿。

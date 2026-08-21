@@ -57,6 +57,20 @@ async function writeProjectFile(page, projectId, file) {
   );
 }
 
+async function createTab(page, workRecordId, agentType) {
+  return page.evaluate(
+    async ({ id, type }) => {
+      const response = await fetch(`/api/work-records/${id}/tabs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ agent_type: type }),
+      });
+      return { ok: response.ok, data: await response.json() };
+    },
+    { id: workRecordId, type: agentType }
+  );
+}
+
 const browser = await chromium.launch({ channel: "msedge", headless: true });
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 page.setDefaultTimeout(15_000);
@@ -195,27 +209,33 @@ try {
     Boolean(secondRequirement) && secondRequirement.content.length > beforeUpdate.length
   );
 
-  // 原型和 PRD 同名更新走覆盖语义，独立于需求分析的 append 分支。
-  for (const { filename, agentType } of [
-    { filename: "原型.md", agentType: "prototype" },
-    { filename: "prd.md", agentType: "mvp_prd" },
+  // 原型和 PRD 也必须从 Agent 二次输出走进确认弹窗，再按覆盖语义更新。
+  for (const { filename, agentType, prompt } of [
+    { filename: "原型.md", agentType: "prototype", prompt: "确认写入原型" },
+    { filename: "prd.md", agentType: "mvp_prd", prompt: "确认，继续详细撰写 PRD" },
   ]) {
-    const initial = await writeProjectFile(page, projectId, {
+    await writeProjectFile(page, projectId, {
       filename,
       content: `# ${filename}\n初始版内容`,
       agent_type: agentType,
     });
-    const updated = await writeProjectFile(page, projectId, {
-      filename,
-      content: `# ${filename}\n更新版内容`,
-      agent_type: agentType,
-    });
+    const tab = await createTab(page, workRecordId, agentType);
+    await page.reload();
+    await page.waitForLoadState("networkidle");
+    await page.getByText(tab.data.tab.display_name, { exact: true }).click();
+    await textarea.fill(prompt);
+    await page.getByRole("button", { name: "发送", exact: true }).click();
+    await fileDialog.getByText("Agent 产出文件", { exact: true }).waitFor();
+    const confirmationShown =
+      (await fileDialog.getByRole("checkbox", { name: `选择 ${filename}` }).count()) === 1;
+    await fileDialog.getByRole("button", { name: /批量写入/ }).click();
+    await fileDialog.waitFor({ state: "hidden" });
     const detail = await readProjectFile(page, projectId, filename);
     check(
-      `票01：${filename} 同名写入按覆盖语义更新`,
-      initial.ok &&
-        updated.ok &&
-        detail?.content.includes("更新版内容") &&
+      `票01：${filename} 二次输出确认后按覆盖语义更新`,
+      tab.ok &&
+        confirmationShown &&
+        detail?.content.includes(filename === "原型.md" ? "商品浏览页" : "在线点餐") &&
         !detail.content.includes("初始版内容")
     );
   }

@@ -203,6 +203,12 @@ export async function POST(
             messages,
             timeoutMs: 600_000,
             signal: request.signal,
+            // 仅开发回放验证使用，确保停止生成走真实 abort 与 partial 持久化路径。
+            replayDelayMs:
+              process.env.NODE_ENV !== "production" &&
+              request.headers.get("x-pm-verify-stream-delay") === "1"
+                ? 300
+                : undefined,
           });
 
           for await (const chunk of aiStream) {

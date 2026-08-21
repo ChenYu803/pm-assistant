@@ -399,9 +399,9 @@ export default function ChatArea({
   const [error, setError] = useState("");
   // 配置类错误（API key 无效/未配置）——弹窗提示，不进对话区，也不提供重试
   const [configError, setConfigError] = useState("");
-  const bottomRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const shouldAutoScrollRef = useRef(true);
+  const autoScrollPendingRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const stopRequestedRef = useRef(false);
@@ -576,14 +576,32 @@ export default function ChatArea({
   const handleMessageScroll = useCallback(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
+    if (autoScrollPendingRef.current) return;
     shouldAutoScrollRef.current =
       container.scrollHeight - container.scrollTop - container.clientHeight <= 96;
   }, []);
 
+  const markUserScrollIntent = useCallback(() => {
+    autoScrollPendingRef.current = false;
+  }, []);
+
   useEffect(() => {
-    if (shouldAutoScrollRef.current) {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (!shouldAutoScrollRef.current) {
+      return;
     }
+    autoScrollPendingRef.current = true;
+    const frame = requestAnimationFrame(() => {
+      const container = scrollContainerRef.current;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+        shouldAutoScrollRef.current = true;
+      }
+      autoScrollPendingRef.current = false;
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      autoScrollPendingRef.current = false;
+    };
   }, [messages, streamingContent]);
 
   // ── Scan history for file markers (tab re-open) ─────────────────────────
@@ -1181,6 +1199,9 @@ export default function ChatArea({
       <div
         ref={scrollContainerRef}
         onScroll={handleMessageScroll}
+        onWheel={markUserScrollIntent}
+        onTouchMove={markUserScrollIntent}
+        onKeyDown={markUserScrollIntent}
         className="min-h-0 flex-1 overflow-y-auto px-4 py-6"
       >
         <div className="mx-auto max-w-3xl">
@@ -1313,7 +1334,6 @@ export default function ChatArea({
             </div>
           )}
 
-          <div ref={bottomRef} />
         </div>
       </div>
 
