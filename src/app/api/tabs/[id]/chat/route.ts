@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import Message from "@/models/Message";
-import { findOwnedTab } from "@/lib/ownership";
+import { findOwnedTab, parseObjectId } from "@/lib/ownership";
 import { AGENT_SYSTEM_PROMPTS } from "@/lib/agent-prompts";
 import type { AgentType } from "@/lib/agent-constants";
 import { autoNameWorkRecord } from "@/lib/auto-name";
@@ -50,11 +50,17 @@ export async function POST(
     const { id: tabId } = await params;
 
     const body = await request.json();
-    const { content } = body;
+    const { content, regenerate, messageId } = body;
+    const isRegenerate = regenerate === true;
 
-    if (!content || typeof content !== "string" || !content.trim()) {
+    if (
+      (!isRegenerate &&
+        (!content || typeof content !== "string" || !content.trim())) ||
+      (isRegenerate &&
+        (typeof messageId !== "string" || !parseObjectId(messageId)))
+    ) {
       return NextResponse.json(
-        { error: "消息内容不能为空" },
+        { error: isRegenerate ? "待重新输出的消息不存在" : "消息内容不能为空" },
         { status: 400 }
       );
     }
@@ -110,18 +116,48 @@ export async function POST(
     }
 
     // Fetch history
-    const historyMessages = await Message.find({ tab_id: tab._id })
+    let historyMessages = await Message.find({ tab_id: tab._id })
       .sort({ timestamp: 1 })
       .lean();
+
+    if (isRegenerate) {
+      const targetId = parseObjectId(messageId);
+      const lastHistoryMessage = historyMessages[historyMessages.length - 1];
+      if (
+        !targetId ||
+        !lastHistoryMessage ||
+        lastHistoryMessage.role !== "assistant" ||
+        lastHistoryMessage._id.toString() !== targetId.toString()
+      ) {
+        return NextResponse.json(
+          { error: "只能重新输出最后一条 AI 回复" },
+          { status: 409 }
+        );
+      }
+
+      const removed = await Message.findOneAndDelete({
+        _id: targetId,
+        tab_id: tab._id,
+        role: "assistant",
+      });
+      if (!removed) {
+        return NextResponse.json(
+          { error: "待重新输出的消息不存在" },
+          { status: 409 }
+        );
+      }
+      historyMessages = historyMessages.slice(0, -1);
+    }
 
     // Save user message. Retrying a failed request re-sends the same content —
     // if the trailing history message is an identical user message (the failed
     // attempt), skip saving so retry doesn't duplicate it.
     const lastHistoryMessage = historyMessages[historyMessages.length - 1];
     const isRetryDup =
+      !isRegenerate &&
       lastHistoryMessage?.role === "user" &&
       lastHistoryMessage.content === content.trim();
-    if (!isRetryDup) {
+    if (!isRegenerate && !isRetryDup) {
       await Message.create({
         role: "user",
         content: content.trim(),
@@ -140,7 +176,9 @@ export async function POST(
             content: m.content,
           }) as AIMessage
       ),
-      { role: "user", content: content.trim() },
+      ...(isRegenerate
+        ? []
+        : [{ role: "user" as const, content: content.trim() }]),
     ];
 
     // Create streaming response

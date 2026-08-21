@@ -1,4 +1,4 @@
-// 消息交互批固定回放验证：复制/删除、停止生成、智能滚动、批量文件确认。
+// 消息交互批固定回放验证：复制/删除、替换式重新输出、停止生成、智能滚动、批量文件确认。
 // 用法：node scripts/verify-message-interactions.mjs
 // 前置：dev server 运行在 localhost:3000，MongoDB 可连，默认 AI_MODE=replay。
 import { chromium } from "playwright-core";
@@ -8,7 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const BASE = "http://localhost:3000";
+const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:3000";
 const envRaw = fs.readFileSync(path.join(ROOT, ".env.local"), "utf8");
 const env = Object.fromEntries(
   envRaw
@@ -135,6 +135,64 @@ await page.waitForTimeout(400);
 const remainingAfterDelete = await page.evaluate(async (id) => (await fetch(`/api/tabs/${id}/messages`)).json(), tabId);
 check("删除消息确认弹窗出现", true);
 check("删除后消息从历史消失", !remainingAfterDelete.messages.some((message) => message.id === copyMessage._id.toString()));
+
+// 替换式重新输出：服务端移除最后一条 assistant，不新增 user，连续两次后数量仍不膨胀。
+const priorReply = await Message.create({
+  role: "assistant",
+  content: "较早的 AI 回复，不应显示重新输出",
+  tab_id: new mongoose.Types.ObjectId(tabId),
+  timestamp: new Date(Date.now() - 2000),
+});
+const regenerateUser = await Message.create({
+  role: "user",
+  content: "请生成第一版回复",
+  tab_id: new mongoose.Types.ObjectId(tabId),
+  timestamp: new Date(),
+});
+const regenerateReply = await Message.create({
+  role: "assistant",
+  content: "旧回复，应被替换",
+  tab_id: new mongoose.Types.ObjectId(tabId),
+  timestamp: new Date(),
+});
+await page.reload();
+await page.waitForLoadState("networkidle");
+const regenerateButtons = page.getByRole("button", { name: "重新输出" });
+check("只有最后一条 AI 回复显示重新输出", (await regenerateButtons.count()) === 1);
+await regenerateButtons.click();
+await page.getByRole("button", { name: "重新输出" }).waitFor();
+const afterFirstRegenerate = await page.evaluate(async (id) => (await fetch(`/api/tabs/${id}/messages`)).json(), tabId);
+check("重新输出不新增用户消息", afterFirstRegenerate.messages.filter((message) => message.role === "user").length === 1);
+check("重新输出替换旧 AI 回复", afterFirstRegenerate.messages.filter((message) => message.role === "assistant").length === 2 && !afterFirstRegenerate.messages.some((message) => message.content.includes("旧回复，应被替换")));
+const regenerateDialog = page.getByRole("dialog");
+if (await regenerateDialog.count()) {
+  await regenerateDialog.getByRole("button", { name: "全部丢弃" }).click();
+  await regenerateDialog.waitFor({ state: "hidden" });
+}
+await page.getByRole("button", { name: "重新输出" }).click();
+await page.getByRole("button", { name: "重新输出" }).waitFor();
+const afterSecondRegenerate = await page.evaluate(async (id) => (await fetch(`/api/tabs/${id}/messages`)).json(), tabId);
+check("可以连续重新输出且历史不膨胀", afterSecondRegenerate.messages.filter((message) => message.role === "user").length === 1 && afterSecondRegenerate.messages.filter((message) => message.role === "assistant").length === 2);
+const secondRegenerateDialog = page.getByRole("dialog");
+if (await secondRegenerateDialog.count()) {
+  await secondRegenerateDialog.getByRole("button", { name: "全部丢弃" }).click();
+  await secondRegenerateDialog.waitFor({ state: "hidden" });
+}
+
+// 重生成期间仍可停止，停止后前端保留 partial 并显示中断标记。
+await page.evaluate(() => { window.__verifySlowChat = true; });
+await page.getByRole("button", { name: "重新输出" }).click();
+await page.getByRole("button", { name: "停止生成" }).waitFor();
+await page.getByRole("button", { name: "停止生成" }).click();
+await page.getByText("[回复已中断]").waitFor();
+check("重新输出期间可以停止生成", true);
+await page.evaluate(() => { window.__verifySlowChat = false; });
+await Message.deleteMany({
+  tab_id: new mongoose.Types.ObjectId(tabId),
+  role: "assistant",
+  content: { $regex: "本校大学生在毕业季" },
+});
+await Message.deleteMany({ _id: { $in: [priorReply._id, regenerateUser._id, regenerateReply._id] } });
 
 // 批量确认：同一回复的两个文件只出现一个列表弹窗，取消一个后只写入另一个。
 const batchMessage = await Message.create({
