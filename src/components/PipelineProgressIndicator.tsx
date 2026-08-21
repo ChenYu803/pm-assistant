@@ -1,18 +1,21 @@
 "use client";
 
-import type { AgentType } from "@/lib/agent-constants";
+import {
+  AGENT_TYPE_METADATA,
+  PIPELINE_AGENT_TYPES,
+  type AgentType,
+} from "@/lib/agent-constants";
 
 interface PipelineProgressIndicatorProps {
   agentType: AgentType | null;
   scopeFrozen: boolean;
 }
 
-const PHASES = [
-  { key: "requirements", label: "需求分析", agentType: "requirement_analyst" },
-  { key: "prototype", label: "原型", agentType: "prototype" },
-  { key: "prd", label: "PRD 撰写", agentType: "mvp_prd" },
-  { key: "tickets", label: "任务拆分", agentType: "ticket_splitter" },
-] as const;
+const PHASES = PIPELINE_AGENT_TYPES.map((agentType) => ({
+  key: agentType,
+  label: AGENT_TYPE_METADATA[agentType].pipelineLabel,
+  agentType,
+}));
 
 // 由 PHASES 派生（agentType → 阶段序号），避免与 PHASES 双份数据漂移
 const PHASE_INDEX_BY_AGENT = Object.fromEntries(

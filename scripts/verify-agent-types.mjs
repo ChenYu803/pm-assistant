@@ -117,21 +117,30 @@ check(
   `(实际=${JSON.stringify(created.ticket_splitter?.context)})`
 );
 
-// ── UI：创建标签页弹窗展示 4 种类型（名称 + 描述）─────────
+// ── UI：创建标签页弹窗展示 4 种类型的结构化说明 ────────
 await page.reload();
 await page.waitForLoadState("networkidle");
 await page.getByTitle("新建标签页").click();
 const dialog = page.locator('[role="dialog"]');
 await dialog.waitFor({ state: "visible" });
 const dialogText = await dialog.innerText();
-for (const [label, desc] of [
-  ["需求分析", "分析用户需求"],
-  ["MVP-PRD", "生成 MVP 版本的 PRD"],
-  ["原型", "页面清单与用户流程"],
-  ["任务拆分", "按依赖排序"],
-]) {
-  check(`弹窗展示「${label}」及描述`, dialogText.includes(label) && dialogText.includes(desc));
+for (const label of ["需求分析", "MVP-PRD", "原型", "任务拆分"]) {
+  check(`弹窗展示 Agent「${label}」`, dialogText.includes(label));
 }
+for (const section of ["职责", "需要你提供什么", "会产出什么", "在流水线中的位置"]) {
+  check(`弹窗展示说明段「${section}」`, dialogText.includes(section));
+}
+check("弹窗职责文案直白", dialogText.includes("我来帮你把模糊想法变成一条条清晰的需求"));
+check(
+  "弹窗显示需求分析输入输出",
+  dialogText.includes("一个产品想法、要解决的问题") &&
+    dialogText.includes("需求分析.md：每条需求包含")
+);
+check(
+  "弹窗显示流水线位置",
+  dialogText.includes("第 1 步：需求分析") &&
+    dialogText.includes("第 4 步：任务拆分")
+);
 await page.keyboard.press("Escape");
 
 // ── UI：管线指示器四阶段 + 原型 tab 空态文案 ──────────────
@@ -145,7 +154,8 @@ for (const phase of ["需求分析", "原型", "PRD 撰写", "任务拆分"]) {
 check("原型 tab 空态显示「已就绪」", bodyText.includes("原型 已就绪"));
 check(
   "原型空态文案适配职责",
-  bodyText.includes("页面清单与用户流程的原型方案"),
+  bodyText.includes("告诉我产品要解决什么问题") &&
+    bodyText.includes("现在该说什么？"),
   "  (空态文案缺失!)"
 );
 

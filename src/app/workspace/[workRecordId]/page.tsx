@@ -11,7 +11,11 @@ import FileTree from "@/components/FileTree";
 import FilePreviewPanel from "@/components/FilePreviewPanel";
 import PipelineProgressIndicator from "@/components/PipelineProgressIndicator";
 import AgentContextPanel, { type ContextFile } from "@/components/AgentContextPanel";
-import { AGENT_TYPE_ICONS, AGENT_TYPE_LABELS, AGENT_TYPE_DESCRIPTIONS, PIPELINE_AGENT_TYPES, type AgentType } from "@/lib/agent-constants";
+import {
+  AGENT_TYPE_METADATA,
+  PIPELINE_AGENT_TYPES,
+  type AgentType,
+} from "@/lib/agent-constants";
 import type { TabData } from "@/lib/agent-constants";
 import type { ProjectFileData } from "@/lib/file-helpers";
 import { downloadFilename } from "@/lib/file-helpers";
@@ -640,7 +644,7 @@ export default function WorkspacePage() {
                             if (locked) {
                               // 轻提示：锁定步骤点击提示原因
                               setLockedStepHint(
-                                `「${AGENT_TYPE_LABELS[type]}」完成前置步骤后开启`
+                                `「${AGENT_TYPE_METADATA[type].label}」完成前置步骤后开启`
                               );
                               setTimeout(() => setLockedStepHint(""), 2500);
                               return;
@@ -654,12 +658,14 @@ export default function WorkspacePage() {
                               : "border-indigo-200 bg-white hover:border-indigo-400 hover:bg-indigo-50"
                           }`}
                         >
-                          <span className="text-3xl">{AGENT_TYPE_ICONS[type]}</span>
+                          <span className="text-3xl" aria-hidden="true">
+                            {AGENT_TYPE_METADATA[type].icon}
+                          </span>
                           <span className="text-sm font-medium">
-                            {AGENT_TYPE_LABELS[type]}
+                            {AGENT_TYPE_METADATA[type].pipelineLabel}
                           </span>
                           <span className="text-xs leading-relaxed text-gray-500">
-                            {AGENT_TYPE_DESCRIPTIONS[type]}
+                            {AGENT_TYPE_METADATA[type].responsibility}
                           </span>
                           {locked && (
                             <span className="mt-1 flex items-center gap-1 text-xs text-gray-400">

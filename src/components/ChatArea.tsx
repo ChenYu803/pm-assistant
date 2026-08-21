@@ -2,7 +2,11 @@
 
 import { useState, useEffect, useRef, useCallback, type ReactNode } from "react";
 import type { AgentType } from "@/lib/agent-constants";
-import { AGENT_TYPE_ICONS, AGENT_TYPE_LABELS } from "@/lib/agent-constants";
+import {
+  AGENT_TYPE_ICONS,
+  AGENT_TYPE_LABELS,
+  AGENT_TYPE_METADATA,
+} from "@/lib/agent-constants";
 import FileConfirmDialog, {
   type FileToConfirm,
   type PendingFile,
@@ -24,24 +28,6 @@ import {
   AlertDialogDescription,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
-// ─── Empty states ────────────────────────────────────────────────────────────
-
-/** 各 Agent 类型的空态提示（icon 取 AGENT_TYPE_ICONS，职责文案），见 spec 需求 40。 */
-const EMPTY_STATE_BY_AGENT: Record<AgentType, { hint: string }> = {
-  requirement_analyst: {
-    hint: "请描述您想做的产品或想解决的问题，我将通过系统化的流程帮您梳理需求。",
-  },
-  mvp_prd: {
-    hint: "请提供需求分析文档，我将帮您生成 MVP 版本的 PRD。",
-  },
-  prototype: {
-    hint: "需求分析完成后，我将基于需求分析为您产出页面清单与用户流程的原型方案。",
-  },
-  ticket_splitter: {
-    hint: "PRD 完成后，我将把 PRD 拆分为按依赖排序、可直接实施的开发任务。",
-  },
-};
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -1010,8 +996,9 @@ export default function ChatArea({
                 <p className="mb-3 text-sm text-gray-500">
                   {agentType && AGENT_TYPE_LABELS[agentType]} 已就绪
                 </p>
-                <p className="text-xs text-gray-400">
-                  {agentType ? EMPTY_STATE_BY_AGENT[agentType].hint : ""}
+                <p className="max-w-md text-xs leading-relaxed text-gray-400">
+                  <span className="font-medium text-gray-500">现在该说什么？</span>
+                  {agentType ? ` ${AGENT_TYPE_METADATA[agentType].emptyStatePrompt}` : ""}
                 </p>
               </div>
             </div>
