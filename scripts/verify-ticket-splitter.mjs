@@ -11,7 +11,7 @@
 // - 文件树断言：issues/ 子路径文件出现在文件列表（文件树数据源）
 // - 重新切分（spec US19）：批准输出后用户要求重新切分 → Agent 能再次输出（无冻结）
 // 前置：dev server 运行在 localhost:3000，MongoDB 可连（.env.local 的 MONGODB_URI），
-//       DEEPSEEK_API_KEY 有效（真实对话需要）
+//       默认 AI_MODE=replay；真实模型验证时才需要 AI_MODE=live + AI_API_KEY
 // 用法: node scripts/verify-ticket-splitter.mjs
 import { chromium } from "playwright-core";
 

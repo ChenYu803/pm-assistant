@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import { findOwnedProjectFile } from "@/lib/ownership";
-import { createDeepSeekClient, DEEPSEEK_MODEL } from "@/lib/deepseek";
+import { createAICompletion, isAIConfigured } from "@/lib/ai";
 
 const POLISH_SYSTEM_PROMPT = `你是一个技术文档润色助手。请对以下 Markdown 内容进行润色：
 
@@ -46,28 +46,21 @@ export async function POST(
       );
     }
 
-    const apiKey = process.env.DEEPSEEK_API_KEY;
-    if (!apiKey) {
+    if (!isAIConfigured()) {
       return NextResponse.json(
-        { error: "AI 服务未配置，请联系管理员设置 DEEPSEEK_API_KEY" },
+        { error: "AI 服务未配置，请联系管理员设置 AI_API_KEY" },
         { status: 500 }
       );
     }
 
-    const openai = createDeepSeekClient();
-
-    const response = await openai.chat.completions.create({
-      model: DEEPSEEK_MODEL,
-      max_tokens: 32768,
+    const polished = await createAICompletion({
+      maxTokens: 32768,
       messages: [
         { role: "system", content: POLISH_SYSTEM_PROMPT },
         { role: "user", content: `请润色以下 Markdown 内容：\n\n${content}` },
       ],
-      stream: false,
+      timeoutMs: 600_000,
     });
-
-    const polished =
-      response.choices[0]?.message?.content?.trim() ?? content;
 
     return NextResponse.json({ polished });
   } catch (error) {

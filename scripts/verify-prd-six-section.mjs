@@ -9,7 +9,7 @@
 // - prd.md 断言：第 3 章 = 原型.md 页面清单段原文（零转换嵌入）；第 5 章 = 用户流程段原文
 // - prd.md 断言：外部依赖声明只在概念章出现一次（单源）；概念版内容不写入 prd.md
 // 前置：dev server 运行在 localhost:3000，MongoDB 可连（.env.local 的 MONGODB_URI），
-//       DEEPSEEK_API_KEY 有效（真实对话需要）
+//       默认 AI_MODE=replay；真实模型验证时才需要 AI_MODE=live + AI_API_KEY
 // 用法: node scripts/verify-prd-six-section.mjs
 import { chromium } from "playwright-core";
 

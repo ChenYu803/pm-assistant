@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import type OpenAI from "openai";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import Tab from "@/models/Tab";
@@ -10,7 +9,8 @@ import type { AgentType } from "@/lib/agent-constants";
 import { autoNameWorkRecord } from "@/lib/auto-name";
 import { stripChangelogHeader } from "@/lib/file-helpers";
 import { getLoadedContextFiles } from "@/lib/context-files";
-import { createDeepSeekClient, DEEPSEEK_MODEL } from "@/lib/deepseek";
+import { createAIStream, isAIConfigured } from "@/lib/ai";
+import type { AIMessage } from "@/lib/ai";
 
 const encoder = new TextEncoder();
 
@@ -53,10 +53,9 @@ export async function POST(
       );
     }
 
-    const apiKey = process.env.DEEPSEEK_API_KEY;
-    if (!apiKey) {
+    if (!isAIConfigured()) {
       return NextResponse.json(
-        { error: "AI 服务未配置，请联系管理员设置 DEEPSEEK_API_KEY" },
+        { error: "AI 服务未配置，请联系管理员设置 AI_API_KEY" },
         { status: 500 }
       );
     }
@@ -126,7 +125,7 @@ export async function POST(
     }
 
     // Build messages: system prompt + history + new user message
-    const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+    const messages: AIMessage[] = [
       { role: "system", content: systemPrompt },
       ...historyMessages.map(
         (m) =>
@@ -137,8 +136,6 @@ export async function POST(
       ),
       { role: "user", content: content.trim() },
     ];
-
-    const openai = createDeepSeekClient();
 
     // Create streaming response
     const stream = new ReadableStream({
@@ -152,17 +149,14 @@ export async function POST(
           // 需 530-800s，180s 会把正常长输出误杀（verify-v1-flow 等待 720s）。
           // timeout 必须作为第二参 RequestOptions 传——放 body 里 SDK 不读，
           // 运行时实际走 SDK 默认 10 分钟（2026-08-11 排查 tsc 类型错时发现）。
-          const deepseekStream = await openai.chat.completions.create(
-            {
-              model: DEEPSEEK_MODEL,
-              max_tokens: 32768,
-              messages,
-              stream: true,
-            },
-            { timeout: 600_000 }
-          );
+          const aiStream = await createAIStream({
+            agentType: tab.agent_type,
+            maxTokens: 32768,
+            messages,
+            timeoutMs: 600_000,
+          });
 
-          for await (const chunk of deepseekStream) {
+          for await (const chunk of aiStream) {
             const delta = chunk.choices[0]?.delta?.content;
             if (delta) {
               fullContent += delta;
@@ -200,7 +194,7 @@ export async function POST(
             timestamp: new Date(),
           });
 
-          // Auto-name: uses deepseek-chat (same model), latency is minimal
+          // Auto-name is a live-mode convenience call; replay mode skips it.
           let newName: string | null = null;
           try {
             newName = await autoNameWorkRecord(tab._id, tab.work_record_id);

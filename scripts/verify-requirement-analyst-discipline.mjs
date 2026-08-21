@@ -5,7 +5,7 @@
 // - 工作文档不可加载进 Agent 上下文（POST 加载被 400 拒绝）
 // - 轻量检查（WARN 不 fail）：对话回复表格 ≤5 行（5×5 边界）；每轮问号 ≤2
 // 前置：dev server 运行在 localhost:3000，MongoDB 可连（.env.local 的 MONGODB_URI），
-//       DEEPSEEK_API_KEY 有效（真实对话需要）
+//       默认 AI_MODE=replay；真实模型验证时才需要 AI_MODE=live + AI_API_KEY
 // 用法: node scripts/verify-requirement-analyst-discipline.mjs
 import { chromium } from "playwright-core";
 

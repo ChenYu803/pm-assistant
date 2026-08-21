@@ -3,9 +3,9 @@
 // - 自动加载规则：prototype → 需求分析.md；mvp_prd → 需求分析.md + 原型.md（存在时）；
 //   ticket_splitter → prd.md + 需求分析.md
 // - 管线指示器四阶段 + 各 Agent 空态文案
-// - 新类型（prototype）可对话（占位 prompt，真实 DeepSeek 1 轮）
+// - 新类型（prototype）可对话（默认使用 AI_MODE=replay，不消耗真实 API）
 // 前置：dev server 运行在 localhost:3000，MongoDB 可连（.env.local 的 MONGODB_URI），
-//       DEEPSEEK_API_KEY 有效（对话冒烟需要）
+//       默认 AI_MODE=replay；真实模型冒烟时才需要 AI_MODE=live + AI_API_KEY
 // 用法: node scripts/verify-agent-types.mjs
 import { chromium } from "playwright-core";
 

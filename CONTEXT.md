@@ -28,7 +28,7 @@
 | 增长策略（三步走） | ① 自己作为唯一用户，把产品打磨成「自己想要的样子」 ② 以教学之名经营小红书等社群，引流其他求职 PM 使用 ③ 未来随用户群成长回在职 PM 市场 | 先做深单点再扩张；教学是引流手段，产品价值是「从想法到 PRD 的完整产出」 |
 | 核心体验目标 | 新人无引导也能走完「想法 → 需求分析.md → 原型.md → prd.md → issues」并导出成果 | 求职 PM 不懂 PM 流程，产品必须自己教会他们；需模板案例、新手引导、成果导出支撑 |
 | Agent design | Each agent has a baked-in system prompt for its specific role | User never writes "you are a PM" — they just describe their situation |
-| AI backend | DeepSeek API (`deepseek-chat`) via OpenAI-compatible SDK | 成本最低的选择；DeepSeek V3 在中文 PM 场景下表现优秀 |
+| AI backend | OpenAI-compatible Chat Completions API；供应商、地址和模型由 `AI_*` 环境变量配置；本地验证默认使用固定回放 | 业务代码不绑定具体供应商；真实 GPT 验证只负责检查模型对 prompt 的理解，UI 和协议由离线回放验证 |
 | MVP agents | ① 需求分析 Agent — Requirement Analyst ② MVP-PRD Agent — MVP Scope & PRD Writer | Two agents; validates both specialization AND handoff |
 | v1.0 agents(四环流水线) | ① 需求分析 Agent(微调:功能范围段充实,做 X + 不做 Y 及理由)② 原型 Agent(新增)③ PRD Agent(重构:六章)④ 任务拆分 Agent(新增) | = matt 主流程产品化(grill / prototype / to-spec / to-tickets);细节见 `.scratch/prd-structure/ai-prd-structure.md` |
 | 需求分析.md format | List of requirements, each with 4-section analysis (用户与场景 / 用户故事 / 功能范围 / 成功指标). 功能范围段充实:做 X + 不做 Y(理由)——范围界定与排除理由是需求分析 Agent 的职责,PRD 第 2 章引用 | Agent is gatekeeper, not scribe — only validated requirements enter the list;需求分析就做需求分析该做的事,不越界 |
@@ -70,7 +70,7 @@ Project (e.g., "校园二手交易平台")
 - **File changelog** — each md file has a header tracking requirement count, iteration #, etc. so AI reads it coherently
 - **Progress indicator** — non-blocking, shows current phase (see Navigation mode)
 
-| Tech stack | Next.js + MongoDB (Mongoose) + NextAuth.js + OpenAI SDK (DeepSeek API) + Tailwind CSS, local dev | Local deployment for fast iteration |
+| Tech stack | Next.js + MongoDB (Mongoose) + NextAuth.js + OpenAI SDK + Tailwind CSS, local dev | AI API 使用 OpenAI 兼容的 Chat Completions 格式；本地测试默认不消耗 API |
 | Authentication | Email + password (NextAuth.js Credentials, bcrypt, JWT) | Simple, no external auth dependency |
 | File tree | Included in MVP — click to load file into agent context; drag to v2 | Core handoff visual; demonstrates the key differentiator |
 | MVP pages | ① Register ② Login ③ Project list ④ Session list ⑤ Workspace | 5 routes; standard web app structure |

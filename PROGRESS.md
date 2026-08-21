@@ -28,10 +28,11 @@ v1.0 已验收（2026-08-11），四环流水线端到端走通。
 - **marker 协议与确认流**：%%%FILE_BEGIN%%% 等字面量被 verify-protocols 断言；「拒绝写入不落盘」是 v1.0 验收过的语义，任何确认流改动不得破坏。
 - **verify 脚本与 UI 文案耦合**：13 个 verify 脚本都驱动真实 UI（点击按钮/填表），改 UI 按钮名或流程前先 `grep scripts/` 查旧元素（票 01 的「确认创建」→「创建」波及全部 13 个脚本）；改完至少跑一个受影响的非 LLM 脚本（如 verify-fixes）冒烟。
 - **L2 判定逻辑改动**（如文件更新修复）完成后需跑 verify-v1-flow 回归，确认四环写入协议不受影响。
+- **AI 验证成本规则（2026-08-21）**：本地验证默认使用 `AI_MODE=replay` 固定回放，不调用真实模型；只有显式设置 `AI_MODE=live` 才连接 OpenAI。真实模型验证只检查 prompt 理解，不重复承担 UI、marker 和文件写入回归。
 
 ## 文档地图
 
 - 决策（为什么）：`CONTEXT.md` / `docs/adr/`
 - 规格（做什么）：`.scratch/pm-assistant-v1.1/spec.md`
 - 票与状态：`.scratch/pm-assistant-v1.1/issues/`
-- 纪律（怎么做 + 协议耦合快照）：`CLAUDE.md` / `docs/agents/implement-context-hygiene.md`
+- 纪律（怎么做 + 协议耦合快照）：`AGENTS.md` / `docs/agents/implement-context-hygiene.md`
