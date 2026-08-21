@@ -22,7 +22,7 @@ type ReplayChunk = {
 export const AI_MODE =
   process.env.AI_MODE ??
   (process.env.NODE_ENV === "production" ? "live" : "replay");
-export const AI_MODEL = process.env.AI_MODEL ?? "gpt-4o-mini";
+export const AI_MODEL = process.env.AI_MODEL ?? "deepseek-v4-flash";
 
 export function isLiveAI(): boolean {
   return AI_MODE === "live";
@@ -39,7 +39,7 @@ export function createAIClient(): OpenAI {
   }
   return new OpenAI({
     apiKey: process.env.AI_API_KEY,
-    baseURL: process.env.AI_BASE_URL || "https://api.openai.com/v1",
+    baseURL: process.env.AI_BASE_URL || "https://api.deepseek.com",
   });
 }
 

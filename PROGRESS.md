@@ -23,6 +23,7 @@ v1.0 已验收（2026-08-11），四环流水线端到端走通。
 **票 02 已完成（2026-08-21）**：消息 hover 复制/删除与确认弹窗、删除 API、停止生成及 partial 持久化、智能滚动、流式期间输入、单弹窗批量文件确认均已落地。固定回放 `verify-message-interactions.mjs` 11/11、`verify-protocols.mjs` 27/27、`verify-fixes.mjs` 10/10；tsc 与本次改动定向 lint 通过。全量 build 因环境无法访问 Google Fonts 未通过。
 
 **票 03 已完成（2026-08-21）**：Agent 结构化说明收敛到 `AGENT_TYPE_METADATA` 单一数据源，选择弹窗展示职责/输入/输出/流水线位置四段说明，标签页空态更新为「现在该说什么？」直白引导。固定回放 `verify-agent-types.mjs` 25/25，tsc 通过；定向 lint 仅保留工作区页面原有的 4 个 `setState-in-effect` 报错。
+- **AI 供应商配置（2026-08-21）**：切回 DeepSeek OpenAI 兼容接口，默认模型为 `deepseek-v4-flash`；真实 key 保留在本地 `.env.local`，不进入仓库。
 
 ## 约束与坑（项目特有，实施中踩过的）
 
