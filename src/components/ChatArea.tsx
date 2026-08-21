@@ -71,7 +71,7 @@ interface SseEvent {
  * 其余错误（网络中断、超时等）保留对话区 banner + 重试。
  */
 function isConfigError(message: string): boolean {
-  return /401|authentication|api[ _-]?key|DEEPSEEK_API_KEY|invalid_api_key/i.test(
+  return /401|authentication|api[ _-]?key|AI_API_KEY|invalid_api_key/i.test(
     message
   );
 }
@@ -983,7 +983,7 @@ export default function ChatArea({
           <p className="mt-2 text-sm text-muted-foreground">
             API Key 无效或未配置，无法调用 AI 服务。请检查
             <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">
-              DEEPSEEK_API_KEY
+              AI_API_KEY
             </code>
             配置后重试。
           </p>

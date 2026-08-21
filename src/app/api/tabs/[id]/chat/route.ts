@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
-import Tab from "@/models/Tab";
 import Message from "@/models/Message";
 import { findOwnedTab } from "@/lib/ownership";
 import { AGENT_SYSTEM_PROMPTS } from "@/lib/agent-prompts";
@@ -132,7 +131,7 @@ export async function POST(
           ({
             role: m.role as "user" | "assistant",
             content: m.content,
-          }) as OpenAI.Chat.Completions.ChatCompletionMessageParam
+          }) as AIMessage
       ),
       { role: "user", content: content.trim() },
     ];

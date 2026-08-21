@@ -1,5 +1,5 @@
 // 验证问题 4：API key 无效（401）时弹窗提示，错误不进对话区、不显示重试
-// 前置：.env.local 的 DEEPSEEK_API_KEY 已临时改坏（改坏前先备份！）
+// 前置：AI_MODE=live 且 AI_API_KEY 临时设置为无效值（改坏前先备份！）
 import { chromium } from "playwright-core";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
