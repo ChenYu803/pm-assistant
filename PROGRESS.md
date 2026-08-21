@@ -18,14 +18,14 @@ v1.0 已验收（2026-08-11），四环流水线端到端走通。
 
 ## 本次任务
 
-**票 05 — 编辑并重新发送已完成**（`issues/05-edit-resend.md`）。
+**票 07 收尾已完成**（`issues/07-regenerate-file-consistency.md`）。
 
 **票 02 已完成（2026-08-21）**：消息 hover 复制/删除与确认弹窗、删除 API、停止生成及 partial 持久化、智能滚动、流式期间输入、单弹窗批量文件确认均已落地。固定回放 `verify-message-interactions.mjs` 11/11、`verify-protocols.mjs` 27/27、`verify-fixes.mjs` 10/10；tsc 与本次改动定向 lint 通过。全量 build 因环境无法访问 Google Fonts 未通过。
 
 **票 03 已完成（2026-08-21）**：Agent 结构化说明收敛到 `AGENT_TYPE_METADATA` 单一数据源，选择弹窗展示职责/输入/输出/流水线位置四段说明，标签页空态更新为「现在该说什么？」直白引导。固定回放 `verify-agent-types.mjs` 25/25，tsc 通过；定向 lint 仅保留工作区页面原有的 4 个 `setState-in-effect` 报错。
 - **票 04 已完成（2026-08-21）**：聊天接口新增带目标消息 id 的重生成模式，服务端只移除最后一条 assistant 并复用既有历史，不新增 user；前端仅在最后一条 AI 回复展示「重新输出」，新回复替换旧回复，连续重生成和停止生成均保持现有流式语义。固定回放 `verify-message-interactions.mjs` 16/16，tsc 通过；定向 lint 仅保留 ChatArea 原有的 React purity 报错。
 - **票 06 已完成（2026-08-21）**：聊天输入区显示历史消息和当前草稿的字符数/4 粗估上下文用量，约 24k tokens 起显示接近上限；估算异常静默隐藏，不增加请求或阻塞聊天主流程。固定回放 `verify-context-usage.mjs` 6/6、既有 `verify-fixes.mjs` 10/10，tsc 通过。
-- **票 07 已完成（2026-08-21）**：重生成前按“消息 + 文件名”快照旧回复已写入文件，重生成后若新回复缺失旧文件则提示“已写入文件与新回复可能不同步”；“更新文件”复用现有文件确认/POST 写入流程，“保持不变”不触发写入。固定回放 `verify-message-interactions.mjs` 24/24，协议回放 26/27（剩余失败为既有通用 marker 清理正则断言），tsc 通过。
+- **票 07 已完成（2026-08-21）**：重生成前按“消息 + 文件名”快照旧回复已写入文件，重生成后若新回复缺失旧文件则提示“已写入文件与新回复可能不同步”；“更新文件”复用现有文件确认/POST 写入流程，“保持不变”不触发写入。固定回放 `verify-message-interactions.mjs` 24/24、`verify-fixes.mjs` 10/10、`verify-protocols.mjs` 27/27，tsc 通过。
 - **票 05 已完成（2026-08-21）**：用户消息 hover 显示「编辑」，输入区支持回填、取消和「重新发送」；编辑通过消息 API 从目标用户消息起截断后复用既有发送流，服务端回传真实用户消息 id，保证发送后不刷新也可编辑，历史无重复用户消息。固定回放 `verify-edit-resend.mjs` 12/12，tsc 与消息 API 定向 lint 通过。
 - **AI 供应商配置（2026-08-21）**：切回 DeepSeek OpenAI 兼容接口，默认模型为 `deepseek-v4-flash`；真实 key 保留在本地 `.env.local`，不进入仓库。
 

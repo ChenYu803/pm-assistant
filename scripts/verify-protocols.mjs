@@ -41,7 +41,8 @@ function isCommentLine(line) {
 
 // 这是清理任意协议标记的通用正则，不是一个待校验的协议字面量。
 function isGenericMarkerCleanup(line) {
-  return line.includes("%%%[A-Z_]+%%%");
+  const markers = line.match(/%%%[^%]*%%%/g) ?? [];
+  return markers.length === 1 && markers[0] === "%%%[A-Z_]+%%%";
 }
 
 // 字面量在文件中的所有出现行号（1-based），代码文件排除注释行
