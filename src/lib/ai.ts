@@ -8,6 +8,7 @@ type AIRequest = {
   messages: AIMessage[];
   maxTokens: number;
   timeoutMs: number;
+  signal?: AbortSignal;
 };
 
 type ReplayChunk = {
@@ -297,13 +298,14 @@ export async function createAIStream({
   messages,
   maxTokens,
   timeoutMs,
+  signal,
 }: AIRequest): Promise<AsyncIterable<ReplayChunk> | AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>> {
   if (!isLiveAI()) {
     return replayStream(replayResponse(agentType, messages));
   }
   return createAIClient().chat.completions.create(
     { model: AI_MODEL, max_tokens: maxTokens, messages, stream: true },
-    { timeout: timeoutMs }
+    { timeout: timeoutMs, signal }
   );
 }
 

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, type ReactNode } from "react";
 import type { AgentType } from "@/lib/agent-constants";
 import { AGENT_TYPE_ICONS, AGENT_TYPE_LABELS } from "@/lib/agent-constants";
 import FileConfirmDialog, {
   type FileToConfirm,
+  type PendingFile,
 } from "@/components/FileConfirmDialog";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,14 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { isWorkingDocFile } from "@/lib/file-helpers";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // ─── Empty states ────────────────────────────────────────────────────────────
 
@@ -64,6 +73,7 @@ interface SseEvent {
   messageId?: string;
   message?: string;
   newName?: string;
+  interrupted?: boolean;
 }
 
 /**
@@ -92,6 +102,25 @@ function extractFileMarkers(content: string): FileToConfirm[] {
   return results;
 }
 
+/** 将对话中的内部协议标记转换为用户可复制的纯文本。 */
+function toCopyText(content: string): string {
+  return content
+    .replace(/%%%SCOPE_FROZEN%%%/g, "")
+    .replace(
+      /%%%FILE_BEGIN%%%\s*.+?\.md\s*\n([\s\S]*?)%%%FILE_END%%%/g,
+      "$1"
+    )
+    .replace(
+      /%%%HTML_BEGIN%%%\s*\n?[\s\S]*?%%%HTML_END%%%/g,
+      "HTML 原型快照已生成"
+    )
+    .replace(/%%%[A-Z_]+%%%/g, "")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1")
+    .trim();
+}
+
 // ─── SSE line parser ─────────────────────────────────────────────────────────
 
 /**
@@ -112,15 +141,33 @@ function parseSseLine(line: string): SseEvent | null {
 function MessageBubble({
   message,
   isStreaming,
+  children,
+  onCopy,
+  onDelete,
 }: {
-  message: ChatMessage | { role: "assistant"; content: string; id?: string; timestamp?: string };
+  message: ChatMessage;
   isStreaming: boolean;
+  children?: ReactNode;
+  onCopy?: () => Promise<void>;
+  onDelete?: () => void;
 }) {
   const isUser = message.role === "user";
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    if (!onCopy) return;
+    await onCopy();
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1200);
+  };
 
   return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"} mb-4`}>
-      <div className={`flex max-w-[80%] gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
+    <div
+      data-testid="message-bubble"
+      data-message-id={message.id}
+      className={`group mb-4 flex ${isUser ? "justify-end" : "justify-start"}`}
+    >
+      <div className={`flex max-w-[80%] items-center gap-2 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
         {/* Avatar */}
         <div
           className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm ${
@@ -141,12 +188,43 @@ function MessageBubble({
           }`}
         >
           <div className="whitespace-pre-wrap break-words">
-            {message.content}
+            {children ?? message.content}
             {isStreaming && (
               <span className="ml-0.5 inline-block h-4 w-1.5 animate-pulse bg-current align-text-bottom" />
             )}
           </div>
         </div>
+
+        {!isStreaming && (onCopy || onDelete) && (
+          <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+            {onCopy && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                aria-label="复制"
+                title="复制消息"
+                onClick={() => void handleCopy()}
+                className="h-7 px-2 text-xs text-gray-500 hover:text-gray-900"
+              >
+                {copied ? "已复制" : "复制"}
+              </Button>
+            )}
+            {onDelete && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                aria-label="删除"
+                title="删除消息"
+                onClick={onDelete}
+                className="h-7 px-2 text-xs text-gray-500 hover:text-red-600"
+              >
+                删除
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -263,19 +341,20 @@ export default function ChatArea({
   // 配置类错误（API key 无效/未配置）——弹窗提示，不进对话区，也不提供重试
   const [configError, setConfigError] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const shouldAutoScrollRef = useRef(true);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const stopRequestedRef = useRef(false);
   // Last sent content — state, not a ref: it's read during render (retry button)
   const [lastSentContent, setLastSentContent] = useState("");
+  const [pendingDeleteMessage, setPendingDeleteMessage] =
+    useState<ChatMessage | null>(null);
+  const [deletingMessage, setDeletingMessage] = useState(false);
 
   // File confirmation state
-  const [fileToConfirm, setFileToConfirm] = useState<FileToConfirm | null>(null);
-  // 待确认队列（06: 任务拆分 Agent 一次输出多个 issue 文件，按序逐个弹确认框，
-  // 用户逐个确认/拒绝——拒绝的不落盘；spec US18）。队首显示为 fileToConfirm，
-  // 确认/取消后由队列 effect 弹下一个。
-  const [fileQueue, setFileQueue] = useState<
-    { file: FileToConfirm; messageId: string | null }[]
-  >([]);
+  // Agent 一次输出的多个文件在同一个弹窗中统一勾选处理。
+  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
   const [showFileDialog, setShowFileDialog] = useState(false);
   const [savingFile, setSavingFile] = useState(false);
   // Track processed message IDs to avoid re-showing dialogs
@@ -289,8 +368,7 @@ export default function ChatArea({
   // Messages whose file has actually been written (banner shows "已写入").
   // State, not a ref — it's read during render.
   const [writtenFileMessageIds, setWrittenFileMessageIds] = useState<Set<string>>(new Set());
-  // Which message triggered the currently open confirm dialog
-  const pendingWriteMessageId = useRef<string | null>(null);
+  const pendingFileSequence = useRef(0);
 
   // ── File marker parsing (extractFileMarkers lives at module level) ────────
 
@@ -356,22 +434,26 @@ export default function ChatArea({
         processedFileMessageIds.current.add(message.id);
         // 同一回复可能同时带工作文档与正式文件 marker（如推进时既更新工作文档
         // 又输出需求分析.md）：工作文档静默写入，正式文件入队逐个弹确认框
-        // （06: 任务拆分 Agent 一次输出多个 issue 文件，按序逐个确认/拒绝）。
-        const pending: { file: FileToConfirm; messageId: string | null }[] = [];
-        for (const m of markers) {
+        // （02: 任务拆分 Agent 一次输出多个 issue 文件，在同一弹窗中批量处理）。
+        const pending: PendingFile[] = [];
+        markers.forEach((m, index) => {
           if (isWorkingDocFile(m.filename)) {
             void writeFileToServer(m, message.id);
-            continue;
+            return;
           }
           if (historyReplay && existingFileNames?.includes(m.filename)) {
             // 历史重放：文件名已存在 = 该消息的写入已落盘 → 不重复弹框；
             // 横幅保留手动「写入项目文件」供有意重写（现状语义不变）。
-            continue;
+            return;
           }
-          pending.push({ file: m, messageId: message.id });
-        }
+          pending.push({
+            ...m,
+            id: `${message.id}-${index}-${pendingFileSequence.current++}`,
+            messageId: message.id,
+          });
+        });
         if (pending.length > 0) {
-          setFileQueue((prev) => [...prev, ...pending]);
+          setPendingFiles((prev) => [...prev, ...pending]);
           setShowFileDialog(true);
         }
       }
@@ -379,28 +461,12 @@ export default function ChatArea({
     [existingFileNames, writeFileToServer]
   );
 
-  // ── File confirmation queue ────────────────────────────────────────────────
-  // 队列化确认（06）:弹窗显示队首文件，确认/取消后弹下一个；队列空时关闭。
-  // 条件 fileToConfirm 为空才弹——banner 手动写入直接 setFileToConfirm（非空），
-  // 不会与队列抢占弹窗。
-  useEffect(() => {
-    if (!showFileDialog || fileToConfirm) return;
-    if (fileQueue.length === 0) {
-      setShowFileDialog(false);
-      return;
-    }
-    const next = fileQueue[0];
-    setFileQueue((prev) => prev.slice(1));
-    pendingWriteMessageId.current = next.messageId;
-    setFileToConfirm(next.file);
-  }, [showFileDialog, fileToConfirm, fileQueue]);
-
   // ── Fetch message history on tab change ──────────────────────────────────
 
   useEffect(() => {
     if (!tabId) {
-      setMessages([]);
-      return;
+      const reset = window.setTimeout(() => setMessages([]), 0);
+      return () => window.clearTimeout(reset);
     }
 
     let cancelled = false;
@@ -434,10 +500,19 @@ export default function ChatArea({
     };
   }, [tabId]);
 
-  // ── Auto-scroll to bottom ────────────────────────────────────────────────
+  // ── Smart auto-scroll ────────────────────────────────────────────────────
+
+  const handleMessageScroll = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    shouldAutoScrollRef.current =
+      container.scrollHeight - container.scrollTop - container.clientHeight <= 96;
+  }, []);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (shouldAutoScrollRef.current) {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages, streamingContent]);
 
   // ── Scan history for file markers (tab re-open) ─────────────────────────
@@ -467,21 +542,22 @@ export default function ChatArea({
 
   // ── File confirmation handlers ────────────────────────────────────────────
 
-  async function handleConfirmFile() {
-    if (!fileToConfirm || !projectId || !agentType) return;
-    const ok = await writeFileToServer(
-      fileToConfirm,
-      pendingWriteMessageId.current
-    );
-    if (ok) {
-      // 清空当前项，队列 effect 弹下一个（或队列空时关闭）
-      setFileToConfirm(null);
+  async function handleConfirmFiles(files: PendingFile[]) {
+    if (!projectId || !agentType) return;
+    const failed: PendingFile[] = [];
+    for (const pending of files) {
+      if (!(await writeFileToServer(pending, pending.messageId))) {
+        failed.push(pending);
+      }
     }
+    setPendingFiles(failed);
+    setShowFileDialog(failed.length > 0);
   }
 
-  function handleCancelFile() {
-    // 拒绝写入 → 该文件不落盘；队列 effect 弹下一个（或队列空时关闭）
-    setFileToConfirm(null);
+  function handleCancelFiles() {
+    // 未勾选或主动丢弃的文件不请求写入 API，保留「拒绝不落盘」语义。
+    setPendingFiles([]);
+    setShowFileDialog(false);
   }
 
   // ── Core send logic (shared by sendMessage and retry) ───────────────────
@@ -490,6 +566,7 @@ export default function ChatArea({
     if (!tabId || isStreaming) return;
 
     setError("");
+    stopRequestedRef.current = false;
 
     const optimisticUser: ChatMessage = {
       id: `temp-${Date.now()}`,
@@ -577,7 +654,7 @@ export default function ChatArea({
               } else {
                 setError(errMsg);
               }
-              if (event.messageId && fullContent) {
+              if (event.messageId && fullContent && !stopRequestedRef.current) {
                 // Server persisted the partial — append with the real message
                 // id so a later history fetch doesn't duplicate it.
                 setMessages((prev) => [
@@ -585,7 +662,9 @@ export default function ChatArea({
                   {
                     id: event.messageId!,
                     role: "assistant",
-                    content: fullContent,
+                    content:
+                      fullContent +
+                      `\n\n[${event.interrupted ? "回复已中断" : "回复因错误中断"}]`,
                     timestamp: new Date().toISOString(),
                   },
                 ]);
@@ -609,16 +688,86 @@ export default function ChatArea({
     }
   }
 
+  function stopGeneration() {
+    if (!isStreaming) return;
+    stopRequestedRef.current = true;
+    const partial = streamingContent.trim();
+    if (partial) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `interrupted-${Date.now()}`,
+          role: "assistant",
+          content: `${streamingContent}\n\n[回复已中断]`,
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+    }
+    setStreamingContent("");
+    setIsStreaming(false);
+    abortRef.current?.abort();
+    abortRef.current = null;
+  }
+
+  async function copyMessage(content: string) {
+    const text = toCopyText(content);
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+      const copyArea = document.createElement("textarea");
+      copyArea.value = text;
+      copyArea.setAttribute("readonly", "true");
+      copyArea.style.position = "fixed";
+      copyArea.style.opacity = "0";
+      document.body.appendChild(copyArea);
+      copyArea.select();
+      document.execCommand("copy");
+      copyArea.remove();
+    } catch {
+      setError("复制消息失败，请稍后重试");
+    }
+  }
+
+  async function confirmDeleteMessage() {
+    if (!pendingDeleteMessage || deletingMessage) return;
+    const message = pendingDeleteMessage;
+    if (message.id.startsWith("temp-") || message.id.startsWith("interrupted-")) {
+      setMessages((prev) => prev.filter((item) => item.id !== message.id));
+      setPendingDeleteMessage(null);
+      return;
+    }
+
+    setDeletingMessage(true);
+    try {
+      const res = await fetch(
+        `/api/tabs/${tabId}/messages?messageId=${encodeURIComponent(message.id)}`,
+        { method: "DELETE" }
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "删除消息失败");
+      }
+      setMessages((prev) => prev.filter((item) => item.id !== message.id));
+      setPendingDeleteMessage(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "删除消息失败");
+    } finally {
+      setDeletingMessage(false);
+    }
+  }
+
   // ── Send message ─────────────────────────────────────────────────────────
 
-  const sendMessage = useCallback(async () => {
+  async function sendMessage() {
     const trimmed = input.trim();
     if (!trimmed || !tabId || isStreaming) return;
 
     setInput("");
     setLastSentContent(trimmed);
     await sendContent(trimmed);
-  }, [input, tabId, isStreaming, onWorkRecordRenamed]);
+  }
 
   // ── Retry handler ────────────────────────────────────────────────────────
 
@@ -685,9 +834,15 @@ export default function ChatArea({
             key={key++}
             filename={filename}
             written={writtenFileMessageIds.has(messageId)}
-            onWrite={() => {
-              pendingWriteMessageId.current = messageId;
-              setFileToConfirm({ filename, content: markerContent });
+              onWrite={() => {
+              setPendingFiles([
+                {
+                  id: `${messageId}-${filename}-manual`,
+                  filename,
+                  content: markerContent,
+                  messageId,
+                },
+              ]);
               setShowFileDialog(true);
             }}
           />
@@ -796,7 +951,11 @@ export default function ChatArea({
     // min-h-0：聊天内容超过视口时收缩到容器内，内部消息列表才独立滚动
     <div className="flex min-h-0 flex-1 flex-col bg-gray-50">
       {/* Message list */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-6">
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleMessageScroll}
+        className="min-h-0 flex-1 overflow-y-auto px-4 py-6"
+      >
         <div className="mx-auto max-w-3xl">
           {/* Loading history */}
           {loadingHistory && (
@@ -860,24 +1019,17 @@ export default function ChatArea({
 
           {/* Messages */}
           {messages.map((msg) => (
-            <div key={msg.id}>
-              {msg.role === "assistant" ? (
-                <div className="mb-4 flex justify-start">
-                  <div className="flex max-w-[80%] gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-200 text-sm text-gray-700">
-                      AI
-                    </div>
-                    <div className="rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm leading-relaxed text-gray-900">
-                      <div className="whitespace-pre-wrap break-words">
-                        {renderContentWithMarkers(msg.content, msg.id)}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <MessageBubble message={msg} isStreaming={false} />
-              )}
-            </div>
+            <MessageBubble
+              key={msg.id}
+              message={msg}
+              isStreaming={false}
+              onCopy={() => copyMessage(msg.content)}
+              onDelete={() => setPendingDeleteMessage(msg)}
+            >
+              {msg.role === "assistant"
+                ? renderContentWithMarkers(msg.content, msg.id)
+                : undefined}
+            </MessageBubble>
           ))}
 
           {/* Streaming message */}
@@ -932,7 +1084,6 @@ export default function ChatArea({
               onKeyDown={handleKeyDown}
               placeholder="输入消息，Enter 发送，Shift+Enter 换行..."
               rows={1}
-              disabled={isStreaming}
               className="flex-1 rounded-lg bg-muted px-4 py-2.5"
               style={{ maxHeight: "8rem" }}
               onInput={(e) => {
@@ -942,14 +1093,14 @@ export default function ChatArea({
               }}
             />
             <Button
-              onClick={sendMessage}
-              disabled={!input.trim() || isStreaming}
+              onClick={isStreaming ? stopGeneration : sendMessage}
+              disabled={!isStreaming && !input.trim()}
               className="shrink-0 rounded-lg px-4 py-2.5 disabled:cursor-not-allowed"
             >
               {isStreaming ? (
                 <span className="flex items-center gap-1">
-                  <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  思考中
+                  <span aria-hidden="true">■</span>
+                  停止生成
                 </span>
               ) : (
                 "发送"
@@ -964,12 +1115,44 @@ export default function ChatArea({
 
       {/* File confirmation dialog */}
       <FileConfirmDialog
+        key={pendingFiles.map((file) => file.id).join("|")}
         open={showFileDialog}
-        file={fileToConfirm}
+        files={pendingFiles}
         saving={savingFile}
-        onConfirm={handleConfirmFile}
-        onCancel={handleCancelFile}
+        onConfirm={handleConfirmFiles}
+        onCancel={handleCancelFiles}
       />
+
+      {/* 删除单条消息确认弹窗 */}
+      <AlertDialog
+        open={pendingDeleteMessage !== null}
+        onOpenChange={(open) => {
+          if (!open && !deletingMessage) setPendingDeleteMessage(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogTitle>确定删除这条消息？</AlertDialogTitle>
+          <AlertDialogDescription>
+            这条{pendingDeleteMessage?.role === "user" ? "用户" : "AI"}消息将被永久删除，此操作不可恢复。
+          </AlertDialogDescription>
+          <div className="mt-4 flex justify-end gap-2">
+            <AlertDialogCancel asChild>
+              <Button variant="outline" disabled={deletingMessage}>
+                取消
+              </Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                variant="destructive"
+                onClick={() => void confirmDeleteMessage()}
+                disabled={deletingMessage}
+              >
+                {deletingMessage ? "删除中..." : "删除"}
+              </Button>
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* AI 服务配置错误弹窗：不进对话区，不提供重试 */}
       <Dialog

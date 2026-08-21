@@ -7,27 +7,48 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 export interface FileToConfirm {
   filename: string;
   content: string;
 }
 
+export interface PendingFile extends FileToConfirm {
+  id: string;
+  messageId: string | null;
+}
+
 interface FileConfirmDialogProps {
   open: boolean;
-  file: FileToConfirm | null;
+  files: PendingFile[];
   saving: boolean;
-  onConfirm: () => void;
+  onConfirm: (files: PendingFile[]) => void;
   onCancel: () => void;
 }
 
 export default function FileConfirmDialog({
   open,
-  file,
+  files,
   saving,
   onConfirm,
   onCancel,
 }: FileConfirmDialogProps) {
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(
+    () => new Set(files.map((file) => file.id))
+  );
+
+  const toggleFile = (id: string) => {
+    setSelectedIds((previous) => {
+      const next = new Set(previous);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectedFiles = files.filter((file) => selectedIds.has(file.id));
+
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onCancel(); }}>
       <DialogContent
@@ -59,37 +80,58 @@ export default function FileConfirmDialog({
           </Button>
         </div>
 
-        {/* Filename + preview */}
-        <div className="flex-1 p-5">
-          <div className="mb-3 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
-            <span className="text-sm">📋</span>
-            <span className="text-sm font-medium text-amber-800">
-              文件：{file?.filename}
-            </span>
-          </div>
-
-          <div className="max-h-80 overflow-y-auto rounded-lg border border-border bg-muted p-4">
-            {file && <MarkdownRenderer content={file.content} />}
-          </div>
+        {/* File list + previews */}
+        <div className="max-h-[28rem] flex-1 space-y-3 overflow-y-auto p-5">
+          {files.map((file) => (
+            <label
+              key={file.id}
+              className="block cursor-pointer rounded-lg border border-border p-3 hover:bg-muted/50"
+            >
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={selectedIds.has(file.id)}
+                  onChange={() => toggleFile(file.id)}
+                  disabled={saving}
+                  className="mt-1 h-4 w-4 accent-primary"
+                  aria-label={`选择 ${file.filename}`}
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="mb-2 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+                    <span className="text-sm">📋</span>
+                    <span className="truncate text-sm font-medium text-amber-800">
+                      文件：{file.filename}
+                    </span>
+                  </div>
+                  <div className="max-h-48 overflow-y-auto rounded-lg border border-border bg-muted p-4">
+                    <MarkdownRenderer content={file.content} />
+                  </div>
+                </div>
+              </div>
+            </label>
+          ))}
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-between border-t border-border px-5 py-3">
           <p className="text-xs text-muted-foreground">
-            确认后将保存到项目文件树
+            已选择 {selectedFiles.length} / {files.length} 个文件
           </p>
           <div className="flex items-center gap-2">
             <Button variant="outline" onClick={onCancel} disabled={saving}>
-              取消
+              全部丢弃
             </Button>
-            <Button onClick={onConfirm} disabled={saving}>
+            <Button
+              onClick={() => onConfirm(selectedFiles)}
+              disabled={saving || selectedFiles.length === 0}
+            >
               {saving ? (
                 <span className="flex items-center gap-1">
                   <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
                   写入中
                 </span>
               ) : (
-                "确认写入"
+                `批量写入${selectedFiles.length > 0 ? ` (${selectedFiles.length})` : ""}`
               )}
             </Button>
           </div>

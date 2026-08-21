@@ -11,6 +11,13 @@ import { getLoadedContextFiles } from "@/lib/context-files";
 import { createAIStream, isAIConfigured } from "@/lib/ai";
 import type { AIMessage } from "@/lib/ai";
 
+class GenerationInterruptedError extends Error {
+  constructor() {
+    super("生成已停止");
+    this.name = "GenerationInterruptedError";
+  }
+}
+
 const encoder = new TextEncoder();
 
 function sseEvent(type: string, data: Record<string, unknown>): Uint8Array {
@@ -153,9 +160,13 @@ export async function POST(
             maxTokens: 32768,
             messages,
             timeoutMs: 600_000,
+            signal: request.signal,
           });
 
           for await (const chunk of aiStream) {
+            if (request.signal.aborted) {
+              throw new GenerationInterruptedError();
+            }
             const delta = chunk.choices[0]?.delta?.content;
             if (delta) {
               fullContent += delta;
@@ -208,7 +219,9 @@ export async function POST(
             })
           );
         } catch (err) {
-          console.error("Stream error:", err);
+          const interrupted =
+            err instanceof GenerationInterruptedError || request.signal.aborted;
+          if (!interrupted) console.error("Stream error:", err);
           // Persist partial content if any tokens were received — the user's
           // work is kept (spec US38). With no tokens, the user message stays
           // as-is; no raw error text is ever written to history.
@@ -217,7 +230,9 @@ export async function POST(
             try {
               const savedPartial = await Message.create({
                 role: "assistant",
-                content: fullContent + "\n\n[回复因错误中断]",
+                content:
+                  fullContent +
+                  `\n\n[${interrupted ? "回复已中断" : "回复因错误中断"}]`,
                 tab_id: tab._id,
                 timestamp: new Date(),
               });
@@ -229,7 +244,12 @@ export async function POST(
           controller.enqueue(
             sseEvent("error", {
               message:
-                err instanceof Error ? err.message : "AI 请求失败，请稍后重试",
+                interrupted
+                  ? "生成已停止"
+                  : err instanceof Error
+                    ? err.message
+                    : "AI 请求失败，请稍后重试",
+              interrupted,
               ...(partialMessageId ? { messageId: partialMessageId } : {}),
             })
           );

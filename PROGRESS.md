@@ -21,6 +21,8 @@ v1.0 已验收（2026-08-11），四环流水线端到端走通。
 **下一张票 02 — 消息交互**（`issues/02-message-interactions.md`，需先确认 Blocked by）
 - 票 01 收尾遗留：**verify-v1-flow 回归补跑**（L2 判定逻辑改动，PROGRESS.md 要求跑完才能算验收闭环；上次中断于第 1 轮对话，预计 15-25 分钟，跑前报备）。
 
+**票 02 已完成（2026-08-21）**：消息 hover 复制/删除与确认弹窗、删除 API、停止生成及 partial 持久化、智能滚动、流式期间输入、单弹窗批量文件确认均已落地。固定回放 `verify-message-interactions.mjs` 11/11、`verify-protocols.mjs` 27/27、`verify-fixes.mjs` 10/10；tsc 与本次改动定向 lint 通过。全量 build 因环境无法访问 Google Fonts 未通过。
+
 ## 约束与坑（项目特有，实施中踩过的）
 
 - **auto-name 卡死教训（2026-08-11）**：AI 自动命名曾因 LLM 调用挂起卡死对话框 56 分钟——修复 = 20s 显式超时 + 禁重试。后续所有辅助功能不得阻塞主流程（spec 上下文预警红线同源）。
