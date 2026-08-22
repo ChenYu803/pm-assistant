@@ -16,6 +16,12 @@ Single-context layout — one `CONTEXT.md` + `docs/adr/` at the repo root. See `
 
 Every `/implement` session must read `docs/agents/implement-context-hygiene.md` before doing anything else — it exists to keep the context window from being wasted on irrelevant files.
 
+### Ticket model routing
+
+Every `/to-tickets` session must read `docs/agents/ticket-model-routing.md` and, after the user approves the final ticket split, generate `.scratch/<feature-slug>/model-routing.md` for the human to choose an implement model. The file must cover every generated ticket with a risk level, primary model, evidence-based reason, verification method, and escalation condition.
+
+Every `/implement` session for a newly ticketed feature must read that feature's `model-routing.md` after `implement-context-hygiene.md` and before the current ticket. Treat it as an advisory routing table: obey an explicit user model choice, start with the primary model, and escalate when the documented condition or a shared-protocol/cross-module failure occurs. Do not treat the routing file as a second product specification.
+
 ## 改动风险分级与验证策略
 
 改动按风险分级，验证成本与风险匹配。项目本地验证默认使用 `AI_MODE=replay` 固定回放，不调用真实模型；只有确实需要验证 prompt 与模型行为时，才显式使用 `AI_MODE=live`。
