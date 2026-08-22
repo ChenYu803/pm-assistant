@@ -1,52 +1,54 @@
-## Agent skills
+# AGENTS.md
+## 开工路径（每个会话第一步，按序）
 
-### Issue tracker
+| 序 | 读 | 获得 |
+|---|---|---|
+| 1 | 本文件 | 风险分级 + 会话纪律 + 阈值（自包含） |
+| 2 | `docs/agents/implement-context-hygiene.md` | 阅读纪律 + 协议耦合点快照（其中 120k/150k 阈值已废弃，以本文件为准） |
+| 3 | `PROGRESS.md` | 单点真相：当前阶段 / 本次任务 / 坑（**开始必读，结束必写**） |
+| 4 | 当前 ticket（`.scratch/<feature-slug>/issues/NN-<slug>.md`） | 任务定义 + AC + Blocked by（`Status:` 行记录 claimed/resolved） |
+| 5 | `spec.md` 相关章节 | 需求总纲（目的驱动：ticket 引用到的部分） |
 
-Issues live as markdown files under `.scratch/<feature-slug>/`. See `docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-Uses the five canonical triage labels from mattpocock/skills. See `docs/agents/triage-labels.md`.
-
-### Domain docs
-
-Single-context layout — one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
-
-### Implement context
-
-Every `/implement` session must read `docs/agents/implement-context-hygiene.md` before doing anything else — it exists to keep the context window from being wasted on irrelevant files.
-
-### Ticket model routing
-
-Every `/to-tickets` session must read `docs/agents/ticket-model-routing.md` and, after the user approves the final ticket split, generate `.scratch/<feature-slug>/model-routing.md` for the human to choose an implement model. The file must cover every generated ticket with a risk level, primary model, evidence-based reason, verification method, and escalation condition.
-
-Every `/implement` session for a newly ticketed feature must read that feature's `model-routing.md` after `implement-context-hygiene.md` and before the current ticket. Treat it as an advisory routing table: obey an explicit user model choice, start with the primary model, and escalate when the documented condition or a shared-protocol/cross-module failure occurs. Do not treat the routing file as a second product specification.
+5 之后按需读核心源码与 `scripts/verify-*.mjs` 头尾（风格参考：命名 `verify-<主题>.mjs`、中文注释、✅/❌ 计数、`process.exit(fail>0?1:0)`）。
 
 ## 改动风险分级与验证策略
 
-改动按风险分级，验证成本与风险匹配。项目本地验证默认使用 `AI_MODE=replay` 固定回放，不调用真实模型；只有确实需要验证 prompt 与模型行为时，才显式使用 `AI_MODE=live`。
+改动按风险分级，验证成本与风险匹配。**判级先于动手**：改动属于哪级，决定验证怎么做。
 
 ### 分级
 
-- **L0 低风险**：参数/常量/文案，无行为语义变更。验证 = tsc + 必要时一次针对性检查；不调用真实模型。
-- **L1 中风险**：单层逻辑改动，不触及协议标记/验证断言/存储数据。验证 = tsc + 一次最轻量的离线回放检查。
-- **L2 高风险**：协议/断言/跨 Agent 共享逻辑。验证 = 相关回放 verify 脚本完整跑；只有需要确认模型遵守新 prompt 时，才额外安排一次真实模型冒烟。
+- **L0 低风险**：参数/常量/文案，无行为语义变更（如 max_tokens、超时数值、模型名、UI 文案）。验证 = tsc 编译 + 必要时一次针对性实测（如 curl 探测 API 参数）。**不跑 LLM 端到端脚本**。
+- **L1 中风险**：单层逻辑改动，不触及协议标记/验证断言/存储数据（如前端渲染路径、单函数修正）。验证 = tsc + 一次最轻量的相关检查；要跑脚本先报备。
+- **L2 高风险**：协议/断言/跨 Agent 共享逻辑（如 marker 协议、冻结执法、verify 断言、文件写入格式）。验证 = 相关 verify 脚本完整跑 + 按需回归相邻脚本。
 
 ### 配套规则
 
 1. **批量收集**：同一范围内的多个改动（如「原型 Agent 的 N 个问题」）先攒齐再统一验证，禁止改一个验一个。
-2. **真实验证先报备**：任何 `AI_MODE=live` 验证都必须先说明验证假设、预计轮数和 token 成本，并获得用户同意；单个功能默认最多一次真实对话，完整四环真实回归默认最多一次。
-3. **被问即汇报，不许说「还在跑」**：用户询问进度或怀疑卡住时，必须主动声明：①为什么跑了这么久 ②是否必要继续 ③再下去要多久才能拿到结果——让用户决定继续还是止损，禁止只确认状态后敷衍。
-4. **回放优先**：UI、SSE、marker、确认框、冻结状态、文件写入和数据库断言使用固定回放验证；真实模型验证不重复覆盖这些内容。
-5. **完整回归去重**：同一次改动已完成四环真实回归后，不再重复运行各 Agent 的独立真实回归脚本。
-6. **用户流程提醒当场生效**：用户对流程的质疑/提醒是约束，立即改变行为，不口头承认后照旧。
+2. **长验证先报备**：预计超过 10 分钟的验证（LLM 对话级）必须先告知预计时长和理由，用户同意才跑。
+3. **被问即汇报，不许说「还在跑」**：用户询问进度或怀疑卡住时，必须主动声明 ①为什么跑了这么久 ②是否必要继续 ③再下去要多久才能拿到结果——让用户决定继续还是止损，禁止只确认状态后敷衍。
+4. **用户流程提醒当场生效**：用户对流程的质疑/提醒是约束，立即改变行为，不口头承认后照旧。
 
-<!-- BEGIN:nextjs-agent-rules -->
+## 会话纪律（dsh 版阈值）
 
-# This is NOT the Next.js you know
+| 项 | Claude Code 旧值（废弃） | dsh 采用值 |
+|---|---|---|
+| 上下文止损线 | 120k | **600k（暂定，首个长会话实测校准）** |
+| dumb zone 起点 | 150k | **≈ 700k-750k（估算，实测校准）** |
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+- **止损触发**：会话 token 计数 ≈600k 时停止当前工作，询问用户是否交接（更新 PROGRESS.md 后开新会话继续）。
+- **提前触发信号（无长度依赖）**：连续 2 次「凭猜改代码 → 跑 → 看输出」= 已失去对代码的掌握，停止猜测，先读代码建立真实假设；每次跑真实 LLM 对话前自问「这次验证什么假设」，答不出 = 无意识试错。
+- **调试隔离**：验证脚本的调试循环放独立上下文（subagent/子代理），主会话只收最终摘要；中间输出落临时文件，不读进主会话；单次运行设轮数上限（调试期 4 轮冒烟、验证期拉满）。
+- **技术栈注意**：本仓库的 Next.js 版本存在 breaking changes（API、约定、文件结构均可能与训练数据不同）。写任何 Next.js 代码前先读 `node_modules/next/dist/docs/` 中的相关指南，勿凭训练记忆写 API。
 
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+## 项目文件地图
 
-<!-- END:nextjs-agent-rules -->
+- **实现输入**：`PROGRESS.md`、当前 ticket、`spec.md`、`CONTEXT.md`、`docs/adr/`（ticket 引用到的部分）
+- **风格参考**（只读头尾）：`scripts/verify-*.mjs`
+- **历史文件**（默认不读）：`.scratch/pm-assistant-mvp/`（旧 MVP，已交付）、`.scratch/prd-structure/`（更早方案讨论）、非当前 ticket 的其他 issue——**历史票保持原样，不更新**
+- **协议耦合点快照**：`docs/agents/implement-context-hygiene.md` 末尾（行号仅供参考，动手前 grep 验证，勿盲信）
+
+## 会话收尾（必做清单）
+
+1. 更新 `PROGRESS.md`（已完成成果 + frontier 推进 + 新踩的坑）
+2. 涉及协议改动的，更新协议耦合点快照
+3. `git add -A && git commit`（信息清晰：票号 + 要点）；push 前经用户确认
