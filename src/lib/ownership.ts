@@ -79,6 +79,28 @@ export async function findOwnedTab(
 }
 
 /**
+ * Find an owned tab together with its parent project id.
+ * Callers that load files must use this result to enforce project isolation.
+ */
+export async function findOwnedTabWithProject(
+  tabId: string,
+  userId: string
+) {
+  const tab = await findOwnedTab(tabId, userId);
+  if (!tab) return null;
+
+  const workRecord = await WorkRecord.findById(tab.work_record_id).select(
+    "project_id"
+  );
+  if (!workRecord) return null;
+
+  const project = await findOwnedProject(workRecord.project_id.toString(), userId);
+  if (!project) return null;
+
+  return { tab, project };
+}
+
+/**
  * Find a project file by id and verify its project belongs to the given user.
  * Returns the file document, or null if not found / not owned.
  */
@@ -99,4 +121,25 @@ export async function findOwnedProjectFile(
   if (!project) return null;
 
   return file;
+}
+
+/**
+ * Find a file owned by the user and belonging to the project in the URL.
+ * This prevents a valid file id from being used through another project URL.
+ */
+export async function findOwnedProjectFileInProject(
+  projectId: string,
+  fileId: string,
+  userId: string
+) {
+  const project = await findOwnedProject(projectId, userId);
+  if (!project) return null;
+
+  const fileObjectId = parseObjectId(fileId);
+  if (!fileObjectId) return null;
+
+  return ProjectFile.findOne({
+    _id: fileObjectId,
+    project_id: project._id,
+  });
 }

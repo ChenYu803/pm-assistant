@@ -20,7 +20,7 @@ v1.0 已验收（2026-08-11），四环流水线端到端走通。
 
 ## 本次任务
 
-**本次任务：v1.2 票 01 已完成（2026-08-22）**：为 `MarkdownRenderer` 增加链接协议、属性字符和代码围栏语言名的安全白名单，新增 `scripts/verify-markdown-safety.mjs` replay 专项并完成回归；下一 frontier 是 v1.2 票 02，尚未开始。v1.1 票 08 的综合固定回放入口仍覆盖 6 个专项、115 条断言（17 + 28 + 25 + 12 + 6 + 27），未调用真实模型；发布候选时若需完整四环 live 回归，仍须先报备验证假设、轮数和 token/API 成本并取得同意。
+**本次任务：v1.2 票 02 已完成（2026-08-22）**：文件 API 现在同时校验用户、URL 项目与文件父项目；tab 文件加载/移除和聊天上下文过滤项目 ownership，历史跨项目上下文不会进入公开列表或 Agent 上下文；非法 `fileId` 返回 400 参数错误，合法但不存在返回 404。新增 `scripts/verify-project-boundary.mjs` replay/API 专项，13/13 通过；tsc、全量 lint 和 diff check 通过，未调用真实模型。下一 frontier 是 v1.2 票 03，尚未开始。v1.1 票 08 的综合固定回放入口仍覆盖 6 个专项、115 条断言（17 + 28 + 25 + 12 + 6 + 27），未调用真实模型；发布候选时若需完整四环 live 回归，仍须先报备验证假设、轮数和 token/API 成本并取得同意。
 
 **构建与 lint 收尾（2026-08-21）**：移除 `next/font/google` 的构建期网络依赖，改用 CSS 系统字体契约并同步 `verify-a11y`；修复全量 lint 的 8 个 error 和 11 个 warning，并将任务拆分验证脚本同步到单弹窗批量确认语义。`npx tsc --noEmit`、`npm run lint`（0 error / 0 warning）、`npm run build` 均通过；消息专项 28/28、a11y 13/13、任务拆分 22/22、综合 v1.1 replay 115/115 全部通过，未调用真实模型。
 

@@ -19,7 +19,8 @@ export interface LoadedFileInfo {
  * SERVER-ONLY — uses Mongoose, do not import from client components.
  */
 export async function getLoadedContextFiles(
-  tabId: mongoose.Types.ObjectId
+  tabId: mongoose.Types.ObjectId,
+  projectId: mongoose.Types.ObjectId
 ): Promise<LoadedFileInfo[]> {
   const entries = await AgentFileContext.find({ tab_id: tabId })
     .populate<{ file_id: IProjectFileDocument }>("file_id")
@@ -33,6 +34,7 @@ export async function getLoadedContextFiles(
     if (
       file &&
       file.filename &&
+      file.project_id.toString() === projectId.toString() &&
       !isWorkingDocFile(file.filename) &&
       !isConceptDocFile(file.filename)
     ) {

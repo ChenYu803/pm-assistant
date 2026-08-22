@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import Message from "@/models/Message";
-import { findOwnedTab, parseObjectId } from "@/lib/ownership";
+import { findOwnedTabWithProject, parseObjectId } from "@/lib/ownership";
 import { AGENT_SYSTEM_PROMPTS } from "@/lib/agent-prompts";
 import type { AgentType } from "@/lib/agent-constants";
 import { autoNameWorkRecord } from "@/lib/auto-name";
@@ -74,13 +74,14 @@ export async function POST(
 
     await dbConnect();
 
-    const tab = await findOwnedTab(tabId, userId);
-    if (!tab) {
+    const ownedTab = await findOwnedTabWithProject(tabId, userId);
+    if (!ownedTab) {
       return NextResponse.json(
         { error: "标签页不存在或无权操作" },
         { status: 404 }
       );
     }
+    const { tab, project } = ownedTab;
 
     let systemPrompt = AGENT_SYSTEM_PROMPTS[tab.agent_type];
 
@@ -97,7 +98,7 @@ export async function POST(
     }
 
     // Inject loaded file context into system prompt
-    const contextFiles = await getLoadedContextFiles(tab._id);
+    const contextFiles = await getLoadedContextFiles(tab._id, project._id);
 
     if (contextFiles.length > 0) {
       const fileBlocks = contextFiles.map((file) => {

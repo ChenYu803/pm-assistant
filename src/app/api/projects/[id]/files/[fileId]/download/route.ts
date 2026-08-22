@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
-import { findOwnedProjectFile } from "@/lib/ownership";
+import { findOwnedProjectFileInProject, parseObjectId } from "@/lib/ownership";
 
 export async function GET(
   request: Request,
@@ -11,11 +11,15 @@ export async function GET(
     const userId = await requireAuth();
     if (userId instanceof NextResponse) return userId;
 
-    const { fileId } = await params;
+    const { id: projectId, fileId } = await params;
+
+    if (!parseObjectId(fileId)) {
+      return NextResponse.json({ error: "fileId 参数无效" }, { status: 400 });
+    }
 
     await dbConnect();
 
-    const file = await findOwnedProjectFile(fileId, userId);
+    const file = await findOwnedProjectFileInProject(projectId, fileId, userId);
     if (!file) {
       return NextResponse.json(
         { error: "文件不存在或无权访问" },

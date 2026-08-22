@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import AgentFileContext from "@/models/AgentFileContext";
-import { findOwnedTab, findOwnedProjectFile } from "@/lib/ownership";
+import {
+  findOwnedTabWithProject,
+  findOwnedProjectFileInProject,
+  parseObjectId,
+} from "@/lib/ownership";
 import { getLoadedContextFiles } from "@/lib/context-files";
 import { isConceptDocFile, isWorkingDocFile } from "@/lib/file-helpers";
 
@@ -19,15 +23,16 @@ export async function GET(
 
     await dbConnect();
 
-    const tab = await findOwnedTab(tabId, userId);
-    if (!tab) {
+    const ownedTab = await findOwnedTabWithProject(tabId, userId);
+    if (!ownedTab) {
       return NextResponse.json(
         { error: "标签页不存在或无权访问" },
         { status: 404 }
       );
     }
+    const { tab, project } = ownedTab;
 
-    const loadedFiles = await getLoadedContextFiles(tab._id);
+    const loadedFiles = await getLoadedContextFiles(tab._id, project._id);
 
     // Omit content from list endpoint (consistent with GET /api/projects/:id/files)
     const files = loadedFiles.map((file) => ({
@@ -71,16 +76,28 @@ export async function POST(
 
     await dbConnect();
 
-    const tab = await findOwnedTab(tabId, userId);
-    if (!tab) {
+    const ownedTab = await findOwnedTabWithProject(tabId, userId);
+    if (!ownedTab) {
       return NextResponse.json(
         { error: "标签页不存在或无权访问" },
         { status: 404 }
       );
     }
+    const { tab, project } = ownedTab;
 
-    // Verify file exists and user owns it
-    const file = await findOwnedProjectFile(file_id, userId);
+    if (!parseObjectId(file_id)) {
+      return NextResponse.json(
+        { error: "fileId 参数无效" },
+        { status: 400 }
+      );
+    }
+
+    // Verify file exists, belongs to the current project, and is owned by the user.
+    const file = await findOwnedProjectFileInProject(
+      project._id.toString(),
+      file_id,
+      userId
+    );
     if (!file) {
       return NextResponse.json(
         { error: "文件不存在或无权访问" },

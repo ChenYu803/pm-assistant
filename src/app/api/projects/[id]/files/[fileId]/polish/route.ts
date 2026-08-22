@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
-import { findOwnedProjectFile } from "@/lib/ownership";
+import { findOwnedProjectFileInProject, parseObjectId } from "@/lib/ownership";
 import { createAICompletion, isAIConfigured } from "@/lib/ai";
 
 const POLISH_SYSTEM_PROMPT = `你是一个技术文档润色助手。请对以下 Markdown 内容进行润色：
@@ -23,7 +23,11 @@ export async function POST(
     const userId = await requireAuth();
     if (userId instanceof NextResponse) return userId;
 
-    const { fileId } = await params;
+    const { id: projectId, fileId } = await params;
+
+    if (!parseObjectId(fileId)) {
+      return NextResponse.json({ error: "fileId 参数无效" }, { status: 400 });
+    }
 
     const body = await request.json();
     const { content } = body;
@@ -38,7 +42,7 @@ export async function POST(
     await dbConnect();
 
     // Verify file ownership
-    const file = await findOwnedProjectFile(fileId, userId);
+    const file = await findOwnedProjectFileInProject(projectId, fileId, userId);
     if (!file) {
       return NextResponse.json(
         { error: "文件不存在或无权访问" },
