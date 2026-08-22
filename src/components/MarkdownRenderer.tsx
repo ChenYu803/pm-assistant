@@ -144,7 +144,8 @@ function renderMarkdown(md: string): string {
 
 function renderCodeBlock(code: string, lang: string): string {
   const escaped = escapeHtml(code);
-  const languageClass = lang ? ` language-${escapeHtml(lang)}` : "";
+  const safeLanguage = sanitizeCodeLanguage(lang);
+  const languageClass = safeLanguage ? ` language-${safeLanguage}` : "";
   return `<pre class="rounded-lg bg-gray-900 p-4 my-3 overflow-x-auto"><code class="text-sm text-gray-100${languageClass}">${escaped}</code></pre>`;
 }
 
@@ -275,10 +276,38 @@ function renderMarkdownInline(md: string): string {
 // ─── Inline markup ────────────────────────────────────────────────────────────
 
 function inlineMarkup(text: string): string {
-  let result = escapeHtml(text);
+  const codeTokens: string[] = [];
+  const codeProtected = text.replace(/`([^`]+)`/g, (_, code: string) => {
+    const token = `\u0000MD_CODE_${codeTokens.length}\u0000`;
+    codeTokens.push(
+      `<code class="rounded bg-gray-100 px-1 py-0.5 text-sm text-red-600">${escapeHtml(code)}</code>`,
+    );
+    return token;
+  });
 
-  // Inline code (backticks)
-  result = result.replace(/`([^`]+)`/g, `<code class="rounded bg-gray-100 px-1 py-0.5 text-sm text-red-600">$1</code>`);
+  const linkTokens: string[] = [];
+  const unsafeLinkTokens: string[] = [];
+  const linksProtected = codeProtected.replace(
+    /\[([^\]]+)\]\(([^)]+)\)/g,
+    (_, label: string, url: string) => {
+      const safeUrl = sanitizeLinkUrl(url);
+      if (!safeUrl) {
+        const token = `\u0000MD_UNSAFE_LINK_${unsafeLinkTokens.length}\u0000`;
+        unsafeLinkTokens.push(escapeHtml(`[${label}](${url})`));
+        return token;
+      }
+
+      const token = `\u0000MD_LINK_${linkTokens.length}\u0000`;
+      linkTokens.push(
+        `<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 underline underline-offset-2 hover:text-indigo-800">${inlineMarkup(label)}</a>`,
+      );
+      return token;
+    },
+  );
+
+  let result = escapeHtml(linksProtected);
+
+  // 用占位 token 保护代码片段和链接，再解析其余行内语法。
 
   // Bold + Italic
   result = result.replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>");
@@ -289,14 +318,21 @@ function inlineMarkup(text: string): string {
   // Italic
   result = result.replace(/\*(.+?)\*/g, "<em>$1</em>");
 
-  // Links: [text](url)
-  result = result.replace(
-    /\[([^\]]+)\]\(([^)]+)\)/g,
-    '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-indigo-600 underline underline-offset-2 hover:text-indigo-800">$1</a>'
-  );
-
   // Strikethrough
   result = result.replace(/~~(.+?)~~/g, "<del>$1</del>");
+
+  result = result.replace(
+    /\u0000MD_LINK_(\d+)\u0000/g,
+    (_, index: string) => linkTokens[Number(index)] ?? "",
+  );
+  result = result.replace(
+    /\u0000MD_UNSAFE_LINK_(\d+)\u0000/g,
+    (_, index: string) => unsafeLinkTokens[Number(index)] ?? "",
+  );
+  result = result.replace(
+    /\u0000MD_CODE_(\d+)\u0000/g,
+    (_, index: string) => codeTokens[Number(index)] ?? "",
+  );
 
   return result;
 }
@@ -305,5 +341,34 @@ function escapeHtml(text: string): string {
   return text
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+const SAFE_LINK_PROTOCOL_RE = /^(?:https?:|mailto:)/i;
+const CONTROL_CHAR_RE = /[\u0000-\u001f\u007f]/;
+const UNSAFE_LINK_CHAR_RE = /[\s"'<>]/;
+const SAFE_CODE_LANGUAGE_RE = /^[A-Za-z0-9][A-Za-z0-9+._-]*$/;
+
+/** 只允许可在聊天中安全打开的链接协议，并拒绝控制字符绕过协议检查。 */
+function sanitizeLinkUrl(url: string): string | null {
+  const normalized = url.trim();
+  if (
+    !normalized ||
+    CONTROL_CHAR_RE.test(normalized) ||
+    UNSAFE_LINK_CHAR_RE.test(normalized) ||
+    !SAFE_LINK_PROTOCOL_RE.test(normalized)
+  ) {
+    return null;
+  }
+  return normalized;
+}
+
+/** 语言名只用于 class token，拒绝空白、引号和其他属性注入字符。 */
+function sanitizeCodeLanguage(language: string): string | null {
+  const normalized = language.trim();
+  return normalized && normalized.length <= 64 && SAFE_CODE_LANGUAGE_RE.test(normalized)
+    ? normalized
+    : null;
 }
