@@ -119,6 +119,7 @@ function estimateContextTokens(messages: ChatMessage[], input: string): number |
 
 const FILE_MARKER_RE =
   /%%%FILE_BEGIN%%%\s*(.+?\.md)\s*\n([\s\S]*?)%%%FILE_END%%%/g;
+const HTML_MARKER_RE = /%%%HTML_BEGIN%%%\s*\n?([\s\S]*?)%%%HTML_END%%%/g;
 
 let clientMessageSequence = 0;
 
@@ -134,6 +135,17 @@ function extractFileMarkers(content: string): FileToConfirm[] {
   let match: RegExpExecArray | null;
   while ((match = regex.exec(content)) !== null) {
     results.push({ filename: match[1].trim(), content: match[2].trim() });
+  }
+  return results;
+}
+
+function extractHtmlSnapshots(content: string): string[] {
+  const results: string[] = [];
+  const regex = new RegExp(HTML_MARKER_RE.source, "g");
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(content)) !== null) {
+    const html = match[1].trim();
+    if (html) results.push(html);
   }
   return results;
 }
@@ -495,6 +507,30 @@ export default function ChatArea({
     [projectId, agentType, onFileSaved]
   );
 
+  /** Persist completed HTML prototypes as project-scoped snapshots. */
+  const saveHtmlSnapshots = useCallback(
+    async (content: string) => {
+      if (!projectId || !tabId || agentType !== "prototype") return;
+      const snapshots = extractHtmlSnapshots(content);
+      for (const snapshot of snapshots) {
+        try {
+          const res = await fetch(`/api/projects/${projectId}/snapshots`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content: snapshot, tab_id: tabId }),
+          });
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            setError(data.error || "保存 HTML 快照失败");
+          }
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "保存 HTML 快照失败");
+        }
+      }
+    },
+    [agentType, projectId, tabId]
+  );
+
   /**
    * Check a message for file markers and trigger confirmation dialog.
    * historyReplay = true：历史重放（页面刷新 / 重新加载）扫描路径，文件名已存在
@@ -789,6 +825,7 @@ export default function ChatArea({
                   ),
                 newMsg,
               ]);
+              void saveHtmlSnapshots(fullContent);
               const newFileNames = new Set(
                 extractFileMarkers(fullContent).map((file) => file.filename)
               );

@@ -1,5 +1,75 @@
 import type { IProjectFileDocument } from "@/models/ProjectFile";
 
+/** Agent 写入协议允许的 Agent 类型与文件名边界。 */
+export const ALLOWED_AGENT_TYPES = [
+  "requirement_analyst",
+  "prototype",
+  "mvp_prd",
+  "ticket_splitter",
+] as const;
+
+export const MAX_FILE_BYTES = 3 * 1024 * 1024;
+
+const ROOT_DELIVERABLES = new Set(["需求分析.md", "原型.md", "prd.md"]);
+const WORKING_DOC_RE = /^需求分析-工作文档（[^/\\]+）\.md$/u;
+const CONCEPT_DOC_RE = /^概念版（[^/\\]+）\.md$/u;
+const ISSUE_RE = /^issues\/(?:v\d+\/)?\d{2}-[A-Za-z0-9\u4e00-\u9fff][A-Za-z0-9_\-\u4e00-\u9fff]*\.md$/u;
+
+export type FileWriteValidation =
+  | { ok: true; filename: string }
+  | { ok: false; error: string };
+
+/** Validate a filename against the v1.2 Agent file protocol. */
+export function validateAgentFilename(
+  filename: unknown,
+  agentType: unknown
+): FileWriteValidation {
+  if (
+    typeof agentType !== "string" ||
+    !ALLOWED_AGENT_TYPES.some((allowedType) => allowedType === agentType)
+  ) {
+    return { ok: false, error: "不支持的 Agent 类型" };
+  }
+  if (typeof filename !== "string" || !filename.trim()) {
+    return { ok: false, error: "文件名不能为空" };
+  }
+  if (filename !== filename.trim()) {
+    return { ok: false, error: "文件名不能包含首尾空白" };
+  }
+  if (/[/\\]/u.test(filename) && !ISSUE_RE.test(filename)) {
+    return { ok: false, error: "文件路径不符合允许的 issues 路径规则" };
+  }
+  if (/[\u0000-\u001f\u007f]/u.test(filename)) {
+    return { ok: false, error: "文件名不能包含控制字符" };
+  }
+  if (filename.includes("\\") || filename.split("/").some((segment) => segment === "." || segment === ".." || !segment)) {
+    return { ok: false, error: "文件路径包含非法路径段" };
+  }
+  if (!filename.endsWith(".md")) {
+    return { ok: false, error: "只允许写入 Markdown 文件" };
+  }
+  if (
+    !ROOT_DELIVERABLES.has(filename) &&
+    !WORKING_DOC_RE.test(filename) &&
+    !CONCEPT_DOC_RE.test(filename) &&
+    !ISSUE_RE.test(filename)
+  ) {
+    return { ok: false, error: "文件名不在允许的项目文件白名单中" };
+  }
+  return { ok: true, filename };
+}
+
+/** Validate the UTF-8 byte size used by both Agent and user edits. */
+export function validateFileSize(content: unknown): FileWriteValidation {
+  if (typeof content !== "string") {
+    return { ok: false, error: "文件内容不能为空" };
+  }
+  if (Buffer.byteLength(content, "utf8") > MAX_FILE_BYTES) {
+    return { ok: false, error: "文件内容超过 3 MiB 上限" };
+  }
+  return { ok: true, filename: "" };
+}
+
 export interface ProjectFileData {
   id: string;
   filename: string;
@@ -75,4 +145,3 @@ export function displayName(filename: string): string {
 export function downloadFilename(filename: string): string {
   return displayName(filename);
 }
-

@@ -13,6 +13,8 @@ import {
   serializeProjectFile,
   stripChangelogHeader,
   isWorkingDocFile,
+  validateAgentFilename,
+  validateFileSize,
 } from "@/lib/file-helpers";
 
 /**
@@ -145,18 +147,13 @@ export async function POST(
       iteration?: number;
     };
 
-    if (!filename || typeof filename !== "string" || !filename.trim()) {
-      return NextResponse.json(
-        { error: "文件名不能为空" },
-        { status: 400 }
-      );
+    const filenameValidation = validateAgentFilename(filename, agent_type);
+    if (!filenameValidation.ok) {
+      return NextResponse.json({ error: filenameValidation.error }, { status: 400 });
     }
-
-    if (typeof content !== "string") {
-      return NextResponse.json(
-        { error: "文件内容不能为空" },
-        { status: 400 }
-      );
+    const contentValidation = validateFileSize(content);
+    if (!contentValidation.ok) {
+      return NextResponse.json({ error: contentValidation.error }, { status: 413 });
     }
 
     await dbConnect();

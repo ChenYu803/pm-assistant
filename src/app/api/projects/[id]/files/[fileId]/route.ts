@@ -7,6 +7,7 @@ import {
   parseObjectId,
 } from "@/lib/ownership";
 import { serializeProjectFile } from "@/lib/file-helpers";
+import { validateFileSize } from "@/lib/file-helpers";
 
 export async function GET(
   request: Request,
@@ -65,6 +66,10 @@ export async function PATCH(
         { error: "文件内容不能为空" },
         { status: 400 }
       );
+    }
+    const contentValidation = validateFileSize(content);
+    if (!contentValidation.ok) {
+      return NextResponse.json({ error: contentValidation.error }, { status: 413 });
     }
 
     await dbConnect();
