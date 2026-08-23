@@ -10,6 +10,10 @@ import { stripChangelogHeader } from "@/lib/file-helpers";
 import { getLoadedContextFiles } from "@/lib/context-files";
 import { createAIStream, isAIConfigured } from "@/lib/ai";
 import type { AIMessage } from "@/lib/ai";
+import {
+  registerGeneration,
+  releaseGeneration,
+} from "@/lib/generation-control";
 
 class GenerationInterruptedError extends Error {
   constructor() {
@@ -186,10 +190,32 @@ export async function POST(
         : [{ role: "user" as const, content: content.trim() }]),
     ];
 
+    // 响应开始前即创建正式 assistant 消息；SSE 与后续恢复只引用该 ID。
+    const assistantMessage = await Message.create({
+      role: "assistant",
+      content: "",
+      tab_id: tab._id,
+      timestamp: new Date(),
+      status: "generating",
+    });
+    const assistantMessageId = assistantMessage._id.toString();
+
     // Create streaming response
     const stream = new ReadableStream({
       async start(controller) {
         let fullContent = "";
+        const generationController = registerGeneration(assistantMessageId);
+        const abortFromRequest = () => generationController.abort();
+        request.signal.addEventListener("abort", abortFromRequest, { once: true });
+
+        controller.enqueue(
+          sseEvent("start", {
+            messageId: assistantMessageId,
+            status: "generating",
+            timestamp: assistantMessage.timestamp.toISOString(),
+            ...(userMessageId ? { userMessageId } : {}),
+          })
+        );
 
         try {
           // 上游流式请求显式超时：停滞转有界错误——错误 SSE 恢复输入框，
@@ -203,7 +229,7 @@ export async function POST(
             maxTokens: 32768,
             messages,
             timeoutMs: 600_000,
-            signal: request.signal,
+            signal: generationController.signal,
             // 仅开发回放验证使用，确保停止生成走真实 abort 与 partial 持久化路径。
             replayDelayMs:
               process.env.NODE_ENV !== "production" &&
@@ -213,13 +239,27 @@ export async function POST(
           });
 
           for await (const chunk of aiStream) {
-            if (request.signal.aborted) {
+            if (generationController.signal.aborted) {
               throw new GenerationInterruptedError();
             }
             const delta = chunk.choices[0]?.delta?.content;
             if (delta) {
               fullContent += delta;
-              controller.enqueue(sseEvent("token", { content: delta }));
+              // 条件更新让其他进程发出的停止请求在下一个 token 发给客户端前生效。
+              const updated = await Message.updateOne(
+                {
+                  _id: assistantMessage._id,
+                  tab_id: tab._id,
+                  status: "generating",
+                },
+                { $set: { content: fullContent } }
+              );
+              if (updated.matchedCount !== 1) {
+                throw new GenerationInterruptedError();
+              }
+              controller.enqueue(
+                sseEvent("token", { messageId: assistantMessageId, content: delta })
+              );
             }
           }
 
@@ -234,7 +274,8 @@ export async function POST(
             !tab.scope_frozen &&
             fullContent.includes("%%%SCOPE_FROZEN%%%")
           ) {
-            const userConfirmed = SCOPE_FREEZE_CONFIRM_RE.test(content);
+            const userConfirmed =
+              typeof content === "string" && SCOPE_FREEZE_CONFIRM_RE.test(content);
             if (userConfirmed) {
               tab.scope_frozen = true;
               await tab.save();
@@ -245,13 +286,24 @@ export async function POST(
             }
           }
 
-          // Save assistant message
-          const savedMessage = await Message.create({
-            role: "assistant",
-            content: fullContent,
-            tab_id: tab._id,
-            timestamp: new Date(),
-          });
+          const savedMessage = await Message.findOneAndUpdate(
+            {
+              _id: assistantMessage._id,
+              tab_id: tab._id,
+              status: "generating",
+            },
+            {
+              $set: {
+                content: fullContent,
+                status: "completed",
+                error_message: undefined,
+              },
+            },
+            { new: true }
+          ).lean();
+          if (!savedMessage) {
+            throw new GenerationInterruptedError();
+          }
 
           // Auto-name is a live-mode convenience call; replay mode skips it.
           let newName: string | null = null;
@@ -263,34 +315,40 @@ export async function POST(
 
           controller.enqueue(
             sseEvent("done", {
-              messageId: savedMessage._id.toString(),
+              messageId: assistantMessageId,
+              content: savedMessage.content,
+              status: savedMessage.status,
+              timestamp: savedMessage.timestamp.toISOString(),
               ...(userMessageId ? { userMessageId } : {}),
               ...(newName ? { newName } : {}),
             })
           );
         } catch (err) {
           const interrupted =
-            err instanceof GenerationInterruptedError || request.signal.aborted;
+            err instanceof GenerationInterruptedError ||
+            generationController.signal.aborted;
           if (!interrupted) console.error("Stream error:", err);
-          // Persist partial content if any tokens were received — the user's
-          // work is kept (spec US38). With no tokens, the user message stays
-          // as-is; no raw error text is ever written to history.
-          let partialMessageId: string | undefined;
-          if (fullContent) {
-            try {
-              const savedPartial = await Message.create({
-                role: "assistant",
-                content:
-                  fullContent +
-                  `\n\n[${interrupted ? "回复已中断" : "回复因错误中断"}]`,
+          const message =
+            (await Message.findOneAndUpdate(
+              {
+                _id: assistantMessage._id,
                 tab_id: tab._id,
-                timestamp: new Date(),
-              });
-              partialMessageId = savedPartial._id.toString();
-            } catch {
-              // Best effort
-            }
-          }
+                status: "generating",
+              },
+              {
+                $set: {
+                  content: fullContent,
+                  status: interrupted ? "interrupted" : "failed",
+                  error_message: interrupted
+                    ? "生成已停止"
+                    : err instanceof Error
+                      ? err.message
+                      : "AI 请求失败，请稍后重试",
+                },
+              },
+              { new: true }
+            ).lean()) ??
+            (await Message.findById(assistantMessage._id).lean());
           controller.enqueue(
             sseEvent("error", {
               message:
@@ -300,11 +358,17 @@ export async function POST(
                     ? err.message
                     : "AI 请求失败，请稍后重试",
               interrupted,
-              ...(partialMessageId ? { messageId: partialMessageId } : {}),
+              messageId: assistantMessageId,
+              content: message?.content ?? fullContent,
+              status: message?.status ?? (interrupted ? "interrupted" : "failed"),
+              timestamp: message?.timestamp?.toISOString() ?? assistantMessage.timestamp.toISOString(),
+              ...(message?.error_message ? { errorMessage: message.error_message } : {}),
               ...(userMessageId ? { userMessageId } : {}),
             })
           );
         } finally {
+          request.signal.removeEventListener("abort", abortFromRequest);
+          releaseGeneration(assistantMessageId, generationController);
           controller.close();
         }
       },

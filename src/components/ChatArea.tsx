@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { isWorkingDocFile } from "@/lib/file-helpers";
+import type { AssistantMessageStatus } from "@/models/Message";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,6 +44,8 @@ interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   timestamp: string;
+  status?: AssistantMessageStatus;
+  errorMessage?: string;
 }
 
 interface ChatAreaProps {
@@ -61,13 +64,16 @@ interface ChatAreaProps {
 }
 
 interface SseEvent {
-  type: "token" | "done" | "error";
+  type: "start" | "token" | "done" | "error";
   content?: string;
   messageId?: string;
   userMessageId?: string;
   message?: string;
   newName?: string;
   interrupted?: boolean;
+  status?: AssistantMessageStatus;
+  timestamp?: string;
+  errorMessage?: string;
 }
 
 interface FileConsistencyPrompt {
@@ -204,6 +210,14 @@ function MessageBubble({
   onRegenerate?: () => void;
 }) {
   const isUser = message.role === "user";
+  const statusLabel =
+    message.status === "generating"
+      ? "正在生成"
+      : message.status === "interrupted"
+        ? "已中断"
+        : message.status === "failed"
+          ? "生成失败"
+          : null;
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -245,6 +259,22 @@ function MessageBubble({
               <span className="ml-0.5 inline-block h-4 w-1.5 animate-pulse bg-current align-text-bottom" />
             )}
           </div>
+          {statusLabel && (
+            <div
+              className={`mt-2 text-xs ${
+                message.status === "failed"
+                  ? "text-red-600"
+                  : message.status === "interrupted"
+                    ? "text-amber-700"
+                    : "text-gray-500"
+              }`}
+            >
+              {statusLabel}
+              {message.status === "failed" && message.errorMessage
+                ? `：${message.errorMessage}`
+                : ""}
+            </div>
+          )}
         </div>
 
         {!isStreaming && (onCopy || onDelete || onEdit || onRegenerate) && (
@@ -413,7 +443,9 @@ export default function ChatArea({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const [streamingContent, setStreamingContent] = useState("");
+  const [activeAssistantMessageId, setActiveAssistantMessageId] =
+    useState<string | null>(null);
+  const [isStopping, setIsStopping] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [error, setError] = useState("");
   // 配置类错误（API key 无效/未配置）——弹窗提示，不进对话区，也不提供重试
@@ -423,7 +455,6 @@ export default function ChatArea({
   const autoScrollPendingRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
-  const stopRequestedRef = useRef(false);
   // Last sent content — state, not a ref: it's read during render (retry button)
   const [lastSentContent, setLastSentContent] = useState("");
   const [pendingDeleteMessage, setPendingDeleteMessage] =
@@ -610,7 +641,8 @@ export default function ChatArea({
       // Abort any in-progress stream when switching tabs
       abortRef.current?.abort();
       setIsStreaming(false);
-      setStreamingContent("");
+      setActiveAssistantMessageId(null);
+      setIsStopping(false);
     };
   }, [tabId]);
 
@@ -645,7 +677,7 @@ export default function ChatArea({
       cancelAnimationFrame(frame);
       autoScrollPendingRef.current = false;
     };
-  }, [messages, streamingContent]);
+  }, [messages]);
 
   // ── Scan history for file markers (tab re-open) ─────────────────────────
   // Waits for the project file list to finish loading (filesReady): otherwise
@@ -719,8 +751,6 @@ export default function ChatArea({
     if (!tabId || isStreaming) return;
 
     setError("");
-    stopRequestedRef.current = false;
-
     const regenerateMessageId = options?.regenerateMessageId;
     const lastVisibleMessage = messages[messages.length - 1];
     const reusesLastUser =
@@ -743,7 +773,8 @@ export default function ChatArea({
     }
 
     setIsStreaming(true);
-    setStreamingContent("");
+    setActiveAssistantMessageId(null);
+    setIsStopping(false);
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -771,18 +802,11 @@ export default function ChatArea({
         throw new Error(errMsg);
       }
 
-      if (regenerateMessageId) {
-        setMessages((prev) =>
-          prev.filter((message) => message.id !== regenerateMessageId)
-        );
-      }
-
       const reader = res.body?.getReader();
       if (!reader) throw new Error("无法读取响应流");
 
       const decoder = new TextDecoder();
       let buffer = "";
-      let fullContent = "";
 
       while (true) {
         const { done, value } = await reader.read();
@@ -799,48 +823,83 @@ export default function ChatArea({
 
           switch (event.type) {
             case "token":
-              if (event.content) {
-                fullContent += event.content;
-                setStreamingContent(fullContent);
+              if (event.content && event.messageId) {
+                setMessages((prev) =>
+                  prev.map((message) =>
+                    message.id === event.messageId
+                      ? {
+                          ...message,
+                          content: message.content + event.content!,
+                          status: "generating",
+                        }
+                      : message
+                  )
+                );
               }
               break;
-            case "done": {
-              const newMsg: ChatMessage = {
-                id: event.messageId || createClientMessageId("msg"),
+            case "start": {
+              if (!event.messageId) break;
+              const newMessage: ChatMessage = {
+                id: event.messageId,
                 role: "assistant",
-                content: fullContent,
-                timestamp: new Date().toISOString(),
+                content: "",
+                timestamp: event.timestamp || new Date().toISOString(),
+                status: "generating",
               };
-              // 先登记再 setMessages：历史扫描 effect 在 setMessages 触发的
-              // 重渲染后（setTimeout 0）就会跑，必须让它跳过这条实时消息，
-              // 由下面的 setTimeout(100) 以「消息级已写入」判定处理。
-              liveMessageIds.current.add(newMsg.id);
-              setMessages((prev) => [
-                ...prev
-                  .filter((message) => message.id !== regenerateMessageId)
-                  .map((message) =>
-                    message.id === optimisticUserId && event.userMessageId
-                      ? { ...message, id: event.userMessageId }
-                      : message
-                  ),
-                newMsg,
-              ]);
-              void saveHtmlSnapshots(fullContent);
+              setActiveAssistantMessageId(event.messageId);
+              setMessages((prev) => {
+                const next =
+                  event.userMessageId && optimisticUserId
+                    ? prev.map((message) =>
+                        message.id === optimisticUserId
+                          ? { ...message, id: event.userMessageId! }
+                          : message
+                      )
+                    : prev;
+                return next.some((message) => message.id === event.messageId)
+                  ? next
+                  : [...next, newMessage];
+              });
+              break;
+            }
+            case "done": {
+              if (!event.messageId) break;
+              setMessages((prev) =>
+                prev.map((message) => {
+                  if (message.id !== event.messageId) return message;
+                  return {
+                    ...message,
+                    content: event.content ?? "",
+                    timestamp: event.timestamp ?? message.timestamp,
+                    status: event.status ?? "completed",
+                    errorMessage: undefined,
+                  };
+                })
+              );
+              const completedContent = event.content ?? "";
+              const completedMessage: ChatMessage = {
+                id: event.messageId,
+                role: "assistant",
+                content: completedContent,
+                timestamp: event.timestamp ?? new Date().toISOString(),
+                status: event.status ?? "completed",
+              };
+              liveMessageIds.current.add(event.messageId);
+              void saveHtmlSnapshots(completedContent);
               const newFileNames = new Set(
-                extractFileMarkers(fullContent).map((file) => file.filename)
+                extractFileMarkers(completedContent).map((file) => file.filename)
               );
               const staleFileNames = (
                 options?.regenerateWrittenFileNames ?? []
               ).filter((filename) => !newFileNames.has(filename));
               if (staleFileNames.length > 0) {
                 setFileConsistencyPrompt({
-                  message: newMsg,
+                  message: completedMessage,
                   staleFileNames,
                 });
               } else {
-                setTimeout(() => checkAndShowFileDialog(newMsg), 100);
+                setTimeout(() => checkAndShowFileDialog(completedMessage), 100);
               }
-              setStreamingContent("");
               if (event.newName && onWorkRecordRenamed) {
                 onWorkRecordRenamed(event.newName);
               }
@@ -862,25 +921,21 @@ export default function ChatArea({
                   )
                 );
               }
-              if (event.messageId && fullContent && !stopRequestedRef.current) {
-                // Server persisted the partial — append with the real message
-                // id so a later history fetch doesn't duplicate it.
-                setMessages((prev) => [
-                  ...prev.filter((message) => message.id !== regenerateMessageId),
-                  {
-                    id: event.messageId!,
-                    role: "assistant",
-                    content:
-                      fullContent +
-                      `\n\n[${event.interrupted ? "回复已中断" : "回复因错误中断"}]`,
-                    timestamp: new Date().toISOString(),
-                  },
-                ]);
+              if (event.messageId) {
+                setMessages((prev) =>
+                  prev.map((message) =>
+                    message.id === event.messageId
+                      ? {
+                          ...message,
+                          content: event.content ?? "",
+                          timestamp: event.timestamp ?? message.timestamp,
+                          status: event.status ?? (event.interrupted ? "interrupted" : "failed"),
+                          errorMessage: event.errorMessage,
+                        }
+                      : message
+                  )
+                );
               }
-              // Without a server id: the user message was already persisted
-              // server-side, so keep the optimistic copy — deleting it would
-              // make it (and the failed state) reappear after a refresh.
-              setStreamingContent("");
               break;
             }
           }
@@ -889,32 +944,44 @@ export default function ChatArea({
     } catch (err) {
       if ((err as Error).name === "AbortError") return;
       setError(err instanceof Error ? err.message : "发送消息失败");
-      setStreamingContent("");
     } finally {
       setIsStreaming(false);
+      setActiveAssistantMessageId(null);
+      setIsStopping(false);
       abortRef.current = null;
     }
   }
 
-  function stopGeneration() {
-    if (!isStreaming) return;
-    stopRequestedRef.current = true;
-    const partial = streamingContent.trim();
-    if (partial) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `interrupted-${Date.now()}`,
-          role: "assistant",
-          content: `${streamingContent}\n\n[回复已中断]`,
-          timestamp: new Date().toISOString(),
-        },
-      ]);
+  async function stopGeneration() {
+    if (!isStreaming || !tabId || !activeAssistantMessageId || isStopping) return;
+    setIsStopping(true);
+    try {
+      const res = await fetch(
+        `/api/tabs/${tabId}/messages?messageId=${encodeURIComponent(activeAssistantMessageId)}`,
+        { method: "PATCH" }
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "停止生成失败");
+      }
+      const { message } = await res.json();
+      setMessages((prev) =>
+        prev.map((item) =>
+          item.id === activeAssistantMessageId
+            ? {
+                ...item,
+                content: message.content,
+                timestamp: message.timestamp,
+                status: message.status,
+                errorMessage: message.errorMessage,
+              }
+            : item
+        )
+      );
+    } catch (err) {
+      setIsStopping(false);
+      setError(err instanceof Error ? err.message : "停止生成失败");
     }
-    setStreamingContent("");
-    setIsStreaming(false);
-    abortRef.current?.abort();
-    abortRef.current = null;
   }
 
   async function copyMessage(content: string) {
@@ -1315,7 +1382,7 @@ export default function ChatArea({
             <MessageBubble
               key={msg.id}
               message={msg}
-              isStreaming={false}
+              isStreaming={msg.status === "generating"}
               onCopy={() => copyMessage(msg.content)}
               onDelete={() => setPendingDeleteMessage(msg)}
               onEdit={
@@ -1336,47 +1403,12 @@ export default function ChatArea({
               }
             >
               {msg.role === "assistant"
-                ? renderContentWithMarkers(msg.content, msg.id)
+                ? msg.status === "generating"
+                  ? renderStreamingContent(msg.content)
+                  : renderContentWithMarkers(msg.content, msg.id)
                 : undefined}
             </MessageBubble>
           ))}
-
-          {/* Streaming message */}
-          {isStreaming && streamingContent && (
-            <div className="mb-4 flex justify-start">
-              <div className="flex max-w-[80%] gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-200 text-sm text-gray-700">
-                  AI
-                </div>
-                <div className="rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm leading-relaxed text-gray-900">
-                  <div className="whitespace-pre-wrap break-words">
-                    {renderStreamingContent(streamingContent)}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Thinking indicator (streaming started but no content yet) */}
-          {isStreaming && !streamingContent && (
-            <div className="mb-4 flex justify-start">
-              <div className="flex max-w-[80%] gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-200 text-sm text-gray-700">
-                  AI
-                </div>
-                <div className="rounded-lg border border-gray-200 bg-white px-4 py-3">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-sm text-gray-400">正在思考</span>
-                    <span className="flex gap-0.5">
-                      <span className="inline-block h-1 w-1 animate-bounce rounded-full bg-gray-400 [animation-delay:0ms]" />
-                      <span className="inline-block h-1 w-1 animate-bounce rounded-full bg-gray-400 [animation-delay:150ms]" />
-                      <span className="inline-block h-1 w-1 animate-bounce rounded-full bg-gray-400 [animation-delay:300ms]" />
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
 
         </div>
       </div>
@@ -1417,18 +1449,18 @@ export default function ChatArea({
             <Button
               onClick={
                 isStreaming
-                  ? stopGeneration
+                  ? () => void stopGeneration()
                   : editingMessage
                     ? () => void editAndResendMessage()
                     : sendMessage
               }
-              disabled={!isStreaming && !input.trim()}
+              disabled={(!isStreaming && !input.trim()) || (isStreaming && (!activeAssistantMessageId || isStopping))}
               className="shrink-0 rounded-lg px-4 py-2.5 disabled:cursor-not-allowed"
             >
               {isStreaming ? (
                 <span className="flex items-center gap-1">
                   <span aria-hidden="true">■</span>
-                  停止生成
+                  {isStopping ? "正在停止" : "停止生成"}
                 </span>
               ) : editingMessage ? (
                 "重新发送"

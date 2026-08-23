@@ -3,11 +3,21 @@ import mongoose, { Document, Model } from "mongoose";
 export const MESSAGE_ROLES = ["user", "assistant", "system"] as const;
 export type MessageRole = (typeof MESSAGE_ROLES)[number];
 
+export const ASSISTANT_MESSAGE_STATUSES = [
+  "generating",
+  "completed",
+  "interrupted",
+  "failed",
+] as const;
+export type AssistantMessageStatus = (typeof ASSISTANT_MESSAGE_STATUSES)[number];
+
 interface IMessage {
   role: MessageRole;
   content: string;
   timestamp: Date;
   tab_id: mongoose.Types.ObjectId;
+  status?: AssistantMessageStatus;
+  error_message?: string;
 }
 
 export interface IMessageDocument extends IMessage, Document {
@@ -33,6 +43,13 @@ const MessageSchema = new mongoose.Schema<IMessageDocument>(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Tab",
       required: true,
+    },
+    status: {
+      type: String,
+      enum: ASSISTANT_MESSAGE_STATUSES,
+    },
+    error_message: {
+      type: String,
     },
   },
   {
