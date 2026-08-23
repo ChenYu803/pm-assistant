@@ -7,7 +7,6 @@ import { parseObjectId } from "@/lib/ownership";
 import { acquireTabWriteLease } from "@/lib/deletion-coordination";
 import { AGENT_SYSTEM_PROMPTS } from "@/lib/agent-prompts";
 import type { AgentType, FreezeStatus } from "@/lib/agent-constants";
-import { autoNameWorkRecord } from "@/lib/auto-name";
 import { stripChangelogHeader } from "@/lib/file-helpers";
 import { getLoadedContextFiles } from "@/lib/context-files";
 import { createAIStream, isAIConfigured } from "@/lib/ai";
@@ -850,17 +849,6 @@ export async function POST(
             }
           }
 
-          // Auto-name is a live-mode convenience call; replay mode skips it.
-          let newName: string | null = null;
-          try {
-            newName = await autoNameWorkRecord(
-              operationTab._id,
-              operationTab.work_record_id
-            );
-          } catch (err) {
-            console.error("autoNameWorkRecord failed:", err);
-          }
-
           const completedTab = await completeTabOperation(tabOperation, {
             messageId: assistantMessageId,
           });
@@ -888,7 +876,6 @@ export async function POST(
                   },
                 }
               : {}),
-            ...(newName ? { newName } : {}),
             tabVersion: completedTab.version ?? 0,
             ...(freezeStatus
               ? {

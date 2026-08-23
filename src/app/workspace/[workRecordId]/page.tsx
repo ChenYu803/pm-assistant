@@ -717,6 +717,7 @@ export default function WorkspacePage() {
             /* Chat area for active tab */
             <ChatArea
               tabId={activeTab?.id ?? null}
+              workRecordId={workRecordId}
               tabName={activeTab?.display_name ?? null}
               tabVersion={activeTab?.version ?? null}
               freezeStatus={activeTab?.freeze_status ?? null}
