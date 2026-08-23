@@ -4,6 +4,7 @@ import dbConnect from "@/lib/mongodb";
 import Message from "@/models/Message";
 import { findOwnedTab, parseObjectId } from "@/lib/ownership";
 import { cancelGeneration } from "@/lib/generation-control";
+import { getVisibleMessages } from "@/lib/message-recovery";
 
 export async function GET(
   request: Request,
@@ -29,7 +30,7 @@ export async function GET(
       .sort({ timestamp: 1, _id: 1 })
       .lean();
 
-    const serialized = messages.map((m) => ({
+    const serialized = getVisibleMessages(messages).map((m) => ({
       id: m._id.toString(),
       role: m.role,
       content: m.content,
@@ -40,6 +41,10 @@ export async function GET(
             ...(m.error_message ? { errorMessage: m.error_message } : {}),
           }
         : {}),
+      ...(m.replacement_target_id
+        ? { replacesMessageId: m.replacement_target_id.toString() }
+        : {}),
+      ...(m.replacement_kind ? { replacementKind: m.replacement_kind } : {}),
     }));
 
     return NextResponse.json({ messages: serialized });

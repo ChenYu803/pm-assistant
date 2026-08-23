@@ -27,7 +27,10 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { isWorkingDocFile } from "@/lib/file-helpers";
-import type { AssistantMessageStatus } from "@/models/Message";
+import type {
+  AssistantMessageStatus,
+  MessageReplacementKind,
+} from "@/models/Message";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,6 +49,8 @@ interface ChatMessage {
   timestamp: string;
   status?: AssistantMessageStatus;
   errorMessage?: string;
+  replacesMessageId?: string;
+  replacementKind?: MessageReplacementKind;
 }
 
 interface ChatAreaProps {
@@ -74,6 +79,11 @@ interface SseEvent {
   status?: AssistantMessageStatus;
   timestamp?: string;
   errorMessage?: string;
+  replacesMessageId?: string;
+  replacementKind?: MessageReplacementKind;
+  replacesMessageIds?: string[];
+  replaceFromMessageId?: string;
+  replacementUserMessage?: ChatMessage;
 }
 
 interface FileConsistencyPrompt {
@@ -200,6 +210,7 @@ function MessageBubble({
   onDelete,
   onEdit,
   onRegenerate,
+  onRetry,
 }: {
   message: ChatMessage;
   isStreaming: boolean;
@@ -208,6 +219,7 @@ function MessageBubble({
   onDelete?: () => void;
   onEdit?: () => void;
   onRegenerate?: () => void;
+  onRetry?: () => void;
 }) {
   const isUser = message.role === "user";
   const statusLabel =
@@ -277,7 +289,7 @@ function MessageBubble({
           )}
         </div>
 
-        {!isStreaming && (onCopy || onDelete || onEdit || onRegenerate) && (
+        {!isStreaming && (onCopy || onDelete || onEdit || onRegenerate || onRetry) && (
           <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
             {onEdit && (
               <Button
@@ -303,6 +315,19 @@ function MessageBubble({
                 className="h-7 px-2 text-xs text-gray-500 hover:text-gray-900"
               >
                 重新输出
+              </Button>
+            )}
+            {onRetry && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                aria-label="重试"
+                title="使用新的请求重试这次生成"
+                onClick={onRetry}
+                className="h-7 px-2 text-xs text-gray-500 hover:text-gray-900"
+              >
+                重试
               </Button>
             )}
             {onCopy && (
@@ -615,9 +640,10 @@ export default function ChatArea({
     }
 
     let cancelled = false;
+    let recoveryPoll: number | undefined;
 
-    async function fetchMessages() {
-      setLoadingHistory(true);
+    async function fetchMessages(isInitialLoad: boolean) {
+      if (isInitialLoad) setLoadingHistory(true);
       setError("");
       try {
         const res = await fetch(`/api/tabs/${tabId}/messages`);
@@ -625,19 +651,31 @@ export default function ChatArea({
         const data = await res.json();
         if (!cancelled) {
           setMessages(data.messages);
+          if (
+            data.messages.some(
+              (message: ChatMessage) =>
+                message.role === "assistant" && message.status === "generating"
+            )
+          ) {
+            // 刷新/重连期间没有本地 SSE 阅读器时，继续以服务端事实源对账。
+            recoveryPoll = window.setTimeout(() => {
+              void fetchMessages(false);
+            }, 500);
+          }
         }
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "获取消息记录失败");
         }
       } finally {
-        if (!cancelled) setLoadingHistory(false);
+        if (!cancelled && isInitialLoad) setLoadingHistory(false);
       }
     }
 
-    fetchMessages();
+    void fetchMessages(true);
     return () => {
       cancelled = true;
+      if (recoveryPoll) window.clearTimeout(recoveryPoll);
       // Abort any in-progress stream when switching tabs
       abortRef.current?.abort();
       setIsStreaming(false);
@@ -746,23 +784,29 @@ export default function ChatArea({
     options?: {
       regenerateMessageId?: string;
       regenerateWrittenFileNames?: string[];
+      editMessageId?: string;
+      retryMessageId?: string;
     }
   ) {
     if (!tabId || isStreaming) return;
 
     setError("");
     const regenerateMessageId = options?.regenerateMessageId;
+    const editMessageId = options?.editMessageId;
+    const retryMessageId = options?.retryMessageId;
+    const createsOptimisticUser =
+      !regenerateMessageId && !editMessageId && !retryMessageId;
     const lastVisibleMessage = messages[messages.length - 1];
     const reusesLastUser =
-      !regenerateMessageId &&
+      createsOptimisticUser &&
       lastVisibleMessage?.role === "user" &&
       lastVisibleMessage.content === content;
-    const optimisticUserId = regenerateMessageId
-      ? null
-      : reusesLastUser
+    const optimisticUserId = createsOptimisticUser
+      ? reusesLastUser
         ? lastVisibleMessage.id
-        : createClientMessageId("temp");
-    if (!regenerateMessageId && !reusesLastUser) {
+        : createClientMessageId("temp")
+      : null;
+    if (createsOptimisticUser && !reusesLastUser) {
       const optimisticUser: ChatMessage = {
         id: optimisticUserId!,
         role: "user",
@@ -778,16 +822,20 @@ export default function ChatArea({
 
     const controller = new AbortController();
     abortRef.current = controller;
+    const requestId = createClientMessageId("request");
+    const payload = retryMessageId
+      ? { retryMessageId, requestId }
+      : editMessageId
+        ? { content, editMessageId, requestId }
+        : regenerateMessageId
+          ? { regenerate: true, messageId: regenerateMessageId, requestId }
+          : { content, requestId };
 
     try {
       const res = await fetch(`/api/tabs/${tabId}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          regenerateMessageId
-            ? { regenerate: true, messageId: regenerateMessageId }
-            : { content }
-        ),
+        body: JSON.stringify(payload),
         signal: controller.signal,
       });
 
@@ -845,6 +893,8 @@ export default function ChatArea({
                 content: "",
                 timestamp: event.timestamp || new Date().toISOString(),
                 status: "generating",
+                replacesMessageId: event.replacesMessageId,
+                replacementKind: event.replacementKind,
               };
               setActiveAssistantMessageId(event.messageId);
               setMessages((prev) => {
@@ -864,18 +914,6 @@ export default function ChatArea({
             }
             case "done": {
               if (!event.messageId) break;
-              setMessages((prev) =>
-                prev.map((message) => {
-                  if (message.id !== event.messageId) return message;
-                  return {
-                    ...message,
-                    content: event.content ?? "",
-                    timestamp: event.timestamp ?? message.timestamp,
-                    status: event.status ?? "completed",
-                    errorMessage: undefined,
-                  };
-                })
-              );
               const completedContent = event.content ?? "";
               const completedMessage: ChatMessage = {
                 id: event.messageId,
@@ -883,7 +921,57 @@ export default function ChatArea({
                 content: completedContent,
                 timestamp: event.timestamp ?? new Date().toISOString(),
                 status: event.status ?? "completed",
+                replacesMessageId: event.replacesMessageId,
+                replacementKind: event.replacementKind,
               };
+              setMessages((prev) => {
+                const currentCandidate = prev.find(
+                  (message) => message.id === event.messageId
+                );
+                const finalCandidate: ChatMessage = {
+                  ...currentCandidate,
+                  ...completedMessage,
+                  replacesMessageId:
+                    event.replacesMessageId ?? currentCandidate?.replacesMessageId,
+                  replacementKind:
+                    event.replacementKind ?? currentCandidate?.replacementKind,
+                  errorMessage: undefined,
+                };
+                if (
+                  !event.replacesMessageIds?.length ||
+                  !event.replaceFromMessageId
+                ) {
+                  return prev.map((message) =>
+                    message.id === event.messageId ? finalCandidate : message
+                  );
+                }
+                const insertionIndex = prev.findIndex(
+                  (message) => message.id === event.replaceFromMessageId
+                );
+                if (insertionIndex === -1) {
+                  return prev.map((message) =>
+                    message.id === event.messageId ? finalCandidate : message
+                  );
+                }
+                const removedIds = new Set([
+                  ...event.replacesMessageIds,
+                  event.messageId,
+                ]);
+                const remainingBefore = prev
+                  .slice(0, insertionIndex)
+                  .filter((message) => !removedIds.has(message.id));
+                const remainingAfter = prev
+                  .slice(insertionIndex + 1)
+                  .filter((message) => !removedIds.has(message.id));
+                return [
+                  ...remainingBefore,
+                  ...(event.replacementUserMessage
+                    ? [event.replacementUserMessage]
+                    : []),
+                  finalCandidate,
+                  ...remainingAfter,
+                ];
+              });
               liveMessageIds.current.add(event.messageId);
               void saveHtmlSnapshots(completedContent);
               const newFileNames = new Set(
@@ -931,6 +1019,10 @@ export default function ChatArea({
                           timestamp: event.timestamp ?? message.timestamp,
                           status: event.status ?? (event.interrupted ? "interrupted" : "failed"),
                           errorMessage: event.errorMessage,
+                          replacesMessageId:
+                            event.replacesMessageId ?? message.replacesMessageId,
+                          replacementKind:
+                            event.replacementKind ?? message.replacementKind,
                         }
                       : message
                   )
@@ -1056,24 +1148,12 @@ export default function ChatArea({
 
     setError("");
     try {
-      const res = await fetch(
-        `/api/tabs/${tabId}/messages?fromMessageId=${encodeURIComponent(targetMessage.id)}`,
-        { method: "DELETE" }
-      );
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "编辑消息失败");
-      }
-
-      setMessages((prev) => {
-        const targetIndex = prev.findIndex((message) => message.id === targetMessage.id);
-        return targetIndex === -1 ? prev : prev.slice(0, targetIndex);
-      });
+      // 编辑重发在服务端独立生成；成功提交前保留当前消息和之后的历史。
       setEditingMessage(null);
       editDraftRef.current = "";
       setInput("");
       setLastSentContent(editedContent);
-      await sendContent(editedContent);
+      await sendContent(editedContent, { editMessageId: targetMessage.id });
     } catch (err) {
       setError(err instanceof Error ? err.message : "编辑消息失败");
     }
@@ -1098,10 +1178,28 @@ export default function ChatArea({
   // ── Retry handler ────────────────────────────────────────────────────────
 
   function handleRetry() {
-    const content = lastSentContent;
-    if (!content || !tabId || isStreaming) return;
+    const lastRecoverableMessage = [...messages]
+      .reverse()
+      .find(
+        (message) =>
+          message.role === "assistant" &&
+          (message.status === "failed" || message.status === "interrupted")
+      );
+    if (!tabId || isStreaming) return;
     setError("");
-    void sendContent(content);
+    if (lastRecoverableMessage) {
+      void retryGeneration(lastRecoverableMessage);
+      return;
+    }
+    if (lastSentContent) {
+      void sendContent(lastSentContent);
+    }
+  }
+
+  async function retryGeneration(message: ChatMessage) {
+    if (!tabId || isStreaming) return;
+    setError("");
+    await sendContent("", { retryMessageId: message.id });
   }
 
   async function regenerateMessage(messageId: string) {
@@ -1397,8 +1495,16 @@ export default function ChatArea({
                 !isStreaming &&
                 filesReady &&
                 msg.role === "assistant" &&
+                msg.status === "completed" &&
                 msg.id === messages[messages.length - 1]?.id
                   ? () => void regenerateMessage(msg.id)
+                  : undefined
+              }
+              onRetry={
+                !isStreaming &&
+                msg.role === "assistant" &&
+                (msg.status === "failed" || msg.status === "interrupted")
+                  ? () => void retryGeneration(msg)
                   : undefined
               }
             >

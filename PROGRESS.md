@@ -6,7 +6,7 @@
 
 ## 当前阶段
 
-**v1.2 规格已发布（2026-08-22），#01 Markdown 安全渲染、#02 项目边界隔离和 #03 文件协议/HTML 快照已完成，后续票待实现**；v1.1（使用体验改进）综合 replay 验证已完成 —— 票 01 至票 08 均已完成；真实模型四环回归仅在发布候选或另行批准后安排。
+**v1.2 规格已发布（2026-08-22），#01 Markdown 安全渲染、#02 项目边界隔离、#03 文件协议/HTML 快照、#05 消息事实源和 #06 生成恢复已完成，后续票待实现**；v1.1（使用体验改进）综合 replay 验证已完成 —— 票 01 至票 08 均已完成；真实模型四环回归仅在发布候选或另行批准后安排。
 v1.0 已验收（2026-08-11），四环流水线端到端走通。
 
 ## 已完成成果
@@ -19,6 +19,8 @@ v1.0 已验收（2026-08-11），四环流水线端到端走通。
 - **v1.2 票 01（2026-08-22）**：`MarkdownRenderer` 对链接协议、属性字符和代码围栏语言名实施安全白名单；HTML/属性注入保持为转义文本，危险链接降级为不可执行文本。新增 `verify-markdown-safety.mjs` replay 专项，8/8 通过；既有 `verify-fixes.mjs` Markdown 回归 10/10，tsc 与 lint 通过。
 
 ## 本次任务
+
+**v1.2 #06 已完成（2026-08-23）**：候选 assistant 独立生成，`replacement_committed` 是旧历史与新结果的可见性提交屏障；重生成/编辑失败不会预删历史，停止保留 partial 并持久化 `interrupted`，刷新时 `ChatArea` 每 500ms 从 messages API 对账生成态。重试使用新 `requestId`；聊天路由在任何写入前确认 `tab_id + request_id` 的部分唯一索引，旧重复数据只清除较晚消息的幂等标识、不删除消息内容。另修复零 token 空 assistant 的 schema 拒绝，以及 Next.js 16 将流式 Route Handler `request.signal` 误标为 aborted 的问题。`AI_MODE=replay node scripts/verify-message-recovery.mjs` 20/20、`npx tsc --noEmit`、脚本语法、`git diff --check` 已通过，未调用真实模型。下一 frontier：v1.2 #07。
 
 **本次任务：v1.2 票 02、票 03 已完成（2026-08-22）**：#02 的文件 API 现在同时校验用户、URL 项目与文件父项目；tab 文件加载/移除和聊天上下文过滤项目 ownership，历史跨项目上下文不会进入公开列表或 Agent 上下文；非法 `fileId` 返回 400 参数错误，合法但不存在返回 404。新增 `scripts/verify-project-boundary.mjs` replay/API 专项，13/13 通过。#03 新增根文件与 issues 路径白名单、控制字符/扩展名/Agent 校验、3 MiB 限制和独立 `PrototypeSnapshot` 多版本资产 API；HTML marker 在原型 UI 完成后自动保存，快照不进入普通文件树或 Agent 上下文。新增 `scripts/verify-file-protocol-snapshots.mjs`，14/14 通过；任务拆分相邻 replay 22/22 通过；tsc、全量 lint 和 diff check 通过，未调用真实模型。下一 frontier 是 v1.2 票 04。v1.1 票 08 的综合固定回放入口仍覆盖 6 个专项、115 条断言（17 + 28 + 25 + 12 + 6 + 27），未调用真实模型；发布候选时若需完整四环 live 回归，仍须先报备验证假设、轮数和 token/API 成本并取得同意。
 

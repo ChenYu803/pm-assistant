@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
-import Message from "@/models/Message";
+import Message, { ensureMessageRequestIdIndex } from "@/models/Message";
 import { findOwnedTabWithProject, parseObjectId } from "@/lib/ownership";
 import { AGENT_SYSTEM_PROMPTS } from "@/lib/agent-prompts";
 import type { AgentType } from "@/lib/agent-constants";
@@ -10,10 +10,15 @@ import { stripChangelogHeader } from "@/lib/file-helpers";
 import { getLoadedContextFiles } from "@/lib/context-files";
 import { createAIStream, isAIConfigured } from "@/lib/ai";
 import type { AIMessage } from "@/lib/ai";
+import type {
+  AssistantMessageStatus,
+  MessageReplacementKind,
+} from "@/models/Message";
 import {
   registerGeneration,
   releaseGeneration,
 } from "@/lib/generation-control";
+import { getVisibleMessages } from "@/lib/message-recovery";
 
 class GenerationInterruptedError extends Error {
   constructor() {
@@ -26,6 +31,102 @@ const encoder = new TextEncoder();
 
 function sseEvent(type: string, data: Record<string, unknown>): Uint8Array {
   return encoder.encode(`data: ${JSON.stringify({ type, ...data })}\n\n`);
+}
+
+/**
+ * 客户端传输中断不等于服务端生成失败。消息状态先持久化；SSE 控制器已关闭时
+ * 跳过后续通知，刷新或重连仍可从服务端消息事实源恢复最终状态。
+ */
+function enqueueSse(
+  controller: ReadableStreamDefaultController<Uint8Array>,
+  type: string,
+  data: Record<string, unknown>
+): void {
+  if (controller.desiredSize === null) return;
+  try {
+    controller.enqueue(sseEvent(type, data));
+  } catch (error) {
+    // Node/Next 可能在 desiredSize 检查后关闭控制器；此时数据库状态仍可恢复。
+    if (!(error instanceof TypeError && error.message.includes("already closed"))) {
+      throw error;
+    }
+  }
+}
+
+function closeSse(controller: ReadableStreamDefaultController<Uint8Array>): void {
+  if (controller.desiredSize === null) return;
+  try {
+    controller.close();
+  } catch (error) {
+    if (!(error instanceof TypeError && error.message.includes("already closed"))) {
+      throw error;
+    }
+  }
+}
+
+type RequestReplayMessage = {
+  _id: { toString(): string };
+  content: string;
+  timestamp: Date;
+  status?: AssistantMessageStatus;
+  error_message?: string;
+  replacement_target_id?: { toString(): string };
+  replacement_kind?: MessageReplacementKind;
+};
+
+function replayRequest(existingRequest: RequestReplayMessage): Response {
+  const replay = new ReadableStream({
+    start(controller) {
+      const existingMessageId = existingRequest._id.toString();
+      enqueueSse(controller, "start", {
+        messageId: existingMessageId,
+        status: existingRequest.status ?? "completed",
+        timestamp: existingRequest.timestamp.toISOString(),
+        ...(existingRequest.replacement_target_id
+          ? {
+              replacesMessageId:
+                existingRequest.replacement_target_id.toString(),
+            }
+          : {}),
+        ...(existingRequest.replacement_kind
+          ? { replacementKind: existingRequest.replacement_kind }
+          : {}),
+      });
+      if (existingRequest.status !== "generating") {
+        enqueueSse(
+          controller,
+          existingRequest.status === "completed" ? "done" : "error",
+          {
+            messageId: existingMessageId,
+            content: existingRequest.content,
+            status: existingRequest.status ?? "completed",
+            timestamp: existingRequest.timestamp.toISOString(),
+            ...(existingRequest.error_message
+              ? { errorMessage: existingRequest.error_message }
+              : {}),
+          }
+        );
+      }
+      closeSse(controller);
+    },
+  });
+  return new Response(replay, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+      "X-Accel-Buffering": "no",
+    },
+  });
+}
+
+function isDuplicateRequestIdError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === 11000
+  );
 }
 
 /** Affirmative replies that count as a user's scope-freeze confirmation. */
@@ -54,17 +155,31 @@ export async function POST(
     const { id: tabId } = await params;
 
     const body = await request.json();
-    const { content, regenerate, messageId } = body;
+    const { content, regenerate, messageId, editMessageId, retryMessageId, requestId } = body;
     const isRegenerate = regenerate === true;
+    const isEdit = typeof editMessageId === "string";
+    const isRetry = typeof retryMessageId === "string";
+    const operationCount = Number(isRegenerate) + Number(isEdit) + Number(isRetry);
 
     if (
-      (!isRegenerate &&
+      operationCount > 1 ||
+      ((!isRegenerate && !isRetry) &&
         (!content || typeof content !== "string" || !content.trim())) ||
       (isRegenerate &&
-        (typeof messageId !== "string" || !parseObjectId(messageId)))
+        (typeof messageId !== "string" || !parseObjectId(messageId))) ||
+      (isEdit && !parseObjectId(editMessageId)) ||
+      (isRetry && !parseObjectId(retryMessageId)) ||
+      typeof requestId !== "string" ||
+      !requestId.trim() ||
+      requestId.length > 160
     ) {
       return NextResponse.json(
-        { error: isRegenerate ? "待重新输出的消息不存在" : "消息内容不能为空" },
+        {
+          error:
+            isRegenerate || isEdit || isRetry
+              ? "生成请求参数无效"
+              : "消息内容不能为空",
+        },
         { status: 400 }
       );
     }
@@ -77,6 +192,7 @@ export async function POST(
     }
 
     await dbConnect();
+    await ensureMessageRequestIdIndex();
 
     const ownedTab = await findOwnedTabWithProject(tabId, userId);
     if (!ownedTab) {
@@ -86,6 +202,16 @@ export async function POST(
       );
     }
     const { tab, project } = ownedTab;
+
+    // 同一个 requestId 只对应一条正式 assistant 消息。网络重放不会重新提交
+    // 用户内容或创建第二条 assistant；生成中的重放只返回既有正式 ID。
+    const existingRequest = await Message.findOne({
+      tab_id: tab._id,
+      request_id: requestId,
+    }).lean();
+    if (existingRequest) {
+      return replayRequest(existingRequest);
+    }
 
     let systemPrompt = AGENT_SYSTEM_PROMPTS[tab.agent_type];
 
@@ -120,104 +246,242 @@ export async function POST(
       systemPrompt += `\n\n## 范围冻结提醒\n\n${frozenReminder}`;
     }
 
-    // Fetch history
-    let historyMessages = await Message.find({ tab_id: tab._id })
+    const allHistoryMessages = await Message.find({ tab_id: tab._id })
       .sort({ timestamp: 1, _id: 1 })
       .lean();
+    const visibleHistoryMessages = getVisibleMessages(allHistoryMessages);
+    let historyMessages = visibleHistoryMessages;
+    let userMessageId: string | undefined;
+    let replacementKind: MessageReplacementKind | undefined;
+    let replacementTargetId: ReturnType<typeof parseObjectId> | undefined;
+    let replacementMessageIds: typeof allHistoryMessages = [];
+    let replaceFromMessageId: string | undefined;
+    let replacementUserContent: string | undefined;
 
     if (isRegenerate) {
       const targetId = parseObjectId(messageId);
-      const lastHistoryMessage = historyMessages[historyMessages.length - 1];
+      const targetIndex = visibleHistoryMessages.findIndex(
+        (message) => message._id.toString() === targetId?.toString()
+      );
+      const target = visibleHistoryMessages[targetIndex];
+      const hasLaterUsableMessage = visibleHistoryMessages.slice(targetIndex + 1).some(
+        (message) =>
+          message.role === "user" ||
+          (message.role === "assistant" &&
+            (message.status ?? "completed") === "completed")
+      );
       if (
         !targetId ||
-        !lastHistoryMessage ||
-        lastHistoryMessage.role !== "assistant" ||
-        lastHistoryMessage._id.toString() !== targetId.toString()
+        !target ||
+        target.role !== "assistant" ||
+        (target.status ?? "completed") !== "completed" ||
+        hasLaterUsableMessage
       ) {
         return NextResponse.json(
-          { error: "只能重新输出最后一条 AI 回复" },
+          { error: "只能重新输出最后一条已完成的 AI 回复" },
           { status: 409 }
         );
       }
-
-      const removed = await Message.findOneAndDelete({
-        _id: targetId,
-        tab_id: tab._id,
-        role: "assistant",
-      });
-      if (!removed) {
+      replacementKind = "regenerate";
+      replacementTargetId = targetId;
+      replacementMessageIds = visibleHistoryMessages.slice(targetIndex);
+      replaceFromMessageId = target._id.toString();
+      historyMessages = visibleHistoryMessages.slice(0, targetIndex);
+    } else if (isEdit) {
+      const targetId = parseObjectId(editMessageId);
+      const targetIndex = visibleHistoryMessages.findIndex(
+        (message) => message._id.toString() === targetId?.toString()
+      );
+      const target = visibleHistoryMessages[targetIndex];
+      if (!targetId || !target || target.role !== "user") {
         return NextResponse.json(
-          { error: "待重新输出的消息不存在" },
+          { error: "只能编辑当前可见的用户消息" },
           { status: 409 }
         );
       }
-      historyMessages = historyMessages.slice(0, -1);
+      replacementKind = "edit";
+      replacementTargetId = targetId;
+      replacementMessageIds = visibleHistoryMessages.slice(targetIndex);
+      replaceFromMessageId = target._id.toString();
+      replacementUserContent = content.trim();
+      historyMessages = visibleHistoryMessages.slice(0, targetIndex);
+    } else if (isRetry) {
+      const previousAttempt = visibleHistoryMessages.find(
+        (message) => message._id.toString() === retryMessageId
+      );
+      if (
+        !previousAttempt ||
+        previousAttempt.role !== "assistant" ||
+        !["failed", "interrupted"].includes(previousAttempt.status ?? "completed")
+      ) {
+        return NextResponse.json(
+          { error: "只能重试失败或中断的生成" },
+          { status: 409 }
+        );
+      }
+      replacementKind = previousAttempt.replacement_kind ?? "retry";
+      const targetId = previousAttempt.replacement_target_id ?? previousAttempt._id;
+      const targetIndex = visibleHistoryMessages.findIndex(
+        (message) => message._id.toString() === targetId.toString()
+      );
+      if (replacementKind === "edit") {
+        const hiddenReplacementUser = previousAttempt.replacement_user_message_id
+          ? allHistoryMessages.find(
+              (message) =>
+                message._id.toString() ===
+                previousAttempt.replacement_user_message_id?.toString()
+            )
+          : undefined;
+        if (
+          targetIndex === -1 ||
+          !hiddenReplacementUser ||
+          hiddenReplacementUser.role !== "user"
+        ) {
+          return NextResponse.json(
+            { error: "编辑重发的重试上下文已失效" },
+            { status: 409 }
+          );
+        }
+        replacementTargetId = targetId;
+        replacementMessageIds = visibleHistoryMessages.slice(targetIndex);
+        replaceFromMessageId = targetId.toString();
+        replacementUserContent = hiddenReplacementUser.content;
+        historyMessages = visibleHistoryMessages.slice(0, targetIndex);
+      } else if (replacementKind === "regenerate") {
+        if (targetIndex === -1) {
+          return NextResponse.json(
+            { error: "重新输出的原消息已不存在" },
+            { status: 409 }
+          );
+        }
+        replacementTargetId = targetId;
+        replacementMessageIds = visibleHistoryMessages.slice(targetIndex);
+        replaceFromMessageId = targetId.toString();
+        historyMessages = visibleHistoryMessages.slice(0, targetIndex);
+      } else {
+        if (targetIndex === -1) {
+          return NextResponse.json(
+            { error: "重试的原消息已不存在" },
+            { status: 409 }
+          );
+        }
+        // 普通失败可连续重试。始终从首次失败候选开始替换，避免成功后遗留
+        // 更早失败气泡；原始用户消息位于它之前，因此继续保留在上下文中。
+        replacementTargetId = targetId;
+        replacementMessageIds = visibleHistoryMessages.slice(targetIndex);
+        replaceFromMessageId = targetId.toString();
+        historyMessages = visibleHistoryMessages.slice(0, targetIndex);
+      }
     }
 
-    // Save user message. Retrying a failed request re-sends the same content —
-    // if the trailing history message is an identical user message (the failed
-    // attempt), skip saving so retry doesn't duplicate it.
-    const lastHistoryMessage = historyMessages[historyMessages.length - 1];
-    const isRetryDup =
-      !isRegenerate &&
-      lastHistoryMessage?.role === "user" &&
-      lastHistoryMessage.content === content.trim();
-    let userMessageId: string | undefined;
-    if (!isRegenerate && !isRetryDup) {
-      const savedUserMessage = await Message.create({
-        role: "user",
-        content: content.trim(),
-        tab_id: tab._id,
-        timestamp: new Date(),
-      });
-      userMessageId = savedUserMessage._id.toString();
-    } else if (!isRegenerate && lastHistoryMessage?.role === "user") {
-      userMessageId = lastHistoryMessage._id.toString();
-    }
+    const usableHistoryMessages = historyMessages.filter(
+      (message) =>
+        message.role !== "assistant" ||
+        (message.status ?? "completed") === "completed"
+    );
+    const userContentForGeneration =
+      replacementUserContent ?? (typeof content === "string" ? content.trim() : "");
+    const appendsUserMessage = !isRegenerate && !isRetry;
 
-    // Build messages: system prompt + history + new user message
+    // 构建模型输入：系统提示 + 可用历史 + 当前用户消息。
     const messages: AIMessage[] = [
       { role: "system", content: systemPrompt },
-      ...historyMessages.map(
+      ...usableHistoryMessages.map(
         (m) =>
           ({
             role: m.role as "user" | "assistant",
             content: m.content,
           }) as AIMessage
       ),
-      ...(isRegenerate
-        ? []
-        : [{ role: "user" as const, content: content.trim() }]),
+      ...(appendsUserMessage
+        ? [{ role: "user" as const, content: userContentForGeneration }]
+        : []),
     ];
 
-    // 响应开始前即创建正式 assistant 消息；SSE 与后续恢复只引用该 ID。
-    const assistantMessage = await Message.create({
-      role: "assistant",
-      content: "",
-      tab_id: tab._id,
-      timestamp: new Date(),
-      status: "generating",
-    });
+    // 先以唯一 requestId 保留正式 assistant，避免并发重放先重复写入用户消息。
+    const assistantTimestamp = new Date();
+    let assistantMessage;
+    try {
+      assistantMessage = await Message.create({
+        role: "assistant",
+        content: "",
+        tab_id: tab._id,
+        timestamp: assistantTimestamp,
+        status: "generating",
+        request_id: requestId,
+        ...(replacementTargetId
+          ? { replacement_target_id: replacementTargetId }
+          : {}),
+        ...(replacementKind ? { replacement_kind: replacementKind } : {}),
+      });
+    } catch (error) {
+      if (!isDuplicateRequestIdError(error)) throw error;
+      const concurrentRequest = await Message.findOne({
+        tab_id: tab._id,
+        request_id: requestId,
+      }).lean();
+      if (!concurrentRequest) throw error;
+      return replayRequest(concurrentRequest);
+    }
     const assistantMessageId = assistantMessage._id.toString();
+    if (!isRegenerate && !isEdit && !isRetry) {
+      const savedUserMessage = await Message.create({
+        role: "user",
+        content: content.trim(),
+        tab_id: tab._id,
+        // assistant 已先预留 requestId；时间提前 1ms 维持用户消息在前的历史顺序。
+        timestamp: new Date(assistantTimestamp.getTime() - 1),
+      });
+      userMessageId = savedUserMessage._id.toString();
+    }
+    let replacementUserMessage:
+      | { id: string; role: "user"; content: string; timestamp: Date }
+      | undefined;
+    if (replacementKind === "edit" && replacementUserContent) {
+      const savedReplacementUser = await Message.create({
+        role: "user",
+        content: replacementUserContent,
+        tab_id: tab._id,
+        // assistant 已先创建以取得提交屏障 ID；时间提前 1ms，确保刷新后的
+        // 时间排序仍按“编辑后的用户消息 → 新 assistant”展示。
+        timestamp: new Date(assistantMessage.timestamp.getTime() - 1),
+        replacement_commit_message_id: assistantMessage._id,
+      });
+      replacementUserMessage = {
+        id: savedReplacementUser._id.toString(),
+        role: "user",
+        content: savedReplacementUser.content,
+        timestamp: savedReplacementUser.timestamp,
+      };
+      assistantMessage.replacement_user_message_id = savedReplacementUser._id;
+      await assistantMessage.save();
+    }
 
     // Create streaming response
     const stream = new ReadableStream({
       async start(controller) {
         let fullContent = "";
         const generationController = registerGeneration(assistantMessageId);
-        const abortFromRequest = () => generationController.abort();
-        request.signal.addEventListener("abort", abortFromRequest, { once: true });
 
-        controller.enqueue(
-          sseEvent("start", {
-            messageId: assistantMessageId,
-            status: "generating",
-            timestamp: assistantMessage.timestamp.toISOString(),
-            ...(userMessageId ? { userMessageId } : {}),
-          })
-        );
+        enqueueSse(controller, "start", {
+          messageId: assistantMessageId,
+          status: "generating",
+          timestamp: assistantMessage.timestamp.toISOString(),
+          ...(userMessageId ? { userMessageId } : {}),
+          ...(replacementTargetId
+            ? { replacesMessageId: replacementTargetId.toString() }
+            : {}),
+          ...(replacementKind ? { replacementKind } : {}),
+        });
 
         try {
+          const verifyFailureMode =
+            process.env.NODE_ENV !== "production"
+              ? request.headers.get("x-pm-verify-force-error")
+              : null;
+          if (verifyFailureMode === "zero-token") {
+            throw new Error("回放强制零 token 失败");
+          }
           // 上游流式请求显式超时：停滞转有界错误——错误 SSE 恢复输入框，
           // 调用方可继续重试。600s 与 SDK 默认一致：旧 180s 按 8K 输出上限
           // 设计，32K 上限下慢速轮次（HTML 快照 8-16K tokens @ 20-30 tps）
@@ -257,9 +521,13 @@ export async function POST(
               if (updated.matchedCount !== 1) {
                 throw new GenerationInterruptedError();
               }
-              controller.enqueue(
-                sseEvent("token", { messageId: assistantMessageId, content: delta })
-              );
+              enqueueSse(controller, "token", {
+                messageId: assistantMessageId,
+                content: delta,
+              });
+              if (verifyFailureMode === "after-token") {
+                throw new Error("回放强制 partial 失败");
+              }
             }
           }
 
@@ -274,8 +542,9 @@ export async function POST(
             !tab.scope_frozen &&
             fullContent.includes("%%%SCOPE_FROZEN%%%")
           ) {
-            const userConfirmed =
-              typeof content === "string" && SCOPE_FREEZE_CONFIRM_RE.test(content);
+            const userConfirmed = SCOPE_FREEZE_CONFIRM_RE.test(
+              userContentForGeneration
+            );
             if (userConfirmed) {
               tab.scope_frozen = true;
               await tab.save();
@@ -286,7 +555,7 @@ export async function POST(
             }
           }
 
-          const savedMessage = await Message.findOneAndUpdate(
+          let savedMessage = await Message.findOneAndUpdate(
             {
               _id: assistantMessage._id,
               tab_id: tab._id,
@@ -305,6 +574,62 @@ export async function POST(
             throw new GenerationInterruptedError();
           }
 
+          if (replacementMessageIds.length > 0) {
+            try {
+              const idsToSupersede = replacementMessageIds.map(
+                (message) => message._id
+              );
+              const superseded = await Message.updateMany(
+                {
+                  _id: { $in: idsToSupersede },
+                  tab_id: tab._id,
+                  superseded_by_message_id: { $exists: false },
+                },
+                {
+                  $set: { superseded_by_message_id: assistantMessage._id },
+                }
+              );
+              if (superseded.matchedCount !== idsToSupersede.length) {
+                throw new Error("待替换历史已变化，未提交新结果");
+              }
+              const committedMessage = await Message.findOneAndUpdate(
+                {
+                  _id: assistantMessage._id,
+                  tab_id: tab._id,
+                  status: "completed",
+                  replacement_committed: false,
+                },
+                { $set: { replacement_committed: true } },
+                { new: true }
+              ).lean();
+              if (!committedMessage) {
+                throw new Error("新结果替换提交失败");
+              }
+              savedMessage = committedMessage;
+            } catch (replacementError) {
+              // 提交屏障尚未开启时，getVisibleMessages 仍会展示旧历史；将候选
+              // 标成失败使用户可以重试，而不会把已生成内容伪装为成功替换。
+              await Message.updateOne(
+                {
+                  _id: assistantMessage._id,
+                  tab_id: tab._id,
+                  status: "completed",
+                  replacement_committed: false,
+                },
+                {
+                  $set: {
+                    status: "failed",
+                    error_message:
+                      replacementError instanceof Error
+                        ? replacementError.message
+                        : "新结果替换提交失败",
+                  },
+                }
+              );
+              throw replacementError;
+            }
+          }
+
           // Auto-name is a live-mode convenience call; replay mode skips it.
           let newName: string | null = null;
           try {
@@ -313,16 +638,30 @@ export async function POST(
             console.error("autoNameWorkRecord failed:", err);
           }
 
-          controller.enqueue(
-            sseEvent("done", {
-              messageId: assistantMessageId,
-              content: savedMessage.content,
-              status: savedMessage.status,
-              timestamp: savedMessage.timestamp.toISOString(),
-              ...(userMessageId ? { userMessageId } : {}),
-              ...(newName ? { newName } : {}),
-            })
-          );
+          enqueueSse(controller, "done", {
+            messageId: assistantMessageId,
+            content: savedMessage.content,
+            status: savedMessage.status,
+            timestamp: savedMessage.timestamp.toISOString(),
+            ...(userMessageId ? { userMessageId } : {}),
+            ...(replacementMessageIds.length > 0
+              ? {
+                  replacesMessageIds: replacementMessageIds.map((message) =>
+                    message._id.toString()
+                  ),
+                  replaceFromMessageId,
+                }
+              : {}),
+            ...(replacementUserMessage
+              ? {
+                  replacementUserMessage: {
+                    ...replacementUserMessage,
+                    timestamp: replacementUserMessage.timestamp.toISOString(),
+                  },
+                }
+              : {}),
+            ...(newName ? { newName } : {}),
+          });
         } catch (err) {
           const interrupted =
             err instanceof GenerationInterruptedError ||
@@ -349,27 +688,28 @@ export async function POST(
               { new: true }
             ).lean()) ??
             (await Message.findById(assistantMessage._id).lean());
-          controller.enqueue(
-            sseEvent("error", {
-              message:
-                interrupted
-                  ? "生成已停止"
-                  : err instanceof Error
-                    ? err.message
-                    : "AI 请求失败，请稍后重试",
-              interrupted,
-              messageId: assistantMessageId,
-              content: message?.content ?? fullContent,
-              status: message?.status ?? (interrupted ? "interrupted" : "failed"),
-              timestamp: message?.timestamp?.toISOString() ?? assistantMessage.timestamp.toISOString(),
-              ...(message?.error_message ? { errorMessage: message.error_message } : {}),
-              ...(userMessageId ? { userMessageId } : {}),
-            })
-          );
+          enqueueSse(controller, "error", {
+            message:
+              interrupted
+                ? "生成已停止"
+                : err instanceof Error
+                  ? err.message
+                  : "AI 请求失败，请稍后重试",
+            interrupted,
+            messageId: assistantMessageId,
+            content: message?.content ?? fullContent,
+            status: message?.status ?? (interrupted ? "interrupted" : "failed"),
+            timestamp: message?.timestamp?.toISOString() ?? assistantMessage.timestamp.toISOString(),
+            ...(message?.error_message ? { errorMessage: message.error_message } : {}),
+            ...(userMessageId ? { userMessageId } : {}),
+            ...(replacementTargetId
+              ? { replacesMessageId: replacementTargetId.toString() }
+              : {}),
+            ...(replacementKind ? { replacementKind } : {}),
+          });
         } finally {
-          request.signal.removeEventListener("abort", abortFromRequest);
           releaseGeneration(assistantMessageId, generationController);
-          controller.close();
+          closeSse(controller);
         }
       },
     });
