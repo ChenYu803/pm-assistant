@@ -3,6 +3,10 @@ import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import WorkRecord from "@/models/WorkRecord";
 import { parseObjectId, findOwnedProject, findOwnedWorkRecord } from "@/lib/ownership";
+import {
+  deleteWorkRecordCascade,
+  getCascadeDeleteTestOptions,
+} from "@/lib/cascade-delete";
 
 export async function GET(
   request: Request,
@@ -52,7 +56,7 @@ export async function DELETE(
     const oid = parseObjectId(id);
     if (!oid) {
       return NextResponse.json(
-        { error: "工作记录不存在" },
+        { error: "工作记录不存在", code: "RESOURCE_NOT_FOUND" },
         { status: 404 }
       );
     }
@@ -64,7 +68,7 @@ export async function DELETE(
 
     if (!workRecord) {
       return NextResponse.json(
-        { error: "工作记录不存在" },
+        { error: "工作记录不存在", code: "RESOURCE_NOT_FOUND" },
         { status: 404 }
       );
     }
@@ -82,13 +86,16 @@ export async function DELETE(
       );
     }
 
-    await workRecord.deleteOne();
+    const result = await deleteWorkRecordCascade(
+      workRecord._id,
+      getCascadeDeleteTestOptions(request)
+    );
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, mode: result.mode });
   } catch (error) {
     console.error("DELETE /api/work-records/[id] error:", error);
     return NextResponse.json(
-      { error: "删除工作记录失败" },
+      { error: "删除工作记录未完成，请重试", code: "CASCADE_DELETE_FAILED" },
       { status: 500 }
     );
   }

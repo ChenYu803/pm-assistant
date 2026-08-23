@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
-import WorkRecord from "@/models/WorkRecord";
-import ProjectFile from "@/models/ProjectFile";
 import { findOwnedProject } from "@/lib/ownership";
+import {
+  deleteProjectCascade,
+  getCascadeDeleteTestOptions,
+} from "@/lib/cascade-delete";
 
 export async function GET(
   request: Request,
@@ -56,25 +58,21 @@ export async function DELETE(
 
     if (!project) {
       return NextResponse.json(
-        { error: "项目不存在或无权操作" },
+        { error: "项目不存在或无权操作", code: "RESOURCE_NOT_FOUND" },
         { status: 404 }
       );
     }
 
-    // Delete all work records under this project
-    await WorkRecord.deleteMany({ project_id: project._id });
+    const result = await deleteProjectCascade(
+      project._id,
+      getCascadeDeleteTestOptions(request)
+    );
 
-    // Delete all project files
-    await ProjectFile.deleteMany({ project_id: project._id });
-
-    // Delete the project
-    await project.deleteOne();
-
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, mode: result.mode });
   } catch (error) {
     console.error("DELETE /api/projects/[id] error:", error);
     return NextResponse.json(
-      { error: "删除项目失败" },
+      { error: "删除项目未完成，请重试", code: "CASCADE_DELETE_FAILED" },
       { status: 500 }
     );
   }
