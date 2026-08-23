@@ -15,6 +15,11 @@ export function serializeTab(tab: ITabDocument): TabData & {
     position: tab.position,
     scope_frozen: tab.scope_frozen ?? false,
     version: tab.version ?? 0,
+    freeze_status: tab.scope_frozen ? "frozen" : tab.freeze_status ?? "idle",
+    ...(tab.freeze_message_id
+      ? { freeze_message_id: tab.freeze_message_id.toString() }
+      : {}),
+    ...(tab.freeze_error ? { freeze_error: tab.freeze_error } : {}),
     work_record_id: tab.work_record_id.toString(),
     created_at: tab.created_at,
   };

@@ -57,6 +57,15 @@ function lastUserMessage(messages: AIMessage[]): string {
 function replayResponse(agentType: AgentType | undefined, messages: AIMessage[]): string {
   const user = lastUserMessage(messages);
   const userCount = messages.filter((message) => message.role === "user").length;
+  const freezeInstruction = messages
+    .map((message) =>
+      message.role === "system" &&
+      typeof message.content === "string" &&
+      message.content.includes("## 显式冻结操作")
+        ? message.content
+        : undefined
+    )
+    .find((content): content is string => Boolean(content));
   const lines = (...items: string[]) => items.join("\n");
 
   if (agentType === "requirement_analyst") {
@@ -107,11 +116,8 @@ function replayResponse(agentType: AgentType | undefined, messages: AIMessage[])
   }
 
   if (agentType === "prototype") {
-    if (userCount >= 3 || /完满|确认写入|确认/.test(user)) {
+    if (freezeInstruction) {
       return lines(
-        "已完成自检：页面清单覆盖需求范围，页面五要素齐全，用户流程包含主路径和异常分支，元素包含显示文案。",
-        "",
-        "%%%SCOPE_FROZEN%%%",
         "%%%FILE_BEGIN%%% 原型.md",
         "# 原型",
         "",
@@ -130,6 +136,14 @@ function replayResponse(agentType: AgentType | undefined, messages: AIMessage[])
         "%%%FILE_END%%%"
       );
     }
+    if (userCount >= 2) {
+      return lines(
+        "已完成自检：页面清单覆盖需求范围，页面五要素齐全，用户流程包含主路径和异常分支，元素包含显示文案。",
+        "",
+        "请使用界面中的冻结控件决定是否生成原型文档。",
+        "%%%SCOPE_FREEZE_PROPOSAL%%%"
+      );
+    }
     return lines(
       "我建议采用「商品浏览 → 商品详情 → 发布商品」的简单网页流程。",
       "",
@@ -142,6 +156,20 @@ function replayResponse(agentType: AgentType | undefined, messages: AIMessage[])
   }
 
   if (agentType === "mvp_prd") {
+    if (freezeInstruction) {
+      const filename =
+        freezeInstruction.match(
+          /## 显式冻结操作[\s\S]*?%%%FILE_BEGIN%%%\s*(.+?\.md)\s*\n/
+        )?.[1] ??
+        "概念版（回放）.md";
+      return lines(
+        "%%%FILE_BEGIN%%% " + filename,
+        "# 概念版",
+        "",
+        "核心用户：公司员工；要解决的一件事：减少午餐排队时间；产品形态：Web 应用；MVP 功能：菜品浏览、购物车、提交订单、订单状态；本版本不做在线支付和外卖配送；商业模式：免费使用；外部依赖声明：无。",
+        "%%%FILE_END%%%"
+      );
+    }
     if (userCount >= 3 || /六章|详细撰写|继续/.test(user)) {
       return lines(
         "# 在线点餐 - MVP PRD",
@@ -208,9 +236,9 @@ function replayResponse(agentType: AgentType | undefined, messages: AIMessage[])
         "%%%FILE_END%%%"
       );
     }
-    if (userCount >= 2 || /概念版|范围|确认/.test(user)) {
+    if (userCount >= 2) {
       return lines(
-        "范围已确认，下面先记录概念版并冻结范围。",
+        "范围方案已准备好。",
         "",
         "**概念版**",
         "- 核心用户：公司员工",
@@ -221,14 +249,8 @@ function replayResponse(agentType: AgentType | undefined, messages: AIMessage[])
         "- 商业模式：免费使用，菜品利润分成",
         "- 外部依赖声明：无",
         "",
-        "以上范围是否确认？确认后不可更改，将进入详细撰写。",
-        "",
-        "%%%FILE_BEGIN%%% 概念版（回放）.md",
-        "# 概念版",
-        "",
-        "核心用户：公司员工；要解决的一件事：减少午餐排队时间；产品形态：Web 应用；MVP 功能：菜品浏览、购物车、提交订单、订单状态；本版本不做在线支付和外卖配送；商业模式：免费使用；外部依赖声明：无。",
-        "%%%FILE_END%%%",
-        "%%%SCOPE_FROZEN%%%"
+        "请使用界面中的冻结控件决定是否生成概念版文档。",
+        "%%%SCOPE_FREEZE_PROPOSAL%%%"
       );
     }
     return lines(
