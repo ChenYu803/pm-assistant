@@ -5,6 +5,7 @@ import Message from "@/models/Message";
 import { findOwnedTab, parseObjectId } from "@/lib/ownership";
 import { cancelGeneration } from "@/lib/generation-control";
 import { getVisibleMessages } from "@/lib/message-recovery";
+import { getPersistedFreezeState } from "@/lib/tab-freeze-state";
 import {
   TAB_CONFLICT_MESSAGE,
   beginPassiveTabOperation,
@@ -73,6 +74,7 @@ export async function GET(
     const messages = await Message.find({ tab_id: tab._id })
       .sort({ timestamp: 1, _id: 1 })
       .lean();
+    const persistedTabState = await getPersistedFreezeState(tab._id);
 
     const serialized = getVisibleMessages(messages).map((m) => ({
       id: m._id.toString(),
@@ -91,7 +93,18 @@ export async function GET(
       ...(m.replacement_kind ? { replacementKind: m.replacement_kind } : {}),
     }));
 
-    return NextResponse.json({ messages: serialized, tabVersion: tab.version ?? 0 });
+    return NextResponse.json({
+      messages: serialized,
+      tabVersion: persistedTabState.version,
+      freezeStatus: persistedTabState.freezeStatus,
+      scopeFrozen: persistedTabState.scopeFrozen,
+      ...(persistedTabState.freezeMessageId
+        ? { freezeMessageId: persistedTabState.freezeMessageId }
+        : {}),
+      ...(persistedTabState.freezeError
+        ? { freezeError: persistedTabState.freezeError }
+        : {}),
+    });
   } catch (error) {
     console.error("GET /api/tabs/[id]/messages error:", error);
     return NextResponse.json(

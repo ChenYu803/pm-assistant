@@ -8,6 +8,10 @@ import {
 } from "@/lib/ownership";
 import { serializeProjectFile } from "@/lib/file-helpers";
 import { validateFileSize } from "@/lib/file-helpers";
+import {
+  FROZEN_DOCUMENT_LOCKED_MESSAGE,
+  mutableProjectFileFilter,
+} from "@/lib/freeze-document-binding";
 
 export async function GET(
   request: Request,
@@ -82,10 +86,20 @@ export async function PATCH(
       );
     }
 
-    // User edit: update content as-is, do NOT modify changelog
+    // User edit: update content as-is, do NOT modify changelog.
+    const updatedAt = new Date();
+    const updateResult = await file.collection.updateOne(
+      mutableProjectFileFilter(file._id),
+      { $set: { content, updated_at: updatedAt } }
+    );
+    if (updateResult.matchedCount !== 1) {
+      return NextResponse.json(
+        { error: FROZEN_DOCUMENT_LOCKED_MESSAGE },
+        { status: 409 }
+      );
+    }
     file.content = content;
-    file.updated_at = new Date();
-    await file.save();
+    file.updated_at = updatedAt;
 
     return NextResponse.json(serializeProjectFile(file));
   } catch (error) {
@@ -125,7 +139,15 @@ export async function DELETE(
       );
     }
 
-    await file.deleteOne();
+    const deleteResult = await file.collection.deleteOne(
+      mutableProjectFileFilter(file._id)
+    );
+    if (deleteResult.deletedCount !== 1) {
+      return NextResponse.json(
+        { error: FROZEN_DOCUMENT_LOCKED_MESSAGE },
+        { status: 409 }
+      );
+    }
     // 清理 Agent 上下文中对该文件的引用
     await AgentFileContext.deleteMany({ file_id: file._id });
 

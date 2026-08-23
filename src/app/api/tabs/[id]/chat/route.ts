@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import Message, { ensureMessageRequestIdIndex } from "@/models/Message";
+import Tab, { type ITabDocument } from "@/models/Tab";
 import { findOwnedTabWithProject, parseObjectId } from "@/lib/ownership";
 import { AGENT_SYSTEM_PROMPTS } from "@/lib/agent-prompts";
-import type { AgentType } from "@/lib/agent-constants";
+import type { AgentType, FreezeStatus } from "@/lib/agent-constants";
 import { autoNameWorkRecord } from "@/lib/auto-name";
 import { stripChangelogHeader } from "@/lib/file-helpers";
 import { getLoadedContextFiles } from "@/lib/context-files";
@@ -28,6 +29,14 @@ import {
   recordTabOperationResult,
   waitForTabOperation,
 } from "@/lib/tab-concurrency";
+import {
+  SCOPE_FREEZE_PROPOSAL_MARKER,
+  freezeGenerationInstruction,
+  getExpectedFreezeDocument,
+  supportsScopeFreeze,
+} from "@/lib/freeze-protocol";
+import { getPersistedFreezeState } from "@/lib/tab-freeze-state";
+import { freezeDocumentDigest } from "@/lib/freeze-document-digest";
 
 class GenerationInterruptedError extends Error {
   constructor() {
@@ -71,6 +80,46 @@ function closeSse(controller: ReadableStreamDefaultController<Uint8Array>): void
       throw error;
     }
   }
+}
+
+type TransientFreezeStatus = Exclude<FreezeStatus, "frozen">;
+
+async function persistFreezeState({
+  tab,
+  status,
+  messageId,
+  filename,
+  documentDigest,
+  error,
+}: {
+  tab: ITabDocument;
+  status: TransientFreezeStatus;
+  messageId?: ITabDocument["freeze_message_id"];
+  filename?: string;
+  documentDigest?: string;
+  error?: string;
+}): Promise<void> {
+  const set: Record<string, unknown> = { freeze_status: status };
+  const unset: Record<string, 1> = {};
+  if (messageId) set.freeze_message_id = messageId;
+  else unset.freeze_message_id = 1;
+  if (filename) set.freeze_filename = filename;
+  else unset.freeze_filename = 1;
+  if (documentDigest) set.freeze_document_digest = documentDigest;
+  else unset.freeze_document_digest = 1;
+  if (error) set.freeze_error = error;
+  else unset.freeze_error = 1;
+  await Tab.collection.updateOne(
+    { _id: tab._id },
+    {
+      $set: set,
+      ...(Object.keys(unset).length > 0 ? { $unset: unset } : {}),
+    }
+  );
+  tab.freeze_status = status;
+  tab.freeze_message_id = messageId;
+  tab.freeze_filename = filename;
+  tab.freeze_error = error;
 }
 
 type RequestReplayMessage = {
@@ -143,10 +192,6 @@ function isDuplicateRequestIdError(error: unknown): boolean {
   );
 }
 
-/** Affirmative replies that count as a user's scope-freeze confirmation. */
-const SCOPE_FREEZE_CONFIRM_RE =
-  /确认|可以|没问题|同意|好的|好|行|OK|ok|Yes|yes|是|完满/;
-
 /** 各冻结 Agent 的「范围已冻结」系统提醒文案（注入 system prompt）。
  *  **键存在即成员**——同时承担「哪些 Agent 类型走冻结协议」的成员判定
  *  （spec: SCOPE_FROZEN 语义泛化为该 tab 的流程冻结标记；覆盖 mvp_prd
@@ -175,16 +220,19 @@ export async function POST(
       messageId,
       editMessageId,
       retryMessageId,
+      freeze,
     } = body;
     const mutationRequest = parseTabMutationRequest(body);
     const isRegenerate = regenerate === true;
     const isEdit = typeof editMessageId === "string";
     const isRetry = typeof retryMessageId === "string";
-    const operationCount = Number(isRegenerate) + Number(isEdit) + Number(isRetry);
+    const isFreeze = freeze === true;
+    const operationCount =
+      Number(isRegenerate) + Number(isEdit) + Number(isRetry) + Number(isFreeze);
 
     if (
       operationCount > 1 ||
-      ((!isRegenerate && !isRetry) &&
+      ((!isRegenerate && !isRetry && !isFreeze) &&
         (!content || typeof content !== "string" || !content.trim())) ||
       (isRegenerate &&
         (typeof messageId !== "string" || !parseObjectId(messageId))) ||
@@ -195,7 +243,7 @@ export async function POST(
       return NextResponse.json(
         {
           error:
-            isRegenerate || isEdit || isRetry
+            isRegenerate || isEdit || isRetry || isFreeze
               ? "生成请求参数无效"
               : "消息内容不能为空",
         },
@@ -222,6 +270,7 @@ export async function POST(
     }
     const requestId = mutationRequest.requestId;
     const { tab, project } = ownedTab;
+    const persistedFreezeState = await getPersistedFreezeState(tab._id);
 
     // 同一个 requestId 只对应一条正式 assistant 消息。网络重放不会重新提交
     // 用户内容或创建第二条 assistant；生成中的重放只返回既有正式 ID。
@@ -233,9 +282,23 @@ export async function POST(
       return replayRequest(existingRequest, tab.version ?? 0);
     }
 
+    if (
+      isFreeze &&
+      (!supportsScopeFreeze(tab.agent_type) ||
+        persistedFreezeState.scopeFrozen ||
+        !["proposed", "failed"].includes(
+          persistedFreezeState.freezeStatus
+        ))
+    ) {
+      return NextResponse.json(
+        { error: "当前没有可确认的冻结提议" },
+        { status: 409 }
+      );
+    }
+
     const operationStart = await beginTabOperation({
       tab,
-      operation: "chat",
+      operation: isFreeze ? "freeze-generate" : "chat",
       request: mutationRequest,
     });
     if (operationStart.kind === "request-id-mismatch") {
@@ -280,6 +343,9 @@ export async function POST(
     }
     const operationTab = operationStart.tab;
     const tabOperation = operationStart.operation;
+    // 后续冻结分支沿用刚读取的持久化事实，避免热更新旧 document 丢失字段。
+    operationTab.scope_frozen = persistedFreezeState.scopeFrozen;
+    operationTab.freeze_status = persistedFreezeState.freezeStatus;
 
     let systemPrompt = AGENT_SYSTEM_PROMPTS[operationTab.agent_type];
 
@@ -314,6 +380,12 @@ export async function POST(
       : undefined;
     if (frozenReminder) {
       systemPrompt += `\n\n## 范围冻结提醒\n\n${frozenReminder}`;
+    }
+    if (isFreeze) {
+      systemPrompt += freezeGenerationInstruction({
+        agentType: operationTab.agent_type,
+        displayName: operationTab.display_name,
+      });
     }
 
     const allHistoryMessages = await Message.find({ tab_id: operationTab._id })
@@ -451,7 +523,7 @@ export async function POST(
     );
     const userContentForGeneration =
       replacementUserContent ?? (typeof content === "string" ? content.trim() : "");
-    const appendsUserMessage = !isRegenerate && !isRetry;
+    const appendsUserMessage = !isRegenerate && !isRetry && !isFreeze;
 
     // 构建模型输入：系统提示 + 可用历史 + 当前用户消息。
     const messages: AIMessage[] = [
@@ -511,7 +583,14 @@ export async function POST(
       | { id: string; role: "user"; content: string; timestamp: Date }
       | undefined;
     try {
-      if (!isRegenerate && !isEdit && !isRetry) {
+      if (isFreeze) {
+        await persistFreezeState({
+          tab: operationTab,
+          status: "generating",
+          messageId: assistantMessage._id,
+        });
+      }
+      if (!isRegenerate && !isEdit && !isRetry && !isFreeze) {
         const savedUserMessage = await Message.create({
           role: "user",
           content: content.trim(),
@@ -563,6 +642,7 @@ export async function POST(
       async start(controller) {
         let fullContent = "";
         let tabOperationFinished = false;
+        let freezeStatus: "proposed" | "awaiting_write" | undefined;
         const generationController = registerGeneration(assistantMessageId);
 
         enqueueSse(controller, "start", {
@@ -575,6 +655,12 @@ export async function POST(
             : {}),
           ...(replacementKind ? { replacementKind } : {}),
           tabVersion: tabOperation.locked_version ?? 0,
+          ...(isFreeze
+            ? {
+                freezeStatus: "generating",
+                freezeMessageId: assistantMessageId,
+              }
+            : {}),
         });
 
         try {
@@ -634,28 +720,41 @@ export async function POST(
             }
           }
 
-          // Scope-freeze gate: the marker only counts if the user actually
-          // confirmed — the message immediately before this response is the
-          // current user message (content). historyMessages was fetched before
-          // the current user message was saved, so its last entry is the
-          // *previous* message, not the confirmation (spec US24: 手动确认后
-          // 才继续落地版)。
-          if (
-            FROZEN_REMINDERS[operationTab.agent_type] !== undefined &&
-            !operationTab.scope_frozen &&
-            fullContent.includes("%%%SCOPE_FROZEN%%%")
-          ) {
-            const userConfirmed = SCOPE_FREEZE_CONFIRM_RE.test(
-              userContentForGeneration
-            );
-            if (userConfirmed) {
-              operationTab.scope_frozen = true;
-              await operationTab.save();
-            } else {
-              // Agent emitted the marker without user confirmation — strip it
-              // so it doesn't leak into chat history or the PRD file.
-              fullContent = fullContent.replace(/%%%SCOPE_FROZEN%%%/g, "");
+          // 旧冻结 marker 仅为历史展示兼容而移除，绝不再根据用户自然语言
+          // 改变冻结状态。新的 proposal marker 只让当前 Agent 回复创建提议。
+          const hasFreezeProposal = fullContent.includes(
+            SCOPE_FREEZE_PROPOSAL_MARKER
+          );
+          fullContent = fullContent
+            .replace(/%%%SCOPE_FROZEN%%%/g, "")
+            .replace(new RegExp(SCOPE_FREEZE_PROPOSAL_MARKER, "g"), "");
+          if (isFreeze) {
+            const freezeDocument = getExpectedFreezeDocument({
+              agentType: operationTab.agent_type,
+              displayName: operationTab.display_name,
+              content: fullContent,
+            });
+            if (!freezeDocument) {
+              throw new Error("冻结文档生成失败，未得到待写入的正式文件");
             }
+            await persistFreezeState({
+              tab: operationTab,
+              status: "awaiting_write",
+              messageId: assistantMessage._id,
+              filename: freezeDocument.filename,
+              documentDigest: freezeDocumentDigest(freezeDocument.content),
+            });
+            freezeStatus = "awaiting_write";
+          } else if (
+            supportsScopeFreeze(operationTab.agent_type) &&
+            !operationTab.scope_frozen &&
+            hasFreezeProposal
+          ) {
+            await persistFreezeState({
+              tab: operationTab,
+              status: "proposed",
+            });
+            freezeStatus = "proposed";
           }
 
           let savedMessage = await Message.findOneAndUpdate(
@@ -773,6 +872,12 @@ export async function POST(
               : {}),
             ...(newName ? { newName } : {}),
             tabVersion: completedTab.version ?? 0,
+            ...(freezeStatus
+              ? {
+                  freezeStatus,
+                  freezeMessageId: assistantMessageId,
+                }
+              : {}),
           });
         } catch (err) {
           const interrupted =
@@ -785,6 +890,14 @@ export async function POST(
               : err instanceof Error
                 ? err.message
                 : "AI 请求失败，请稍后重试";
+          if (isFreeze && !tabOperationFinished) {
+            await persistFreezeState({
+              tab: operationTab,
+              status: "failed",
+              messageId: assistantMessage._id,
+              error: streamErrorMessage,
+            });
+          }
           const message =
             (await Message.findOneAndUpdate(
               {
@@ -819,6 +932,13 @@ export async function POST(
               : {}),
             ...(replacementKind ? { replacementKind } : {}),
             ...(releasedTab ? { tabVersion: releasedTab.version ?? 0 } : {}),
+            ...(isFreeze && !tabOperationFinished
+              ? {
+                  freezeStatus: "failed",
+                  freezeMessageId: assistantMessageId,
+                  freezeError: streamErrorMessage,
+                }
+              : {}),
           });
         } finally {
           releaseGeneration(assistantMessageId, generationController);

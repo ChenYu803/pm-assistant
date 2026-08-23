@@ -1,4 +1,4 @@
-// 协议一致性安全网：断言三个协议标记与肯定词清单在
+// 协议一致性安全网：断言协议标记与显式冻结入口在
 // ① prompt 定义处 / ② chat route 冻结执法处 / ③ 前端 ChatArea marker 解析处
 // 三处保持同步，防重构 prompt 时漏改（spec: Testing Decisions）。
 // 用法: node scripts/verify-protocols.mjs
@@ -12,7 +12,7 @@ const ROOT = path.resolve(__dirname, "..");
 
 // ── 三处参与方 ───────────────────────────────────────────────────────────────
 // ① prompt 定义处：AGENT_SYSTEM_PROMPTS 模板中的协议字面量
-// ② chat route 冻结执法处：SCOPE_FREEZE_CONFIRM_RE 与冻结标记的判断/strip
+// ② chat route 冻结执法处：freeze 布尔操作与冻结标记的判断/strip
 // ③ ChatArea marker 解析处：FILE_MARKER_RE 提取与渲染期 strip
 // 协议模型：每个协议项声明「期望参与方」——② 不执法文件标记、③ 不执法
 // 肯定词（冻结校验只在服务端），故不参与对应比对，避免把「不参与」误报为冲突。
@@ -29,6 +29,7 @@ for (const [key, rel] of Object.entries(SRC_PATHS)) {
 const FILE_BEGIN = "%%%FILE_BEGIN%%%";
 const FILE_END = "%%%FILE_END%%%";
 const SCOPE_FROZEN = "%%%SCOPE_FROZEN%%%";
+const SCOPE_FREEZE_PROPOSAL = "%%%SCOPE_FREEZE_PROPOSAL%%%";
 const HTML_BEGIN = "%%%HTML_BEGIN%%%";
 const HTML_END = "%%%HTML_END%%%";
 
@@ -58,7 +59,14 @@ function linesOf(content, literal, skipComments = false) {
 // 协议行完整性：代码文件中任何含 %%% 的非注释行必须包含至少一个完整
 // 已知标记——「改坏成新字符串」（如 %%%SCOPE_FROZE%%%）时精确报出改坏行号
 function incompleteProtocolLines(content) {
-  const known = [FILE_BEGIN, FILE_END, SCOPE_FROZEN, HTML_BEGIN, HTML_END];
+  const known = [
+    FILE_BEGIN,
+    FILE_END,
+    SCOPE_FROZEN,
+    SCOPE_FREEZE_PROPOSAL,
+    HTML_BEGIN,
+    HTML_END,
+  ];
   const out = [];
   content.split("\n").forEach((line, i) => {
     if (isCommentLine(line)) return;
@@ -181,10 +189,29 @@ check(
 );
 
 // ── 检查 2：范围冻结标记 %%%SCOPE_FROZEN%%% ───────────────────────────────
-// 参与方：①②③ 全部——① prompt 定义、② route 冻结判断与 strip、③ ChatArea strip
+// 该标记不再触发冻结；prompt 只声明禁止输出，route 与 ChatArea 继续剥离旧消息
+// 中的遗留标记，避免它泄露到用户界面。
 checkPresence(SCOPE_FROZEN, "prompt", "① prompt 定义处");
 checkPresence(SCOPE_FROZEN, "route", "② chat route 冻结执法处");
 checkPresence(SCOPE_FROZEN, "chat_area", "③ ChatArea 解析处");
+
+// 新协议：Agent proposal 仅显示控件；route 只能接受 freeze: true 的显式操作。
+checkPresence(SCOPE_FREEZE_PROPOSAL, "prompt", "① prompt 冻结提议处");
+check(
+  "显式冻结：② chat route 使用 proposal 标记",
+  sources.route.includes("SCOPE_FREEZE_PROPOSAL_MARKER"),
+  "(期望: route 只将 proposal marker 处理为提议；实际: 未找到)"
+);
+check(
+  "显式冻结：③ ChatArea 使用共享 proposal 标记",
+  sources.chat_area.includes("SCOPE_FREEZE_PROPOSAL_MARKER"),
+  "(期望: ChatArea 导入并使用共享 marker；实际: 未找到)"
+);
+check(
+  "显式冻结：② chat route 只接受 freeze 布尔操作",
+  sources.route.includes("const isFreeze = freeze === true"),
+  "(期望: freeze === true；实际: 未找到)"
+);
 
 // 协议行完整性：②③ 代码文件中任何含 %%% 的非注释行必须含完整已知标记。
 // 覆盖「改坏成新字符串」——如上各参与方按「≥1 次」检查会漏检的场景
@@ -198,57 +225,12 @@ for (const key of ["route", "chat_area"]) {
   );
 }
 
-// ── 检查 3：肯定词清单 ──────────────────────────────────────────────────────
-// 参与方：① prompt（「…等」= 非穷举示例）+ ② SCOPE_FREEZE_CONFIRM_RE（穷举）。
-// 比对语义：prompt 每个示例词必须被 route 正则接受；route 独有的词属于「等」
-// 允许的扩展，仅提示不判红。
-const confirmReMatch = sources.route.match(
-  /SCOPE_FREEZE_CONFIRM_RE\s*=\s*\/([^/]+)\//
-);
-const confirmReBody = confirmReMatch?.[1];
-const confirmRe = confirmReBody ? new RegExp(confirmReBody) : null;
-
+// ── 检查 3：自然语言不再冻结 ────────────────────────────────────────────────
 check(
-  "肯定词清单：② SCOPE_FREEZE_CONFIRM_RE 存在",
-  !!confirmReBody,
-  `(期望: route 定义穷举正则；实际: ${confirmReBody ? `/${confirmReBody}/` : "未找到"})`
+  "自然语言冻结：② 已移除 SCOPE_FREEZE_CONFIRM_RE",
+  !sources.route.includes("SCOPE_FREEZE_CONFIRM_RE"),
+  "(期望: 不再存在自然语言冻结正则；实际: 仍找到旧协议)"
 );
-
-const promptExamples = [];
-for (const line of sources.prompt.split("\n")) {
-  if (!line.includes("肯定")) continue; // 示例行均含「肯定」字样
-  for (const m of line.matchAll(/"([^"]+)"/g)) promptExamples.push(m[1]);
-}
-const uniqueExamples = [...new Set(promptExamples)];
-
-check(
-  "肯定词清单：① prompt 含示例词",
-  uniqueExamples.length > 0,
-  `(期望: prompt 定义肯定词示例；实际: ${uniqueExamples.length ? `"${uniqueExamples.join('"/"')}"` : "未提取到"})`
-);
-
-if (confirmRe) {
-  for (const word of uniqueExamples) {
-    check(
-      `肯定词清单：prompt 示例「${word}」被 route 正则覆盖`,
-      confirmRe.test(word),
-      `(期望: 正则接受「${word}」；实际: /${confirmReBody}/ 不匹配)`
-    );
-  }
-  // 大小写不敏感的子串双向判定：route 的「ok/Yes」是「OK/yes」的大小写变体，
-  // 属「等」的扩展；真正独有（如单字「行」「是」）才提示
-  for (const word of confirmReBody.split("|")) {
-    const lower = word.toLowerCase();
-    const covered = uniqueExamples.some(
-      (e) => e.toLowerCase().includes(lower) || lower.includes(e.toLowerCase())
-    );
-    if (!covered) {
-      console.log(
-        `  ℹ️ route 独有肯定词「${word}」——prompt 以「等」表意的合法扩展，不判红`
-      );
-    }
-  }
-}
 
 // ── 汇总 ────────────────────────────────────────────────────────────────────
 console.log(`\n结果: ${pass} 通过, ${fail} 失败`);

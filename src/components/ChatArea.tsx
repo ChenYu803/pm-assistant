@@ -8,12 +8,13 @@ import {
   useMemo,
   type ReactNode,
 } from "react";
-import type { AgentType } from "@/lib/agent-constants";
+import type { AgentType, FreezeStatus } from "@/lib/agent-constants";
 import {
   AGENT_TYPE_ICONS,
   AGENT_TYPE_LABELS,
   AGENT_TYPE_METADATA,
 } from "@/lib/agent-constants";
+import { SCOPE_FREEZE_PROPOSAL_MARKER } from "@/lib/freeze-protocol";
 import FileConfirmDialog, {
   type FileToConfirm,
   type PendingFile,
@@ -57,6 +58,9 @@ interface ChatAreaProps {
   tabId: string | null;
   tabName: string | null;
   tabVersion: number | null;
+  freezeStatus: FreezeStatus | null;
+  freezeMessageId?: string;
+  freezeError?: string;
   agentType: AgentType | null;
   projectId: string | null;
   /** Filenames already present in the project — used to skip re-confirming completed writes. */
@@ -69,6 +73,16 @@ interface ChatAreaProps {
   onFileSaved?: () => void; // notify parent to refresh file list
   onTabVersionChange?: (tabId: string, version: number) => void;
   onTabConflict?: (tabId: string) => void;
+  onTabFreezeStateChange?: (
+    tabId: string,
+    state: {
+      freezeStatus: FreezeStatus;
+      scopeFrozen?: boolean;
+      freezeMessageId?: string;
+      freezeError?: string;
+      version?: number;
+    }
+  ) => void;
 }
 
 interface SseEvent {
@@ -88,6 +102,9 @@ interface SseEvent {
   replaceFromMessageId?: string;
   replacementUserMessage?: ChatMessage;
   tabVersion?: number;
+  freezeStatus?: FreezeStatus;
+  freezeMessageId?: string;
+  freezeError?: string;
 }
 
 interface FileConsistencyPrompt {
@@ -175,6 +192,7 @@ function extractHtmlSnapshots(content: string): string[] {
 function toCopyText(content: string): string {
   return content
     .replace(/%%%SCOPE_FROZEN%%%/g, "")
+    .replace(new RegExp(SCOPE_FREEZE_PROPOSAL_MARKER, "g"), "")
     .replace(
       /%%%FILE_BEGIN%%%\s*.+?\.md\s*\n([\s\S]*?)%%%FILE_END%%%/g,
       "$1"
@@ -464,6 +482,9 @@ export default function ChatArea({
   tabId,
   tabName,
   tabVersion,
+  freezeStatus,
+  freezeMessageId,
+  freezeError,
   agentType,
   projectId,
   existingFileNames,
@@ -472,6 +493,7 @@ export default function ChatArea({
   onFileSaved,
   onTabVersionChange,
   onTabConflict,
+  onTabFreezeStateChange,
 }: ChatAreaProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -488,6 +510,11 @@ export default function ChatArea({
   const autoScrollPendingRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const freezeTransitionRef = useRef(false);
+  // SSE 与历史对账已取得的冻结事实可先于父级 tab state 重新渲染到达。
+  // 文件确认必须读取最新持久化状态，不能被旧闭包阻塞在 awaiting_write 之外。
+  const freezeStatusRef = useRef(freezeStatus);
+  const freezeMessageIdRef = useRef(freezeMessageId);
   // Last sent content — state, not a ref: it's read during render (retry button)
   const [lastSentContent, setLastSentContent] = useState("");
   const [pendingDeleteMessage, setPendingDeleteMessage] =
@@ -521,6 +548,11 @@ export default function ChatArea({
   // State, not a ref — it's read during render.
   const [writtenFileKeys, setWrittenFileKeys] = useState<Set<string>>(new Set());
   const pendingFileSequence = useRef(0);
+
+  useEffect(() => {
+    freezeStatusRef.current = freezeStatus;
+    freezeMessageIdRef.current = freezeMessageId;
+  }, [freezeMessageId, freezeStatus]);
 
   // ── File marker parsing (extractFileMarkers lives at module level) ────────
 
@@ -619,7 +651,15 @@ export default function ChatArea({
             void writeFileToServer(m, message.id);
             return;
           }
-          if (historyReplay && existingFileNames?.includes(m.filename)) {
+          const isPendingFreezeDocument =
+            historyReplay &&
+            freezeStatusRef.current === "awaiting_write" &&
+            freezeMessageIdRef.current === message.id;
+          if (
+            historyReplay &&
+            existingFileNames?.includes(m.filename) &&
+            !isPendingFreezeDocument
+          ) {
             // 历史重放：文件名已存在 = 该消息的写入已落盘 → 不重复弹框；
             // 横幅保留手动「写入项目文件」供有意重写（现状语义不变）。
             return;
@@ -646,6 +686,7 @@ export default function ChatArea({
       const reset = window.setTimeout(() => setMessages([]), 0);
       return () => window.clearTimeout(reset);
     }
+    const currentTabId = tabId;
 
     let cancelled = false;
     let recoveryPoll: number | undefined;
@@ -654,11 +695,27 @@ export default function ChatArea({
       if (isInitialLoad) setLoadingHistory(true);
       setError("");
       try {
-        const res = await fetch(`/api/tabs/${tabId}/messages`);
+        const res = await fetch(`/api/tabs/${currentTabId}/messages`);
         if (!res.ok) throw new Error("获取消息记录失败");
         const data = await res.json();
         if (!cancelled) {
           setMessages(data.messages);
+          // 刷新或重连可能发生在服务端完成流式操作之前。消息接口返回的
+          // tabVersion 是下一次变更的并发前提，必须与消息事实一起对账。
+          if (typeof data.tabVersion === "number") {
+            onTabVersionChange?.(currentTabId, data.tabVersion);
+          }
+          if (data.freezeStatus) {
+            freezeStatusRef.current = data.freezeStatus;
+            freezeMessageIdRef.current = data.freezeMessageId;
+            onTabFreezeStateChange?.(currentTabId, {
+              freezeStatus: data.freezeStatus,
+              scopeFrozen: data.scopeFrozen === true,
+              freezeMessageId: data.freezeMessageId,
+              freezeError: data.freezeError,
+              version: data.tabVersion,
+            });
+          }
           if (
             data.messages.some(
               (message: ChatMessage) =>
@@ -690,7 +747,9 @@ export default function ChatArea({
       setActiveAssistantMessageId(null);
       setIsStopping(false);
     };
-  }, [tabId, tabVersion]);
+  // tabVersion 会随当前 SSE 的开始与完成事件推进；把它作为依赖会在流仍在
+  // 读取时执行 cleanup 并错误 abort 请求。只有切换标签页才应取消当前流。
+  }, [tabId]);
 
   // ── Smart auto-scroll ────────────────────────────────────────────────────
 
@@ -752,6 +811,48 @@ export default function ChatArea({
 
   // ── File confirmation handlers ────────────────────────────────────────────
 
+  async function submitFreezeWrite(action: "cancel" | "complete") {
+    if (!tabId || tabVersion === null || freezeTransitionRef.current) {
+      return false;
+    }
+    freezeTransitionRef.current = true;
+    try {
+      const res = await fetch(`/api/tabs/${tabId}/freeze`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action,
+          expectedVersion: tabVersion,
+          requestId: createClientMessageId(`freeze-${action}`),
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (typeof data.tabVersion === "number") {
+        onTabVersionChange?.(tabId, data.tabVersion);
+      }
+      if (typeof data.freezeStatus === "string") {
+        freezeStatusRef.current = data.freezeStatus;
+        freezeMessageIdRef.current = data.freezeMessageId;
+        onTabFreezeStateChange?.(tabId, {
+          freezeStatus: data.freezeStatus,
+          scopeFrozen: data.scopeFrozen === true,
+          freezeMessageId: data.freezeMessageId,
+          freezeError: data.freezeError,
+          version: data.tabVersion,
+        });
+      }
+      if (!res.ok) {
+        throw new Error(data.error || "冻结状态更新失败");
+      }
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "冻结状态更新失败");
+      return false;
+    } finally {
+      freezeTransitionRef.current = false;
+    }
+  }
+
   async function handleConfirmFiles(files: PendingFile[]) {
     if (!projectId || !agentType) return;
     const failed: PendingFile[] = [];
@@ -759,6 +860,20 @@ export default function ChatArea({
       if (!(await writeFileToServer(pending, pending.messageId))) {
         failed.push(pending);
       }
+    }
+    // 冻结中的历史确认框可能同时包含同名旧消息的文件；是否应完成冻结
+    // 由持久化状态机决定，而非要求前端来源消息 ID 恰好等于当前冻结消息。
+    // 服务端仍会按冻结文件名和正文摘要拒绝任何不属于本轮的内容。
+    const confirmsPendingFreezeWrite =
+      freezeStatusRef.current === "awaiting_write" && files.length > 0;
+    let completedFreezeWrite = true;
+    if (confirmsPendingFreezeWrite && failed.length === 0) {
+      completedFreezeWrite = await submitFreezeWrite("complete");
+    }
+    if (!completedFreezeWrite) {
+      // 冻结完成返回 409（例如摘要不匹配）时，文件已写入但仍未正式冻结。
+      // 保留本轮文件让用户写回正确正文后重试，不能让历史扫描的同名文件兜底吞掉确认框。
+      failed.push(...files);
     }
     setPendingFiles(failed);
     setShowFileDialog(failed.length > 0);
@@ -768,6 +883,9 @@ export default function ChatArea({
     // 未勾选或主动丢弃的文件不请求写入 API，保留「拒绝不落盘」语义。
     setPendingFiles([]);
     setShowFileDialog(false);
+    if (freezeStatusRef.current === "awaiting_write") {
+      void submitFreezeWrite("cancel");
+    }
   }
 
   function handleKeepFileConsistency() {
@@ -794,6 +912,7 @@ export default function ChatArea({
       regenerateWrittenFileNames?: string[];
       editMessageId?: string;
       retryMessageId?: string;
+      freeze?: boolean;
     }
   ) {
     if (!tabId || tabVersion === null || isStreaming) return;
@@ -802,8 +921,9 @@ export default function ChatArea({
     const regenerateMessageId = options?.regenerateMessageId;
     const editMessageId = options?.editMessageId;
     const retryMessageId = options?.retryMessageId;
+    const isFreeze = options?.freeze === true;
     const createsOptimisticUser =
-      !regenerateMessageId && !editMessageId && !retryMessageId;
+      !regenerateMessageId && !editMessageId && !retryMessageId && !isFreeze;
     const lastVisibleMessage = messages[messages.length - 1];
     const reusesLastUser =
       createsOptimisticUser &&
@@ -837,7 +957,9 @@ export default function ChatArea({
         ? { content, editMessageId, requestId }
         : regenerateMessageId
           ? { regenerate: true, messageId: regenerateMessageId, requestId }
-          : { content, requestId };
+          : isFreeze
+            ? { freeze: true, requestId }
+            : { content, requestId };
     const mutationPayload = { ...payload, expectedVersion: tabVersion };
 
     try {
@@ -899,6 +1021,16 @@ export default function ChatArea({
               if (typeof event.tabVersion === "number") {
                 onTabVersionChange?.(tabId, event.tabVersion);
               }
+              if (event.freezeStatus) {
+                freezeStatusRef.current = event.freezeStatus;
+                freezeMessageIdRef.current = event.freezeMessageId;
+                onTabFreezeStateChange?.(tabId, {
+                  freezeStatus: event.freezeStatus,
+                  freezeMessageId: event.freezeMessageId,
+                  freezeError: event.freezeError,
+                  version: event.tabVersion,
+                });
+              }
               const newMessage: ChatMessage = {
                 id: event.messageId,
                 role: "assistant",
@@ -928,6 +1060,16 @@ export default function ChatArea({
               if (!event.messageId) break;
               if (typeof event.tabVersion === "number") {
                 onTabVersionChange?.(tabId, event.tabVersion);
+              }
+              if (event.freezeStatus) {
+                freezeStatusRef.current = event.freezeStatus;
+                freezeMessageIdRef.current = event.freezeMessageId;
+                onTabFreezeStateChange?.(tabId, {
+                  freezeStatus: event.freezeStatus,
+                  freezeMessageId: event.freezeMessageId,
+                  freezeError: event.freezeError,
+                  version: event.tabVersion,
+                });
               }
               const completedContent = event.content ?? "";
               const completedMessage: ChatMessage = {
@@ -1013,6 +1155,16 @@ export default function ChatArea({
               if (typeof event.tabVersion === "number") {
                 onTabVersionChange?.(tabId, event.tabVersion);
               }
+              if (event.freezeStatus) {
+                freezeStatusRef.current = event.freezeStatus;
+                freezeMessageIdRef.current = event.freezeMessageId;
+                onTabFreezeStateChange?.(tabId, {
+                  freezeStatus: event.freezeStatus,
+                  freezeMessageId: event.freezeMessageId,
+                  freezeError: event.freezeError,
+                  version: event.tabVersion,
+                });
+              }
               if (isConfigError(errMsg)) {
                 setConfigError(errMsg);
               } else {
@@ -1059,6 +1211,21 @@ export default function ChatArea({
       setActiveAssistantMessageId(null);
       setIsStopping(false);
       abortRef.current = null;
+    }
+  }
+
+  async function beginScopeFreeze() {
+    if (
+      freezeTransitionRef.current ||
+      !["proposed", "failed"].includes(freezeStatus ?? "idle")
+    ) {
+      return;
+    }
+    freezeTransitionRef.current = true;
+    try {
+      await sendContent("", { freeze: true });
+    } finally {
+      freezeTransitionRef.current = false;
     }
   }
 
@@ -1294,7 +1461,9 @@ export default function ChatArea({
 
   function renderContentWithMarkers(content: string, messageId: string) {
     // Strip internal markers (e.g. %%%SCOPE_FROZEN%%%) that must not reach the user.
-    const cleanContent = content.replace(/%%%SCOPE_FROZEN%%%/g, "");
+    const cleanContent = content
+      .replace(/%%%SCOPE_FROZEN%%%/g, "")
+      .replace(new RegExp(SCOPE_FREEZE_PROPOSAL_MARKER, "g"), "");
     // 文件标记与 HTML 快照标记联合匹配：两条分支显式展开（不用交替组），
     // 保证 %%%FILE_BEGIN%%% / %%%HTML_BEGIN%%% 字面量完整出现
     // （verify-protocols 按「字面量在行内出现」断言三处一致）。
@@ -1383,7 +1552,9 @@ export default function ChatArea({
    */
   function renderStreamingContent(content: string) {
     // Strip internal markers (e.g. %%%SCOPE_FROZEN%%%) that must not reach the user.
-    const cleanContent = content.replace(/%%%SCOPE_FROZEN%%%/g, "");
+    const cleanContent = content
+      .replace(/%%%SCOPE_FROZEN%%%/g, "")
+      .replace(new RegExp(SCOPE_FREEZE_PROPOSAL_MARKER, "g"), "");
     // FILE 分支与完成版完全同形；HTML 分支 END 可缺省（流式中尚未到达）
     const markerRegex =
       /%%%FILE_BEGIN%%%\s*(.+?\.md)\s*\n([\s\S]*?)%%%FILE_END%%%|%%%HTML_BEGIN%%%\s*\n?([\s\S]*?)(?:%%%HTML_END%%%|$)/g;
@@ -1512,6 +1683,39 @@ export default function ChatArea({
                   </Button>
                 </div>
               </div>
+            </div>
+          )}
+
+          {freezeStatus === "proposed" && (
+            <div className="mb-4 flex items-center justify-between gap-3 border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              <span>范围已准备好</span>
+              <Button size="sm" onClick={() => void beginScopeFreeze()} disabled={isStreaming}>
+                确认冻结
+              </Button>
+            </div>
+          )}
+          {freezeStatus === "generating" && (
+            <div className="mb-4 flex items-center gap-2 border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
+              <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-sky-500 border-t-transparent" />
+              冻结处理中
+            </div>
+          )}
+          {freezeStatus === "awaiting_write" && (
+            <div className="mb-4 border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              <span>冻结文档已生成，等待写入确认</span>
+            </div>
+          )}
+          {freezeStatus === "failed" && (
+            <div className="mb-4 flex items-center justify-between gap-3 border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+              <span>{freezeError || "冻结文档生成失败"}</span>
+              <Button size="sm" variant="outline" onClick={() => void beginScopeFreeze()} disabled={isStreaming}>
+                重新生成冻结文档
+              </Button>
+            </div>
+          )}
+          {freezeStatus === "frozen" && (
+            <div className="mb-4 border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              范围已正式冻结
             </div>
           )}
 

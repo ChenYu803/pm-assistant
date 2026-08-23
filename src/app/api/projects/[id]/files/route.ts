@@ -16,6 +16,10 @@ import {
   validateAgentFilename,
   validateFileSize,
 } from "@/lib/file-helpers";
+import {
+  FROZEN_DOCUMENT_LOCKED_MESSAGE,
+  mutableProjectFileFilter,
+} from "@/lib/freeze-document-binding";
 
 /**
  * Renumber every top-level "## " section in a 需求分析.md body sequentially
@@ -216,9 +220,19 @@ export async function POST(
     }
 
     if (file) {
+      const updatedAt = new Date();
+      const result = await ProjectFile.collection.updateOne(
+        mutableProjectFileFilter(file._id),
+        { $set: { content: fullContent, updated_at: updatedAt } }
+      );
+      if (result.matchedCount !== 1) {
+        return NextResponse.json(
+          { error: FROZEN_DOCUMENT_LOCKED_MESSAGE },
+          { status: 409 }
+        );
+      }
       file.content = fullContent;
-      file.updated_at = new Date();
-      await file.save();
+      file.updated_at = updatedAt;
     } else {
       file = await ProjectFile.create({
         filename: trimmedFilename,

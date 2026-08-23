@@ -6,6 +6,16 @@ export const AGENT_TYPES = [
 ] as const;
 export type AgentType = (typeof AGENT_TYPES)[number];
 
+export const FREEZE_STATUSES = [
+  "idle",
+  "proposed",
+  "generating",
+  "awaiting_write",
+  "frozen",
+  "failed",
+] as const;
+export type FreezeStatus = (typeof FREEZE_STATUSES)[number];
+
 export interface AgentTypeMetadata {
   label: string;
   icon: string;
@@ -103,4 +113,7 @@ export interface TabData {
   position: number;
   scope_frozen: boolean;
   version: number;
+  freeze_status: FreezeStatus;
+  freeze_message_id?: string;
+  freeze_error?: string;
 }

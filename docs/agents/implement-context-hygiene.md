@@ -53,13 +53,16 @@
 
 ## 协议三处耦合点现状快照
 
-**日期**：2026-08-07（03-requirement-analyst-discipline 完成后，行号已随 03 改动校准）。04/06 新增协议时，由对应 implement Agent 更新本快照。
+**日期**：2026-08-23（#07 tab 并发与 #09 显式冻结完成后校准）。行号只作定位起点，动手前仍须 grep 验证。
 
 - `%%%FILE_BEGIN%%%` / `%%%FILE_END%%%`：prompt 定义处 `agent-prompts.ts:50,52,60,62,174,176`（requirement_analyst 含两对：工作文档 + 需求分析.md；mvp_prd 一对：prd.md；prototype/ticket_splitter 占位 prompt 不含）；前端解析处 `ChatArea.tsx:85-86,546`（route 不处理 FILE markers）
-- `%%%SCOPE_FROZEN%%%`：`agent-prompts.ts:153`；`chat/route.ts:156,168`；`ChatArea.tsx:545`
-- 肯定词清单：prompt 处 `agent-prompts.ts:10,104,152`（**最小契约**，requirement_analyst 在 10 行、mvp_prd 在 104/152）；执法处 `chat/route.ts:21` 的 `SCOPE_FREEZE_CONFIRM_RE`（**超集**，多 好/行/是/ok/Yes）；前端不校验肯定词
+- `%%%SCOPE_FROZEN%%%`：已降级为历史消息兼容标记；prompt 只禁止 Agent 输出，`chat/route.ts` 与 `ChatArea.tsx` 只剥离显示，**绝不**由它或自然语言改变冻结状态。
+- `%%%SCOPE_FREEZE_PROPOSAL%%%`：`agent-prompts.ts` 的 MVP-PRD / prototype 提议处；`freeze-protocol.ts` 定义；`chat/route.ts` 只把本轮 Agent 输出持久化为 `proposed`；`ChatArea.tsx` 剥离 marker 并显示“确认冻结”控件。控件请求的 `freeze: true` 才注入显式文档生成指令。
+- 冻结状态机：`Tab` 的 `freeze_status` 为 `idle` / `proposed` / `generating` / `awaiting_write` / `frozen` / `failed`。`chat/route.ts` 完成生成才到 `awaiting_write`，并持久化正式文件名和 marker 正文 SHA-256 摘要；`freeze/route.ts` 的 `complete` 必须以“项目 + 文件名 + 当前完整正文 + 未绑定”原子写入 `ProjectFile.freeze_binding` 后才正式冻结，`files` 的 POST/PATCH/DELETE 以未绑定条件写入，`cancel` 释放中间绑定后回到 `proposed`；`ChatArea.tsx` 复用既有文件确认，拒绝仍不落盘。
 - **03 新增工作文档机制**：文件名含「工作文档」即识别（`file-helpers.ts` 的 `isWorkingDocFile`）——写入 API 整文件替换 + 无 changelog 头 + 排除清单段前插入（`files/route.ts`）；ChatArea 静默写入不弹确认框（`ChatArea.tsx` 静默分支）；文件树琥珀色 📝 标记 + 隐藏「加载到 Agent」（`FileTree.tsx`）；不可加载进上下文（`tabs/[id]/files/route.ts` POST 400 + `context-files.ts` 过滤）。route 注入 `tab.display_name` 到 system prompt（`chat/route.ts`，「当前标签页」节），Agent 用它命名工作文档
-- **02 新增占位 prompt**：`prototype`（`agent-prompts.ts:214-222`）与 `ticket_splitter`（`agent-prompts.ts:223-231`）**不含任何协议标记**——04（原型）/06（任务拆分）落地正式协议时需补 FILE markers / SCOPE_FROZEN / 肯定词，并同步三处；占位期间无冻结执法（chat route 的冻结逻辑仅对 `mvp_prd` 特判，`chat/route.ts:86,154`）
+- **#09 冻结成员**：`mvp_prd` 与 `prototype` 都使用 proposal + 显式控件协议；`ticket_splitter` 仍不参与范围冻结。新增或改动冻结成员时，同步 `freeze-protocol.ts`、prompt、chat route、freeze route、`ChatArea.tsx` 和 `verify-explicit-freeze-protocol.mjs`。
 - **03 文件写入与 HTML 快照**：`files/route.ts` 的 Agent 写入必须经过 `file-helpers.ts` 白名单、路径和 3 MiB 校验；`issues/NN-<slug>.md` 与 `issues/vN/NN-<slug>.md` 是受控子路径。HTML marker 由 `ChatArea.tsx` 保存到 `PrototypeSnapshot` 项目资产 API，不进入 `ProjectFile` 文件树或 `context-files.ts` 上下文加载；快照回看走 `/api/projects/[id]/snapshots` 及其版本详情路由。
 - **v1.2 #05 消息事实源**：`Message.ts` 的 assistant `status` 为 `generating` / `completed` / `interrupted` / `failed`，可选 `error_message`；`chat/route.ts` 在流开始前创建正式 assistant 消息，`start` / `token` / `done` / `error` SSE 均带 `messageId`，每个 token 条件持久化；`messages/route.ts` GET 序列化状态，PATCH 以该 ID 请求停止并写入 `interrupted`；`generation-control.ts` 仅用于尽快中止同进程上游流，数据库状态仍为跨请求事实源；`ChatArea.tsx` 只渲染/更新正式 ID 消息，不再创建临时 assistant 气泡。
 - **v1.2 #06 生成恢复与幂等**：`Message.ts` 的 `request_id` 由 `{ tab_id, request_id }` 部分唯一索引（仅字符串值）约束；`ensureMessageRequestIdIndex()` 在 `chat/route.ts` 写入前完成索引初始化，同名旧稀疏索引会重建为该定义，迁移既有重复值时只移除较晚记录的 `request_id`，不删除消息。候选替换使用 `replacement_target_id` / `replacement_commit_message_id` / `superseded_by_message_id`，只有 completed assistant 写入 `replacement_committed: true` 后 `message-recovery.ts` 才隐藏旧历史并显示编辑后的用户消息；提交冲突则候选转 failed、旧历史继续可见。`messages/route.ts` GET 和 `ChatArea.tsx` 都经该可见性规则读取；刷新时若仍有 generating，前端每 500ms 对账直到终态。失败/中断候选可用新 requestId 重试，流取消由 `ReadableStream.cancel()` 中止同进程上游。
+- **v1.2 #07 tab 并发**：`Tab.version` 和 `active_operation_id` 是 tab 事实的并发保护；`TabOperation` 以 `{ tab_id, request_id }` 记录重放结果。`tab-concurrency.ts` 是发送、重生成、编辑、停止、删除、截断、改名和冻结的共同入口：领取时版本 +1 并锁定，完成/失败时再 +1 并释放；冲突固定为 `TAB_CONFLICT_MESSAGE`。SSE、消息历史和 mutation 响应都必须返回实际 `tabVersion`。
+- **v1.2 #09 热更新读取边界**：Next dev 若复用旧 Mongoose model，新增字段可能不在 document 投影中；`tab-freeze-state.ts` 直接从 `Tab.collection` 读取冻结状态、版本和冻结文档摘要，`freeze-document-binding.ts` 直接在 `ProjectFile` 上维护冻结绑定。冻结路由和 `messages/route.ts` 的重连状态/版本对账必须使用这些持久化事实，不能用缺失字段回退为 0 或滞留在过期 `generating` UI。

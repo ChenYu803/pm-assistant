@@ -719,6 +719,9 @@ export default function WorkspacePage() {
               tabId={activeTab?.id ?? null}
               tabName={activeTab?.display_name ?? null}
               tabVersion={activeTab?.version ?? null}
+              freezeStatus={activeTab?.freeze_status ?? null}
+              freezeMessageId={activeTab?.freeze_message_id}
+              freezeError={activeTab?.freeze_error}
               agentType={activeTab?.agent_type ?? null}
               projectId={project?.id ?? null}
               existingFileNames={files.map((f) => f.filename)}
@@ -738,6 +741,28 @@ export default function WorkspacePage() {
               }}
               onTabConflict={() => {
                 void fetchTabs();
+              }}
+              onTabFreezeStateChange={(tabId, state) => {
+                setTabs((prev) =>
+                  prev.map((tab) =>
+                    tab.id === tabId
+                      ? {
+                          ...tab,
+                          freeze_status: state.freezeStatus,
+                          scope_frozen: state.scopeFrozen ?? tab.scope_frozen,
+                          ...(state.freezeMessageId
+                            ? { freeze_message_id: state.freezeMessageId }
+                            : { freeze_message_id: undefined }),
+                          ...(state.freezeError
+                            ? { freeze_error: state.freezeError }
+                            : { freeze_error: undefined }),
+                          ...(typeof state.version === "number"
+                            ? { version: state.version }
+                            : {}),
+                        }
+                      : tab
+                  )
+                );
               }}
             />
           )}

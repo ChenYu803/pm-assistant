@@ -1,5 +1,10 @@
 import mongoose, { Document, Model } from "mongoose";
-import { AGENT_TYPES, type AgentType } from "@/lib/agent-constants";
+import {
+  AGENT_TYPES,
+  FREEZE_STATUSES,
+  type AgentType,
+  type FreezeStatus,
+} from "@/lib/agent-constants";
 
 interface ITab {
   agent_type: AgentType;
@@ -9,6 +14,11 @@ interface ITab {
   scope_frozen: boolean;
   version: number;
   active_operation_id?: string;
+  freeze_status: FreezeStatus;
+  freeze_message_id?: mongoose.Types.ObjectId;
+  freeze_filename?: string;
+  freeze_document_digest?: string;
+  freeze_error?: string;
   created_at: Date;
 }
 
@@ -53,6 +63,24 @@ const TabSchema = new mongoose.Schema<ITabDocument>(
     active_operation_id: {
       type: String,
     },
+    freeze_status: {
+      type: String,
+      enum: FREEZE_STATUSES,
+      default: "idle",
+    },
+    freeze_message_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Message",
+    },
+    freeze_filename: {
+      type: String,
+    },
+    freeze_document_digest: {
+      type: String,
+    },
+    freeze_error: {
+      type: String,
+    },
     created_at: {
       type: Date,
       default: () => new Date(),
@@ -66,18 +94,40 @@ const TabSchema = new mongoose.Schema<ITabDocument>(
 const existingTab = mongoose.models.Tab as Model<ITabDocument> | undefined;
 
 // next dev 会在热更新时复用已注册的 Mongoose model。补齐新增路径，避免
-// 仍在运行的开发服务静默丢弃 version 与 active_operation_id。
-if (existingTab && !existingTab.schema.path("version")) {
-  existingTab.schema.add({
-    version: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
-    active_operation_id: {
+// 仍在运行的开发服务静默丢弃并发或冻结状态字段。
+if (existingTab) {
+  const addedPaths: Record<string, unknown> = {};
+  if (!existingTab.schema.path("version")) {
+    addedPaths.version = { type: Number, default: 0, min: 0 };
+  }
+  if (!existingTab.schema.path("active_operation_id")) {
+    addedPaths.active_operation_id = { type: String };
+  }
+  if (!existingTab.schema.path("freeze_status")) {
+    addedPaths.freeze_status = {
       type: String,
-    },
-  });
+      enum: FREEZE_STATUSES,
+      default: "idle",
+    };
+  }
+  if (!existingTab.schema.path("freeze_message_id")) {
+    addedPaths.freeze_message_id = {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Message",
+    };
+  }
+  if (!existingTab.schema.path("freeze_filename")) {
+    addedPaths.freeze_filename = { type: String };
+  }
+  if (!existingTab.schema.path("freeze_document_digest")) {
+    addedPaths.freeze_document_digest = { type: String };
+  }
+  if (!existingTab.schema.path("freeze_error")) {
+    addedPaths.freeze_error = { type: String };
+  }
+  if (Object.keys(addedPaths).length > 0) {
+    existingTab.schema.add(addedPaths);
+  }
 }
 
 const Tab: Model<ITabDocument> =
