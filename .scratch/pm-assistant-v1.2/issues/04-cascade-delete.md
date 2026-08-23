@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** resolved
+**Status:** blocked
 
 - [ ] 删除项目会清理其工作记录、tab、消息、文件上下文和项目文件。
 - [ ] 删除工作记录会清理其 tab、消息和文件上下文，但保留项目级文件。
