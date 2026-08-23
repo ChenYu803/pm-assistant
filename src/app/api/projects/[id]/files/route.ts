@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
+import mongoose, { type ClientSession, type Types } from "mongoose";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
+import Message from "@/models/Message";
+import MessageFileWrite from "@/models/MessageFileWrite";
+import Tab from "@/models/Tab";
+import WorkRecord from "@/models/WorkRecord";
 import ProjectFile, {
   formatChangelogHeader,
   parseChangelog,
@@ -8,7 +13,7 @@ import ProjectFile, {
   type ChangelogEntry,
   type IProjectFileDocument,
 } from "@/models/ProjectFile";
-import { findOwnedProject } from "@/lib/ownership";
+import { findOwnedProject, parseObjectId } from "@/lib/ownership";
 import { acquireProjectWriteLease } from "@/lib/deletion-coordination";
 import {
   serializeProjectFile,
@@ -39,6 +44,61 @@ function normalizeRequirementSections(body: string): string {
  *  自带一个前导 \n 作解析锚点；join 处需再补一个 \n 保证标题前有空行，
  *  否则 markdown 会把「# 排除清单」并进上一段落而不渲染为标题。 */
 const EXCLUSION_LIST_HEADING = "\n# 排除清单";
+
+class FileWriteBlockedError extends Error {
+  constructor() {
+    super(FROZEN_DOCUMENT_LOCKED_MESSAGE);
+  }
+}
+
+function isTransactionUnsupported(error: unknown): boolean {
+  const nested =
+    typeof error === "object" && error !== null
+      ? error as { errorResponse?: { message?: unknown }; originalError?: { message?: unknown } }
+      : undefined;
+  const details = [
+    error instanceof Error ? error.message : String(error),
+    nested?.errorResponse?.message,
+    nested?.originalError?.message,
+  ]
+    .filter((value): value is string => typeof value === "string")
+    .join(" ");
+  return /transaction numbers are only allowed|transactions?.*not supported|replica set member or mongos|retryable writes/i.test(
+    details
+  );
+}
+
+function sessionOptions(session?: ClientSession) {
+  return session ? { session } : undefined;
+}
+
+function shouldInjectProvenanceWriteFailure(request: Request): boolean {
+  return (
+    process.env.NODE_ENV !== "production" &&
+    process.env.AI_MODE === "replay" &&
+    request.headers.get("x-pm-assistant-test-provenance-fail") === "1"
+  );
+}
+
+function serializeMessageFileWrite(write: {
+  _id: { toString(): string };
+  filename: string;
+  operation: "create" | "update";
+  file_version: number;
+  message_status: "completed";
+  write_status: "written";
+  written_at: Date;
+}) {
+  return {
+    id: write._id.toString(),
+    filename: write.filename,
+    operation: write.operation,
+    fileVersion: write.file_version,
+    messageStatus: write.message_status,
+    writeStatus: write.write_status,
+    writtenAt: write.written_at,
+  };
+}
 
 /**
  * 从 Agent 输出的新段落中拆出「排除清单」段（Agent 每轮输出都自带该段，
@@ -145,11 +205,13 @@ export async function POST(
       content,
       agent_type,
       iteration,
+      source_message_id,
     } = body as {
       filename: string;
       content: string;
       agent_type: string;
       iteration?: number;
+      source_message_id?: string;
     };
 
     const filenameValidation = validateAgentFilename(filename, agent_type);
@@ -159,6 +221,23 @@ export async function POST(
     const contentValidation = validateFileSize(content);
     if (!contentValidation.ok) {
       return NextResponse.json({ error: contentValidation.error }, { status: 413 });
+    }
+    const sourceMessageId =
+      typeof source_message_id === "string"
+        ? parseObjectId(source_message_id)
+        : undefined;
+    // replay 夹具需要创建不属于 Agent 消息的基础文件；该旁路仅限非生产回放，
+    // 产品 Agent 写入仍必须提供可核验的 assistant 来源消息。
+    const isReplayFixtureSystemWrite =
+      !sourceMessageId &&
+      process.env.NODE_ENV !== "production" &&
+      process.env.AI_MODE === "replay" &&
+      request.headers.get("x-pm-assistant-test-system-write") === "1";
+    if (!sourceMessageId && !isReplayFixtureSystemWrite) {
+      return NextResponse.json(
+        { error: "Agent 文件写入必须提供已完成的来源消息" },
+        { status: 400 }
+      );
     }
 
     await dbConnect();
@@ -174,6 +253,46 @@ export async function POST(
 
     try {
       const trimmedFilename = filename.trim();
+      let messageSource: { messageId: Types.ObjectId; tabId: Types.ObjectId } | null = null;
+      if (sourceMessageId) {
+        const sourceMessage = await Message.findOne({
+          _id: sourceMessageId,
+          role: "assistant",
+        })
+          .select({ _id: 1, tab_id: 1, status: 1 })
+          .lean();
+        if (!sourceMessage || (sourceMessage.status ?? "completed") !== "completed") {
+          return NextResponse.json(
+            { error: "来源消息不存在或尚未完成" },
+            { status: 409 }
+          );
+        }
+        const sourceTab = await Tab.findById(sourceMessage.tab_id)
+          .select({ _id: 1, work_record_id: 1, agent_type: 1 })
+          .lean();
+        if (!sourceTab || sourceTab.agent_type !== agent_type) {
+          return NextResponse.json(
+            { error: "来源消息与写入 Agent 不匹配" },
+            { status: 400 }
+          );
+        }
+        const sourceWorkRecord = await WorkRecord.findById(sourceTab.work_record_id)
+          .select({ project_id: 1 })
+          .lean();
+        if (
+          !sourceWorkRecord ||
+          sourceWorkRecord.project_id.toString() !== project._id.toString()
+        ) {
+          return NextResponse.json(
+            { error: "来源消息不属于当前项目" },
+            { status: 400 }
+          );
+        }
+        messageSource = {
+          messageId: sourceMessage._id,
+          tabId: sourceTab._id,
+        };
+      }
 
     // Find existing file or create new
     let file = await ProjectFile.findOne({
@@ -222,35 +341,143 @@ export async function POST(
       fullContent = formatChangelogHeader(changelogEntry) + "\n" + bodyContent;
     }
 
-    if (file) {
+      const originalFile = file;
+      const operation: "create" | "update" = originalFile
+        ? "update"
+        : "create";
+      const writtenAt = new Date();
       const updatedAt = new Date();
-      const result = await ProjectFile.collection.updateOne(
-        mutableProjectFileFilter(file._id),
-        { $set: { content: fullContent, updated_at: updatedAt } }
-      );
-      if (result.matchedCount !== 1) {
-        return NextResponse.json(
-          { error: FROZEN_DOCUMENT_LOCKED_MESSAGE },
-          { status: 409 }
-        );
-      }
-      file.content = fullContent;
-      file.updated_at = updatedAt;
-    } else {
-      file = await ProjectFile.create({
-        filename: trimmedFilename,
-        content: fullContent,
-        project_id: project._id,
-        created_at: new Date(),
-        updated_at: new Date(),
-      });
-    }
 
-      return NextResponse.json(serializeProjectFile(file), { status: 201 });
+      const writeProjectFile = async (session?: ClientSession) => {
+        if (originalFile) {
+          // $inc 让每次写入取得实际唯一版本；来源记录只使用这次原子更新返回的版本。
+          const updated = await ProjectFile.findOneAndUpdate(
+            mutableProjectFileFilter(originalFile._id),
+            {
+              $set: { content: fullContent, updated_at: updatedAt },
+              $inc: { version: 1 },
+            },
+            { returnDocument: "after", ...sessionOptions(session) }
+          );
+          if (!updated) throw new FileWriteBlockedError();
+          return updated;
+        }
+
+        const creation = {
+          filename: trimmedFilename,
+          content: fullContent,
+          project_id: project._id,
+          version: 1,
+          created_at: writtenAt,
+          updated_at: writtenAt,
+        };
+        if (!session) return ProjectFile.create(creation);
+        const created = new ProjectFile(creation);
+        await created.save({ session });
+        return created;
+      };
+
+      const createMessageFileWrite = async (
+        writtenFile: IProjectFileDocument,
+        session?: ClientSession
+      ) => {
+        const source = messageSource;
+        if (!source) return null;
+        if (shouldInjectProvenanceWriteFailure(request)) {
+          throw new Error("回放强制消息文件来源记录失败");
+        }
+        const writeData = {
+          message_id: source.messageId,
+          tab_id: source.tabId,
+          project_id: project._id,
+          project_file_id: writtenFile._id,
+          filename: trimmedFilename,
+          operation,
+          file_version: writtenFile.version,
+          message_status: "completed" as const,
+          write_status: "written" as const,
+          written_at: writtenAt,
+        };
+        if (!session) return MessageFileWrite.create(writeData);
+        const write = new MessageFileWrite(writeData);
+        await write.save({ session });
+        return write;
+      };
+
+      const rollbackProjectFileWrite = async (writtenFile: IProjectFileDocument) => {
+        if (!originalFile) {
+          const result = await ProjectFile.deleteOne({
+            _id: writtenFile._id,
+            version: writtenFile.version,
+          });
+          return result.deletedCount === 1;
+        }
+        const result = await ProjectFile.collection.updateOne(
+          {
+            ...mutableProjectFileFilter(writtenFile._id),
+            version: writtenFile.version,
+          },
+          {
+            $set: {
+              content: originalFile.content,
+              updated_at: originalFile.updated_at,
+              version: originalFile.version ?? 0,
+            },
+          }
+        );
+        return result.matchedCount === 1;
+      };
+
+      let writtenFile: IProjectFileDocument;
+      let messageFileWrite: Awaited<ReturnType<typeof createMessageFileWrite>> = null;
+      if (!messageSource) {
+        writtenFile = await writeProjectFile();
+      } else {
+        const session = await mongoose.startSession();
+        try {
+          await session.withTransaction(async () => {
+            writtenFile = await writeProjectFile(session);
+            messageFileWrite = await createMessageFileWrite(writtenFile, session);
+          });
+        } catch (error) {
+          if (!isTransactionUnsupported(error)) throw error;
+
+          // 独立 MongoDB 不支持事务时，来源记录失败必须撤销这次文件写入。
+          writtenFile = await writeProjectFile();
+          try {
+            messageFileWrite = await createMessageFileWrite(writtenFile);
+          } catch (writeError) {
+            if (!(await rollbackProjectFileWrite(writtenFile))) {
+              throw new Error("文件来源记录失败且无法恢复文件写入", {
+                cause: writeError,
+              });
+            }
+            throw writeError;
+          }
+        } finally {
+          await session.endSession();
+        }
+      }
+
+      return NextResponse.json(
+        {
+          ...serializeProjectFile(writtenFile!),
+          ...(messageFileWrite
+            ? { messageFileWrite: serializeMessageFileWrite(messageFileWrite) }
+            : {}),
+        },
+        { status: 201 }
+      );
     } finally {
       await writeLease.release();
     }
   } catch (error) {
+    if (error instanceof FileWriteBlockedError) {
+      return NextResponse.json(
+        { error: FROZEN_DOCUMENT_LOCKED_MESSAGE },
+        { status: 409 }
+      );
+    }
     console.error("POST /api/projects/[id]/files error:", error);
     return NextResponse.json(
       { error: "保存文件失败" },

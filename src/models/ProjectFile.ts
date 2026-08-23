@@ -15,6 +15,7 @@ interface IProjectFile {
   filename: string;
   content: string;
   project_id: mongoose.Types.ObjectId;
+  version: number;
   created_at: Date;
   updated_at: Date;
 }
@@ -39,6 +40,12 @@ const ProjectFileSchema = new mongoose.Schema<IProjectFileDocument>(
       ref: "Project",
       required: true,
       index: true,
+    },
+    // 与消息级来源事实关联的单调版本；缺失的旧文件按 0 处理。
+    version: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
     created_at: {
       type: Date,
@@ -103,8 +110,18 @@ export function countRequirements(content: string): number {
   return matches ? matches.length : 0;
 }
 
+const existingProjectFile = mongoose.models.ProjectFile as
+  | Model<IProjectFileDocument>
+  | undefined;
+
+if (existingProjectFile && !existingProjectFile.schema.path("version")) {
+  existingProjectFile.schema.add({
+    version: { type: Number, default: 0, min: 0 },
+  });
+}
+
 const ProjectFile: Model<IProjectFileDocument> =
-  mongoose.models.ProjectFile ??
+  existingProjectFile ??
   mongoose.model<IProjectFileDocument>("ProjectFile", ProjectFileSchema);
 
 export default ProjectFile;

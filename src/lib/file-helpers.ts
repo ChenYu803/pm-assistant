@@ -75,6 +75,7 @@ export interface ProjectFileData {
   filename: string;
   content: string;
   project_id: string;
+  version: number;
   created_at: Date;
   updated_at: Date;
 }
@@ -88,6 +89,7 @@ export function serializeProjectFile(
     filename: file.filename,
     content: file.content,
     project_id: file.project_id.toString(),
+    version: file.version ?? 0,
     created_at: file.created_at,
     updated_at: file.updated_at,
   };

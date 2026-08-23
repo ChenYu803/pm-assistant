@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import Message from "@/models/Message";
+import MessageFileWrite from "@/models/MessageFileWrite";
 import { findOwnedTab, parseObjectId } from "@/lib/ownership";
 import { cancelGeneration } from "@/lib/generation-control";
 import { getVisibleMessages } from "@/lib/message-recovery";
@@ -77,7 +78,21 @@ export async function GET(
       .lean();
     const persistedTabState = await getPersistedFreezeState(tab._id);
 
-    const serialized = getVisibleMessages(messages).map((m) => ({
+    const visibleMessages = getVisibleMessages(messages);
+    const provenanceWrites = await MessageFileWrite.find({
+      message_id: { $in: visibleMessages.map((message) => message._id) },
+    })
+      .sort({ written_at: 1, _id: 1 })
+      .lean();
+    const writesByMessageId = new Map<string, typeof provenanceWrites>();
+    for (const write of provenanceWrites) {
+      const key = write.message_id.toString();
+      const writes = writesByMessageId.get(key) ?? [];
+      writes.push(write);
+      writesByMessageId.set(key, writes);
+    }
+
+    const serialized = visibleMessages.map((m) => ({
       id: m._id.toString(),
       role: m.role,
       content: m.content,
@@ -92,6 +107,24 @@ export async function GET(
         ? { replacesMessageId: m.replacement_target_id.toString() }
         : {}),
       ...(m.replacement_kind ? { replacementKind: m.replacement_kind } : {}),
+      ...(m.role === "assistant"
+        ? {
+            fileProvenance: {
+              tracked: typeof m.file_provenance_version === "number",
+              writes: (writesByMessageId.get(m._id.toString()) ?? []).map(
+                (write) => ({
+                  id: write._id.toString(),
+                  filename: write.filename,
+                  operation: write.operation,
+                  fileVersion: write.file_version,
+                  messageStatus: write.message_status,
+                  writeStatus: write.write_status,
+                  writtenAt: write.written_at,
+                })
+              ),
+            },
+          }
+        : {}),
     }));
 
     return NextResponse.json({
@@ -324,6 +357,7 @@ export async function DELETE(
       const idsToDelete = orderedMessages
         .slice(targetIndex)
         .map((message) => message._id);
+      await MessageFileWrite.deleteMany({ message_id: { $in: idsToDelete } });
       const result = await Message.deleteMany({
         _id: { $in: idsToDelete },
         tab_id: operationStart.tab._id,
@@ -354,6 +388,8 @@ export async function DELETE(
           { status: 404 }
         );
       }
+
+      await MessageFileWrite.deleteMany({ message_id: deleted._id });
 
       const response = { success: true };
       const completedTab = await completeTabOperation(operation, { response });

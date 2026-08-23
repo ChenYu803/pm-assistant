@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import AgentFileContext from "@/models/AgentFileContext";
+import ProjectFile from "@/models/ProjectFile";
 import {
   findOwnedProjectFileInProject,
   parseObjectId,
@@ -97,20 +98,22 @@ export async function PATCH(
 
       // User edit: update content as-is, do NOT modify changelog.
       const updatedAt = new Date();
-      const updateResult = await file.collection.updateOne(
+      const updated = await ProjectFile.findOneAndUpdate(
         mutableProjectFileFilter(file._id),
-        { $set: { content, updated_at: updatedAt } }
+        {
+          $set: { content, updated_at: updatedAt },
+          $inc: { version: 1 },
+        },
+        { returnDocument: "after" }
       );
-      if (updateResult.matchedCount !== 1) {
+      if (!updated) {
         return NextResponse.json(
           { error: FROZEN_DOCUMENT_LOCKED_MESSAGE },
           { status: 409 }
         );
       }
-      file.content = content;
-      file.updated_at = updatedAt;
 
-      return NextResponse.json(serializeProjectFile(file));
+      return NextResponse.json(serializeProjectFile(updated));
     } finally {
       await writeLease.release();
     }

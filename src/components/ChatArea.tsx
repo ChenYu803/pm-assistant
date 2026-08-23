@@ -52,6 +52,18 @@ interface ChatMessage {
   errorMessage?: string;
   replacesMessageId?: string;
   replacementKind?: MessageReplacementKind;
+  fileProvenance?: {
+    tracked: boolean;
+    writes: Array<{
+      id: string;
+      filename: string;
+      operation: "create" | "update";
+      fileVersion: number;
+      messageStatus: "completed";
+      writeStatus: "written";
+      writtenAt: string;
+    }>;
+  };
 }
 
 interface ChatAreaProps {
@@ -112,8 +124,10 @@ interface FileConsistencyPrompt {
   staleFileNames: string[];
 }
 
-function writtenFileKey(messageId: string, filename: string): string {
-  return `${messageId}\u0000${filename}`;
+function hasWrittenFile(message: ChatMessage, filename: string): boolean {
+  return message.fileProvenance?.writes.some(
+    (write) => write.filename === filename && write.writeStatus === "written"
+  ) ?? false;
 }
 
 /**
@@ -545,9 +559,6 @@ export default function ChatArea({
   // 的写入判定——实时消息必须走「消息是否已写入」判定，不做文件名兜底
   // （v1.1 文件更新修复）。id 全局唯一（ObjectId），切 tab 后无需清理。
   const liveMessageIds = useRef<Set<string>>(new Set());
-  // Messages whose file has actually been written (banner shows "已写入").
-  // State, not a ref — it's read during render.
-  const [writtenFileKeys, setWrittenFileKeys] = useState<Set<string>>(new Set());
   const pendingFileSequence = useRef(0);
 
   /** 聊天完成后单独请求命名；失败保持静默，不能反过来影响已完成的聊天。 */
@@ -591,7 +602,7 @@ export default function ChatArea({
   const writeFileToServer = useCallback(
     async (
       file: FileToConfirm,
-      sourceMessageId: string | null
+      sourceMessageId: string
     ): Promise<boolean> => {
       if (!projectId || !agentType) return false;
       setSavingFile(true);
@@ -603,17 +614,31 @@ export default function ChatArea({
             filename: file.filename,
             content: file.content,
             agent_type: agentType,
+            source_message_id: sourceMessageId,
           }),
         });
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
           throw new Error(data.error || "保存文件失败");
         }
-        // 精确记录来源消息与文件名的写入状态。一条回复可能包含多个文件，
-        // 用户也可能只选择其中一部分写入。
-        if (sourceMessageId) {
-          setWrittenFileKeys((prev) =>
-            new Set(prev).add(writtenFileKey(sourceMessageId, file.filename))
+        const data = await res.json();
+        // 只接受服务端成功持久化的来源事实；前端不再把同名文件自行猜成已写入。
+        if (data.messageFileWrite) {
+          setMessages((previous) =>
+            previous.map((message) =>
+              message.id !== sourceMessageId
+                ? message
+                : {
+                    ...message,
+                    fileProvenance: {
+                      tracked: message.fileProvenance?.tracked ?? false,
+                      writes: [
+                        ...(message.fileProvenance?.writes ?? []),
+                        data.messageFileWrite,
+                      ],
+                    },
+                  }
+            )
           );
         }
         onFileSaved?.();
@@ -654,8 +679,8 @@ export default function ChatArea({
 
   /**
    * Check a message for file markers and trigger confirmation dialog.
-   * historyReplay = true：历史重放（页面刷新 / 重新加载）扫描路径，文件名已存在
-   * 视为「该消息的写入已落盘」→ 不重复弹确认框（文件名兜底，仅此路径使用）。
+   * historyReplay = true：只有缺少来源协议标记的历史消息可以按文件名兜底；新消息
+   * 只认服务端返回的消息级来源事实，避免同名文件污染。
    * 实时新消息（SSE done）不传此参数：正式文件总是重新触发写入判定——即使同名
    * 文件已存在，也再弹确认框，确认后按既有语义更新（需求分析 append / 其他
    * replace，服务端 files/route.ts），修复「已写入文件无法更新」bug（spec 文件
@@ -672,21 +697,24 @@ export default function ChatArea({
         // （02: 任务拆分 Agent 一次输出多个 issue 文件，在同一弹窗中批量处理）。
         const pending: PendingFile[] = [];
         markers.forEach((m, index) => {
-          if (isWorkingDocFile(m.filename)) {
-            void writeFileToServer(m, message.id);
-            return;
-          }
+          const exactWrite = hasWrittenFile(message, m.filename);
+          const mayUseLegacyFilenameFallback =
+            historyReplay && message.fileProvenance?.tracked !== true;
           const isPendingFreezeDocument =
             historyReplay &&
             freezeStatusRef.current === "awaiting_write" &&
             freezeMessageIdRef.current === message.id;
-          if (
-            historyReplay &&
-            existingFileNames?.includes(m.filename) &&
-            !isPendingFreezeDocument
-          ) {
-            // 历史重放：文件名已存在 = 该消息的写入已落盘 → 不重复弹框；
-            // 横幅保留手动「写入项目文件」供有意重写（现状语义不变）。
+          const shouldSkipHistoryWrite =
+            exactWrite ||
+            (mayUseLegacyFilenameFallback &&
+              existingFileNames?.includes(m.filename) &&
+              !isPendingFreezeDocument);
+          if (isWorkingDocFile(m.filename)) {
+            if (shouldSkipHistoryWrite) return;
+            void writeFileToServer(m, message.id);
+            return;
+          }
+          if (shouldSkipHistoryWrite) {
             return;
           }
           pending.push({
@@ -882,7 +910,11 @@ export default function ChatArea({
     if (!projectId || !agentType) return;
     const failed: PendingFile[] = [];
     for (const pending of files) {
-      if (!(await writeFileToServer(pending, pending.messageId))) {
+      if (
+        !pending.messageId ||
+        !(await writeFileToServer(pending, pending.messageId))
+      ) {
+        if (!pending.messageId) setError("文件缺少来源消息，无法写入");
         failed.push(pending);
       }
     }
@@ -1064,7 +1096,10 @@ export default function ChatArea({
                 status: "generating",
                 replacesMessageId: event.replacesMessageId,
                 replacementKind: event.replacementKind,
+                fileProvenance: { tracked: true, writes: [] },
               };
+              // 在 token 到达前声明实时来源，避免历史扫描把流中的 marker 提前消费。
+              liveMessageIds.current.add(event.messageId);
               setActiveAssistantMessageId(event.messageId);
               setMessages((prev) => {
                 const next =
@@ -1105,6 +1140,7 @@ export default function ChatArea({
                 status: event.status ?? "completed",
                 replacesMessageId: event.replacesMessageId,
                 replacementKind: event.replacementKind,
+                fileProvenance: { tracked: true, writes: [] },
               };
               setMessages((prev) => {
                 const currentCandidate = prev.find(
@@ -1452,11 +1488,10 @@ export default function ChatArea({
       ...new Set(
         extractFileMarkers(oldMessage.content)
           .filter((file) => {
-            if (writtenFileKeys.has(writtenFileKey(oldMessage.id, file.filename))) {
-              return true;
-            }
-            // 页面刷新后，按历史重放语义从项目文件名重建消息级写入状态。
+            if (hasWrittenFile(oldMessage, file.filename)) return true;
+            // 仅无来源协议标记的历史消息可以使用同名文件兜底。
             return (
+              oldMessage.fileProvenance?.tracked !== true &&
               !liveMessageIds.current.has(oldMessage.id) &&
               existingFileNames?.includes(file.filename)
             );
@@ -1482,7 +1517,8 @@ export default function ChatArea({
 
   // ── Extract file markers from content ───────────────────────────────────
 
-  function renderContentWithMarkers(content: string, messageId: string) {
+  function renderContentWithMarkers(message: ChatMessage) {
+    const { content, id: messageId } = message;
     // Strip internal markers (e.g. %%%SCOPE_FROZEN%%%) that must not reach the user.
     const cleanContent = content
       .replace(/%%%SCOPE_FROZEN%%%/g, "")
@@ -1528,7 +1564,7 @@ export default function ChatArea({
           <FileMarkerBanner
             key={key++}
             filename={filename}
-            written={writtenFileKeys.has(writtenFileKey(messageId, filename))}
+            written={hasWrittenFile(message, filename)}
               onWrite={() => {
               setPendingFiles([
                 {
@@ -1799,7 +1835,7 @@ export default function ChatArea({
               {msg.role === "assistant"
                 ? msg.status === "generating"
                   ? renderStreamingContent(msg.content)
-                  : renderContentWithMarkers(msg.content, msg.id)
+                  : renderContentWithMarkers(msg)
                 : undefined}
             </MessageBubble>
           ))}
@@ -1882,9 +1918,8 @@ export default function ChatArea({
       {/* 重生成后的文件一致性提示 */}
       <Dialog
         open={fileConsistencyPrompt !== null}
-        onOpenChange={(open) => {
-          if (!open) handleKeepFileConsistency();
-        }}
+        // 遮罩与 Escape 都已禁止关闭；只允许两个显式决策按钮改变此状态。
+        onOpenChange={() => undefined}
       >
         <DialogContent
           className="max-w-md"

@@ -46,7 +46,10 @@ async function api(pathname, init) {
 async function write(projectId, filename, content, agent_type = "requirement_analyst") {
   return api(`/api/projects/${projectId}/files`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-pm-assistant-test-system-write": "1",
+    },
     body: JSON.stringify({ filename, content, agent_type }),
   });
 }

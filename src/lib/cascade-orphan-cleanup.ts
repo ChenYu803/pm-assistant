@@ -16,6 +16,7 @@ const ORPHAN_STEPS: OrphanStep[] = [
   { collection: "work_records", parentCollection: "projects", parentField: "project_id" },
   { collection: "tabs", parentCollection: "work_records", parentField: "work_record_id" },
   { collection: "agent_file_contexts", parentCollection: "tabs", parentField: "tab_id" },
+  { collection: "message_file_writes", parentCollection: "messages", parentField: "message_id" },
   { collection: "messages", parentCollection: "tabs", parentField: "tab_id" },
   { collection: "tab_operations", parentCollection: "tabs", parentField: "tab_id" },
 ];

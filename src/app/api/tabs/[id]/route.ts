@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import Message from "@/models/Message";
+import MessageFileWrite from "@/models/MessageFileWrite";
 import AgentFileContext from "@/models/AgentFileContext";
 import TabOperation from "@/models/TabOperation";
 import { serializeTab } from "@/lib/tab-helpers";
@@ -146,6 +147,7 @@ export async function DELETE(
 
     try {
       // Delete all associated messages and file contexts
+      await MessageFileWrite.deleteMany({ tab_id: tab._id });
       await Message.deleteMany({ tab_id: tab._id });
       await AgentFileContext.deleteMany({ tab_id: tab._id });
       await TabOperation.deleteMany({ tab_id: tab._id });

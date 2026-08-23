@@ -1,6 +1,7 @@
 import mongoose, { type ClientSession } from "mongoose";
 import AgentFileContext from "@/models/AgentFileContext";
 import Message from "@/models/Message";
+import MessageFileWrite from "@/models/MessageFileWrite";
 import Project from "@/models/Project";
 import ProjectFile from "@/models/ProjectFile";
 import PrototypeSnapshot from "@/models/PrototypeSnapshot";
@@ -136,6 +137,18 @@ async function clearTabOwnedData(
     "agent-file-contexts",
     () => AgentFileContext.deleteMany(tabFilter, optionsWithSession),
     () => AgentFileContext.countDocuments(tabFilter, optionsWithSession),
+    options
+  );
+  await cleanCollection(
+    "消息文件来源",
+    "messages",
+    () =>
+      MessageFileWrite.deleteMany({ tab_id: { $in: tabIds } }, optionsWithSession),
+    () =>
+      MessageFileWrite.countDocuments(
+        { tab_id: { $in: tabIds } },
+        optionsWithSession
+      ),
     options
   );
   await cleanCollection(

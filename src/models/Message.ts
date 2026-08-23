@@ -33,6 +33,8 @@ interface IMessage {
   replacement_committed?: boolean;
   replacement_kind?: MessageReplacementKind;
   replacement_user_message_id?: mongoose.Types.ObjectId;
+  // 新消息显式标记已启用消息级文件来源协议；缺失字段只代表升级前历史消息。
+  file_provenance_version?: number;
 }
 
 export interface IMessageDocument extends IMessage, Document {
@@ -96,6 +98,9 @@ const MessageSchema = new mongoose.Schema<IMessageDocument>(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Message",
     },
+    file_provenance_version: {
+      type: Number,
+    },
   },
   {
     collection: "messages",
@@ -112,9 +117,17 @@ MessageSchema.index(
   }
 );
 
+const existingMessage = mongoose.models.Message as
+  | Model<IMessageDocument>
+  | undefined;
+
+// Next dev 热更新会复用已注册 model；补齐来源协议字段，避免新消息被当成历史消息。
+if (existingMessage && !existingMessage.schema.path("file_provenance_version")) {
+  existingMessage.schema.add({ file_provenance_version: { type: Number } });
+}
+
 const Message: Model<IMessageDocument> =
-  mongoose.models.Message ??
-  mongoose.model<IMessageDocument>("Message", MessageSchema);
+  existingMessage ?? mongoose.model<IMessageDocument>("Message", MessageSchema);
 
 type MessageIndexGlobal = typeof globalThis & {
   messageRequestIdIndexPromise?: Promise<void>;

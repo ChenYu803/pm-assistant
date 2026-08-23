@@ -139,7 +139,10 @@ async function createTab(workRecordId) {
 async function createProjectFile(projectId) {
   return api(`/api/projects/${projectId}/files`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-pm-assistant-test-system-write": "1",
+    },
     body: JSON.stringify({
       filename: "需求分析.md",
       content: "## 1. 级联删除验证",

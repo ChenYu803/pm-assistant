@@ -553,6 +553,8 @@ export async function POST(
         timestamp: assistantTimestamp,
         status: "generating",
         request_id: requestId,
+        // 有此标记的新消息只相信消息级来源事实，绝不回退为同名文件推断。
+        file_provenance_version: 1,
         ...(replacementTargetId
           ? { replacement_target_id: replacementTargetId }
           : {}),

@@ -20,6 +20,8 @@ v1.0 已验收（2026-08-11），四环流水线端到端走通。
 
 ## 本次任务
 
+**v1.2 #10 已完成（2026-08-24）**：新增 `MessageFileWrite` 持久化消息来源事实；每次项目文件写入记录消息、tab、项目、文件、创建/更新操作、文件版本、完成态与写入态。新 assistant 消息从 SSE `start` 即声明为实时，严格只认精确来源；仅缺少 `file_provenance_version` 的历史消息可按文件名兜底。产品 Agent 文件写入 API 必须提供已完成 assistant 来源并校验同 Agent、同项目；仅非生产 replay 的基础夹具可使用显式 system-write 测试旁路。重生成缺少已写文件时提供“更新文件”与“保持不变”，前者复用既有确认流并写入新来源记录，后者不覆盖。来源记录与文件写入事务优先；独立 MongoDB 回退时来源记录失败会按实际版本补偿撤销文件。`ProjectFile.version` 以原子递增覆盖 Agent 写入与手动编辑；消息、tab、工作记录和项目删除同步清理来源记录。`verify-message-file-provenance` 14/14、消息恢复 20/20、文件协议/快照 14/14、级联删除 23/23、`npx tsc --noEmit`、脚本语法与 diff check 均通过，全部使用 `AI_MODE=replay`。下一 frontier：v1.2 #11。
+
 **v1.2 #06 已完成（2026-08-23）**：候选 assistant 独立生成，`replacement_committed` 是旧历史与新结果的可见性提交屏障；重生成/编辑失败不会预删历史，停止保留 partial 并持久化 `interrupted`，刷新时 `ChatArea` 每 500ms 从 messages API 对账生成态。重试使用新 `requestId`；聊天路由在任何写入前确认 `tab_id + request_id` 的部分唯一索引，旧重复数据只清除较晚消息的幂等标识、不删除消息内容。另修复零 token 空 assistant 的 schema 拒绝，以及 Next.js 16 将流式 Route Handler `request.signal` 误标为 aborted 的问题。`AI_MODE=replay node scripts/verify-message-recovery.mjs` 20/20、`npx tsc --noEmit`、脚本语法、`git diff --check` 已通过，未调用真实模型。下一 frontier：v1.2 #07。
 
 **v1.2 #07 与 #09 已完成（2026-08-23）**：#07 为所有改变 tab 事实的操作统一 `expectedVersion + requestId` 乐观并发契约，持久化操作记录吸收重放，冲突固定提示“此标签页正在被其他窗口修改”，UI 只提供手动刷新。#09 将 PRD 与原型冻结迁移为 `idle → proposed → generating → awaiting_write → frozen` 的显式两阶段协议：Agent proposal 仅出现控件；自然语言与历史消息永不冻结；文档成功生成后走既有文件确认，写入成功才正式冻结，取消/失败不会冻结。消息历史从持久化事实对账 tab 版本和冻结状态，处理中刷新能恢复为待写入确认；本轮生成正文的 SHA-256 摘要与项目文件比对，阻止同名旧文件错误冻结。完成冻结会原子绑定对应项目文件，随后 POST/PATCH/DELETE 均不能覆盖或删除它。专项 replay：#07 16/16、#09 19/19、消息恢复 20/20、文件协议/快照 14/14、协议检查 22/22；`tsc`、脚本语法与 diff check 通过，未调用真实模型。下一 frontier：v1.2 #04（不在本次范围）。
