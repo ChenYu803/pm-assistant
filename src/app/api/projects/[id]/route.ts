@@ -6,6 +6,7 @@ import {
   deleteProjectCascade,
   getCascadeDeleteTestOptions,
 } from "@/lib/cascade-delete";
+import { beginProjectDeletion } from "@/lib/deletion-coordination";
 
 export async function GET(
   request: Request,
@@ -54,7 +55,7 @@ export async function DELETE(
 
     await dbConnect();
 
-    const project = await findOwnedProject(id, userId);
+    const project = await beginProjectDeletion(id, userId);
 
     if (!project) {
       return NextResponse.json(

@@ -9,6 +9,7 @@ import ProjectFile, {
   type IProjectFileDocument,
 } from "@/models/ProjectFile";
 import { findOwnedProject } from "@/lib/ownership";
+import { acquireProjectWriteLease } from "@/lib/deletion-coordination";
 import {
   serializeProjectFile,
   stripChangelogHeader,
@@ -162,15 +163,17 @@ export async function POST(
 
     await dbConnect();
 
-    const project = await findOwnedProject(projectId, userId);
-    if (!project) {
+    const writeLease = await acquireProjectWriteLease(projectId, userId);
+    if (!writeLease) {
       return NextResponse.json(
         { error: "项目不存在或无权访问" },
         { status: 404 }
       );
     }
+    const project = writeLease.project;
 
-    const trimmedFilename = filename.trim();
+    try {
+      const trimmedFilename = filename.trim();
 
     // Find existing file or create new
     let file = await ProjectFile.findOne({
@@ -243,7 +246,10 @@ export async function POST(
       });
     }
 
-    return NextResponse.json(serializeProjectFile(file), { status: 201 });
+      return NextResponse.json(serializeProjectFile(file), { status: 201 });
+    } finally {
+      await writeLease.release();
+    }
   } catch (error) {
     console.error("POST /api/projects/[id]/files error:", error);
     return NextResponse.json(

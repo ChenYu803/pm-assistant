@@ -217,6 +217,14 @@ function isFullyRemoved(counts) {
   return Object.values(counts).every((count) => count === 0);
 }
 
+async function waitForDatabase(predicate, description) {
+  for (let attempt = 0; attempt < 80; attempt += 1) {
+    if (await predicate()) return;
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+  throw new Error(`等待超时：${description}`);
+}
+
 try {
   await mongoose.connect(env.MONGODB_URI);
 
@@ -236,6 +244,184 @@ try {
 
   const replay = await api("/api/verify/replay-mode");
   check("服务端确认 AI_MODE=replay", replay.body?.aiMode === "replay");
+
+  const deletionGate = await createTopology("删除闸门");
+  await Project.collection.updateOne(
+    { _id: new mongoose.Types.ObjectId(deletionGate.projectId) },
+    { $set: { deletion_state: "deleting" } }
+  );
+  const blockedWorkRecord = await createWorkRecord(
+    deletionGate.projectId,
+    "删除期间不应创建"
+  );
+  const blockedTab = await createTab(deletionGate.workRecordIds[0]);
+  const blockedContext = await api(`/api/tabs/${deletionGate.tabIds[0]}/files`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ file_id: deletionGate.fileId }),
+  });
+  const blockedFile = await createProjectFile(deletionGate.projectId);
+  const blockedSnapshot = await api(
+    `/api/projects/${deletionGate.projectId}/snapshots`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: "<main>删除期间不应保存</main>" }),
+    }
+  );
+  check(
+    "删除闸门拒绝新建工作记录、tab、上下文、文件和快照",
+    [blockedWorkRecord, blockedTab, blockedContext, blockedFile, blockedSnapshot].every(
+      (response) => response.status === 404
+    )
+  );
+  await Project.collection.updateOne(
+    { _id: new mongoose.Types.ObjectId(deletionGate.projectId) },
+    { $set: { deletion_state: "active" } }
+  );
+  const deletionGateCleanup = await api(`/api/projects/${deletionGate.projectId}`, {
+    method: "DELETE",
+  });
+  check("解除删除闸门后可完成清理", deletionGateCleanup.status === 200);
+
+  const inFlightWrite = await createTopology("写入收尾");
+  const heldWorkRecordCreate = api(
+    `/api/projects/${inFlightWrite.projectId}/work-records`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-pm-assistant-test-write-lease-pause": "1",
+      },
+      body: JSON.stringify({ name: "删除前已取得写入许可" }),
+    }
+  );
+  await waitForDatabase(async () => {
+    const project = await Project.collection.findOne({
+      _id: new mongoose.Types.ObjectId(inFlightWrite.projectId),
+    });
+    return project?.deletion_write_leases?.length === 1;
+  }, "写入许可登记");
+  const cookieHeader = (await page.context().cookies(BASE))
+    .map((cookie) => `${cookie.name}=${cookie.value}`)
+    .join("; ");
+  const deleteDuringWrite = fetch(
+    new URL(`/api/projects/${inFlightWrite.projectId}`, BASE),
+    { method: "DELETE", headers: { Cookie: cookieHeader } }
+  ).then(async (response) => {
+    const text = await response.text();
+    let body = null;
+    try {
+      body = text ? JSON.parse(text) : null;
+    } catch {
+      body = text;
+    }
+    return { status: response.status, body };
+  });
+  const deletionWaitStartedAt = Date.now();
+  const [heldWorkRecordResult, deleteDuringWriteResult] = await Promise.all([
+    heldWorkRecordCreate,
+    deleteDuringWrite,
+  ]);
+  const deletionWaitMs = Date.now() - deletionWaitStartedAt;
+  const afterInFlightWrite = await traceCounts(inFlightWrite);
+  const residualWorkRecords = await WorkRecord.countDocuments({
+    project_id: new mongoose.Types.ObjectId(inFlightWrite.projectId),
+  });
+  check(
+    "删除等待已开始写入结束，再清理其新增记录",
+      heldWorkRecordResult.status === 201 &&
+      deleteDuringWriteResult.status === 200 &&
+      deletionWaitMs >= 800 &&
+      isFullyRemoved(afterInFlightWrite) &&
+      residualWorkRecords === 0
+  );
+
+  const staleLease = await createTopology("过期许可");
+  await Project.collection.updateOne(
+    { _id: new mongoose.Types.ObjectId(staleLease.projectId) },
+    {
+      $set: {
+        deletion_write_leases: [
+          { token: "abandoned-write", expires_at: new Date(Date.now() - 1_000) },
+        ],
+      },
+    }
+  );
+  const staleLeaseDelete = await api(`/api/projects/${staleLease.projectId}`, {
+    method: "DELETE",
+  });
+  const afterStaleLeaseDelete = await traceCounts(staleLease);
+  check(
+    "异常退出留下的过期写入许可不会阻塞补偿",
+    staleLeaseDelete.status === 200 && isFullyRemoved(afterStaleLeaseDelete)
+  );
+
+  const eventualCleanup = await createTopology("最终清理");
+  await Project.deleteOne({
+    _id: new mongoose.Types.ObjectId(eventualCleanup.projectId),
+  });
+  const lateWorkRecord = await WorkRecord.create({
+    project_id: new mongoose.Types.ObjectId(eventualCleanup.projectId),
+  });
+  const lateTab = await Tab.create({ work_record_id: lateWorkRecord._id });
+  await Promise.all([
+    Message.create({
+      role: "user",
+      content: "删除后才返回的消息",
+      tab_id: lateTab._id,
+      timestamp: new Date(),
+    }),
+    AgentFileContext.create({
+      tab_id: lateTab._id,
+      file_id: new mongoose.Types.ObjectId(eventualCleanup.fileId),
+      loaded_at: new Date(),
+    }),
+    TabOperation.create({
+      tab_id: lateTab._id,
+      request_id: `late-write-${Date.now()}`,
+      operation: "verify-eventual-cleanup",
+      expected_version: 0,
+      status: "completed",
+      created_at: new Date(),
+      updated_at: new Date(),
+    }),
+  ]);
+  const projectListAfterLateWrite = await api("/api/projects", {
+    headers: { "x-pm-assistant-test-force-orphan-cleanup": "1" },
+  });
+  const afterEventualCleanup = await traceCounts(eventualCleanup);
+  const [lateWorkRecords, lateTabs, lateMessages, lateContexts, lateOperations] =
+    await Promise.all([
+      WorkRecord.countDocuments({ _id: lateWorkRecord._id }),
+      Tab.countDocuments({ _id: lateTab._id }),
+      Message.countDocuments({ tab_id: lateTab._id }),
+      AgentFileContext.countDocuments({ tab_id: lateTab._id }),
+      TabOperation.countDocuments({ tab_id: lateTab._id }),
+    ]);
+  check(
+    "重新打开项目列表会清扫删除后迟到写入的残留",
+    projectListAfterLateWrite.status === 200 &&
+      isFullyRemoved(afterEventualCleanup) &&
+      [lateWorkRecords, lateTabs, lateMessages, lateContexts, lateOperations].every(
+        (count) => count === 0
+      )
+  );
+
+  const directTabDelete = await createTopology("单删标签页");
+  const directTabDeleteResult = await api(`/api/tabs/${directTabDelete.tabIds[0]}`, {
+    method: "DELETE",
+  });
+  const afterDirectTabDelete = await traceCounts(directTabDelete);
+  check(
+    "单独删除标签页也清理操作记录",
+    directTabDeleteResult.status === 200 &&
+      afterDirectTabDelete.tabs === 0 &&
+      afterDirectTabDelete.messages === 0 &&
+      afterDirectTabDelete.contexts === 0 &&
+      afterDirectTabDelete.operations === 0
+  );
+  await api(`/api/projects/${directTabDelete.projectId}`, { method: "DELETE" });
 
   const compensation = await createTopology("补偿重试", 2);
   check(
@@ -279,6 +465,65 @@ try {
     "已删除项目重复请求返回一致不存在",
     repeatedProjectDelete.status === 404 && repeatedProjectDelete.body?.code === "RESOURCE_NOT_FOUND"
   );
+
+  const workRecordCompensation = await createTopology("工作记录补偿");
+  const compensationWorkRecordId = workRecordCompensation.workRecordIds[0];
+  const injectedWorkRecordFailure = await api(
+    `/api/work-records/${compensationWorkRecordId}`,
+    {
+      method: "DELETE",
+      headers: {
+        "x-pm-assistant-test-force-compensation": "1",
+        "x-pm-assistant-test-cascade-fail-after": "agent-file-contexts",
+      },
+    }
+  );
+  const afterWorkRecordFailure = await traceCounts(workRecordCompensation);
+  const deletingWorkRecordList = await api(
+    `/api/projects/${workRecordCompensation.projectId}/work-records`
+  );
+  const deletingWorkRecordRead = await api(
+    `/api/work-records/${compensationWorkRecordId}`
+  );
+  check(
+    "工作记录故障注入返回可重试失败结果",
+    injectedWorkRecordFailure.status === 500 &&
+      injectedWorkRecordFailure.body?.code === "CASCADE_DELETE_FAILED" &&
+      afterWorkRecordFailure.workRecords === 1 &&
+      afterWorkRecordFailure.contexts === 0
+  );
+  check(
+    "删除中的工作记录在列表和单项读取中都按不存在处理",
+    deletingWorkRecordList.status === 200 &&
+      deletingWorkRecordList.body?.length === 0 &&
+      deletingWorkRecordRead.status === 404
+  );
+  const workRecordCompensationRetry = await api(
+    `/api/work-records/${compensationWorkRecordId}`,
+    { method: "DELETE" }
+  );
+  const afterWorkRecordCompensationRetry = await traceCounts(
+    workRecordCompensation
+  );
+  check(
+    "工作记录重复请求完成无事务补偿",
+    workRecordCompensationRetry.status === 200 &&
+      workRecordCompensationRetry.body?.mode === "compensation"
+  );
+  check(
+    "工作记录补偿重试清理下属数据并保留项目文件和快照",
+    afterWorkRecordCompensationRetry.workRecords === 0 &&
+      afterWorkRecordCompensationRetry.tabs === 0 &&
+      afterWorkRecordCompensationRetry.messages === 0 &&
+      afterWorkRecordCompensationRetry.contexts === 0 &&
+      afterWorkRecordCompensationRetry.operations === 0 &&
+      afterWorkRecordCompensationRetry.projects === 1 &&
+      afterWorkRecordCompensationRetry.files === 1 &&
+      afterWorkRecordCompensationRetry.snapshots === 1
+  );
+  await api(`/api/projects/${workRecordCompensation.projectId}`, {
+    method: "DELETE",
+  });
 
   const workRecordCase = await createTopology("工作记录级联");
   const workRecordId = workRecordCase.workRecordIds[0];

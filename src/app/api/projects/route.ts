@@ -1,16 +1,27 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
+import { reconcileCascadeOrphansForProjectList } from "@/lib/cascade-orphan-cleanup";
 import Project from "@/models/Project";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const userId = await requireAuth();
     if (userId instanceof NextResponse) return userId;
 
     await dbConnect();
+    await reconcileCascadeOrphansForProjectList(
+      process.env.CASCADE_DELETE_TEST_HOOKS === "1" &&
+        request.headers.get("x-pm-assistant-test-force-orphan-cleanup") === "1"
+    );
 
-    const projects = await Project.find({ user_id: userId })
+    const projects = await Project.find({
+      user_id: userId,
+      $or: [
+        { deletion_state: "active" },
+        { deletion_state: { $exists: false } },
+      ],
+    })
       .sort({ created_at: -1 })
       .lean();
 

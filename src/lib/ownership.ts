@@ -29,6 +29,10 @@ export async function findOwnedProject(
   return Project.findOne({
     _id: oid,
     user_id: userId,
+    $or: [
+      { deletion_state: "active" },
+      { deletion_state: { $exists: false } },
+    ],
   });
 }
 
@@ -43,7 +47,13 @@ export async function findOwnedWorkRecord(
   const oid = parseObjectId(workRecordId);
   if (!oid) return null;
 
-  const workRecord = await WorkRecord.findById(oid);
+  const workRecord = await WorkRecord.findOne({
+    _id: oid,
+    $or: [
+      { deletion_state: "active" },
+      { deletion_state: { $exists: false } },
+    ],
+  });
   if (!workRecord) return null;
 
   const project = await findOwnedProject(

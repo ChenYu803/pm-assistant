@@ -3,8 +3,9 @@ import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import Message from "@/models/Message";
 import AgentFileContext from "@/models/AgentFileContext";
-import { findOwnedTab } from "@/lib/ownership";
+import TabOperation from "@/models/TabOperation";
 import { serializeTab } from "@/lib/tab-helpers";
+import { acquireTabWriteLease } from "@/lib/deletion-coordination";
 import {
   TAB_CONFLICT_MESSAGE,
   beginTabOperation,
@@ -53,14 +54,16 @@ export async function PATCH(
 
     await dbConnect();
 
-    const tab = await findOwnedTab(tabId, userId);
-    if (!tab) {
+    const writeLease = await acquireTabWriteLease(tabId, userId);
+    if (!writeLease) {
       return NextResponse.json(
         { error: "标签页不存在或无权操作" },
         { status: 404 }
       );
     }
+    const tab = writeLease.tab;
 
+    try {
     const operationStart = await beginTabOperation({
       tab,
       operation: "rename-tab",
@@ -108,6 +111,9 @@ export async function PATCH(
       );
       throw error;
     }
+    } finally {
+      await writeLease.release();
+    }
   } catch (error) {
     console.error("PATCH /api/tabs/[id] error:", error);
     return NextResponse.json(
@@ -129,20 +135,26 @@ export async function DELETE(
 
     await dbConnect();
 
-    const tab = await findOwnedTab(tabId, userId);
-    if (!tab) {
+    const writeLease = await acquireTabWriteLease(tabId, userId);
+    if (!writeLease) {
       return NextResponse.json(
         { error: "标签页不存在或无权操作" },
         { status: 404 }
       );
     }
+    const tab = writeLease.tab;
 
-    // Delete all associated messages and file contexts
-    await Message.deleteMany({ tab_id: tab._id });
-    await AgentFileContext.deleteMany({ tab_id: tab._id });
-    await tab.deleteOne();
+    try {
+      // Delete all associated messages and file contexts
+      await Message.deleteMany({ tab_id: tab._id });
+      await AgentFileContext.deleteMany({ tab_id: tab._id });
+      await TabOperation.deleteMany({ tab_id: tab._id });
+      await tab.deleteOne();
 
-    return NextResponse.json({ success: true });
+      return NextResponse.json({ success: true });
+    } finally {
+      await writeLease.release();
+    }
   } catch (error) {
     console.error("DELETE /api/tabs/[id] error:", error);
     return NextResponse.json(

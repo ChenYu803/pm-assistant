@@ -12,6 +12,7 @@ import {
   FROZEN_DOCUMENT_LOCKED_MESSAGE,
   mutableProjectFileFilter,
 } from "@/lib/freeze-document-binding";
+import { acquireProjectWriteLease } from "@/lib/deletion-coordination";
 
 export async function GET(
   request: Request,
@@ -78,30 +79,41 @@ export async function PATCH(
 
     await dbConnect();
 
-    const file = await findOwnedProjectFileInProject(projectId, fileId, userId);
-    if (!file) {
+    const writeLease = await acquireProjectWriteLease(projectId, userId);
+    if (!writeLease) {
       return NextResponse.json(
         { error: "文件不存在或无权访问" },
         { status: 404 }
       );
     }
+    try {
+      const file = await findOwnedProjectFileInProject(projectId, fileId, userId);
+      if (!file) {
+        return NextResponse.json(
+          { error: "文件不存在或无权访问" },
+          { status: 404 }
+        );
+      }
 
-    // User edit: update content as-is, do NOT modify changelog.
-    const updatedAt = new Date();
-    const updateResult = await file.collection.updateOne(
-      mutableProjectFileFilter(file._id),
-      { $set: { content, updated_at: updatedAt } }
-    );
-    if (updateResult.matchedCount !== 1) {
-      return NextResponse.json(
-        { error: FROZEN_DOCUMENT_LOCKED_MESSAGE },
-        { status: 409 }
+      // User edit: update content as-is, do NOT modify changelog.
+      const updatedAt = new Date();
+      const updateResult = await file.collection.updateOne(
+        mutableProjectFileFilter(file._id),
+        { $set: { content, updated_at: updatedAt } }
       );
-    }
-    file.content = content;
-    file.updated_at = updatedAt;
+      if (updateResult.matchedCount !== 1) {
+        return NextResponse.json(
+          { error: FROZEN_DOCUMENT_LOCKED_MESSAGE },
+          { status: 409 }
+        );
+      }
+      file.content = content;
+      file.updated_at = updatedAt;
 
-    return NextResponse.json(serializeProjectFile(file));
+      return NextResponse.json(serializeProjectFile(file));
+    } finally {
+      await writeLease.release();
+    }
   } catch (error) {
     console.error("PATCH /api/projects/[id]/files/[fileId] error:", error);
     return NextResponse.json(
@@ -131,27 +143,38 @@ export async function DELETE(
 
     await dbConnect();
 
-    const file = await findOwnedProjectFileInProject(projectId, fileId, userId);
-    if (!file) {
+    const writeLease = await acquireProjectWriteLease(projectId, userId);
+    if (!writeLease) {
       return NextResponse.json(
         { error: "文件不存在或无权访问" },
         { status: 404 }
       );
     }
+    try {
+      const file = await findOwnedProjectFileInProject(projectId, fileId, userId);
+      if (!file) {
+        return NextResponse.json(
+          { error: "文件不存在或无权访问" },
+          { status: 404 }
+        );
+      }
 
-    const deleteResult = await file.collection.deleteOne(
-      mutableProjectFileFilter(file._id)
-    );
-    if (deleteResult.deletedCount !== 1) {
-      return NextResponse.json(
-        { error: FROZEN_DOCUMENT_LOCKED_MESSAGE },
-        { status: 409 }
+      const deleteResult = await file.collection.deleteOne(
+        mutableProjectFileFilter(file._id)
       );
-    }
-    // 清理 Agent 上下文中对该文件的引用
-    await AgentFileContext.deleteMany({ file_id: file._id });
+      if (deleteResult.deletedCount !== 1) {
+        return NextResponse.json(
+          { error: FROZEN_DOCUMENT_LOCKED_MESSAGE },
+          { status: 409 }
+        );
+      }
+      // 清理 Agent 上下文中对该文件的引用
+      await AgentFileContext.deleteMany({ file_id: file._id });
 
-    return NextResponse.json({ ok: true });
+      return NextResponse.json({ ok: true });
+    } finally {
+      await writeLease.release();
+    }
   } catch (error) {
     console.error("DELETE /api/projects/[id]/files/[fileId] error:", error);
     return NextResponse.json(

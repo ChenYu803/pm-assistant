@@ -5,6 +5,7 @@ import dbConnect from "@/lib/mongodb";
 import PrototypeSnapshot from "@/models/PrototypeSnapshot";
 import { findOwnedProject } from "@/lib/ownership";
 import { MAX_FILE_BYTES } from "@/lib/file-helpers";
+import { acquireProjectWriteLease } from "@/lib/deletion-coordination";
 
 export async function GET(
   request: Request,
@@ -54,41 +55,46 @@ export async function POST(
     }
 
     await dbConnect();
-    const project = await findOwnedProject(projectId, userId);
-    if (!project) return NextResponse.json({ error: "项目不存在或无权访问" }, { status: 404 });
+    const writeLease = await acquireProjectWriteLease(projectId, userId);
+    if (!writeLease) return NextResponse.json({ error: "项目不存在或无权访问" }, { status: 404 });
+    const project = writeLease.project;
 
-    let tabObjectId: mongoose.Types.ObjectId | undefined;
-    if (typeof tabId === "string") {
-      const { findOwnedTabWithProject, parseObjectId } = await import("@/lib/ownership");
-      if (!parseObjectId(tabId)) return NextResponse.json({ error: "tabId 参数无效" }, { status: 400 });
-      const ownedTab = await findOwnedTabWithProject(tabId, userId);
-      if (!ownedTab || ownedTab.project._id.toString() !== project._id.toString()) {
-        return NextResponse.json({ error: "标签页不存在或不属于当前项目" }, { status: 404 });
+    try {
+      let tabObjectId: mongoose.Types.ObjectId | undefined;
+      if (typeof tabId === "string") {
+        const { findOwnedTabWithProject, parseObjectId } = await import("@/lib/ownership");
+        if (!parseObjectId(tabId)) return NextResponse.json({ error: "tabId 参数无效" }, { status: 400 });
+        const ownedTab = await findOwnedTabWithProject(tabId, userId);
+        if (!ownedTab || ownedTab.project._id.toString() !== project._id.toString()) {
+          return NextResponse.json({ error: "标签页不存在或不属于当前项目" }, { status: 404 });
+        }
+        tabObjectId = ownedTab.tab._id;
       }
-      tabObjectId = ownedTab.tab._id;
-    }
 
-    const latest = await PrototypeSnapshot.findOne({ project_id: project._id })
-      .sort({ version: -1 })
-      .select("version")
-      .lean();
-    const snapshot = await PrototypeSnapshot.create({
-      project_id: project._id,
-      ...(tabObjectId ? { tab_id: tabObjectId } : {}),
-      content,
-      version: (latest?.version ?? 0) + 1,
-      created_at: new Date(),
-    });
-    return NextResponse.json(
-      {
-        id: snapshot._id.toString(),
-        version: snapshot.version,
-        tab_id: snapshot.tab_id?.toString(),
-        content: snapshot.content,
-        created_at: snapshot.created_at,
-      },
-      { status: 201 }
-    );
+      const latest = await PrototypeSnapshot.findOne({ project_id: project._id })
+        .sort({ version: -1 })
+        .select("version")
+        .lean();
+      const snapshot = await PrototypeSnapshot.create({
+        project_id: project._id,
+        ...(tabObjectId ? { tab_id: tabObjectId } : {}),
+        content,
+        version: (latest?.version ?? 0) + 1,
+        created_at: new Date(),
+      });
+      return NextResponse.json(
+        {
+          id: snapshot._id.toString(),
+          version: snapshot.version,
+          tab_id: snapshot.tab_id?.toString(),
+          content: snapshot.content,
+          created_at: snapshot.created_at,
+        },
+        { status: 201 }
+      );
+    } finally {
+      await writeLease.release();
+    }
   } catch (error) {
     console.error("POST /api/projects/[id]/snapshots error:", error);
     return NextResponse.json({ error: "保存 HTML 快照失败" }, { status: 500 });

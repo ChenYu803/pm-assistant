@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
-import { findOwnedTabWithProject } from "@/lib/ownership";
 import ProjectFile from "@/models/ProjectFile";
 import Tab from "@/models/Tab";
 import {
@@ -22,6 +21,7 @@ import {
   releaseFreezeDocumentBinding,
 } from "@/lib/freeze-document-binding";
 import type { FreezeStatus } from "@/lib/agent-constants";
+import { acquireTabWriteLease } from "@/lib/deletion-coordination";
 
 type FreezeAction = "cancel" | "complete";
 
@@ -94,14 +94,15 @@ export async function POST(
     }
 
     await dbConnect();
-    const ownedTab = await findOwnedTabWithProject(tabId, userId);
-    if (!ownedTab) {
+    const writeLease = await acquireTabWriteLease(tabId, userId);
+    if (!writeLease) {
       return NextResponse.json(
         { error: "标签页不存在或无权操作" },
         { status: 404 }
       );
     }
-    const { tab, project } = ownedTab;
+    const { tab, project } = writeLease;
+    try {
     const persistedFreezeState = await getPersistedFreezeState(tab._id);
     const operationName = `freeze-${action}`;
     const existingOperation = await TabOperation.findOne({
@@ -294,6 +295,9 @@ export async function POST(
         error instanceof Error ? error.message : "冻结状态更新失败"
       );
       throw error;
+    }
+    } finally {
+      await writeLease.release();
     }
   } catch (error) {
     console.error("POST /api/tabs/[id]/freeze error:", error);

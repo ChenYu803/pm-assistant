@@ -3,7 +3,8 @@ import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import Message, { ensureMessageRequestIdIndex } from "@/models/Message";
 import Tab, { type ITabDocument } from "@/models/Tab";
-import { findOwnedTabWithProject, parseObjectId } from "@/lib/ownership";
+import { parseObjectId } from "@/lib/ownership";
+import { acquireTabWriteLease } from "@/lib/deletion-coordination";
 import { AGENT_SYSTEM_PROMPTS } from "@/lib/agent-prompts";
 import type { AgentType, FreezeStatus } from "@/lib/agent-constants";
 import { autoNameWorkRecord } from "@/lib/auto-name";
@@ -261,15 +262,17 @@ export async function POST(
     await dbConnect();
     await ensureMessageRequestIdIndex();
 
-    const ownedTab = await findOwnedTabWithProject(tabId, userId);
-    if (!ownedTab) {
+    const writeLease = await acquireTabWriteLease(tabId, userId);
+    if (!writeLease) {
       return NextResponse.json(
         { error: "标签页不存在或无权操作" },
         { status: 404 }
       );
     }
+    let streamOwnsLease = false;
+    try {
     const requestId = mutationRequest.requestId;
-    const { tab, project } = ownedTab;
+    const { tab, project } = writeLease;
     const persistedFreezeState = await getPersistedFreezeState(tab._id);
 
     // 同一个 requestId 只对应一条正式 assistant 消息。网络重放不会重新提交
@@ -644,6 +647,21 @@ export async function POST(
         let tabOperationFinished = false;
         let freezeStatus: "proposed" | "awaiting_write" | undefined;
         const generationController = registerGeneration(assistantMessageId);
+        let writeLeaseLost = false;
+        const leaseHeartbeat = setInterval(() => {
+          void writeLease
+            .renew()
+            .then((renewed) => {
+              if (!renewed) {
+                writeLeaseLost = true;
+                generationController.abort();
+              }
+            })
+            .catch(() => {
+              writeLeaseLost = true;
+              generationController.abort();
+            });
+        }, 5_000);
 
         enqueueSse(controller, "start", {
           messageId: assistantMessageId,
@@ -692,7 +710,7 @@ export async function POST(
           });
 
           for await (const chunk of aiStream) {
-            if (generationController.signal.aborted) {
+            if (generationController.signal.aborted || writeLeaseLost) {
               throw new GenerationInterruptedError();
             }
             const delta = chunk.choices[0]?.delta?.content;
@@ -941,12 +959,15 @@ export async function POST(
               : {}),
           });
         } finally {
+          clearInterval(leaseHeartbeat);
           releaseGeneration(assistantMessageId, generationController);
+          await writeLease.release();
           closeSse(controller);
         }
       },
     });
 
+    streamOwnsLease = true;
     return new Response(stream, {
       headers: {
         "Content-Type": "text/event-stream",
@@ -955,6 +976,9 @@ export async function POST(
         "X-Accel-Buffering": "no",
       },
     });
+    } finally {
+      if (!streamOwnsLease) await writeLease.release();
+    }
   } catch (error) {
     console.error("POST /api/tabs/[id]/chat error:", error);
     return NextResponse.json(

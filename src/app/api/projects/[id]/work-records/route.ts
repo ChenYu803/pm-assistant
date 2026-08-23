@@ -3,6 +3,10 @@ import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import WorkRecord from "@/models/WorkRecord";
 import { findOwnedProject } from "@/lib/ownership";
+import {
+  acquireProjectWriteLease,
+  pauseWriteLeaseForTest,
+} from "@/lib/deletion-coordination";
 
 export async function GET(
   request: Request,
@@ -25,7 +29,13 @@ export async function GET(
       );
     }
 
-    const workRecords = await WorkRecord.find({ project_id: project._id })
+    const workRecords = await WorkRecord.find({
+      project_id: project._id,
+      $or: [
+        { deletion_state: "active" },
+        { deletion_state: { $exists: false } },
+      ],
+    })
       .sort({ created_at: -1 })
       .lean();
 
@@ -58,35 +68,40 @@ export async function POST(
 
     await dbConnect();
 
-    const project = await findOwnedProject(projectId, userId);
+    const writeLease = await acquireProjectWriteLease(projectId, userId);
 
-    if (!project) {
+    if (!writeLease) {
       return NextResponse.json(
         { error: "项目不存在或无权操作" },
         { status: 404 }
       );
     }
 
-    // 可选名称（v1.1 创建一步化）：填了用用户命名（AI 自动命名不会再覆盖，
-    // auto-name 只对「未命名」生效）；留空走默认「未命名」+ AI 自动命名兜底。
-    const body = await request.json().catch(() => ({}));
-    const { name } = body as { name?: unknown };
-    const trimmedName = typeof name === "string" ? name.trim() : "";
+    try {
+      // 可选名称（v1.1 创建一步化）：填了用用户命名（AI 自动命名不会再覆盖，
+      // auto-name 只对「未命名」生效）；留空走默认「未命名」+ AI 自动命名兜底。
+      const body = await request.json().catch(() => ({}));
+      const { name } = body as { name?: unknown };
+      const trimmedName = typeof name === "string" ? name.trim() : "";
 
-    const workRecord = await WorkRecord.create({
-      project_id: project._id,
-      ...(trimmedName ? { name: trimmedName } : {}),
-    });
+      await pauseWriteLeaseForTest(request);
+      const workRecord = await WorkRecord.create({
+        project_id: writeLease.project._id,
+        ...(trimmedName ? { name: trimmedName } : {}),
+      });
 
-    return NextResponse.json(
-      {
-        id: workRecord._id.toString(),
-        name: workRecord.name,
-        project_id: workRecord.project_id.toString(),
-        created_at: workRecord.created_at,
-      },
-      { status: 201 }
-    );
+      return NextResponse.json(
+        {
+          id: workRecord._id.toString(),
+          name: workRecord.name,
+          project_id: workRecord.project_id.toString(),
+          created_at: workRecord.created_at,
+        },
+        { status: 201 }
+      );
+    } finally {
+      await writeLease.release();
+    }
   } catch (error) {
     console.error("POST /api/projects/[id]/work-records error:", error);
     return NextResponse.json(

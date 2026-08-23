@@ -7,6 +7,11 @@ import PrototypeSnapshot from "@/models/PrototypeSnapshot";
 import Tab from "@/models/Tab";
 import TabOperation from "@/models/TabOperation";
 import WorkRecord from "@/models/WorkRecord";
+import { reconcileCascadeOrphans } from "@/lib/cascade-orphan-cleanup";
+import {
+  waitForProjectWritesToFinish,
+  waitForWorkRecordWritesToFinish,
+} from "@/lib/deletion-coordination";
 
 export const CASCADE_DELETE_TEST_STEPS = [
   "agent-file-contexts",
@@ -156,7 +161,8 @@ export async function deleteWorkRecordCascade(
   workRecordId: mongoose.Types.ObjectId,
   options: CascadeDeleteOptions = {}
 ): Promise<CascadeDeleteResult> {
-  return runCascade(async (session) => {
+  await waitForWorkRecordWritesToFinish(workRecordId);
+  const result = await runCascade(async (session) => {
     const optionsWithSession = sessionOptions(session);
     const tabIds = await Tab.distinct(
       "_id",
@@ -184,6 +190,8 @@ export async function deleteWorkRecordCascade(
       throw new Error(`工作记录清理未完成，剩余 ${remaining} 条记录`);
     }
   }, options);
+  await reconcileCascadeOrphans();
+  return result;
 }
 
 /**
@@ -194,7 +202,8 @@ export async function deleteProjectCascade(
   projectId: mongoose.Types.ObjectId,
   options: CascadeDeleteOptions = {}
 ): Promise<CascadeDeleteResult> {
-  return runCascade(async (session) => {
+  await waitForProjectWritesToFinish(projectId);
+  const result = await runCascade(async (session) => {
     const optionsWithSession = sessionOptions(session);
     const workRecordIds = await WorkRecord.distinct(
       "_id",
@@ -252,4 +261,6 @@ export async function deleteProjectCascade(
       throw new Error(`项目清理未完成，剩余 ${remaining} 条记录`);
     }
   }, options);
+  await reconcileCascadeOrphans();
+  return result;
 }

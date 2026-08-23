@@ -8,6 +8,7 @@ import { AGENT_TYPES, AGENT_TYPE_LABELS, type AgentType } from "@/lib/agent-cons
 import { findOwnedWorkRecord } from "@/lib/ownership";
 import { serializeTab } from "@/lib/tab-helpers";
 import type { ITabDocument } from "@/models/Tab";
+import { acquireWorkRecordWriteLease } from "@/lib/deletion-coordination";
 
 // 各 Agent 类型创建 tab 时自动加载进上下文的文件（spec: Implementation Decisions）
 // prototype → 需求分析.md；mvp_prd → 需求分析.md + 原型.md；ticket_splitter → prd.md + 需求分析.md
@@ -76,68 +77,73 @@ export async function POST(
 
     await dbConnect();
 
-    const workRecord = await findOwnedWorkRecord(workRecordId, userId);
-    if (!workRecord) {
+    const writeLease = await acquireWorkRecordWriteLease(workRecordId, userId);
+    if (!writeLease) {
       return NextResponse.json(
         { error: "工作记录不存在或无权操作" },
         { status: 404 }
       );
     }
 
-    // Auto-generate display name: "需求分析 #N" or "MVP-PRD #N"
-    const existingCount = await Tab.countDocuments({
-      work_record_id: workRecord._id,
-      agent_type,
-    });
-    const label = AGENT_TYPE_LABELS[agent_type as AgentType];
-    const displayName = `${label} #${existingCount + 1}`;
+    try {
+      const workRecord = writeLease.workRecord;
+      // Auto-generate display name: "需求分析 #N" or "MVP-PRD #N"
+      const existingCount = await Tab.countDocuments({
+        work_record_id: workRecord._id,
+        agent_type,
+      });
+      const label = AGENT_TYPE_LABELS[agent_type as AgentType];
+      const displayName = `${label} #${existingCount + 1}`;
 
-    // Determine position: after the last tab
-    const lastTab = await Tab.findOne({ work_record_id: workRecord._id })
-      .sort({ position: -1 })
-      .lean();
-    const position = lastTab ? lastTab.position + 1 : 0;
+      // Determine position: after the last tab
+      const lastTab = await Tab.findOne({ work_record_id: workRecord._id })
+        .sort({ position: -1 })
+        .lean();
+      const position = lastTab ? lastTab.position + 1 : 0;
 
-    const tab = await Tab.create({
-      agent_type,
-      display_name: displayName,
-      position,
-      work_record_id: workRecord._id,
-    });
+      const tab = await Tab.create({
+        agent_type,
+        display_name: displayName,
+        position,
+        work_record_id: workRecord._id,
+      });
 
-    const contextFiles: { id: string; filename: string }[] = [];
-    const filesToLoad = AUTO_LOAD_FILES[agent_type as AgentType] ?? [];
-    for (const filename of filesToLoad) {
-      try {
-        const file = await ProjectFile.findOne({
-          project_id: workRecord.project_id,
-          filename,
-        });
-        if (file) {
-          await AgentFileContext.create({
-            tab_id: tab._id,
-            file_id: file._id,
+      const contextFiles: { id: string; filename: string }[] = [];
+      const filesToLoad = AUTO_LOAD_FILES[agent_type as AgentType] ?? [];
+      for (const filename of filesToLoad) {
+        try {
+          const file = await ProjectFile.findOne({
+            project_id: workRecord.project_id,
+            filename,
           });
-          contextFiles.push({
-            id: file._id.toString(),
-            filename: file.filename,
-          });
-        }
-      } catch (err) {
-        // Duplicate key (11000) is fine — context already exists
-        if ((err as { code?: number }).code !== 11000) {
-          console.error(`Auto-load context failed (${filename}):`, err);
+          if (file) {
+            await AgentFileContext.create({
+              tab_id: tab._id,
+              file_id: file._id,
+            });
+            contextFiles.push({
+              id: file._id.toString(),
+              filename: file.filename,
+            });
+          }
+        } catch (err) {
+          // Duplicate key (11000) is fine — context already exists
+          if ((err as { code?: number }).code !== 11000) {
+            console.error(`Auto-load context failed (${filename}):`, err);
+          }
         }
       }
-    }
 
-    return NextResponse.json(
-      {
-        tab: serializeTab(tab),
-        context_files: contextFiles,
-      },
-      { status: 201 }
-    );
+      return NextResponse.json(
+        {
+          tab: serializeTab(tab),
+          context_files: contextFiles,
+        },
+        { status: 201 }
+      );
+    } finally {
+      await writeLease.release();
+    }
   } catch (error) {
     console.error("POST /api/work-records/[id]/tabs error:", error);
     return NextResponse.json(

@@ -17,6 +17,7 @@ import {
   waitForTabOperation,
 } from "@/lib/tab-concurrency";
 import type { ITabOperationDocument } from "@/models/TabOperation";
+import { acquireTabWriteLease } from "@/lib/deletion-coordination";
 
 function tabConflictResponse(currentVersion: number | null) {
   return NextResponse.json(
@@ -138,14 +139,16 @@ export async function PATCH(
     }
 
     await dbConnect();
-    const tab = await findOwnedTab(tabId, userId);
-    if (!tab) {
+    const writeLease = await acquireTabWriteLease(tabId, userId);
+    if (!writeLease) {
       return NextResponse.json(
         { error: "标签页不存在或无权操作" },
         { status: 404 }
       );
     }
+    const tab = writeLease.tab;
 
+    try {
     const operationStart = await beginPassiveTabOperation({
       tab,
       operation: "stop-generation",
@@ -211,6 +214,9 @@ export async function PATCH(
       ...response,
       tabVersion: operationStart.tab.version ?? 0,
     });
+    } finally {
+      await writeLease.release();
+    }
   } catch (error) {
     console.error("PATCH /api/tabs/[id]/messages error:", error);
     return NextResponse.json({ error: "停止生成失败" }, { status: 500 });
@@ -253,14 +259,16 @@ export async function DELETE(
     }
 
     await dbConnect();
-    const tab = await findOwnedTab(tabId, userId);
-    if (!tab) {
+    const writeLease = await acquireTabWriteLease(tabId, userId);
+    if (!writeLease) {
       return NextResponse.json(
         { error: "标签页不存在或无权操作" },
         { status: 404 }
       );
     }
+    const tab = writeLease.tab;
 
+    try {
     const operationStart = await beginTabOperation({
       tab,
       operation: fromMessageId ? "truncate-messages" : "delete-message",
@@ -359,6 +367,9 @@ export async function DELETE(
         error instanceof Error ? error.message : "删除消息失败"
       );
       throw error;
+    }
+    } finally {
+      await writeLease.release();
     }
   } catch (error) {
     console.error("DELETE /api/tabs/[id]/messages error:", error);

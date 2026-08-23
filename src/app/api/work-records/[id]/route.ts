@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
-import WorkRecord from "@/models/WorkRecord";
-import { parseObjectId, findOwnedProject, findOwnedWorkRecord } from "@/lib/ownership";
+import { parseObjectId, findOwnedWorkRecord } from "@/lib/ownership";
 import {
   deleteWorkRecordCascade,
   getCascadeDeleteTestOptions,
 } from "@/lib/cascade-delete";
+import {
+  acquireWorkRecordWriteLease,
+  beginWorkRecordDeletion,
+} from "@/lib/deletion-coordination";
 
 export async function GET(
   request: Request,
@@ -63,33 +66,23 @@ export async function DELETE(
 
     await dbConnect();
 
-    // Find the work record
-    const workRecord = await WorkRecord.findById(oid);
-
-    if (!workRecord) {
+    const deletion = await beginWorkRecordDeletion(id, userId);
+    if (!deletion) {
       return NextResponse.json(
-        { error: "工作记录不存在", code: "RESOURCE_NOT_FOUND" },
+        { error: "工作记录不存在或无权操作", code: "RESOURCE_NOT_FOUND" },
         { status: 404 }
       );
     }
 
-    // Verify project belongs to user
-    const project = await findOwnedProject(
-      workRecord.project_id.toString(),
-      userId
-    );
-
-    if (!project) {
-      return NextResponse.json(
-        { error: "无权操作此工作记录" },
-        { status: 403 }
+    let result;
+    try {
+      result = await deleteWorkRecordCascade(
+        deletion.workRecord._id,
+        getCascadeDeleteTestOptions(request)
       );
+    } finally {
+      await deletion.release();
     }
-
-    const result = await deleteWorkRecordCascade(
-      workRecord._id,
-      getCascadeDeleteTestOptions(request)
-    );
 
     return NextResponse.json({ success: true, mode: result.mode });
   } catch (error) {
@@ -131,37 +124,28 @@ export async function PATCH(
 
     await dbConnect();
 
-    const workRecord = await WorkRecord.findById(oid);
+    const writeLease = await acquireWorkRecordWriteLease(id, userId);
 
-    if (!workRecord) {
+    if (!writeLease) {
       return NextResponse.json(
-        { error: "工作记录不存在" },
+        { error: "工作记录不存在或无权操作" },
         { status: 404 }
       );
     }
+    try {
+      const workRecord = writeLease.workRecord;
+      workRecord.name = name.trim();
+      await workRecord.save();
 
-    // Verify project belongs to user
-    const project = await findOwnedProject(
-      workRecord.project_id.toString(),
-      userId
-    );
-
-    if (!project) {
-      return NextResponse.json(
-        { error: "无权操作此工作记录" },
-        { status: 403 }
-      );
+      return NextResponse.json({
+        id: workRecord._id.toString(),
+        name: workRecord.name,
+        project_id: workRecord.project_id.toString(),
+        created_at: workRecord.created_at,
+      });
+    } finally {
+      await writeLease.release();
     }
-
-    workRecord.name = name.trim();
-    await workRecord.save();
-
-    return NextResponse.json({
-      id: workRecord._id.toString(),
-      name: workRecord.name,
-      project_id: workRecord.project_id.toString(),
-      created_at: workRecord.created_at,
-    });
   } catch (error) {
     console.error("PATCH /api/work-records/[id] error:", error);
     return NextResponse.json(
