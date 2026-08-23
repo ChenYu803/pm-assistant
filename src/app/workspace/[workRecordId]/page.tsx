@@ -44,6 +44,10 @@ function getActiveTabKey(workRecordId: string): string {
   return `pm-assistant-active-tab:${workRecordId}`;
 }
 
+function createTabRequestId(prefix: string): string {
+  return `${prefix}-${crypto.randomUUID()}`;
+}
+
 export default function WorkspacePage() {
   const params = useParams();
   const workRecordId = params.workRecordId as string;
@@ -363,23 +367,29 @@ export default function WorkspacePage() {
   }
 
   async function handleRenameTab(tabId: string, newName: string) {
-    // Optimistic update
-    setTabs((prev) =>
-      prev.map((t) => (t.id === tabId ? { ...t, display_name: newName } : t))
-    );
+    const tab = tabs.find((item) => item.id === tabId);
+    if (!tab) return;
 
     try {
       const res = await fetch(`/api/tabs/${tabId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ display_name: newName }),
+        body: JSON.stringify({
+          display_name: newName,
+          expectedVersion: tab.version,
+          requestId: createTabRequestId("rename"),
+        }),
       });
       if (!res.ok) {
-        throw new Error("重命名失败");
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "重命名失败");
       }
-    } catch {
-      // Revert on failure
-      await fetchTabs();
+      const updated = await res.json();
+      setTabs((prev) =>
+        prev.map((item) => (item.id === tabId ? updated : item))
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "重命名失败");
     }
   }
 
@@ -708,6 +718,7 @@ export default function WorkspacePage() {
             <ChatArea
               tabId={activeTab?.id ?? null}
               tabName={activeTab?.display_name ?? null}
+              tabVersion={activeTab?.version ?? null}
               agentType={activeTab?.agent_type ?? null}
               projectId={project?.id ?? null}
               existingFileNames={files.map((f) => f.filename)}
@@ -718,6 +729,16 @@ export default function WorkspacePage() {
                 );
               }}
               onFileSaved={fetchFiles}
+              onTabVersionChange={(tabId, version) => {
+                setTabs((prev) =>
+                  prev.map((tab) =>
+                    tab.id === tabId ? { ...tab, version } : tab
+                  )
+                );
+              }}
+              onTabConflict={() => {
+                void fetchTabs();
+              }}
             />
           )}
         </div>

@@ -56,6 +56,7 @@ interface ChatMessage {
 interface ChatAreaProps {
   tabId: string | null;
   tabName: string | null;
+  tabVersion: number | null;
   agentType: AgentType | null;
   projectId: string | null;
   /** Filenames already present in the project — used to skip re-confirming completed writes. */
@@ -66,6 +67,8 @@ interface ChatAreaProps {
   filesReady?: boolean;
   onWorkRecordRenamed?: (newName: string) => void;
   onFileSaved?: () => void; // notify parent to refresh file list
+  onTabVersionChange?: (tabId: string, version: number) => void;
+  onTabConflict?: (tabId: string) => void;
 }
 
 interface SseEvent {
@@ -84,6 +87,7 @@ interface SseEvent {
   replacesMessageIds?: string[];
   replaceFromMessageId?: string;
   replacementUserMessage?: ChatMessage;
+  tabVersion?: number;
 }
 
 interface FileConsistencyPrompt {
@@ -107,6 +111,7 @@ function isConfigError(message: string): boolean {
 
 const CONTEXT_TOKEN_LIMIT = 32_768;
 const CONTEXT_WARNING_TOKENS = 24_000;
+const TAB_CONFLICT_MESSAGE = "此标签页正在被其他窗口修改";
 
 /** 使用字符数粗估上下文，不发网络请求；异常时返回 null 以静默隐藏辅助位。 */
 function estimateContextTokens(messages: ChatMessage[], input: string): number | null {
@@ -458,12 +463,15 @@ function StreamingHtmlPlaceholder() {
 export default function ChatArea({
   tabId,
   tabName,
+  tabVersion,
   agentType,
   projectId,
   existingFileNames,
   filesReady = true,
   onWorkRecordRenamed,
   onFileSaved,
+  onTabVersionChange,
+  onTabConflict,
 }: ChatAreaProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -682,7 +690,7 @@ export default function ChatArea({
       setActiveAssistantMessageId(null);
       setIsStopping(false);
     };
-  }, [tabId]);
+  }, [tabId, tabVersion]);
 
   // ── Smart auto-scroll ────────────────────────────────────────────────────
 
@@ -788,7 +796,7 @@ export default function ChatArea({
       retryMessageId?: string;
     }
   ) {
-    if (!tabId || isStreaming) return;
+    if (!tabId || tabVersion === null || isStreaming) return;
 
     setError("");
     const regenerateMessageId = options?.regenerateMessageId;
@@ -830,12 +838,13 @@ export default function ChatArea({
         : regenerateMessageId
           ? { regenerate: true, messageId: regenerateMessageId, requestId }
           : { content, requestId };
+    const mutationPayload = { ...payload, expectedVersion: tabVersion };
 
     try {
       const res = await fetch(`/api/tabs/${tabId}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(mutationPayload),
         signal: controller.signal,
       });
 
@@ -887,6 +896,9 @@ export default function ChatArea({
               break;
             case "start": {
               if (!event.messageId) break;
+              if (typeof event.tabVersion === "number") {
+                onTabVersionChange?.(tabId, event.tabVersion);
+              }
               const newMessage: ChatMessage = {
                 id: event.messageId,
                 role: "assistant",
@@ -914,6 +926,9 @@ export default function ChatArea({
             }
             case "done": {
               if (!event.messageId) break;
+              if (typeof event.tabVersion === "number") {
+                onTabVersionChange?.(tabId, event.tabVersion);
+              }
               const completedContent = event.content ?? "";
               const completedMessage: ChatMessage = {
                 id: event.messageId,
@@ -995,6 +1010,9 @@ export default function ChatArea({
             }
             case "error": {
               const errMsg = event.message || "请求发生错误";
+              if (typeof event.tabVersion === "number") {
+                onTabVersionChange?.(tabId, event.tabVersion);
+              }
               if (isConfigError(errMsg)) {
                 setConfigError(errMsg);
               } else {
@@ -1045,18 +1063,37 @@ export default function ChatArea({
   }
 
   async function stopGeneration() {
-    if (!isStreaming || !tabId || !activeAssistantMessageId || isStopping) return;
+    if (
+      !isStreaming ||
+      !tabId ||
+      tabVersion === null ||
+      !activeAssistantMessageId ||
+      isStopping
+    ) {
+      return;
+    }
     setIsStopping(true);
     try {
       const res = await fetch(
         `/api/tabs/${tabId}/messages?messageId=${encodeURIComponent(activeAssistantMessageId)}`,
-        { method: "PATCH" }
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messageId: activeAssistantMessageId,
+            expectedVersion: tabVersion,
+            requestId: createClientMessageId("stop"),
+          }),
+        }
       );
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "停止生成失败");
       }
-      const { message } = await res.json();
+      const { message, tabVersion: nextTabVersion } = await res.json();
+      if (typeof nextTabVersion === "number") {
+        onTabVersionChange?.(tabId, nextTabVersion);
+      }
       setMessages((prev) =>
         prev.map((item) =>
           item.id === activeAssistantMessageId
@@ -1098,7 +1135,7 @@ export default function ChatArea({
   }
 
   async function confirmDeleteMessage() {
-    if (!pendingDeleteMessage || deletingMessage) return;
+    if (!pendingDeleteMessage || deletingMessage || tabVersion === null) return;
     const message = pendingDeleteMessage;
     if (message.id.startsWith("temp-") || message.id.startsWith("interrupted-")) {
       setMessages((prev) => prev.filter((item) => item.id !== message.id));
@@ -1110,11 +1147,23 @@ export default function ChatArea({
     try {
       const res = await fetch(
         `/api/tabs/${tabId}/messages?messageId=${encodeURIComponent(message.id)}`,
-        { method: "DELETE" }
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messageId: message.id,
+            expectedVersion: tabVersion,
+            requestId: createClientMessageId("delete"),
+          }),
+        }
       );
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "删除消息失败");
+      }
+      const result = await res.json();
+      if (typeof result.tabVersion === "number") {
+        onTabVersionChange?.(tabId!, result.tabVersion);
       }
       setMessages((prev) => prev.filter((item) => item.id !== message.id));
       setPendingDeleteMessage(null);
@@ -1430,7 +1479,19 @@ export default function ChatArea({
               <div className="flex items-center justify-between gap-2">
                 <span className="flex-1">{error}</span>
                 <div className="flex items-center gap-1">
-                  {lastSentContent && (
+                  {error === TAB_CONFLICT_MESSAGE && tabId ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        onTabConflict?.(tabId);
+                        setError("");
+                      }}
+                      className="rounded border-red-300 text-red-700 hover:bg-red-100"
+                    >
+                      刷新标签页
+                    </Button>
+                  ) : lastSentContent ? (
                     <Button
                       variant="outline"
                       size="sm"
@@ -1440,7 +1501,7 @@ export default function ChatArea({
                     >
                       重试
                     </Button>
-                  )}
+                  ) : null}
                   <Button
                     variant="ghost"
                     size="icon"

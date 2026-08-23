@@ -102,4 +102,5 @@ export interface TabData {
   display_name: string;
   position: number;
   scope_frozen: boolean;
+  version: number;
 }

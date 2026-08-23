@@ -19,6 +19,15 @@ import {
   releaseGeneration,
 } from "@/lib/generation-control";
 import { getVisibleMessages } from "@/lib/message-recovery";
+import {
+  TAB_CONFLICT_MESSAGE,
+  beginTabOperation,
+  completeTabOperation,
+  failTabOperation,
+  parseTabMutationRequest,
+  recordTabOperationResult,
+  waitForTabOperation,
+} from "@/lib/tab-concurrency";
 
 class GenerationInterruptedError extends Error {
   constructor() {
@@ -74,7 +83,10 @@ type RequestReplayMessage = {
   replacement_kind?: MessageReplacementKind;
 };
 
-function replayRequest(existingRequest: RequestReplayMessage): Response {
+function replayRequest(
+  existingRequest: RequestReplayMessage,
+  tabVersion?: number
+): Response {
   const replay = new ReadableStream({
     start(controller) {
       const existingMessageId = existingRequest._id.toString();
@@ -91,6 +103,7 @@ function replayRequest(existingRequest: RequestReplayMessage): Response {
         ...(existingRequest.replacement_kind
           ? { replacementKind: existingRequest.replacement_kind }
           : {}),
+        ...(tabVersion !== undefined ? { tabVersion } : {}),
       });
       if (existingRequest.status !== "generating") {
         enqueueSse(
@@ -104,6 +117,7 @@ function replayRequest(existingRequest: RequestReplayMessage): Response {
             ...(existingRequest.error_message
               ? { errorMessage: existingRequest.error_message }
               : {}),
+            ...(tabVersion !== undefined ? { tabVersion } : {}),
           }
         );
       }
@@ -155,7 +169,14 @@ export async function POST(
     const { id: tabId } = await params;
 
     const body = await request.json();
-    const { content, regenerate, messageId, editMessageId, retryMessageId, requestId } = body;
+    const {
+      content,
+      regenerate,
+      messageId,
+      editMessageId,
+      retryMessageId,
+    } = body;
+    const mutationRequest = parseTabMutationRequest(body);
     const isRegenerate = regenerate === true;
     const isEdit = typeof editMessageId === "string";
     const isRetry = typeof retryMessageId === "string";
@@ -169,9 +190,7 @@ export async function POST(
         (typeof messageId !== "string" || !parseObjectId(messageId))) ||
       (isEdit && !parseObjectId(editMessageId)) ||
       (isRetry && !parseObjectId(retryMessageId)) ||
-      typeof requestId !== "string" ||
-      !requestId.trim() ||
-      requestId.length > 160
+      !mutationRequest
     ) {
       return NextResponse.json(
         {
@@ -201,6 +220,7 @@ export async function POST(
         { status: 404 }
       );
     }
+    const requestId = mutationRequest.requestId;
     const { tab, project } = ownedTab;
 
     // 同一个 requestId 只对应一条正式 assistant 消息。网络重放不会重新提交
@@ -210,10 +230,58 @@ export async function POST(
       request_id: requestId,
     }).lean();
     if (existingRequest) {
-      return replayRequest(existingRequest);
+      return replayRequest(existingRequest, tab.version ?? 0);
     }
 
-    let systemPrompt = AGENT_SYSTEM_PROMPTS[tab.agent_type];
+    const operationStart = await beginTabOperation({
+      tab,
+      operation: "chat",
+      request: mutationRequest,
+    });
+    if (operationStart.kind === "request-id-mismatch") {
+      return NextResponse.json(
+        { error: "请求标识已用于其他操作" },
+        { status: 409 }
+      );
+    }
+    if (operationStart.kind === "conflict") {
+      return NextResponse.json(
+        {
+          error: TAB_CONFLICT_MESSAGE,
+          code: "TAB_VERSION_CONFLICT",
+          currentVersion: operationStart.currentVersion,
+        },
+        { status: 409 }
+      );
+    }
+    if (operationStart.kind === "replay") {
+      const replayOperation = await waitForTabOperation(operationStart.operation);
+      const replayMessageId = replayOperation.result?.messageId;
+      if (replayMessageId) {
+        const replayMessage = await Message.findById(replayMessageId).lean();
+        if (replayMessage) {
+          return replayRequest(replayMessage, replayOperation.result?.tabVersion);
+        }
+      }
+      if (replayOperation.status === "conflict") {
+        return NextResponse.json(
+          {
+            error: TAB_CONFLICT_MESSAGE,
+            code: "TAB_VERSION_CONFLICT",
+            currentVersion: replayOperation.result?.tabVersion ?? null,
+          },
+          { status: 409 }
+        );
+      }
+      return NextResponse.json(
+        { error: "请求正在处理中，请稍后重试" },
+        { status: 409 }
+      );
+    }
+    const operationTab = operationStart.tab;
+    const tabOperation = operationStart.operation;
+
+    let systemPrompt = AGENT_SYSTEM_PROMPTS[operationTab.agent_type];
 
     // Inject tab identity for agents that need their own tab name: 需求分析
     // Agent names its working-doc file (需求分析-工作文档（{tab name}）.md);
@@ -221,14 +289,14 @@ export async function POST(
     // 决策「概念版（Tab N）.md」落盘——display_name 即 Tab N). Other agents
     // have no per-tab placeholders; keep the injection surface minimal.
     if (
-      tab.agent_type === "requirement_analyst" ||
-      tab.agent_type === "mvp_prd"
+      operationTab.agent_type === "requirement_analyst" ||
+      operationTab.agent_type === "mvp_prd"
     ) {
-      systemPrompt += `\n\n## 当前标签页\n\n当前标签页名称：${tab.display_name}。`;
+      systemPrompt += `\n\n## 当前标签页\n\n当前标签页名称：${operationTab.display_name}。`;
     }
 
     // Inject loaded file context into system prompt
-    const contextFiles = await getLoadedContextFiles(tab._id, project._id);
+    const contextFiles = await getLoadedContextFiles(operationTab._id, project._id);
 
     if (contextFiles.length > 0) {
       const fileBlocks = contextFiles.map((file) => {
@@ -241,12 +309,14 @@ export async function POST(
     }
 
     // Scope-freeze gate for agents with freeze protocol (MVP-PRD / prototype)
-    const frozenReminder = tab.scope_frozen ? FROZEN_REMINDERS[tab.agent_type] : undefined;
+    const frozenReminder = operationTab.scope_frozen
+      ? FROZEN_REMINDERS[operationTab.agent_type]
+      : undefined;
     if (frozenReminder) {
       systemPrompt += `\n\n## 范围冻结提醒\n\n${frozenReminder}`;
     }
 
-    const allHistoryMessages = await Message.find({ tab_id: tab._id })
+    const allHistoryMessages = await Message.find({ tab_id: operationTab._id })
       .sort({ timestamp: 1, _id: 1 })
       .lean();
     const visibleHistoryMessages = getVisibleMessages(allHistoryMessages);
@@ -405,7 +475,7 @@ export async function POST(
       assistantMessage = await Message.create({
         role: "assistant",
         content: "",
-        tab_id: tab._id,
+        tab_id: operationTab._id,
         timestamp: assistantTimestamp,
         status: "generating",
         request_id: requestId,
@@ -415,52 +485,84 @@ export async function POST(
         ...(replacementKind ? { replacement_kind: replacementKind } : {}),
       });
     } catch (error) {
-      if (!isDuplicateRequestIdError(error)) throw error;
+      if (!isDuplicateRequestIdError(error)) {
+        await failTabOperation(
+          tabOperation,
+          error instanceof Error ? error.message : "创建生成消息失败"
+        );
+        throw error;
+      }
       const concurrentRequest = await Message.findOne({
-        tab_id: tab._id,
+        tab_id: operationTab._id,
         request_id: requestId,
       }).lean();
-      if (!concurrentRequest) throw error;
-      return replayRequest(concurrentRequest);
+      if (!concurrentRequest) {
+        await failTabOperation(tabOperation, "重复请求未找到既有消息");
+        throw error;
+      }
+      await recordTabOperationResult(tabOperation, {
+        messageId: concurrentRequest._id.toString(),
+        tabVersion: tabOperation.locked_version ?? 0,
+      });
+      return replayRequest(concurrentRequest, tabOperation.locked_version ?? 0);
     }
     const assistantMessageId = assistantMessage._id.toString();
-    if (!isRegenerate && !isEdit && !isRetry) {
-      const savedUserMessage = await Message.create({
-        role: "user",
-        content: content.trim(),
-        tab_id: tab._id,
-        // assistant 已先预留 requestId；时间提前 1ms 维持用户消息在前的历史顺序。
-        timestamp: new Date(assistantTimestamp.getTime() - 1),
-      });
-      userMessageId = savedUserMessage._id.toString();
-    }
     let replacementUserMessage:
       | { id: string; role: "user"; content: string; timestamp: Date }
       | undefined;
-    if (replacementKind === "edit" && replacementUserContent) {
-      const savedReplacementUser = await Message.create({
-        role: "user",
-        content: replacementUserContent,
-        tab_id: tab._id,
-        // assistant 已先创建以取得提交屏障 ID；时间提前 1ms，确保刷新后的
-        // 时间排序仍按“编辑后的用户消息 → 新 assistant”展示。
-        timestamp: new Date(assistantMessage.timestamp.getTime() - 1),
-        replacement_commit_message_id: assistantMessage._id,
-      });
-      replacementUserMessage = {
-        id: savedReplacementUser._id.toString(),
-        role: "user",
-        content: savedReplacementUser.content,
-        timestamp: savedReplacementUser.timestamp,
-      };
-      assistantMessage.replacement_user_message_id = savedReplacementUser._id;
-      await assistantMessage.save();
+    try {
+      if (!isRegenerate && !isEdit && !isRetry) {
+        const savedUserMessage = await Message.create({
+          role: "user",
+          content: content.trim(),
+          tab_id: operationTab._id,
+          // assistant 已先预留 requestId；时间提前 1ms 维持用户消息在前的历史顺序。
+          timestamp: new Date(assistantTimestamp.getTime() - 1),
+        });
+        userMessageId = savedUserMessage._id.toString();
+      }
+      if (replacementKind === "edit" && replacementUserContent) {
+        const savedReplacementUser = await Message.create({
+          role: "user",
+          content: replacementUserContent,
+          tab_id: operationTab._id,
+          // assistant 已先创建以取得提交屏障 ID；时间提前 1ms，确保刷新后的
+          // 时间排序仍按“编辑后的用户消息 → 新 assistant”展示。
+          timestamp: new Date(assistantMessage.timestamp.getTime() - 1),
+          replacement_commit_message_id: assistantMessage._id,
+        });
+        replacementUserMessage = {
+          id: savedReplacementUser._id.toString(),
+          role: "user",
+          content: savedReplacementUser.content,
+          timestamp: savedReplacementUser.timestamp,
+        };
+        assistantMessage.replacement_user_message_id = savedReplacementUser._id;
+        await assistantMessage.save();
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "创建消息记录失败";
+      await Message.updateOne(
+        { _id: assistantMessage._id, status: "generating" },
+        { $set: { status: "failed", error_message: errorMessage } }
+      );
+      const releasedTab = await failTabOperation(tabOperation, errorMessage);
+      return NextResponse.json(
+        { error: errorMessage, tabVersion: releasedTab?.version ?? null },
+        { status: 500 }
+      );
     }
+    await recordTabOperationResult(tabOperation, {
+      messageId: assistantMessageId,
+      tabVersion: tabOperation.locked_version ?? 0,
+    });
 
     // Create streaming response
     const stream = new ReadableStream({
       async start(controller) {
         let fullContent = "";
+        let tabOperationFinished = false;
         const generationController = registerGeneration(assistantMessageId);
 
         enqueueSse(controller, "start", {
@@ -472,6 +574,7 @@ export async function POST(
             ? { replacesMessageId: replacementTargetId.toString() }
             : {}),
           ...(replacementKind ? { replacementKind } : {}),
+          tabVersion: tabOperation.locked_version ?? 0,
         });
 
         try {
@@ -489,7 +592,7 @@ export async function POST(
           // timeout 必须作为第二参 RequestOptions 传——放 body 里 SDK 不读，
           // 运行时实际走 SDK 默认 10 分钟（2026-08-11 排查 tsc 类型错时发现）。
           const aiStream = await createAIStream({
-            agentType: tab.agent_type,
+            agentType: operationTab.agent_type,
             maxTokens: 32768,
             messages,
             timeoutMs: 600_000,
@@ -513,7 +616,7 @@ export async function POST(
               const updated = await Message.updateOne(
                 {
                   _id: assistantMessage._id,
-                  tab_id: tab._id,
+                  tab_id: operationTab._id,
                   status: "generating",
                 },
                 { $set: { content: fullContent } }
@@ -538,16 +641,16 @@ export async function POST(
           // *previous* message, not the confirmation (spec US24: 手动确认后
           // 才继续落地版)。
           if (
-            FROZEN_REMINDERS[tab.agent_type] !== undefined &&
-            !tab.scope_frozen &&
+            FROZEN_REMINDERS[operationTab.agent_type] !== undefined &&
+            !operationTab.scope_frozen &&
             fullContent.includes("%%%SCOPE_FROZEN%%%")
           ) {
             const userConfirmed = SCOPE_FREEZE_CONFIRM_RE.test(
               userContentForGeneration
             );
             if (userConfirmed) {
-              tab.scope_frozen = true;
-              await tab.save();
+              operationTab.scope_frozen = true;
+              await operationTab.save();
             } else {
               // Agent emitted the marker without user confirmation — strip it
               // so it doesn't leak into chat history or the PRD file.
@@ -558,7 +661,7 @@ export async function POST(
           let savedMessage = await Message.findOneAndUpdate(
             {
               _id: assistantMessage._id,
-              tab_id: tab._id,
+              tab_id: operationTab._id,
               status: "generating",
             },
             {
@@ -582,7 +685,7 @@ export async function POST(
               const superseded = await Message.updateMany(
                 {
                   _id: { $in: idsToSupersede },
-                  tab_id: tab._id,
+                  tab_id: operationTab._id,
                   superseded_by_message_id: { $exists: false },
                 },
                 {
@@ -595,7 +698,7 @@ export async function POST(
               const committedMessage = await Message.findOneAndUpdate(
                 {
                   _id: assistantMessage._id,
-                  tab_id: tab._id,
+                  tab_id: operationTab._id,
                   status: "completed",
                   replacement_committed: false,
                 },
@@ -612,7 +715,7 @@ export async function POST(
               await Message.updateOne(
                 {
                   _id: assistantMessage._id,
-                  tab_id: tab._id,
+                  tab_id: operationTab._id,
                   status: "completed",
                   replacement_committed: false,
                 },
@@ -633,10 +736,18 @@ export async function POST(
           // Auto-name is a live-mode convenience call; replay mode skips it.
           let newName: string | null = null;
           try {
-            newName = await autoNameWorkRecord(tab._id, tab.work_record_id);
+            newName = await autoNameWorkRecord(
+              operationTab._id,
+              operationTab.work_record_id
+            );
           } catch (err) {
             console.error("autoNameWorkRecord failed:", err);
           }
+
+          const completedTab = await completeTabOperation(tabOperation, {
+            messageId: assistantMessageId,
+          });
+          tabOperationFinished = true;
 
           enqueueSse(controller, "done", {
             messageId: assistantMessageId,
@@ -661,40 +772,41 @@ export async function POST(
                 }
               : {}),
             ...(newName ? { newName } : {}),
+            tabVersion: completedTab.version ?? 0,
           });
         } catch (err) {
           const interrupted =
             err instanceof GenerationInterruptedError ||
             generationController.signal.aborted;
           if (!interrupted) console.error("Stream error:", err);
+          const streamErrorMessage =
+            interrupted
+              ? "生成已停止"
+              : err instanceof Error
+                ? err.message
+                : "AI 请求失败，请稍后重试";
           const message =
             (await Message.findOneAndUpdate(
               {
                 _id: assistantMessage._id,
-                tab_id: tab._id,
+                tab_id: operationTab._id,
                 status: "generating",
               },
               {
                 $set: {
                   content: fullContent,
                   status: interrupted ? "interrupted" : "failed",
-                  error_message: interrupted
-                    ? "生成已停止"
-                    : err instanceof Error
-                      ? err.message
-                      : "AI 请求失败，请稍后重试",
+                  error_message: streamErrorMessage,
                 },
               },
               { new: true }
             ).lean()) ??
             (await Message.findById(assistantMessage._id).lean());
+          const releasedTab = tabOperationFinished
+            ? null
+            : await failTabOperation(tabOperation, streamErrorMessage);
           enqueueSse(controller, "error", {
-            message:
-              interrupted
-                ? "生成已停止"
-                : err instanceof Error
-                  ? err.message
-                  : "AI 请求失败，请稍后重试",
+            message: streamErrorMessage,
             interrupted,
             messageId: assistantMessageId,
             content: message?.content ?? fullContent,
@@ -706,6 +818,7 @@ export async function POST(
               ? { replacesMessageId: replacementTargetId.toString() }
               : {}),
             ...(replacementKind ? { replacementKind } : {}),
+            ...(releasedTab ? { tabVersion: releasedTab.version ?? 0 } : {}),
           });
         } finally {
           releaseGeneration(assistantMessageId, generationController);

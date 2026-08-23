@@ -5,6 +5,25 @@ import Message from "@/models/Message";
 import AgentFileContext from "@/models/AgentFileContext";
 import { findOwnedTab } from "@/lib/ownership";
 import { serializeTab } from "@/lib/tab-helpers";
+import {
+  TAB_CONFLICT_MESSAGE,
+  beginTabOperation,
+  completeTabOperation,
+  failTabOperation,
+  parseTabMutationRequest,
+  waitForTabOperation,
+} from "@/lib/tab-concurrency";
+
+function tabConflictResponse(currentVersion: number | null) {
+  return NextResponse.json(
+    {
+      error: TAB_CONFLICT_MESSAGE,
+      code: "TAB_VERSION_CONFLICT",
+      currentVersion,
+    },
+    { status: 409 }
+  );
+}
 
 export async function PATCH(
   request: Request,
@@ -18,8 +37,14 @@ export async function PATCH(
 
     const body = await request.json();
     const { display_name } = body;
+    const mutationRequest = parseTabMutationRequest(body);
 
-    if (!display_name || typeof display_name !== "string" || !display_name.trim()) {
+    if (
+      !display_name ||
+      typeof display_name !== "string" ||
+      !display_name.trim() ||
+      !mutationRequest
+    ) {
       return NextResponse.json(
         { error: "标签页名称不能为空" },
         { status: 400 }
@@ -36,10 +61,53 @@ export async function PATCH(
       );
     }
 
-    tab.display_name = display_name.trim();
-    await tab.save();
+    const operationStart = await beginTabOperation({
+      tab,
+      operation: "rename-tab",
+      request: mutationRequest,
+    });
+    if (operationStart.kind === "request-id-mismatch") {
+      return NextResponse.json(
+        { error: "请求标识已用于其他操作" },
+        { status: 409 }
+      );
+    }
+    if (operationStart.kind === "conflict") {
+      return tabConflictResponse(operationStart.currentVersion);
+    }
+    if (operationStart.kind === "replay") {
+      const replay = await waitForTabOperation(operationStart.operation);
+      if (replay.status === "conflict") {
+        return tabConflictResponse(replay.result?.tabVersion ?? null);
+      }
+      if (replay.result?.response) {
+        return NextResponse.json({
+          ...replay.result.response,
+          version: replay.result.tabVersion ?? 0,
+        });
+      }
+      return NextResponse.json(
+        { error: "请求正在处理中，请稍后重试" },
+        { status: 409 }
+      );
+    }
 
-    return NextResponse.json(serializeTab(tab));
+    try {
+      operationStart.tab.display_name = display_name.trim();
+      await operationStart.tab.save();
+      const response = { ...serializeTab(operationStart.tab) };
+      const completedTab = await completeTabOperation(operationStart.operation, {
+        response,
+      });
+
+      return NextResponse.json(serializeTab(completedTab));
+    } catch (error) {
+      await failTabOperation(
+        operationStart.operation,
+        error instanceof Error ? error.message : "更新标签页失败"
+      );
+      throw error;
+    }
   } catch (error) {
     console.error("PATCH /api/tabs/[id] error:", error);
     return NextResponse.json(

@@ -498,20 +498,26 @@ check(
 
 const concurrentRequestId = `request-concurrent-${Date.now()}`;
 const concurrentContent = "同 requestId 并发验证";
+const concurrentTabVersion = (await readMessages()).tabVersion;
 const concurrentResponses = await page.evaluate(
-  async ({ id, content, requestId }) =>
+  async ({ id, content, requestId, expectedVersion }) =>
     Promise.all(
       [0, 1].map(async () => {
         const response = await fetch(`/api/tabs/${id}/chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content, requestId }),
+          body: JSON.stringify({ content, requestId, expectedVersion }),
         });
         await response.text();
         return response.ok;
       })
     ),
-  { id: tabId, content: concurrentContent, requestId: concurrentRequestId }
+  {
+    id: tabId,
+    content: concurrentContent,
+    requestId: concurrentRequestId,
+    expectedVersion: concurrentTabVersion,
+  }
 );
 const concurrentAssistants = await Message.find({
   tab_id: new mongoose.Types.ObjectId(tabId),
