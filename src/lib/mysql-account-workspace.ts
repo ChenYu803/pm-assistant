@@ -36,6 +36,7 @@ export interface MysqlTab extends RowDataPacket {
   version: number;
   scope_frozen: boolean;
   freeze_status: FreezeStatus;
+  active_operation_id: string | null;
   created_at: Date;
 }
 
@@ -157,7 +158,7 @@ export async function renameMysqlWorkRecord(workRecordId: string, userId: string
 export async function listMysqlTabs(workRecordId: string, userId: string): Promise<MysqlTab[] | null> {
   if (!(await findOwnedMysqlWorkRecord(workRecordId, userId))) return null;
   const [rows] = await getMysqlPool().query<MysqlTab[]>(
-    `SELECT id, work_record_id, agent_type, display_name, position, version, scope_frozen, freeze_status, created_at
+    `SELECT id, work_record_id, agent_type, display_name, position, version, scope_frozen, freeze_status, active_operation_id, created_at
      FROM tabs WHERE work_record_id = ? ORDER BY position ASC, created_at ASC, id ASC`,
     [workRecordId]
   );
@@ -202,12 +203,13 @@ export async function createMysqlTab(workRecordId: string, userId: string, agent
       version: 0,
       scope_frozen: false,
       freeze_status: "idle",
+      active_operation_id: null,
       created_at: new Date(),
     } as MysqlTab;
     await connection.execute<ResultSetHeader>(
-      `INSERT INTO tabs (id, work_record_id, agent_type, display_name, position, version, scope_frozen, freeze_status, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [tab.id, tab.work_record_id, tab.agent_type, tab.display_name, tab.position, tab.version, tab.scope_frozen, tab.freeze_status, tab.created_at]
+      `INSERT INTO tabs (id, work_record_id, agent_type, display_name, position, version, scope_frozen, freeze_status, active_operation_id, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [tab.id, tab.work_record_id, tab.agent_type, tab.display_name, tab.position, tab.version, tab.scope_frozen, tab.freeze_status, tab.active_operation_id, tab.created_at]
     );
     await connection.commit();
     return tab;
@@ -251,7 +253,7 @@ export async function renameMysqlTab(
   try {
     await connection.beginTransaction();
     const [tabRows] = await connection.query<MysqlTab[]>(
-      `SELECT t.id, t.work_record_id, t.agent_type, t.display_name, t.position, t.version, t.scope_frozen, t.freeze_status, t.created_at
+      `SELECT t.id, t.work_record_id, t.agent_type, t.display_name, t.position, t.version, t.scope_frozen, t.freeze_status, t.active_operation_id, t.created_at
        FROM tabs t
        JOIN work_records w ON w.id = t.work_record_id
        JOIN projects p ON p.id = w.project_id

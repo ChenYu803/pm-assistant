@@ -19,6 +19,8 @@ import {
 } from "@/lib/tab-concurrency";
 import type { ITabOperationDocument } from "@/models/TabOperation";
 import { acquireTabWriteLease } from "@/lib/deletion-coordination";
+import { isMysqlId } from "@/lib/identifiers";
+import { getMysqlMessagesRoute, stopMysqlMessageRoute } from "@/lib/mysql-messages-route";
 
 function tabConflictResponse(currentVersion: number | null) {
   return NextResponse.json(
@@ -62,6 +64,10 @@ export async function GET(
     if (userId instanceof NextResponse) return userId;
 
     const { id: tabId } = await params;
+
+    if (isMysqlId(tabId)) {
+      return getMysqlMessagesRoute(tabId, userId);
+    }
 
     await dbConnect();
 
@@ -158,6 +164,9 @@ export async function PATCH(
 
     const { id: tabId } = await params;
     const body = await request.json().catch(() => null);
+    if (isMysqlId(tabId)) {
+      return stopMysqlMessageRoute(tabId, userId, body ?? {}, request);
+    }
     const mutationRequest = parseTabMutationRequest(body);
     const messageObjectId = parseObjectId(
       typeof body?.messageId === "string"

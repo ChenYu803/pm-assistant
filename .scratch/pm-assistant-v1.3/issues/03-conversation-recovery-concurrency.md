@@ -4,7 +4,7 @@
 
 **Blocked by:** #02 — 账号、项目与工作区骨架切换
 
-**Status:** ready-for-agent
+**Status:** implemented-pending-mysql-verification
 
 - [ ] 消息角色、正文、顺序、生成中/完成/中断/失败状态和时间由 MySQL 持久化，刷新后每条消息只显示一次。
 - [ ] 生成开始即建立正式 assistant 消息；零 token 失败、停止生成和部分内容保留行为不回归。

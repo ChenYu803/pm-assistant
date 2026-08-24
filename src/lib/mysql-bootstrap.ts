@@ -79,6 +79,40 @@ const MYSQL_MIGRATIONS = [
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
     ],
   },
+  {
+    id: "0004_conversation_recovery_concurrency",
+    checksum: "6e1b6826b9cd52c4bc6025c657fe126960feca1b52d8dcf390ed6c2a69a01478",
+    statements: [
+      "ALTER TABLE tabs ADD COLUMN IF NOT EXISTS active_operation_id VARCHAR(160) NULL",
+      "ALTER TABLE tab_operations ADD COLUMN IF NOT EXISTS locked_version INT UNSIGNED NULL",
+      "ALTER TABLE tab_operations MODIFY COLUMN status ENUM('pending', 'processing', 'completed', 'conflict', 'failed') NOT NULL",
+      `CREATE TABLE IF NOT EXISTS messages (
+        id CHAR(36) NOT NULL PRIMARY KEY,
+        tab_id CHAR(36) NOT NULL,
+        role ENUM('user', 'assistant') NOT NULL,
+        content MEDIUMTEXT NOT NULL,
+        timestamp DATETIME(3) NOT NULL,
+        status ENUM('generating', 'completed', 'interrupted', 'failed') NULL,
+        error_message TEXT NULL,
+        request_id VARCHAR(160) NULL,
+        replacement_target_id CHAR(36) NULL,
+        replacement_commit_message_id CHAR(36) NULL,
+        superseded_by_message_id CHAR(36) NULL,
+        replacement_committed BOOLEAN NOT NULL DEFAULT FALSE,
+        replacement_kind ENUM('regenerate', 'edit', 'retry') NULL,
+        replacement_user_message_id CHAR(36) NULL,
+        file_provenance_version INT NULL,
+        created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+        CONSTRAINT messages_tab_fk FOREIGN KEY (tab_id) REFERENCES tabs(id),
+        CONSTRAINT messages_replacement_target_fk FOREIGN KEY (replacement_target_id) REFERENCES messages(id),
+        CONSTRAINT messages_replacement_commit_fk FOREIGN KEY (replacement_commit_message_id) REFERENCES messages(id),
+        CONSTRAINT messages_superseded_by_fk FOREIGN KEY (superseded_by_message_id) REFERENCES messages(id),
+        CONSTRAINT messages_replacement_user_fk FOREIGN KEY (replacement_user_message_id) REFERENCES messages(id),
+        UNIQUE KEY messages_tab_request_unique (tab_id, request_id),
+        KEY messages_tab_timestamp (tab_id, timestamp, id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
+    ],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {

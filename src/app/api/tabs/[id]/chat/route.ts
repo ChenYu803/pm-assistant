@@ -37,6 +37,8 @@ import {
 } from "@/lib/freeze-protocol";
 import { getPersistedFreezeState } from "@/lib/tab-freeze-state";
 import { freezeDocumentDigest } from "@/lib/freeze-document-digest";
+import { isMysqlId } from "@/lib/identifiers";
+import { postMysqlChat } from "@/lib/mysql-chat";
 
 class GenerationInterruptedError extends Error {
   constructor() {
@@ -249,6 +251,10 @@ export async function POST(
         },
         { status: 400 }
       );
+    }
+
+    if (isMysqlId(tabId)) {
+      return postMysqlChat({ request, userId, tabId, body });
     }
 
     if (!isAIConfigured()) {
