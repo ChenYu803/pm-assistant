@@ -3,11 +3,10 @@ import { NextResponse } from "next/server";
 import { AGENT_SYSTEM_PROMPTS } from "@/lib/agent-prompts";
 import { createAIStream, isAIConfigured, type AIMessage } from "@/lib/ai";
 import {
-  attachMysqlReplacementUser,
   completeMysqlMessage,
-  createMysqlAssistantMessage,
-  createMysqlUserMessage,
+  createMysqlChatStart,
   failMysqlGeneratingMessage,
+  findOwnedMysqlConversationTab,
   findMysqlMessageByRequest,
   getVisibleMysqlMessages,
   listMysqlMessages,
@@ -103,25 +102,10 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
   if (isFreeze) return NextResponse.json({ error: "冻结流程尚未迁移完成" }, { status: 409 });
   if (!isAIConfigured()) return NextResponse.json({ error: "AI 服务未配置，请联系管理员设置 AI_API_KEY" }, { status: 500 });
 
+  const tab = await findOwnedMysqlConversationTab(tabId, userId);
+  if (!tab) return NextResponse.json({ error: "标签页不存在或无权操作" }, { status: 404 });
   const existing = await findMysqlMessageByRequest(tabId, mutation.requestId);
   if (existing) return replayMysqlRequest(existing);
-  const operationStart = await beginMysqlTabOperation({ tabId, userId, operation: "chat", request: mutation });
-  if (operationStart.kind === "not-found") return NextResponse.json({ error: "标签页不存在或无权操作" }, { status: 404 });
-  if (operationStart.kind === "request-id-mismatch") return NextResponse.json({ error: "请求标识已用于其他操作" }, { status: 409 });
-  if (operationStart.kind === "conflict") return conflict(operationStart.currentVersion);
-  if (operationStart.kind === "replay") {
-    const replay = await waitForMysqlTabOperation(operationStart.operation);
-    const saved = typeof replay.response_json === "object" && replay.response_json ? replay.response_json : {};
-    const replayId = typeof saved.messageId === "string" ? saved.messageId : undefined;
-    if (replayId) {
-      const message = await findMysqlMessageByRequest(tabId, mutation.requestId);
-      if (message) return replayMysqlRequest(message, replay.tab_version ?? undefined);
-    }
-    return replay.status === "conflict" ? conflict(replay.tab_version) : NextResponse.json({ error: "请求正在处理中，请稍后重试" }, { status: 409 });
-  }
-
-  const tab = operationStart.tab;
-  const operation = operationStart.operation;
   const allMessages = await listMysqlMessages(tabId);
   const visible = getVisibleMysqlMessages(allMessages);
   let history = visible;
@@ -135,7 +119,6 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
     const target = visible[targetIndex];
     const hasLaterUsable = visible.slice(targetIndex + 1).some((message) => message.role === "user" || (message.role === "assistant" && message.status === "completed"));
     if (!target || target.role !== "assistant" || target.status !== "completed" || hasLaterUsable) {
-      await failMysqlTabOperation(operation, "只能重新输出最后一条已完成的 AI 回复");
       return NextResponse.json({ error: "只能重新输出最后一条已完成的 AI 回复" }, { status: 409 });
     }
     replacementKind = "regenerate";
@@ -146,7 +129,6 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
     const targetIndex = visible.findIndex((message) => message.id === editMessageId);
     const target = visible[targetIndex];
     if (!target || target.role !== "user" || typeof content !== "string" || !content.trim()) {
-      await failMysqlTabOperation(operation, "只能编辑当前可见的用户消息");
       return NextResponse.json({ error: "只能编辑当前可见的用户消息" }, { status: 409 });
     }
     replacementKind = "edit";
@@ -157,14 +139,12 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
   } else if (isRetry) {
     const previous = visible.find((message) => message.id === retryMessageId);
     if (!previous || previous.role !== "assistant" || !["failed", "interrupted"].includes(previous.status ?? "completed")) {
-      await failMysqlTabOperation(operation, "只能重试失败或中断的生成");
       return NextResponse.json({ error: "只能重试失败或中断的生成" }, { status: 409 });
     }
     replacementKind = previous.replacement_kind ?? "retry";
     replacementTargetId = previous.replacement_target_id ?? previous.id;
     const targetIndex = visible.findIndex((message) => message.id === replacementTargetId);
     if (targetIndex === -1) {
-      await failMysqlTabOperation(operation, "重试的原消息已不存在");
       return NextResponse.json({ error: "重试的原消息已不存在" }, { status: 409 });
     }
     supersedeIds = visible.slice(targetIndex).map((message) => message.id);
@@ -172,7 +152,6 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
     if (replacementKind === "edit") {
       const edited = allMessages.find((message) => message.id === previous.replacement_user_message_id);
       if (!edited || edited.role !== "user") {
-        await failMysqlTabOperation(operation, "编辑重发的重试上下文已失效");
         return NextResponse.json({ error: "编辑重发的重试上下文已失效" }, { status: 409 });
       }
       replacementUserContent = edited.content;
@@ -190,32 +169,38 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
   ];
 
   const timestamp = new Date();
-  let assistant: MysqlMessage;
-  try {
-    assistant = await createMysqlAssistantMessage({ tabId, requestId: mutation.requestId, timestamp, replacementTargetId, replacementKind });
-  } catch (error) {
-    const duplicate = typeof error === "object" && error !== null && "code" in error && error.code === "ER_DUP_ENTRY";
-    if (!duplicate) {
-      await failMysqlTabOperation(operation, error instanceof Error ? error.message : "创建生成消息失败");
-      throw error;
-    }
-    const saved = await findMysqlMessageByRequest(tabId, mutation.requestId);
-    if (saved) return replayMysqlRequest(saved, operation.locked_version ?? undefined);
-    throw error;
+  const operationStart = await beginMysqlTabOperation({
+    tabId,
+    userId,
+    operation: "chat",
+    request: mutation,
+    onClaimed: (connection) => createMysqlChatStart(connection, {
+      tabId,
+      requestId: mutation.requestId,
+      timestamp,
+      replacementTargetId,
+      replacementKind,
+      ...(appendUser ? { userContent } : {}),
+      ...(replacementKind === "edit" && replacementUserContent ? { replacementUserContent } : {}),
+    }),
+  });
+  if (operationStart.kind === "not-found") return NextResponse.json({ error: "标签页不存在或无权操作" }, { status: 404 });
+  if (operationStart.kind === "request-id-mismatch") return NextResponse.json({ error: "请求标识已用于其他操作" }, { status: 409 });
+  if (operationStart.kind === "conflict") return conflict(operationStart.currentVersion);
+  if (operationStart.kind === "replay") {
+    const replay = await waitForMysqlTabOperation(operationStart.operation);
+    const message = await findMysqlMessageByRequest(tabId, mutation.requestId);
+    if (message) return replayMysqlRequest(message, replay.tab_version ?? undefined);
+    return replay.status === "conflict" ? conflict(replay.tab_version) : NextResponse.json({ error: "请求正在处理中，请稍后重试" }, { status: 409 });
   }
-  let userMessage: { id: string; role: "user"; content: string; timestamp: Date } | undefined;
-  try {
-    if (!isRegenerate && !isEdit && !isRetry) userMessage = await createMysqlUserMessage({ tabId, content: userContent, timestamp: new Date(timestamp.getTime() - 1) });
-    if (replacementKind === "edit" && replacementUserContent) {
-      userMessage = await createMysqlUserMessage({ tabId, content: replacementUserContent, timestamp: new Date(timestamp.getTime() - 1), replacementCommitMessageId: assistant.id });
-      await attachMysqlReplacementUser(assistant.id, userMessage.id);
-    }
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "创建消息记录失败";
-    await failMysqlGeneratingMessage(assistant.id, tabId, "", "failed", errorMessage);
-    const tabVersion = await failMysqlTabOperation(operation, errorMessage);
-    return NextResponse.json({ error: errorMessage, tabVersion }, { status: 500 });
+  const operation = operationStart.operation;
+  const started = operationStart.metadata as { assistant: MysqlMessage; userMessage?: { id: string; role: "user"; content: string; timestamp: Date } } | undefined;
+  if (!started) {
+    await failMysqlTabOperation(operation, "创建消息记录失败");
+    return NextResponse.json({ error: "创建消息记录失败" }, { status: 500 });
   }
+  const assistant = started.assistant;
+  const userMessage = started.userMessage;
 
   const stream = new ReadableStream({
     async start(controller) {

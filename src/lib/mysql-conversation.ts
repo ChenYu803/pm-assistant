@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
+import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
 import type { AgentType } from "@/lib/agent-constants";
 import { getMysqlPool } from "@/lib/mysql";
@@ -98,6 +98,43 @@ export async function createMysqlAssistantMessage(input: {
     [message.id, message.tab_id, message.role, message.content, message.timestamp, message.status, message.error_message, message.request_id, message.replacement_target_id, message.replacement_commit_message_id, message.superseded_by_message_id, message.replacement_committed, message.replacement_kind, message.replacement_user_message_id, message.file_provenance_version]
   );
   return message;
+}
+
+export async function createMysqlChatStart(connection: PoolConnection, input: {
+  tabId: string;
+  requestId: string;
+  timestamp: Date;
+  replacementTargetId?: string;
+  replacementKind?: MysqlReplacementKind;
+  userContent?: string;
+  replacementUserContent?: string;
+}) {
+  const assistant: MysqlMessage = {
+    id: randomUUID(), tab_id: input.tabId, role: "assistant", content: "", timestamp: input.timestamp,
+    status: "generating", error_message: null, request_id: input.requestId,
+    replacement_target_id: input.replacementTargetId ?? null, replacement_commit_message_id: null,
+    superseded_by_message_id: null, replacement_committed: false,
+    replacement_kind: input.replacementKind ?? null, replacement_user_message_id: null,
+    file_provenance_version: 1,
+  };
+  await connection.execute<ResultSetHeader>(
+    `INSERT INTO messages (${MESSAGE_COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [assistant.id, assistant.tab_id, assistant.role, assistant.content, assistant.timestamp, assistant.status, assistant.error_message, assistant.request_id, assistant.replacement_target_id, assistant.replacement_commit_message_id, assistant.superseded_by_message_id, assistant.replacement_committed, assistant.replacement_kind, assistant.replacement_user_message_id, assistant.file_provenance_version]
+  );
+  const content = input.replacementUserContent ?? input.userContent;
+  if (content === undefined) return { assistant, userMessage: undefined };
+  const userMessage = { id: randomUUID(), role: "user" as const, content, timestamp: new Date(input.timestamp.getTime() - 1) };
+  await connection.execute<ResultSetHeader>(
+    "INSERT INTO messages (id, tab_id, role, content, timestamp, replacement_commit_message_id) VALUES (?, ?, 'user', ?, ?, ?)",
+    [userMessage.id, input.tabId, userMessage.content, userMessage.timestamp, input.replacementUserContent ? assistant.id : null]
+  );
+  if (input.replacementUserContent) {
+    await connection.execute<ResultSetHeader>(
+      "UPDATE messages SET replacement_user_message_id = ? WHERE id = ? AND role = 'assistant'",
+      [userMessage.id, assistant.id]
+    );
+  }
+  return { assistant, userMessage };
 }
 
 export async function createMysqlUserMessage(input: { tabId: string; content: string; timestamp: Date; replacementCommitMessageId?: string }) {

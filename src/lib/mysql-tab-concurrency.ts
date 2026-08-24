@@ -24,7 +24,7 @@ export interface MysqlTabOperation {
 }
 
 export type MysqlOperationStart =
-  | { kind: "claimed"; tab: MysqlTab; operation: MysqlTabOperation }
+  | { kind: "claimed"; tab: MysqlTab; operation: MysqlTabOperation; metadata?: unknown }
   | { kind: "replay"; operation: MysqlTabOperation }
   | { kind: "conflict"; currentVersion: number | null }
   | { kind: "request-id-mismatch" }
@@ -75,12 +75,13 @@ async function existingOperation(connection: PoolConnection, tabId: string, requ
   return rows[0] ? parseOperation(rows[0]) : null;
 }
 
-export async function beginMysqlTabOperation({ tabId, userId, operation, request, passive = false }: {
+export async function beginMysqlTabOperation({ tabId, userId, operation, request, passive = false, onClaimed }: {
   tabId: string;
   userId: string;
   operation: string;
   request: MysqlTabMutationRequest;
   passive?: boolean;
+  onClaimed?: (connection: PoolConnection, tab: MysqlTab, operation: MysqlTabOperation) => Promise<unknown>;
 }): Promise<MysqlOperationStart> {
   const connection = await getMysqlPool().getConnection();
   try {
@@ -111,15 +112,20 @@ export async function beginMysqlTabOperation({ tabId, userId, operation, request
         [lockedVersion, request.requestId, tabId, tab.version]
       );
     }
+    const operationRecord: MysqlTabOperation = { id: operationId, tab_id: tabId, request_id: request.requestId, operation, expected_version: request.expectedVersion, locked_version: lockedVersion, status: "processing", response_json: null, tab_version: lockedVersion };
     await connection.execute<ResultSetHeader>(
       "INSERT INTO tab_operations (id, tab_id, request_id, operation, expected_version, locked_version, status, tab_version) VALUES (?, ?, ?, ?, ?, ?, 'processing', ?)",
       [operationId, tabId, request.requestId, operation, request.expectedVersion, lockedVersion, lockedVersion]
     );
+    const metadata = onClaimed
+      ? await onClaimed(connection, { ...tab, version: lockedVersion, active_operation_id: passive ? tab.active_operation_id : request.requestId }, operationRecord)
+      : undefined;
     await connection.commit();
     return {
       kind: "claimed",
       tab: { ...tab, version: lockedVersion, active_operation_id: passive ? tab.active_operation_id : request.requestId },
-      operation: { id: operationId, tab_id: tabId, request_id: request.requestId, operation, expected_version: request.expectedVersion, locked_version: lockedVersion, status: "processing", response_json: null, tab_version: lockedVersion },
+      operation: operationRecord,
+      metadata,
     };
   } catch (error) {
     await connection.rollback();

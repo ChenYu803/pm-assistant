@@ -83,8 +83,23 @@ try {
   const firstDone = first.events.find((event) => event.type === "done");
   check("发送后建立并完成正式 assistant 消息", first.status === 200 && Boolean(first.events.find((event) => event.type === "start")) && firstDone?.status === "completed");
 
+  const replay = await chat(page, tabId, { content: "请分析一个校园二手交易需求", requestId: firstRequest, expectedVersion: 0 });
+  check("同一 requestId 回放同一正式消息", replay.status === 200 && replay.events[0]?.messageId === first.events[0]?.messageId);
+
   const refresh = await api(page, `/api/tabs/${tabId}/messages`);
   check("刷新后每条消息只显示一次", refresh.status === 200 && refresh.body.messages.length === 2 && new Set(refresh.body.messages.map((message) => message.id)).size === 2);
+
+  const otherContext = await browser.newContext();
+  const otherPage = await otherContext.newPage();
+  await otherPage.goto(`${BASE}/register`);
+  await otherPage.fill("#email", `verify-conversation-other-${Date.now()}@test.local`);
+  await otherPage.locator('input[type="password"]').first().fill(password);
+  await otherPage.locator('input[type="password"]').nth(1).fill(password);
+  await otherPage.locator('form button[type="submit"]').click();
+  await otherPage.waitForURL((url) => url.pathname === "/projects");
+  const forbidden = await api(otherPage, `/api/tabs/${tabId}/messages`);
+  check("跨用户不能读取 tab 消息", forbidden.status === 404);
+  await otherContext.close();
 
   const failed = await chat(page, tabId, { content: "触发零 token 失败", requestId: `failed-${Date.now()}`, expectedVersion: refresh.body.tabVersion }, { "x-pm-verify-force-error": "zero-token" });
   const failedEvent = failed.events.find((event) => event.type === "error");
