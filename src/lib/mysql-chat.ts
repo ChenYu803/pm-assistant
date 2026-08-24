@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { AGENT_SYSTEM_PROMPTS } from "@/lib/agent-prompts";
 import { createAIStream, isAIConfigured, type AIMessage } from "@/lib/ai";
+import { getLoadedContextFiles } from "@/lib/context-files";
+import { stripChangelogHeader } from "@/lib/file-helpers";
 import {
   completeMysqlMessage,
   createMysqlChatStart,
@@ -158,7 +160,11 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
     }
   }
 
-  const prompt = `${AGENT_SYSTEM_PROMPTS[tab.agent_type]}${(tab.agent_type === "requirement_analyst" || tab.agent_type === "mvp_prd") ? `\n\n## 当前标签页\n\n当前标签页名称：${tab.display_name}。` : ""}`;
+  let prompt = `${AGENT_SYSTEM_PROMPTS[tab.agent_type]}${(tab.agent_type === "requirement_analyst" || tab.agent_type === "mvp_prd") ? `\n\n## 当前标签页\n\n当前标签页名称：${tab.display_name}。` : ""}`;
+  const contextFiles = await getLoadedContextFiles(tab.id, tab.project_id);
+  if (contextFiles.length > 0) {
+    prompt += "\n\n## 已加载的项目文件\n\n以下文件已加载到你的上下文中，请基于这些文件的内容进行工作：\n\n" + contextFiles.map((file) => `### ${file.filename}\n\`\`\`markdown\n${stripChangelogHeader(file.content)}\n\`\`\``).join("\n\n");
+  }
   const usableHistory = history.filter((message) => message.role !== "assistant" || message.status === "completed");
   const appendUser = !isRegenerate && !isRetry;
   const userContent = replacementUserContent ?? (typeof content === "string" ? content.trim() : "");

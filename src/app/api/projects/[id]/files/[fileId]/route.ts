@@ -14,6 +14,8 @@ import {
   mutableProjectFileFilter,
 } from "@/lib/freeze-document-binding";
 import { acquireProjectWriteLease } from "@/lib/deletion-coordination";
+import { isMysqlId } from "@/lib/identifiers";
+import { deleteMysqlProjectFile, findOwnedMysqlProjectFile, serializeMysqlProjectFile, updateMysqlProjectFile } from "@/lib/mysql-project-artifacts";
 
 export async function GET(
   request: Request,
@@ -24,6 +26,13 @@ export async function GET(
     if (userId instanceof NextResponse) return userId;
 
     const { id: projectId, fileId } = await params;
+
+    if (isMysqlId(projectId)) {
+      if (!isMysqlId(fileId)) return NextResponse.json({ error: "fileId 参数无效" }, { status: 400 });
+      const file = await findOwnedMysqlProjectFile(projectId, fileId, userId);
+      if (!file) return NextResponse.json({ error: "文件不存在或无权访问" }, { status: 404 });
+      return NextResponse.json(serializeMysqlProjectFile(file));
+    }
 
     if (!parseObjectId(fileId)) {
       return NextResponse.json({ error: "fileId 参数无效" }, { status: 400 });
@@ -60,10 +69,6 @@ export async function PATCH(
 
     const { id: projectId, fileId } = await params;
 
-    if (!parseObjectId(fileId)) {
-      return NextResponse.json({ error: "fileId 参数无效" }, { status: 400 });
-    }
-
     const body = await request.json();
     const { content } = body as { content: string };
 
@@ -76,6 +81,17 @@ export async function PATCH(
     const contentValidation = validateFileSize(content);
     if (!contentValidation.ok) {
       return NextResponse.json({ error: contentValidation.error }, { status: 413 });
+    }
+
+    if (isMysqlId(projectId)) {
+      if (!isMysqlId(fileId)) return NextResponse.json({ error: "fileId 参数无效" }, { status: 400 });
+      const updated = await updateMysqlProjectFile({ projectId, fileId, userId, content });
+      if (!updated) return NextResponse.json({ error: "文件不存在或无权访问" }, { status: 404 });
+      return NextResponse.json(serializeMysqlProjectFile(updated));
+    }
+
+    if (!parseObjectId(fileId)) {
+      return NextResponse.json({ error: "fileId 参数无效" }, { status: 400 });
     }
 
     await dbConnect();
@@ -139,6 +155,13 @@ export async function DELETE(
     if (userId instanceof NextResponse) return userId;
 
     const { id: projectId, fileId } = await params;
+
+    if (isMysqlId(projectId)) {
+      if (!isMysqlId(fileId)) return NextResponse.json({ error: "fileId 参数无效" }, { status: 400 });
+      const deleted = await deleteMysqlProjectFile(projectId, fileId, userId);
+      if (!deleted) return NextResponse.json({ error: "文件不存在或无权访问" }, { status: 404 });
+      return NextResponse.json({ ok: true });
+    }
 
     if (!parseObjectId(fileId)) {
       return NextResponse.json({ error: "fileId 参数无效" }, { status: 400 });

@@ -214,6 +214,7 @@ export async function POST(
     if (userId instanceof NextResponse) return userId;
 
     const { id: tabId } = await params;
+    const mysqlTab = isMysqlId(tabId);
 
     const body = await request.json();
     const {
@@ -237,9 +238,9 @@ export async function POST(
       ((!isRegenerate && !isRetry && !isFreeze) &&
         (!content || typeof content !== "string" || !content.trim())) ||
       (isRegenerate &&
-        (typeof messageId !== "string" || !parseObjectId(messageId))) ||
-      (isEdit && !parseObjectId(editMessageId)) ||
-      (isRetry && !parseObjectId(retryMessageId)) ||
+        (typeof messageId !== "string" || (mysqlTab ? !isMysqlId(messageId) : !parseObjectId(messageId)))) ||
+      (isEdit && (mysqlTab ? !isMysqlId(editMessageId) : !parseObjectId(editMessageId))) ||
+      (isRetry && (mysqlTab ? !isMysqlId(retryMessageId) : !parseObjectId(retryMessageId))) ||
       !mutationRequest
     ) {
       return NextResponse.json(
@@ -253,7 +254,7 @@ export async function POST(
       );
     }
 
-    if (isMysqlId(tabId)) {
+    if (mysqlTab) {
       return postMysqlChat({ request, userId, tabId, body });
     }
 

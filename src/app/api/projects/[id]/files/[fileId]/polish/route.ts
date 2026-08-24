@@ -3,6 +3,8 @@ import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
 import { findOwnedProjectFileInProject, parseObjectId } from "@/lib/ownership";
 import { createAICompletion, isAIConfigured } from "@/lib/ai";
+import { isMysqlId } from "@/lib/identifiers";
+import { findOwnedMysqlProjectFile } from "@/lib/mysql-project-artifacts";
 
 const POLISH_SYSTEM_PROMPT = `你是一个技术文档润色助手。请对以下 Markdown 内容进行润色：
 
@@ -24,8 +26,13 @@ export async function POST(
     if (userId instanceof NextResponse) return userId;
 
     const { id: projectId, fileId } = await params;
-
-    if (!parseObjectId(fileId)) {
+    const mysqlFile = isMysqlId(projectId)
+      ? (isMysqlId(fileId) ? await findOwnedMysqlProjectFile(projectId, fileId, userId) : null)
+      : null;
+    if (isMysqlId(projectId) && !mysqlFile) {
+      return NextResponse.json({ error: isMysqlId(fileId) ? "文件不存在或无权访问" : "fileId 参数无效" }, { status: isMysqlId(fileId) ? 404 : 400 });
+    }
+    if (!isMysqlId(projectId) && !parseObjectId(fileId)) {
       return NextResponse.json({ error: "fileId 参数无效" }, { status: 400 });
     }
 
@@ -39,10 +46,9 @@ export async function POST(
       );
     }
 
-    await dbConnect();
+    if (!isMysqlId(projectId)) await dbConnect();
 
-    // Verify file ownership
-    const file = await findOwnedProjectFileInProject(projectId, fileId, userId);
+    const file = mysqlFile ?? await findOwnedProjectFileInProject(projectId, fileId, userId);
     if (!file) {
       return NextResponse.json(
         { error: "文件不存在或无权访问" },

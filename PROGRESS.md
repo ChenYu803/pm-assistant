@@ -20,6 +20,8 @@ v1.0 已验收（2026-08-11），四环流水线端到端走通。
 
 ## 本次任务
 
+**v1.3 #04 已实现，待 MySQL 环境验证（2026-08-24）**：新增 `project_files`、`agent_file_contexts`、`prototype_snapshots`、`message_file_writes` 的 #0005 migration 及统一 MySQL 成果仓储；UUID 项目的文件创建/更新/版本、Agent 来源、上下文加载、HTML 快照与 tickets 整套替换/另存/下载均已切换到事务化 MySQL 路径，普通文件树不包含快照。消息读取返回精确文件来源，MySQL 聊天会注入已加载文件，并修复 UUID 的重生成/编辑/重试参数校验。新增 `verify:mysql-project-artifacts` 覆盖消息输出 → 文件确认 → 上下文加载 → 快照回看 → tickets 替换/另存/下载与数据库关联。`npx tsc --noEmit`、`npm run lint`（仅 2 条既有 warning）、`npm run build`、脚本语法与 diff check 通过；专项 replay 未运行，因为环境仍未配置 MySQL 连接变量且本机缺 Playwright Chromium。ticket 状态为 `implemented-pending-mysql-verification`。下一 frontier：配置 MySQL 与 Playwright 后一起运行 #01 至 #04 专项，再进入 #05。
+
 **v1.3 #03 已实现，待 MySQL 环境验证（2026-08-24）**：新增 messages 关系表和可升级的 #0004 migration；MySQL UUID tab 现在使用事务中的版本号、活动操作锁和 `tab_operations` 重建发送、停止、重生成、编辑重发、requestId 重放与多窗口冲突。生成开始即插入正式 assistant，token 条件更新可被跨请求停止中断；失败/中断保留消息，替换链仅在同一事务内提交成功后隐藏旧历史。消息读取、停止与自动命名已按 UUID 分发到 MySQL，原 Mongo 路径暂留给尚未迁移的历史数据和后续 #04/#05/#06 范围。新增 `verify:mysql-conversation` 覆盖发送、刷新、失败/重试、重生成、编辑、停止和并发；脚本语法、`npx tsc --noEmit`、`npm run build` 与 diff check 通过。专项回放未运行：本机缺 Playwright Chromium，且 `.env.local` 仍缺 MySQL 连接变量；ticket 状态为 `implemented-pending-mysql-verification`。下一 frontier：安装/配置 MySQL 和 Playwright 后运行 #01/#02/#03 专项，再继续 #04。
 
 **v1.3 MongoDB → MySQL grilling 第一阶段已完成（2026-08-24）**：已敲定 v1.3 只做存储底座替换、不迁移旧 MongoDB 数据、按空库全新注册；不提供切回 MongoDB 的产品回退路径，MongoDB 可留存但不作为应用依赖。目标环境为 Windows 本机 MySQL 9.7.2 LTS，未来部署配置不锁死；应用使用项目专用 MySQL 连接身份，Workbench 可继续使用 root。数据库结构由可重复执行的初始化/升级命令建立，真实连接信息通过环境变量/配置提供。验收必须覆盖全部 v1.2 固定回放并做一次从零人工冒烟；数据库类型对用户不可见；瞬断时当前操作明确失败、可手动重试。开发重置命令作为非阻塞辅助项，初始化失败不额外制作专门页面。架构决策见 `docs/adr/0005-mysql-as-v1-3-primary-database.md`；grilling 暂停，下一步应先将这些决策拆成 v1.3 spec/tickets，再进入实现。

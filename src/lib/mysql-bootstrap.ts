@@ -113,6 +113,66 @@ const MYSQL_MIGRATIONS = [
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
     ],
   },
+  {
+    id: "0005_project_artifacts",
+    checksum: "891f3c6c721d8a1091c3d6de5d4f3705fd5fbdc44c4c968399f2a9b43fb0e2ce",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS project_files (
+        id CHAR(36) NOT NULL PRIMARY KEY,
+        project_id CHAR(36) NOT NULL,
+        filename VARCHAR(1024) NOT NULL,
+        content MEDIUMTEXT NOT NULL,
+        version INT UNSIGNED NOT NULL DEFAULT 0,
+        created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+        updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+        CONSTRAINT project_files_project_fk FOREIGN KEY (project_id) REFERENCES projects(id),
+        UNIQUE KEY project_files_project_filename_unique (project_id, filename),
+        KEY project_files_project_updated (project_id, updated_at, id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
+      `CREATE TABLE IF NOT EXISTS agent_file_contexts (
+        id CHAR(36) NOT NULL PRIMARY KEY,
+        tab_id CHAR(36) NOT NULL,
+        file_id CHAR(36) NOT NULL,
+        loaded_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+        CONSTRAINT agent_file_contexts_tab_fk FOREIGN KEY (tab_id) REFERENCES tabs(id) ON DELETE CASCADE,
+        CONSTRAINT agent_file_contexts_file_fk FOREIGN KEY (file_id) REFERENCES project_files(id) ON DELETE CASCADE,
+        UNIQUE KEY agent_file_contexts_tab_file_unique (tab_id, file_id),
+        KEY agent_file_contexts_file (file_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
+      `CREATE TABLE IF NOT EXISTS prototype_snapshots (
+        id CHAR(36) NOT NULL PRIMARY KEY,
+        project_id CHAR(36) NOT NULL,
+        tab_id CHAR(36) NULL,
+        content MEDIUMTEXT NOT NULL,
+        version INT UNSIGNED NOT NULL,
+        created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+        CONSTRAINT prototype_snapshots_project_fk FOREIGN KEY (project_id) REFERENCES projects(id),
+        CONSTRAINT prototype_snapshots_tab_fk FOREIGN KEY (tab_id) REFERENCES tabs(id) ON DELETE SET NULL,
+        UNIQUE KEY prototype_snapshots_project_version_unique (project_id, version),
+        KEY prototype_snapshots_project_created (project_id, created_at, id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
+      `CREATE TABLE IF NOT EXISTS message_file_writes (
+        id CHAR(36) NOT NULL PRIMARY KEY,
+        message_id CHAR(36) NOT NULL,
+        tab_id CHAR(36) NOT NULL,
+        project_id CHAR(36) NOT NULL,
+        project_file_id CHAR(36) NOT NULL,
+        filename VARCHAR(1024) NOT NULL,
+        operation ENUM('create', 'update') NOT NULL,
+        file_version INT UNSIGNED NOT NULL,
+        message_status ENUM('completed') NOT NULL,
+        write_status ENUM('written') NOT NULL,
+        written_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+        CONSTRAINT message_file_writes_message_fk FOREIGN KEY (message_id) REFERENCES messages(id),
+        CONSTRAINT message_file_writes_tab_fk FOREIGN KEY (tab_id) REFERENCES tabs(id),
+        CONSTRAINT message_file_writes_project_fk FOREIGN KEY (project_id) REFERENCES projects(id),
+        CONSTRAINT message_file_writes_file_fk FOREIGN KEY (project_file_id) REFERENCES project_files(id) ON DELETE CASCADE,
+        UNIQUE KEY message_file_writes_message_filename_version_unique (message_id, filename, file_version),
+        KEY message_file_writes_tab_message_written (tab_id, message_id, written_at),
+        KEY message_file_writes_project_file (project_id, project_file_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
+    ],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {

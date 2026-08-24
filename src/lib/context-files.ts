@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import AgentFileContext from "@/models/AgentFileContext";
 import type { IProjectFileDocument } from "@/models/ProjectFile";
 import { isConceptDocFile, isWorkingDocFile } from "@/lib/file-helpers";
+import { isMysqlId } from "@/lib/identifiers";
+import { listMysqlLoadedContextFiles } from "@/lib/mysql-project-artifacts";
 
 /** Lightweight file info returned by getLoadedContextFiles. */
 export interface LoadedFileInfo {
@@ -19,9 +21,13 @@ export interface LoadedFileInfo {
  * SERVER-ONLY — uses Mongoose, do not import from client components.
  */
 export async function getLoadedContextFiles(
-  tabId: mongoose.Types.ObjectId,
-  projectId: mongoose.Types.ObjectId
+  tabId: mongoose.Types.ObjectId | string,
+  projectId: mongoose.Types.ObjectId | string
 ): Promise<LoadedFileInfo[]> {
+  if (typeof tabId === "string" && typeof projectId === "string" && isMysqlId(tabId) && isMysqlId(projectId)) {
+    return listMysqlLoadedContextFiles(tabId, projectId);
+  }
+  if (typeof tabId === "string" || typeof projectId === "string") return [];
   const entries = await AgentFileContext.find({ tab_id: tabId })
     .populate<{ file_id: IProjectFileDocument }>("file_id")
     .lean();

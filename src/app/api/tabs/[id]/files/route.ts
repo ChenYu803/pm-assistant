@@ -10,6 +10,9 @@ import {
 import { getLoadedContextFiles } from "@/lib/context-files";
 import { isConceptDocFile, isWorkingDocFile } from "@/lib/file-helpers";
 import { acquireTabWriteLease } from "@/lib/deletion-coordination";
+import { isMysqlId } from "@/lib/identifiers";
+import { addMysqlContextFile, listMysqlLoadedContextFiles } from "@/lib/mysql-project-artifacts";
+import { findOwnedMysqlConversationTab } from "@/lib/mysql-conversation";
 
 /** List files loaded in a tab's agent context. */
 export async function GET(
@@ -21,6 +24,13 @@ export async function GET(
     if (userId instanceof NextResponse) return userId;
 
     const { id: tabId } = await params;
+
+    if (isMysqlId(tabId)) {
+      const tab = await findOwnedMysqlConversationTab(tabId, userId);
+      if (!tab) return NextResponse.json({ error: "标签页不存在或无权访问" }, { status: 404 });
+      const loadedFiles = await listMysqlLoadedContextFiles(tabId, tab.project_id);
+      return NextResponse.json({ files: loadedFiles.map((file) => ({ id: file._id, filename: file.filename, project_id: file.project_id, created_at: file.created_at, updated_at: file.updated_at })) });
+    }
 
     await dbConnect();
 
@@ -73,6 +83,16 @@ export async function POST(
         { error: "file_id 不能为空" },
         { status: 400 }
       );
+    }
+
+    if (isMysqlId(tabId)) {
+      if (!isMysqlId(file_id)) return NextResponse.json({ error: "fileId 参数无效" }, { status: 400 });
+      const result = await addMysqlContextFile(tabId, file_id, userId);
+      if (result.kind === "tab-not-found") return NextResponse.json({ error: "标签页不存在或无权访问" }, { status: 404 });
+      if (result.kind === "file-not-found") return NextResponse.json({ error: "文件不存在或无权访问" }, { status: 404 });
+      if (result.kind === "not-loadable") return NextResponse.json({ error: "工作文档/概念版为中间过程产物，不可加载进 Agent 上下文" }, { status: 400 });
+      if (result.kind === "duplicate") return NextResponse.json({ error: "文件已在上下文中" }, { status: 409 });
+      return NextResponse.json({ id: `${tabId}:${file_id}`, file_id, filename: result.file.filename }, { status: 201 });
     }
 
     await dbConnect();

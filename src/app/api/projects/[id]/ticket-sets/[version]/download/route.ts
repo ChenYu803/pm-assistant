@@ -4,6 +4,8 @@ import dbConnect from "@/lib/mongodb";
 import ProjectFile from "@/models/ProjectFile";
 import { findOwnedProject } from "@/lib/ownership";
 import { ticketSetVersion } from "@/lib/file-helpers";
+import { isMysqlId } from "@/lib/identifiers";
+import { downloadMysqlTicketSet } from "@/lib/mysql-project-artifacts";
 
 export async function GET(
   _request: Request,
@@ -17,6 +19,14 @@ export async function GET(
       return NextResponse.json({ error: "ticket 版本参数无效" }, { status: 400 });
     }
     const version = Number(rawVersion);
+    if (isMysqlId(id)) {
+      const result = await downloadMysqlTicketSet(id, userId, version);
+      if (!result) return NextResponse.json({ error: "项目不存在或无权访问" }, { status: 404 });
+      if (result.kind === "version-not-found") return NextResponse.json({ error: "ticket 版本不存在" }, { status: 404 });
+      return new NextResponse(JSON.stringify({ version, currentVersion: result.currentVersion, files: result.files }, null, 2), {
+        headers: { "Content-Type": "application/json; charset=utf-8", "Content-Disposition": `attachment; filename*=UTF-8''tickets-v${version}.json` },
+      });
+    }
     await dbConnect();
     const project = await findOwnedProject(id, userId);
     if (!project) return NextResponse.json({ error: "项目不存在或无权访问" }, { status: 404 });

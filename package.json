@@ -10,7 +10,8 @@
     "db:init": "tsx scripts/mysql-init.ts",
     "verify:mysql-init": "tsx scripts/verify-mysql-init.mjs",
     "verify:account-project-workspace": "tsx scripts/verify-account-project-workspace.mjs",
-    "verify:mysql-conversation": "tsx scripts/verify-mysql-conversation.mjs"
+    "verify:mysql-conversation": "tsx scripts/verify-mysql-conversation.mjs",
+    "verify:mysql-project-artifacts": "tsx scripts/verify-mysql-project-artifacts.mjs"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "1.1.13",

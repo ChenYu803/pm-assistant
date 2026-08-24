@@ -4,7 +4,7 @@
 
 **Blocked by:** #03 — 对话、恢复与并发切换
 
-**Status:** ready-for-agent
+**Status:** implemented-pending-mysql-verification
 
 - [ ] 项目文件的创建、更新、版本递增、白名单、路径、大小和 ownership 校验使用 MySQL，正式文件与工作文档的既有写入语义不回归。
 - [ ] tab 与项目文件的上下文关联使用 MySQL 多对多关系；跨项目文件不能被加载，历史非法关联不会进入 Agent 上下文。

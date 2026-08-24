@@ -16,6 +16,8 @@ import {
   validateFileSize,
   validateProductTicketContent,
 } from "@/lib/file-helpers";
+import { isMysqlId } from "@/lib/identifiers";
+import { deliverMysqlTicketSet, listMysqlTicketSets, serializeMysqlProjectFile } from "@/lib/mysql-project-artifacts";
 
 type TicketCandidate = { filename: string; content: string };
 type DeliveryMode = "replace" | "save";
@@ -118,6 +120,11 @@ export async function GET(
     const userId = await requireAuth();
     if (userId instanceof NextResponse) return userId;
     const { id } = await params;
+    if (isMysqlId(id)) {
+      const sets = await listMysqlTicketSets(id, userId);
+      if (!sets) return NextResponse.json({ error: "项目不存在或无权访问" }, { status: 404 });
+      return NextResponse.json(sets);
+    }
     await dbConnect();
     const project = await findOwnedProject(id, userId);
     if (!project) return NextResponse.json({ error: "项目不存在或无权访问" }, { status: 404 });
@@ -171,10 +178,24 @@ export async function POST(
     if (body?.mode !== "replace" && body?.mode !== "save") {
       return NextResponse.json({ error: "ticket 交付操作无效" }, { status: 400 });
     }
-    const sourceMessageId = parseObjectId(body.source_message_id ?? "");
-    if (!sourceMessageId) return NextResponse.json({ error: "来源消息参数无效" }, { status: 400 });
     const candidateSet = validateCandidateSet(body.candidates);
     if (!candidateSet.ok) return NextResponse.json({ error: candidateSet.error }, { status: 400 });
+
+    if (isMysqlId(id)) {
+      if (!isMysqlId(body.source_message_id ?? "")) return NextResponse.json({ error: "来源消息参数无效" }, { status: 400 });
+      const result = await deliverMysqlTicketSet({ projectId: id, userId, sourceMessageId: body.source_message_id!, mode: body.mode, candidates: candidateSet.candidates });
+      if (result.kind === "project-not-found") return NextResponse.json({ error: "项目不存在或无权访问" }, { status: 404 });
+      if (result.kind === "invalid-source") return NextResponse.json({ error: "来源消息不是当前项目已完成的任务拆分回复" }, { status: 409 });
+      return NextResponse.json({
+        mode: body.mode,
+        version: result.version,
+        currentVersion: result.currentVersion,
+        files: result.written.map(({ file }) => serializeMysqlProjectFile(file)),
+        writes: result.written.map(({ write }) => ({ id: write.id, filename: write.filename, operation: write.operation, fileVersion: Number(write.file_version), messageStatus: write.message_status, writeStatus: write.write_status })),
+      }, { status: 201 });
+    }
+    const sourceMessageId = parseObjectId(body.source_message_id ?? "");
+    if (!sourceMessageId) return NextResponse.json({ error: "来源消息参数无效" }, { status: 400 });
 
     await dbConnect();
     const lease = await acquireProjectWriteLease(id, userId);

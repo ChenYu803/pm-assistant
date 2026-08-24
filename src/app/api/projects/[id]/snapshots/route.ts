@@ -6,6 +6,8 @@ import PrototypeSnapshot from "@/models/PrototypeSnapshot";
 import { findOwnedProject } from "@/lib/ownership";
 import { MAX_FILE_BYTES } from "@/lib/file-helpers";
 import { acquireProjectWriteLease } from "@/lib/deletion-coordination";
+import { isMysqlId } from "@/lib/identifiers";
+import { createMysqlSnapshot, listMysqlSnapshots } from "@/lib/mysql-project-artifacts";
 
 export async function GET(
   request: Request,
@@ -15,6 +17,11 @@ export async function GET(
     const userId = await requireAuth();
     if (userId instanceof NextResponse) return userId;
     const { id: projectId } = await params;
+    if (isMysqlId(projectId)) {
+      const snapshots = await listMysqlSnapshots(projectId, userId);
+      if (!snapshots) return NextResponse.json({ error: "项目不存在或无权访问" }, { status: 404 });
+      return NextResponse.json(snapshots.map((snapshot) => ({ id: snapshot.id, version: Number(snapshot.version), tab_id: snapshot.tab_id, created_at: snapshot.created_at })));
+    }
     await dbConnect();
     const project = await findOwnedProject(projectId, userId);
     if (!project) return NextResponse.json({ error: "项目不存在或无权访问" }, { status: 404 });
@@ -52,6 +59,15 @@ export async function POST(
     }
     if (Buffer.byteLength(content, "utf8") > MAX_FILE_BYTES) {
       return NextResponse.json({ error: "HTML 快照超过 3 MiB 上限" }, { status: 413 });
+    }
+
+    if (isMysqlId(projectId)) {
+      if (typeof tabId === "string" && !isMysqlId(tabId)) return NextResponse.json({ error: "tabId 参数无效" }, { status: 400 });
+      const result = await createMysqlSnapshot({ projectId, userId, ...(typeof tabId === "string" ? { tabId } : {}), content });
+      if (result.kind === "project-not-found") return NextResponse.json({ error: "项目不存在或无权访问" }, { status: 404 });
+      if (result.kind === "tab-not-found") return NextResponse.json({ error: "标签页不存在或不属于当前项目" }, { status: 404 });
+      const snapshot = result.snapshot;
+      return NextResponse.json({ id: snapshot.id, version: Number(snapshot.version), tab_id: snapshot.tab_id, content: snapshot.content, created_at: snapshot.created_at }, { status: 201 });
     }
 
     await dbConnect();

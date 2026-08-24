@@ -14,6 +14,7 @@ import {
   parseMysqlTabMutationRequest,
   waitForMysqlTabOperation,
 } from "@/lib/mysql-tab-concurrency";
+import { listMysqlMessageFileWrites } from "@/lib/mysql-project-artifacts";
 
 function conflict(currentVersion: number | null) {
   return NextResponse.json({ error: MYSQL_TAB_CONFLICT_MESSAGE, code: "TAB_VERSION_CONFLICT", currentVersion }, { status: 409 });
@@ -23,6 +24,12 @@ export async function getMysqlMessagesRoute(tabId: string, userId: string) {
   const tab = await findOwnedMysqlConversationTab(tabId, userId);
   if (!tab) return NextResponse.json({ error: "标签页不存在或无权访问" }, { status: 404 });
   const messages = getVisibleMysqlMessages(await listMysqlMessages(tabId));
+  const writes = await listMysqlMessageFileWrites(messages.map((message) => message.id));
+  const writesByMessage = new Map<string, typeof writes>();
+  for (const write of writes) {
+    const key = write.message_id;
+    writesByMessage.set(key, [...(writesByMessage.get(key) ?? []), write]);
+  }
   return NextResponse.json({
     messages: messages.map((message) => ({
       id: message.id,
@@ -32,7 +39,10 @@ export async function getMysqlMessagesRoute(tabId: string, userId: string) {
       ...(message.role === "assistant" ? {
         status: message.status ?? "completed",
         ...(message.error_message ? { errorMessage: message.error_message } : {}),
-        fileProvenance: { tracked: typeof message.file_provenance_version === "number", writes: [] },
+        fileProvenance: {
+          tracked: typeof message.file_provenance_version === "number",
+          writes: (writesByMessage.get(message.id) ?? []).map((write) => ({ id: write.id, filename: write.filename, operation: write.operation, fileVersion: Number(write.file_version), messageStatus: write.message_status, writeStatus: write.write_status, writtenAt: write.written_at })),
+        },
       } : {}),
       ...(message.replacement_target_id ? { replacesMessageId: message.replacement_target_id } : {}),
       ...(message.replacement_kind ? { replacementKind: message.replacement_kind } : {}),

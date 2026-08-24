@@ -27,6 +27,14 @@ import {
   FROZEN_DOCUMENT_LOCKED_MESSAGE,
   mutableProjectFileFilter,
 } from "@/lib/freeze-document-binding";
+import { isMysqlId } from "@/lib/identifiers";
+import {
+  findMysqlProjectFileByFilename,
+  listMysqlProjectFiles,
+  serializeMysqlProjectFile,
+  writeMysqlProjectFile,
+} from "@/lib/mysql-project-artifacts";
+import type { AgentType } from "@/lib/agent-constants";
 
 /**
  * Renumber every top-level "## " section in a 需求分析.md body sequentially
@@ -158,6 +166,15 @@ export async function GET(
 
     const { id: projectId } = await params;
 
+    if (isMysqlId(projectId)) {
+      const files = await listMysqlProjectFiles(projectId, userId);
+      if (!files) return NextResponse.json({ error: "项目不存在或无权访问" }, { status: 404 });
+      return NextResponse.json(files.map((file) => {
+        const { id, filename, project_id, created_at, updated_at } = serializeMysqlProjectFile(file);
+        return { id, filename, project_id, created_at, updated_at };
+      }));
+    }
+
     await dbConnect();
 
     const project = await findOwnedProject(projectId, userId);
@@ -233,18 +250,57 @@ export async function POST(
       typeof source_message_id === "string"
         ? parseObjectId(source_message_id)
         : undefined;
+    const mysqlSourceMessageId =
+      typeof source_message_id === "string" && isMysqlId(source_message_id)
+        ? source_message_id
+        : undefined;
     // replay 夹具需要创建不属于 Agent 消息的基础文件；该旁路仅限非生产回放，
     // 产品 Agent 写入仍必须提供可核验的 assistant 来源消息。
     const isReplayFixtureSystemWrite =
-      !sourceMessageId &&
+      !sourceMessageId && !mysqlSourceMessageId &&
       process.env.NODE_ENV !== "production" &&
       process.env.AI_MODE === "replay" &&
       request.headers.get("x-pm-assistant-test-system-write") === "1";
-    if (!sourceMessageId && !isReplayFixtureSystemWrite) {
+    if (!sourceMessageId && !mysqlSourceMessageId && !isReplayFixtureSystemWrite) {
       return NextResponse.json(
         { error: "Agent 文件写入必须提供已完成的来源消息" },
         { status: 400 }
       );
+    }
+
+    if (isMysqlId(projectId)) {
+      const trimmedFilename = filename.trim();
+      const existing = await findMysqlProjectFileByFilename(projectId, trimmedFilename);
+      const existingIteration = existing ? (parseChangelog(existing.content)?.entry.iteration ?? 0) : 0;
+      const isWorkingDoc = isWorkingDocFile(trimmedFilename);
+      const isRequirementAppend = agent_type === "requirement_analyst" && !isWorkingDoc;
+      let bodyContent = content;
+      if (isWorkingDoc) {
+        bodyContent = content.trim();
+      } else if (isRequirementAppend) {
+        const existingBody = existing ? (parseChangelog(existing.content)?.bodyContent ?? stripChangelogHeader(existing.content)) : "";
+        const newSection = normalizeRequirementSections(content);
+        bodyContent = existingBody.trimEnd() ? appendRequirement(existingBody, newSection) : `# 需求分析文档\n\n${newSection}`;
+      }
+      const fullContent = isWorkingDoc
+        ? bodyContent
+        : `${formatChangelogHeader({ requirement_count: countRequirements(bodyContent), iteration: iteration ?? (isRequirementAppend ? existingIteration || 1 : existingIteration + 1), last_editor: agent_type || "unknown", timestamp: new Date() })}\n${bodyContent}`;
+      const result = await writeMysqlProjectFile({
+        projectId,
+        userId,
+        filename: trimmedFilename,
+        content: fullContent,
+        agentType: agent_type as AgentType,
+        ...(mysqlSourceMessageId ? { sourceMessageId: mysqlSourceMessageId } : {}),
+        allowReplayFixture: isReplayFixtureSystemWrite,
+      });
+      if (result.kind === "not-found") return NextResponse.json({ error: "项目不存在或无权访问" }, { status: 404 });
+      if (result.kind === "missing-source") return NextResponse.json({ error: "Agent 文件写入必须提供已完成的来源消息" }, { status: 400 });
+      if (result.kind === "invalid-source") return NextResponse.json({ error: "来源消息不存在、尚未完成或与写入 Agent/项目不匹配" }, { status: 409 });
+      return NextResponse.json({
+        ...serializeMysqlProjectFile(result.file),
+        ...(result.write ? { messageFileWrite: { id: result.write.id, filename: result.write.filename, operation: result.write.operation, fileVersion: Number(result.write.file_version), messageStatus: result.write.message_status, writeStatus: result.write.write_status, writtenAt: result.write.written_at } } : {}),
+      }, { status: 201 });
     }
 
     await dbConnect();
@@ -302,7 +358,7 @@ export async function POST(
       }
 
     // Find existing file or create new
-    let file = await ProjectFile.findOne({
+    const file = await ProjectFile.findOne({
       project_id: project._id,
       filename: trimmedFilename,
     });

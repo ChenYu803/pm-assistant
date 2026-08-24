@@ -7,6 +7,8 @@ import {
   parseObjectId,
 } from "@/lib/ownership";
 import { acquireTabWriteLease } from "@/lib/deletion-coordination";
+import { isMysqlId } from "@/lib/identifiers";
+import { removeMysqlContextFile } from "@/lib/mysql-project-artifacts";
 
 /** Remove a file from a tab's agent context. The fileId is the ProjectFile ID. */
 export async function DELETE(
@@ -18,6 +20,15 @@ export async function DELETE(
     if (userId instanceof NextResponse) return userId;
 
     const { id: tabId, fileId } = await params;
+
+    if (isMysqlId(tabId)) {
+      if (!isMysqlId(fileId)) return NextResponse.json({ error: "fileId 参数无效" }, { status: 400 });
+      const result = await removeMysqlContextFile(tabId, fileId, userId);
+      if (result.kind === "tab-not-found") return NextResponse.json({ error: "标签页不存在或无权访问" }, { status: 404 });
+      if (result.kind === "file-not-found") return NextResponse.json({ error: "文件不存在或无权访问" }, { status: 404 });
+      if (result.kind === "not-loaded") return NextResponse.json({ error: "该文件未在上下文中" }, { status: 404 });
+      return NextResponse.json({ success: true });
+    }
 
     await dbConnect();
 
