@@ -12,6 +12,7 @@ interface TabBarProps {
   onClose: (tabId: string) => void;
   onRename: (tabId: string, newName: string) => void;
   onNew: () => void;
+  closable?: boolean;
 }
 
 export default function TabBar({
@@ -21,6 +22,7 @@ export default function TabBar({
   onClose,
   onRename,
   onNew,
+  closable = true,
 }: TabBarProps) {
   const [editingTabId, setEditingTabId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
@@ -77,6 +79,8 @@ export default function TabBar({
           return (
             <div
               key={tab.id}
+              role="tab"
+              aria-selected={isActive}
               onClick={() => onSwitch(tab.id)}
               onDoubleClick={() => handleDoubleClick(tab)}
               className={`group relative flex shrink-0 cursor-pointer items-center gap-1.5 border-r border-gray-100 px-4 py-2.5 text-sm transition-colors select-none ${
@@ -102,7 +106,7 @@ export default function TabBar({
               )}
 
               {/* Close button */}
-              {!isEditing && (
+              {!isEditing && closable && (
                 <Button
                   variant="ghost"
                   size="icon"

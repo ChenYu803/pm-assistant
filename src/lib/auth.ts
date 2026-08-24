@@ -1,8 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import dbConnect from "@/lib/mongodb";
-import User from "@/models/User";
+import { findMysqlUserByEmail, normalizeEmail } from "@/lib/mysql-account-workspace";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -17,13 +16,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        // Mongoose schema handles lowercase + trim via schema options
-        const email = credentials.email as string;
+        const email = normalizeEmail(credentials.email as string);
         const password = credentials.password as string;
-
-        await dbConnect();
-
-        const user = await User.findOne({ email });
+        const user = await findMysqlUserByEmail(email);
         if (!user) {
           return null;
         }
@@ -34,7 +29,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         return {
-          id: user._id.toString(),
+          id: user.id,
           email: user.email,
         };
       },

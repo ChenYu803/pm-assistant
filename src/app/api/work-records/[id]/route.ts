@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
-import { parseObjectId, findOwnedWorkRecord } from "@/lib/ownership";
+import { parseObjectId } from "@/lib/ownership";
+import { findOwnedMysqlWorkRecord, renameMysqlWorkRecord } from "@/lib/mysql-account-workspace";
+import { isMysqlId } from "@/lib/identifiers";
+import { mysqlUnavailableMessage } from "@/lib/mysql";
 import {
   deleteWorkRecordCascade,
   getCascadeDeleteTestOptions,
@@ -21,9 +24,7 @@ export async function GET(
 
     const { id } = await params;
 
-    await dbConnect();
-
-    const workRecord = await findOwnedWorkRecord(id, userId);
+    const workRecord = await findOwnedMysqlWorkRecord(id, userId);
     if (!workRecord) {
       return NextResponse.json(
         { error: "工作记录不存在或无权访问" },
@@ -32,15 +33,15 @@ export async function GET(
     }
 
     return NextResponse.json({
-      id: workRecord._id.toString(),
+      id: workRecord.id,
       name: workRecord.name,
-      project_id: workRecord.project_id.toString(),
+      project_id: workRecord.project_id,
       created_at: workRecord.created_at,
     });
   } catch (error) {
     console.error("GET /api/work-records/[id] error:", error);
     return NextResponse.json(
-      { error: "获取工作记录失败" },
+      { error: mysqlUnavailableMessage() },
       { status: 500 }
     );
   }
@@ -55,6 +56,13 @@ export async function DELETE(
     if (userId instanceof NextResponse) return userId;
 
     const { id } = await params;
+
+    if (isMysqlId(id)) {
+      return NextResponse.json(
+        { error: "删除功能暂不可用，请稍后重试" },
+        { status: 409 }
+      );
+    }
 
     const oid = parseObjectId(id);
     if (!oid) {
@@ -104,14 +112,6 @@ export async function PATCH(
 
     const { id } = await params;
 
-    const oid = parseObjectId(id);
-    if (!oid) {
-      return NextResponse.json(
-        { error: "工作记录不存在" },
-        { status: 404 }
-      );
-    }
-
     const body = await request.json();
     const { name } = body;
 
@@ -122,34 +122,18 @@ export async function PATCH(
       );
     }
 
-    await dbConnect();
-
-    const writeLease = await acquireWorkRecordWriteLease(id, userId);
-
-    if (!writeLease) {
+    const workRecord = await renameMysqlWorkRecord(id, userId, name.trim());
+    if (!workRecord) {
       return NextResponse.json(
         { error: "工作记录不存在或无权操作" },
         { status: 404 }
       );
     }
-    try {
-      const workRecord = writeLease.workRecord;
-      workRecord.name = name.trim();
-      await workRecord.save();
-
-      return NextResponse.json({
-        id: workRecord._id.toString(),
-        name: workRecord.name,
-        project_id: workRecord.project_id.toString(),
-        created_at: workRecord.created_at,
-      });
-    } finally {
-      await writeLease.release();
-    }
+    return NextResponse.json(workRecord);
   } catch (error) {
     console.error("PATCH /api/work-records/[id] error:", error);
     return NextResponse.json(
-      { error: "更新工作记录失败" },
+      { error: mysqlUnavailableMessage() },
       { status: 500 }
     );
   }

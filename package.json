@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "db:init": "tsx scripts/mysql-init.ts",
-    "verify:mysql-init": "tsx scripts/verify-mysql-init.mjs"
+    "verify:mysql-init": "tsx scripts/verify-mysql-init.mjs",
+    "verify:account-project-workspace": "tsx scripts/verify-account-project-workspace.mjs"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "1.1.13",

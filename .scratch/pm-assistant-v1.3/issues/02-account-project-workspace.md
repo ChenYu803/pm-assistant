@@ -4,7 +4,7 @@
 
 **Blocked by:** #01 — MySQL 空库与初始化基础
 
-**Status:** ready-for-agent
+**Status:** implemented-pending-mysql-verification
 
 - [ ] 新用户注册、密码校验、登录与会话中的用户标识全部以 MySQL 用户记录为事实源，不读取旧 MongoDB 用户。
 - [ ] 项目和工作记录的创建、列表、详情、重命名与 ownership 校验使用 MySQL，跨用户或跨项目访问仍被拒绝。

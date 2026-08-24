@@ -1,41 +1,19 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
-import dbConnect from "@/lib/mongodb";
-import { reconcileCascadeOrphansForProjectList } from "@/lib/cascade-orphan-cleanup";
-import Project from "@/models/Project";
+import { createMysqlProject, listMysqlProjects } from "@/lib/mysql-account-workspace";
+import { mysqlUnavailableMessage } from "@/lib/mysql";
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const userId = await requireAuth();
     if (userId instanceof NextResponse) return userId;
 
-    await dbConnect();
-    await reconcileCascadeOrphansForProjectList(
-      process.env.CASCADE_DELETE_TEST_HOOKS === "1" &&
-        request.headers.get("x-pm-assistant-test-force-orphan-cleanup") === "1"
-    );
-
-    const projects = await Project.find({
-      user_id: userId,
-      $or: [
-        { deletion_state: "active" },
-        { deletion_state: { $exists: false } },
-      ],
-    })
-      .sort({ created_at: -1 })
-      .lean();
-
-    return NextResponse.json(
-      projects.map((p) => ({
-        id: p._id.toString(),
-        name: p.name,
-        created_at: p.created_at,
-      }))
-    );
+    const projects = await listMysqlProjects(userId);
+    return NextResponse.json(projects.map(({ id, name, created_at }) => ({ id, name, created_at })));
   } catch (error) {
     console.error("GET /api/projects error:", error);
     return NextResponse.json(
-      { error: "获取项目列表失败" },
+      { error: mysqlUnavailableMessage() },
       { status: 500 }
     );
   }
@@ -56,16 +34,11 @@ export async function POST(request: Request) {
       );
     }
 
-    await dbConnect();
-
-    const project = await Project.create({
-      name: name.trim(),
-      user_id: userId,
-    });
+    const project = await createMysqlProject(userId, name.trim());
 
     return NextResponse.json(
       {
-        id: project._id.toString(),
+        id: project.id,
         name: project.name,
         created_at: project.created_at,
       },
@@ -74,7 +47,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("POST /api/projects error:", error);
     return NextResponse.json(
-      { error: "创建项目失败" },
+      { error: mysqlUnavailableMessage() },
       { status: 500 }
     );
   }

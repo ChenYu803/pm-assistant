@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import InlineNameInput from "@/components/InlineNameInput";
+import { isMysqlId } from "@/lib/identifiers";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,6 +33,7 @@ export default function ProjectList() {
   const [showCreate, setShowCreate] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Project | null>(null);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -97,6 +100,32 @@ export default function ProjectList() {
     } finally {
       setDeletingId(null);
       setPendingDelete(null);
+    }
+  }
+
+  async function handleRename(projectId: string, name: string) {
+    setRenamingId(null);
+    const trimmedName = name.trim();
+    if (!trimmedName) return;
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: trimmedName }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "改名失败");
+      }
+      const updated = await res.json();
+      setProjects((prev) =>
+        prev.map((project) =>
+          project.id === projectId ? { ...project, name: updated.name } : project
+        )
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "改名失败");
     }
   }
 
@@ -193,26 +222,45 @@ export default function ProjectList() {
                   key={project.id}
                   className="flex items-center justify-between rounded-lg border border-border bg-card p-4 transition-colors hover:border-gray-300"
                 >
-                  <Link
-                    href={`/projects/${project.id}`}
-                    className="min-w-0 flex-1"
-                  >
-                    <span className="font-medium transition-colors hover:text-muted-foreground">
-                      {project.name}
-                    </span>
+                  <div className="min-w-0 flex-1">
+                    {renamingId === project.id ? (
+                      <InlineNameInput
+                        value={project.name}
+                        onSubmit={(name) => handleRename(project.id, name)}
+                        onCancel={() => setRenamingId(null)}
+                        className="w-56"
+                      />
+                    ) : (
+                      <Link href={`/projects/${project.id}`}>
+                        <span className="font-medium transition-colors hover:text-muted-foreground">
+                          {project.name}
+                        </span>
+                      </Link>
+                    )}
                     <span className="ml-3 text-xs text-muted-foreground">
                       {new Date(project.created_at).toLocaleDateString("zh-CN")}
                     </span>
-                  </Link>
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setPendingDelete(project)}
-                    disabled={deletingId === project.id}
-                    className="ml-4 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                    onClick={() => setRenamingId(project.id)}
+                    disabled={renamingId === project.id}
+                    className="ml-4 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
                   >
-                    {deletingId === project.id ? "删除中..." : "删除"}
+                    改名
                   </Button>
+                  {!isMysqlId(project.id) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setPendingDelete(project)}
+                      disabled={deletingId === project.id}
+                      className="ml-1 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                    >
+                      {deletingId === project.id ? "删除中..." : "删除"}
+                    </Button>
+                  )}
                 </li>
               ))}
             </ul>

@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import dbConnect from "@/lib/mongodb";
-import { findOwnedProject } from "@/lib/ownership";
+import { findOwnedMysqlProject, renameMysqlProject } from "@/lib/mysql-account-workspace";
+import { isMysqlId } from "@/lib/identifiers";
+import { mysqlUnavailableMessage } from "@/lib/mysql";
 import {
   deleteProjectCascade,
   getCascadeDeleteTestOptions,
@@ -18,9 +20,7 @@ export async function GET(
 
     const { id } = await params;
 
-    await dbConnect();
-
-    const project = await findOwnedProject(id, userId);
+    const project = await findOwnedMysqlProject(id, userId);
 
     if (!project) {
       return NextResponse.json(
@@ -30,16 +30,37 @@ export async function GET(
     }
 
     return NextResponse.json({
-      id: project._id.toString(),
+      id: project.id,
       name: project.name,
       created_at: project.created_at,
     });
   } catch (error) {
     console.error("GET /api/projects/[id] error:", error);
     return NextResponse.json(
-      { error: "获取项目信息失败" },
+      { error: mysqlUnavailableMessage() },
       { status: 500 }
     );
+  }
+}
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const userId = await requireAuth();
+    if (userId instanceof NextResponse) return userId;
+    const { id } = await params;
+    const body = await request.json();
+    const name = typeof body.name === "string" ? body.name.trim() : "";
+    if (!name) return NextResponse.json({ error: "项目名称不能为空" }, { status: 400 });
+
+    const project = await renameMysqlProject(id, userId, name);
+    if (!project) return NextResponse.json({ error: "项目不存在或无权操作" }, { status: 404 });
+    return NextResponse.json({ id: project.id, name: project.name, created_at: project.created_at });
+  } catch (error) {
+    console.error("PATCH /api/projects/[id] error:", error);
+    return NextResponse.json({ error: mysqlUnavailableMessage() }, { status: 500 });
   }
 }
 
@@ -52,6 +73,13 @@ export async function DELETE(
     if (userId instanceof NextResponse) return userId;
 
     const { id } = await params;
+
+    if (isMysqlId(id)) {
+      return NextResponse.json(
+        { error: "删除功能暂不可用，请稍后重试" },
+        { status: 409 }
+      );
+    }
 
     await dbConnect();
 

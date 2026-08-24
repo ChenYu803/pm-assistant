@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import InlineNameInput from "@/components/InlineNameInput";
+import { isMysqlId } from "@/lib/identifiers";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -300,15 +301,17 @@ export default function WorkRecordList({ projectId }: WorkRecordListProps) {
                   >
                     改名
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setPendingDelete(record)}
-                    disabled={deletingId === record.id}
-                    className="ml-1 text-gray-500 hover:bg-red-50 hover:text-red-600"
-                  >
-                    {deletingId === record.id ? "删除中..." : "删除"}
-                  </Button>
+                  {!isMysqlId(record.id) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setPendingDelete(record)}
+                      disabled={deletingId === record.id}
+                      className="ml-1 text-gray-500 hover:bg-red-50 hover:text-red-600"
+                    >
+                      {deletingId === record.id ? "删除中..." : "删除"}
+                    </Button>
+                  )}
                 </li>
               ))}
             </ul>

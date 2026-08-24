@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import dbConnect from "@/lib/mongodb";
-import User from "@/models/User";
+import { createMysqlUser, findMysqlUserByEmail, normalizeEmail } from "@/lib/mysql-account-workspace";
+import { mysqlUnavailableMessage } from "@/lib/mysql";
 
 export async function POST(request: Request) {
   try {
@@ -32,10 +32,8 @@ export async function POST(request: Request) {
       );
     }
 
-    await dbConnect();
-
-    // Mongoose schema handles lowercase + trim via schema options
-    const existingUser = await User.findOne({ email });
+    const normalizedEmail = normalizeEmail(email);
+    const existingUser = await findMysqlUserByEmail(normalizedEmail);
     if (existingUser) {
       return NextResponse.json(
         { error: "该邮箱已被注册" },
@@ -45,19 +43,22 @@ export async function POST(request: Request) {
 
     // Hash password and create user
     const password_hash = await bcrypt.hash(password, 12);
-    const user = await User.create({
-      email,
-      password_hash,
-    });
+    const user = await createMysqlUser(normalizedEmail, password_hash);
 
     return NextResponse.json(
-      { id: user._id.toString(), email: user.email },
+      { id: user.id, email: user.email },
       { status: 201 }
     );
   } catch (error) {
     console.error("Register error:", error);
+    if ((error as { code?: string }).code === "ER_DUP_ENTRY") {
+      return NextResponse.json(
+        { error: "该邮箱已被注册" },
+        { status: 409 }
+      );
+    }
     return NextResponse.json(
-      { error: "注册失败，请稍后重试" },
+      { error: mysqlUnavailableMessage() },
       { status: 500 }
     );
   }

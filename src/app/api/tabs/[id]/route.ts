@@ -5,16 +5,14 @@ import Message from "@/models/Message";
 import MessageFileWrite from "@/models/MessageFileWrite";
 import AgentFileContext from "@/models/AgentFileContext";
 import TabOperation from "@/models/TabOperation";
-import { serializeTab } from "@/lib/tab-helpers";
 import { acquireTabWriteLease } from "@/lib/deletion-coordination";
 import {
   TAB_CONFLICT_MESSAGE,
-  beginTabOperation,
-  completeTabOperation,
-  failTabOperation,
   parseTabMutationRequest,
-  waitForTabOperation,
 } from "@/lib/tab-concurrency";
+import { renameMysqlTab } from "@/lib/mysql-account-workspace";
+import { mysqlUnavailableMessage } from "@/lib/mysql";
+import { isMysqlId } from "@/lib/identifiers";
 
 function tabConflictResponse(currentVersion: number | null) {
   return NextResponse.json(
@@ -53,72 +51,33 @@ export async function PATCH(
       );
     }
 
-    await dbConnect();
-
-    const writeLease = await acquireTabWriteLease(tabId, userId);
-    if (!writeLease) {
+    const updated = await renameMysqlTab(
+      tabId,
+      userId,
+      display_name.trim(),
+      mutationRequest.expectedVersion,
+      mutationRequest.requestId
+    );
+    if (updated.kind === "not-found") {
       return NextResponse.json(
         { error: "标签页不存在或无权操作" },
         { status: 404 }
       );
     }
-    const tab = writeLease.tab;
-
-    try {
-    const operationStart = await beginTabOperation({
-      tab,
-      operation: "rename-tab",
-      request: mutationRequest,
-    });
-    if (operationStart.kind === "request-id-mismatch") {
+    if (updated.kind === "conflict") {
+      return tabConflictResponse(updated.currentVersion);
+    }
+    if (updated.kind === "request-id-mismatch") {
       return NextResponse.json(
         { error: "请求标识已用于其他操作" },
         { status: 409 }
       );
     }
-    if (operationStart.kind === "conflict") {
-      return tabConflictResponse(operationStart.currentVersion);
-    }
-    if (operationStart.kind === "replay") {
-      const replay = await waitForTabOperation(operationStart.operation);
-      if (replay.status === "conflict") {
-        return tabConflictResponse(replay.result?.tabVersion ?? null);
-      }
-      if (replay.result?.response) {
-        return NextResponse.json({
-          ...replay.result.response,
-          version: replay.result.tabVersion ?? 0,
-        });
-      }
-      return NextResponse.json(
-        { error: "请求正在处理中，请稍后重试" },
-        { status: 409 }
-      );
-    }
-
-    try {
-      operationStart.tab.display_name = display_name.trim();
-      await operationStart.tab.save();
-      const response = { ...serializeTab(operationStart.tab) };
-      const completedTab = await completeTabOperation(operationStart.operation, {
-        response,
-      });
-
-      return NextResponse.json(serializeTab(completedTab));
-    } catch (error) {
-      await failTabOperation(
-        operationStart.operation,
-        error instanceof Error ? error.message : "更新标签页失败"
-      );
-      throw error;
-    }
-    } finally {
-      await writeLease.release();
-    }
+    return NextResponse.json(updated.tab);
   } catch (error) {
     console.error("PATCH /api/tabs/[id] error:", error);
     return NextResponse.json(
-      { error: "更新标签页失败" },
+      { error: mysqlUnavailableMessage() },
       { status: 500 }
     );
   }
@@ -133,6 +92,13 @@ export async function DELETE(
     if (userId instanceof NextResponse) return userId;
 
     const { id: tabId } = await params;
+
+    if (isMysqlId(tabId)) {
+      return NextResponse.json(
+        { error: "删除功能暂不可用，请稍后重试" },
+        { status: 409 }
+      );
+    }
 
     await dbConnect();
 
