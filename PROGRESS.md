@@ -20,6 +20,8 @@ v1.0 已验收（2026-08-11），四环流水线端到端走通。
 
 ## 本次任务
 
+**v1.3 #06 已实现，待 MySQL 环境验证（2026-08-24）**：UUID 项目/工作记录删除现使用专用 MySQL 事务：锁定拥有者父级后，按文件上下文、消息文件来源、消息恢复引用、消息、tab 操作、tab、工作记录、项目文件与快照的依赖顺序清理，最后物理删除父级。消息互相引用在删除前解除，避免外键阻断合法级联；事务回滚后可重试，项目/工作记录级边界分别保留或清理项目资产。新增 `verify:mysql-cascade-delete`，覆盖项目和工作记录的可观察关联结果、旧 URL、重复删除与中途故障的完整回滚。`npx tsc --noEmit`、`npm run lint`（仅 `ChatArea.tsx` 既有 1 条 warning）、`npm run build`、脚本语法与 diff check 通过；专项 replay 未运行，因为 `.env.local` 仍缺完整 MySQL 连接变量，且本机没有 Playwright Chromium。下一 frontier：配置 MySQL 与 Chromium 后运行 #01 至 #06 专项，再进入 #07。
+
 **v1.3 #05 已实现，待 MySQL 环境验证（2026-08-24）**：MySQL `tabs` 现持久化冻结消息、目标文件、正文摘要与错误状态；`project_files` 持久化文件绑定并拒绝普通写入、编辑和删除。MVP-PRD 与原型只会由当前轮 `%%%SCOPE_FREEZE_PROPOSAL%%%` 进入提议态，显式控件才可发起 `freeze-generate`；生成、失败、待写入、取消和正式冻结均经 tab 操作记录与事务化条件更新处理。新增 `verify:mysql-explicit-freeze`，覆盖提议、否定句、失败重试、重复请求、缺文件、取消、正确写入冻结、文件锁定和 MySQL 绑定。`npx tsc --noEmit`、`npm run lint`（仅 2 条既有 warning）、`npm run build`、脚本语法与 diff check 通过；专项 replay 尚未运行，因为本机仍缺 MySQL 连接变量与 Playwright Chromium。下一 frontier：配置环境后运行 #01 至 #05 专项，再进入 #06。
 
 **v1.3 #04 已实现，待 MySQL 环境验证（2026-08-24）**：新增 `project_files`、`agent_file_contexts`、`prototype_snapshots`、`message_file_writes` 的 #0005 migration 及统一 MySQL 成果仓储；UUID 项目的文件创建/更新/版本、Agent 来源、上下文加载、HTML 快照与 tickets 整套替换/另存/下载均已切换到事务化 MySQL 路径，普通文件树不包含快照。消息读取返回精确文件来源，MySQL 聊天会注入已加载文件，并修复 UUID 的重生成/编辑/重试参数校验。新增 `verify:mysql-project-artifacts` 覆盖消息输出 → 文件确认 → 上下文加载 → 快照回看 → tickets 替换/另存/下载与数据库关联。`npx tsc --noEmit`、`npm run lint`（仅 2 条既有 warning）、`npm run build`、脚本语法与 diff check 通过；专项 replay 未运行，因为环境仍未配置 MySQL 连接变量且本机缺 Playwright Chromium。ticket 状态为 `implemented-pending-mysql-verification`。下一 frontier：配置 MySQL 与 Playwright 后一起运行 #01 至 #04 专项，再进入 #05。

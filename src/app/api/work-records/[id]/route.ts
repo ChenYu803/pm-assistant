@@ -5,12 +5,12 @@ import { parseObjectId } from "@/lib/ownership";
 import { findOwnedMysqlWorkRecord, renameMysqlWorkRecord } from "@/lib/mysql-account-workspace";
 import { isMysqlId } from "@/lib/identifiers";
 import { mysqlUnavailableMessage } from "@/lib/mysql";
+import { deleteMysqlWorkRecordCascade } from "@/lib/mysql-cascade-delete";
 import {
   deleteWorkRecordCascade,
   getCascadeDeleteTestOptions,
 } from "@/lib/cascade-delete";
 import {
-  acquireWorkRecordWriteLease,
   beginWorkRecordDeletion,
 } from "@/lib/deletion-coordination";
 
@@ -58,9 +58,19 @@ export async function DELETE(
     const { id } = await params;
 
     if (isMysqlId(id)) {
+      const result = await deleteMysqlWorkRecordCascade(
+        id,
+        userId,
+        getCascadeDeleteTestOptions(request)
+      );
+      if (!result) {
+        return NextResponse.json(
+          { error: "工作记录不存在或无权操作", code: "RESOURCE_NOT_FOUND" },
+          { status: 404 }
+        );
+      }
       return NextResponse.json(
-        { error: "删除功能暂不可用，请稍后重试" },
-        { status: 409 }
+        { success: true, mode: result.mode }
       );
     }
 

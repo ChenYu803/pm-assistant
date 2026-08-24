@@ -4,7 +4,7 @@
 
 **Blocked by:** #03 — 对话、恢复与并发切换；#04 — 项目成果与 tickets 交付切换；#05 — 显式冻结流程切换
 
-**Status:** ready-for-agent
+**Status:** implemented-pending-mysql-verification
 
 - [ ] 项目删除覆盖工作记录、tab、消息、文件上下文、项目文件、快照、tab 操作、消息文件来源和冻结关联，确认全部清理后才报告成功。
 - [ ] 工作记录删除清理其 tab、消息、文件上下文、tab 操作和相关来源记录，同时保留项目级文件和快照的既有边界。

@@ -4,6 +4,7 @@ import dbConnect from "@/lib/mongodb";
 import { findOwnedMysqlProject, renameMysqlProject } from "@/lib/mysql-account-workspace";
 import { isMysqlId } from "@/lib/identifiers";
 import { mysqlUnavailableMessage } from "@/lib/mysql";
+import { deleteMysqlProjectCascade } from "@/lib/mysql-cascade-delete";
 import {
   deleteProjectCascade,
   getCascadeDeleteTestOptions,
@@ -75,9 +76,19 @@ export async function DELETE(
     const { id } = await params;
 
     if (isMysqlId(id)) {
+      const result = await deleteMysqlProjectCascade(
+        id,
+        userId,
+        getCascadeDeleteTestOptions(request)
+      );
+      if (!result) {
+        return NextResponse.json(
+          { error: "项目不存在或无权操作", code: "RESOURCE_NOT_FOUND" },
+          { status: 404 }
+        );
+      }
       return NextResponse.json(
-        { error: "删除功能暂不可用，请稍后重试" },
-        { status: 409 }
+        { success: true, mode: result.mode }
       );
     }
 
