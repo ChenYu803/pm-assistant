@@ -105,7 +105,7 @@ export const PIPELINE_AGENT_TYPES: AgentType[] = [...AGENT_TYPES].sort(
     AGENT_TYPE_METADATA[a].pipelineStep - AGENT_TYPE_METADATA[b].pipelineStep
 );
 
-/** Client-side tab shape (no mongoose dependency) */
+/** 客户端标签页数据形状。 */
 export interface TabData {
   id: string;
   agent_type: AgentType;

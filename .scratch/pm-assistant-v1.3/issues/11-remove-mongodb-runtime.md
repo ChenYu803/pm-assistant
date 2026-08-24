@@ -6,7 +6,7 @@
 
 **Blocked by:** #09 — 对话与工作区 MySQL-only 收口；#10 — 项目成果 API MySQL-only 收口
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [ ] 静态审计覆盖生产源码、配置和依赖清单；所有仍可执行的 MongoDB/Mongoose 导入都有 MySQL 等价实现后再移除。
 - [ ] 删除旧 MongoDB 连接、模型、ownership、并发、冻结、删除和上下文运行模块，不留下通过动态导入或异常分支才能触发的回退。

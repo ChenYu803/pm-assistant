@@ -5,8 +5,7 @@ import { getMysqlAppConfig } from "@/lib/mysql-config";
 let pool: Pool | undefined;
 
 /**
- * MySQL 迁移期间的新连接入口。当前 #01 不替换任何 MongoDB 调用，后续票只能通过
- * 此入口获取应用账号连接，避免在路由中散落连接串或误用维护者账号。
+ * 应用账号连接的唯一入口，避免在路由中散落连接串或误用维护者账号。
  */
 export function getMysqlPool(): Pool {
   if (!pool) {
@@ -36,4 +35,3 @@ export async function closeMysqlPoolForTests() {
 export function mysqlUnavailableMessage() {
   return "数据库暂时不可用，本次操作没有完成，请稍后手动重试。";
 }
-

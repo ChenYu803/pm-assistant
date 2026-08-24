@@ -560,7 +560,7 @@ export default function ChatArea({
   // 在 done 处理器的 setTimeout(100) 之前（effect 内 setTimeout(0)）就会跑，
   // 若扫描把实时消息也当历史处理，「文件名已存在 → 跳过」的兜底会吞掉新消息
   // 的写入判定——实时消息必须走「消息是否已写入」判定，不做文件名兜底
-  // （v1.1 文件更新修复）。id 全局唯一（ObjectId），切 tab 后无需清理。
+  // （v1.1 文件更新修复）。消息 ID 全局唯一，切 tab 后无需清理。
   const liveMessageIds = useRef<Set<string>>(new Set());
   const pendingFileSequence = useRef(0);
 
