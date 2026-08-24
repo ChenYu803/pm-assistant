@@ -1,15 +1,10 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
-import dbConnect from "@/lib/mongodb";
 import { findOwnedMysqlProject, renameMysqlProject } from "@/lib/mysql-account-workspace";
 import { isMysqlId } from "@/lib/identifiers";
 import { mysqlUnavailableMessage } from "@/lib/mysql";
 import { deleteMysqlProjectCascade } from "@/lib/mysql-cascade-delete";
-import {
-  deleteProjectCascade,
-  getCascadeDeleteTestOptions,
-} from "@/lib/cascade-delete";
-import { beginProjectDeletion } from "@/lib/deletion-coordination";
+import { getCascadeDeleteTestOptions } from "@/lib/mysql-cascade-delete";
 
 export async function GET(
   request: Request,
@@ -20,6 +15,7 @@ export async function GET(
     if (userId instanceof NextResponse) return userId;
 
     const { id } = await params;
+    if (!isMysqlId(id)) return NextResponse.json({ error: "项目参数无效" }, { status: 400 });
 
     const project = await findOwnedMysqlProject(id, userId);
 
@@ -52,6 +48,7 @@ export async function PATCH(
     const userId = await requireAuth();
     if (userId instanceof NextResponse) return userId;
     const { id } = await params;
+    if (!isMysqlId(id)) return NextResponse.json({ error: "项目参数无效" }, { status: 400 });
     const body = await request.json();
     const name = typeof body.name === "string" ? body.name.trim() : "";
     if (!name) return NextResponse.json({ error: "项目名称不能为空" }, { status: 400 });
@@ -74,40 +71,15 @@ export async function DELETE(
     if (userId instanceof NextResponse) return userId;
 
     const { id } = await params;
+    if (!isMysqlId(id)) return NextResponse.json({ error: "项目参数无效" }, { status: 400 });
 
-    if (isMysqlId(id)) {
-      const result = await deleteMysqlProjectCascade(
-        id,
-        userId,
-        getCascadeDeleteTestOptions(request)
-      );
-      if (!result) {
-        return NextResponse.json(
-          { error: "项目不存在或无权操作", code: "RESOURCE_NOT_FOUND" },
-          { status: 404 }
-        );
-      }
-      return NextResponse.json(
-        { success: true, mode: result.mode }
-      );
-    }
-
-    await dbConnect();
-
-    const project = await beginProjectDeletion(id, userId);
-
-    if (!project) {
+    const result = await deleteMysqlProjectCascade(id, userId, getCascadeDeleteTestOptions(request));
+    if (!result) {
       return NextResponse.json(
         { error: "项目不存在或无权操作", code: "RESOURCE_NOT_FOUND" },
         { status: 404 }
       );
     }
-
-    const result = await deleteProjectCascade(
-      project._id,
-      getCascadeDeleteTestOptions(request)
-    );
-
     return NextResponse.json({ success: true, mode: result.mode });
   } catch (error) {
     console.error("DELETE /api/projects/[id] error:", error);

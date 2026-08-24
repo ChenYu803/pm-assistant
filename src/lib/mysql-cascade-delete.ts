@@ -1,6 +1,5 @@
 import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
-import type { CascadeDeleteOptions } from "@/lib/cascade-delete";
 import { getMysqlPool } from "@/lib/mysql";
 
 type MysqlCascadeDeleteStep =
@@ -11,6 +10,17 @@ type MysqlCascadeDeleteStep =
   | "work-records"
   | "project-files"
   | "prototype-snapshots";
+
+export interface CascadeDeleteOptions {
+  failAfterStep?: MysqlCascadeDeleteStep;
+}
+
+export function getCascadeDeleteTestOptions(request: Request): CascadeDeleteOptions {
+  if (process.env.CASCADE_DELETE_TEST_HOOKS !== "1") return {};
+  const step = request.headers.get("x-pm-assistant-test-cascade-fail-after");
+  const steps: MysqlCascadeDeleteStep[] = ["agent-file-contexts", "messages", "tab-operations", "tabs", "work-records", "project-files", "prototype-snapshots"];
+  return steps.includes(step as MysqlCascadeDeleteStep) ? { failAfterStep: step as MysqlCascadeDeleteStep } : {};
+}
 
 type OwnedProjectRow = RowDataPacket & { id: string };
 type OwnedWorkRecordRow = RowDataPacket & { id: string; project_id: string };

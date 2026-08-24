@@ -1,4 +1,3 @@
-import type { IProjectFileDocument } from "@/models/ProjectFile";
 
 /** Agent 写入协议允许的 Agent 类型与文件名边界。 */
 export const ALLOWED_AGENT_TYPES = [
@@ -9,6 +8,7 @@ export const ALLOWED_AGENT_TYPES = [
 ] as const;
 
 export const MAX_FILE_BYTES = 3 * 1024 * 1024;
+export const FROZEN_DOCUMENT_LOCKED_MESSAGE = "冻结文档已正式锁定，不能修改";
 
 const ROOT_DELIVERABLES = new Set(["需求分析.md", "原型.md", "prd.md"]);
 const WORKING_DOC_RE = /^需求分析-工作文档（[^/\\]+）\.md$/u;
@@ -97,32 +97,19 @@ export function ticketSetVersion(filename: string): number {
   return match ? Number(match[1]) : 0;
 }
 
-export interface ProjectFileData {
-  id: string;
-  filename: string;
-  content: string;
-  project_id: string;
-  version: number;
-  created_at: Date;
-  updated_at: Date;
-}
-
-/** Serialize a ProjectFile document to a plain object for API responses. */
-export function serializeProjectFile(
-  file: IProjectFileDocument
-): ProjectFileData {
-  return {
-    id: file._id.toString(),
-    filename: file.filename,
-    content: file.content,
-    project_id: file.project_id.toString(),
-    version: file.version ?? 0,
-    created_at: file.created_at,
-    updated_at: file.updated_at,
-  };
-}
-
 // ─── Shared changelog utilities ───────────────────────────────────────────────
+
+export function formatChangelogHeader(entry: { requirement_count: number; iteration: number; last_editor: string; timestamp: Date }): string {
+  return ["<!--", "changelog:", `  requirement_count: ${entry.requirement_count}`, `  iteration:        ${entry.iteration}`, `  last_editor:      ${entry.last_editor}`, `  timestamp:        ${entry.timestamp.toISOString()}`, "-->"] .join("\n");
+}
+
+export interface ProjectFileData { id: string; filename: string; content: string; project_id: string; version: number; created_at: Date; updated_at: Date; }
+const CHANGELOG_PARSE_RE = /^<!--\nchangelog:\n\s{2}requirement_count:\s*(\d+)\n\s{2}iteration:\s*(\d+)\n\s{2}last_editor:\s*(.+)\n\s{2}timestamp:\s*(.+)\n-->\n?/;
+export function parseChangelog(content: string) {
+  const match = content.match(CHANGELOG_PARSE_RE);
+  return match ? { entry: { requirement_count: Number(match[1]), iteration: Number(match[2]), last_editor: match[3].trim(), timestamp: new Date(match[4].trim()) }, bodyContent: content.slice(match[0].length) } : null;
+}
+export function countRequirements(content: string): number { return content.match(/^##\s+\d+[\.、]/gm)?.length ?? 0; }
 
 /** Regex matching the changelog markdown comment block at the start of a file. */
 export const CHANGELOG_HEADER_RE =

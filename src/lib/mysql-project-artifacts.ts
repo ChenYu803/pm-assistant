@@ -4,8 +4,8 @@ import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/prom
 import type { AgentType } from "@/lib/agent-constants";
 import { getMysqlPool } from "@/lib/mysql";
 import { findOwnedMysqlProject, type MysqlProject } from "@/lib/mysql-account-workspace";
-import { isConceptDocFile, isWorkingDocFile } from "@/lib/file-helpers";
-import { formatChangelogHeader } from "@/models/ProjectFile";
+import { isConceptDocFile, isWorkingDocFile, validateFileSize } from "@/lib/file-helpers";
+import { formatChangelogHeader } from "@/lib/file-helpers";
 
 export interface MysqlProjectFile extends RowDataPacket {
   id: string;
@@ -55,6 +55,17 @@ export class MysqlFrozenDocumentError extends Error {
   constructor() {
     super("冻结文档已正式锁定，不能修改");
   }
+}
+
+export class MysqlFileTooLargeError extends Error {
+  constructor(message: string) {
+    super(message);
+  }
+}
+
+function assertMysqlFileSize(content: string) {
+  const validation = validateFileSize(content);
+  if (!validation.ok) throw new MysqlFileTooLargeError(validation.error);
 }
 
 export async function listMysqlProjectFiles(projectId: string, userId: string) {
@@ -113,6 +124,7 @@ export async function writeMysqlProjectFile(input: {
   userId: string;
   filename: string;
   content: string;
+  buildContent?: (existing: MysqlProjectFile | null) => string;
   agentType: AgentType;
   sourceMessageId?: string;
   allowReplayFixture?: boolean;
@@ -135,14 +147,17 @@ export async function writeMysqlProjectFile(input: {
     const existing = existingRows[0];
     if (existing?.freeze_binding_tab_id) throw new MysqlFrozenDocumentError();
     const now = new Date();
+    const content = input.buildContent ? input.buildContent(existing ?? null) : input.content;
+    assertMysqlFileSize(content);
     const file: MysqlProjectFile = existing
-      ? { ...existing, content: input.content, version: Number(existing.version) + 1, updated_at: now }
-      : { id: randomUUID(), project_id: input.projectId, filename: input.filename, content: input.content, version: 1, created_at: now, updated_at: now } as MysqlProjectFile;
+      ? { ...existing, content, version: Number(existing.version) + 1, updated_at: now }
+      : { id: randomUUID(), project_id: input.projectId, filename: input.filename, content, version: 1, created_at: now, updated_at: now } as MysqlProjectFile;
     if (existing) {
-      await connection.execute<ResultSetHeader>(
+      const [updated] = await connection.execute<ResultSetHeader>(
         "UPDATE project_files SET content = ?, version = ?, updated_at = ? WHERE id = ? AND version = ?",
         [file.content, file.version, file.updated_at, file.id, existing.version]
       );
+      if (updated.affectedRows !== 1) throw new Error("项目文件版本冲突");
     } else {
       await connection.execute<ResultSetHeader>(
         `INSERT INTO project_files (${PROJECT_FILE_COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -347,9 +362,11 @@ export async function deliverMysqlTicketSet(input: { projectId: string; userId: 
     for (const target of targets) {
       const existing = allFiles.find((file) => file.filename === target.filename);
       const now = new Date();
+      const content = `${formatChangelogHeader({ requirement_count: 0, iteration: Number(existing?.version ?? 0) + 1, last_editor: "ticket_splitter", timestamp: now })}\n${target.content}`;
+      assertMysqlFileSize(content);
       const file = existing
-        ? { ...existing, content: `${formatChangelogHeader({ requirement_count: 0, iteration: Number(existing.version) + 1, last_editor: "ticket_splitter", timestamp: now })}\n${target.content}`, version: Number(existing.version) + 1, updated_at: now }
-        : { id: randomUUID(), project_id: input.projectId, filename: target.filename, content: `${formatChangelogHeader({ requirement_count: 0, iteration: 1, last_editor: "ticket_splitter", timestamp: now })}\n${target.content}`, version: 1, created_at: now, updated_at: now } as MysqlProjectFile;
+        ? { ...existing, content, version: Number(existing.version) + 1, updated_at: now }
+        : { id: randomUUID(), project_id: input.projectId, filename: target.filename, content, version: 1, created_at: now, updated_at: now } as MysqlProjectFile;
       if (existing) {
         await connection.execute<ResultSetHeader>("UPDATE project_files SET content = ?, version = ?, updated_at = ? WHERE id = ?", [file.content, file.version, file.updated_at, file.id]);
       } else {

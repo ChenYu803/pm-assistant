@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
-import dbConnect from "@/lib/mongodb";
-import { findOwnedProjectFileInProject, parseObjectId } from "@/lib/ownership";
 import { createAICompletion, isAIConfigured } from "@/lib/ai";
 import { isMysqlId } from "@/lib/identifiers";
 import { findOwnedMysqlProjectFile } from "@/lib/mysql-project-artifacts";
@@ -16,68 +14,15 @@ const POLISH_SYSTEM_PROMPT = `你是一个技术文档润色助手。请对以�
 6. 保留原有的变更日志头部（如果有的话）
 
 请直接输出润色后的完整内容，不要添加任何解释或说明。`;
-
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ id: string; fileId: string }> }
-) {
+export async function POST(request: Request, { params }: { params: Promise<{ id: string; fileId: string }> }) {
   try {
-    const userId = await requireAuth();
-    if (userId instanceof NextResponse) return userId;
-
-    const { id: projectId, fileId } = await params;
-    const mysqlFile = isMysqlId(projectId)
-      ? (isMysqlId(fileId) ? await findOwnedMysqlProjectFile(projectId, fileId, userId) : null)
-      : null;
-    if (isMysqlId(projectId) && !mysqlFile) {
-      return NextResponse.json({ error: isMysqlId(fileId) ? "文件不存在或无权访问" : "fileId 参数无效" }, { status: isMysqlId(fileId) ? 404 : 400 });
-    }
-    if (!isMysqlId(projectId) && !parseObjectId(fileId)) {
-      return NextResponse.json({ error: "fileId 参数无效" }, { status: 400 });
-    }
-
-    const body = await request.json();
-    const { content } = body;
-
-    if (!content || typeof content !== "string" || !content.trim()) {
-      return NextResponse.json(
-        { error: "内容不能为空" },
-        { status: 400 }
-      );
-    }
-
-    if (!isMysqlId(projectId)) await dbConnect();
-
-    const file = mysqlFile ?? await findOwnedProjectFileInProject(projectId, fileId, userId);
-    if (!file) {
-      return NextResponse.json(
-        { error: "文件不存在或无权访问" },
-        { status: 404 }
-      );
-    }
-
-    if (!isAIConfigured()) {
-      return NextResponse.json(
-        { error: "AI 服务未配置，请联系管理员设置 AI_API_KEY" },
-        { status: 500 }
-      );
-    }
-
-    const polished = await createAICompletion({
-      maxTokens: 32768,
-      messages: [
-        { role: "system", content: POLISH_SYSTEM_PROMPT },
-        { role: "user", content: `请润色以下 Markdown 内容：\n\n${content}` },
-      ],
-      timeoutMs: 600_000,
-    });
-
-    return NextResponse.json({ polished });
-  } catch (error) {
-    console.error("POST /api/projects/[id]/files/[fileId]/polish error:", error);
-    return NextResponse.json(
-      { error: "AI 润色失败" },
-      { status: 500 }
-    );
-  }
+    const userId = await requireAuth(); if (userId instanceof NextResponse) return userId;
+    const { id: projectId, fileId } = await params; const { content } = await request.json();
+    if (!isMysqlId(projectId)) return NextResponse.json({ error: "项目参数无效" }, { status: 400 });
+    if (!isMysqlId(fileId)) return NextResponse.json({ error: "fileId 参数无效" }, { status: 400 });
+    if (typeof content !== "string" || !content.trim()) return NextResponse.json({ error: "内容不能为空" }, { status: 400 });
+    if (!await findOwnedMysqlProjectFile(projectId, fileId, userId)) return NextResponse.json({ error: "文件不存在或无权访问" }, { status: 404 });
+    if (!isAIConfigured()) return NextResponse.json({ error: "AI 服务未配置，请联系管理员设置 AI_API_KEY" }, { status: 500 });
+    return NextResponse.json({ polished: await createAICompletion({ maxTokens: 32768, messages: [{ role: "system", content: POLISH_SYSTEM_PROMPT }, { role: "user", content: `请润色以下 Markdown 内容：\n\n${content}` }], timeoutMs: 600_000 }) });
+  } catch (error) { console.error("POST /api/projects/[id]/files/[fileId]/polish error:", error); return NextResponse.json({ error: "AI 润色失败" }, { status: 500 }); }
 }
