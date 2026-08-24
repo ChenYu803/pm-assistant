@@ -13,6 +13,11 @@ import {
 import { renameMysqlTab } from "@/lib/mysql-account-workspace";
 import { mysqlUnavailableMessage } from "@/lib/mysql";
 import { isMysqlId } from "@/lib/identifiers";
+import {
+  deleteMysqlTab,
+  getMysqlTabMessageMutationTestOptions,
+} from "@/lib/mysql-tab-message-mutations";
+import { parseMysqlTabMutationRequest } from "@/lib/mysql-tab-concurrency";
 
 function tabConflictResponse(currentVersion: number | null) {
   return NextResponse.json(
@@ -94,10 +99,18 @@ export async function DELETE(
     const { id: tabId } = await params;
 
     if (isMysqlId(tabId)) {
-      return NextResponse.json(
-        { error: "删除功能暂不可用，请稍后重试" },
-        { status: 409 }
-      );
+      const body = (await request.json().catch(() => null)) ?? {};
+      const mutation = parseMysqlTabMutationRequest(body);
+      if (!mutation) {
+        return NextResponse.json({ error: "并发请求参数无效" }, { status: 400 });
+      }
+      const result = await deleteMysqlTab({
+        tabId,
+        userId,
+        mutation,
+        options: getMysqlTabMessageMutationTestOptions(request),
+      });
+      return NextResponse.json(result.body, { status: result.status });
     }
 
     await dbConnect();

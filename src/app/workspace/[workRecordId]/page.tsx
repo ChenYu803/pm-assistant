@@ -428,20 +428,28 @@ export default function WorkspacePage() {
     const tab = pendingCloseTab;
     if (!tab) return;
     setPendingCloseTab(null);
-
-    // Optimistic removal
     const wasActive = tab.id === activeTabId;
-    setTabs((prev) => prev.filter((t) => t.id !== tab.id));
 
     try {
-      const res = await fetch(`/api/tabs/${tab.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/tabs/${tab.id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          expectedVersion: tab.version,
+          requestId: createTabRequestId("delete-tab"),
+        }),
+      });
       if (!res.ok) {
-        throw new Error("删除失败");
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "删除标签页失败");
       }
-    } catch {
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "删除标签页失败");
       await fetchTabs();
       return;
     }
+
+    setTabs((prev) => prev.filter((item) => item.id !== tab.id));
 
     // Switch to another tab if we closed the active one.
     // Side effects stay outside the setTabs updater (StrictMode double-invokes).
@@ -652,7 +660,6 @@ export default function WorkspacePage() {
             onClose={requestCloseTab}
             onRename={handleRenameTab}
             onNew={() => setShowAgentDialog(true)}
-            closable={!isMysqlWorkspace}
           />
 
           {/* Error banner (shown above content when stale data exists) */}

@@ -187,6 +187,22 @@ const MYSQL_MIGRATIONS = [
       "CREATE INDEX IF NOT EXISTS project_files_freeze_binding_tab ON project_files (freeze_binding_tab_id)",
     ],
   },
+  {
+    id: "0007_tab_message_mutations",
+    checksum: "e288c84d9a5d4e5299ed47a2100345da3c3d6d88365e1574154064c0eb775c15",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS tab_deletion_operations (
+        tab_id CHAR(36) NOT NULL,
+        request_id VARCHAR(160) NOT NULL,
+        user_id CHAR(36) NOT NULL,
+        response_json JSON NOT NULL,
+        tab_version INT UNSIGNED NOT NULL,
+        created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+        PRIMARY KEY (tab_id, request_id),
+        KEY tab_deletion_operations_user_created (user_id, created_at)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
+    ],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {

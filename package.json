@@ -13,7 +13,8 @@
     "verify:mysql-conversation": "tsx scripts/verify-mysql-conversation.mjs",
     "verify:mysql-project-artifacts": "tsx scripts/verify-mysql-project-artifacts.mjs",
     "verify:mysql-explicit-freeze": "tsx scripts/verify-mysql-explicit-freeze.mjs",
-    "verify:mysql-cascade-delete": "tsx scripts/verify-mysql-cascade-delete.mjs"
+    "verify:mysql-cascade-delete": "tsx scripts/verify-mysql-cascade-delete.mjs",
+    "verify:mysql-tab-message-mutations": "tsx scripts/verify-mysql-tab-message-mutations.mjs"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "1.1.13",

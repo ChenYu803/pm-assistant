@@ -20,6 +20,8 @@ v1.0 已验收（2026-08-11），四环流水线端到端走通。
 
 ## 本次任务
 
+**v1.3 #08 已实现，待 MySQL 环境验证（2026-08-24）**：UUID tab 现可在单个 MySQL 事务中删除，并清理 `agent_file_contexts`、`message_file_writes`、消息替换引用、消息及 `tab_operations`；专用 tombstone 操作表保留已物理删除 tab 的 `{ tabId, requestId }` 重放结果。消息 DELETE 支持单条删除与从用户消息开始的全量截断，都会处理来源、替换链/自引用、ownership、版本冲突和幂等；运行中的生成持有 tab 操作锁，删除会明确冲突。MySQL 工作区重新显示 tab 关闭入口并提交 `expectedVersion + requestId`。新增 `verify:mysql-tab-message-mutations` 覆盖 tab/消息删除、截断、非用户拒绝、ownership、冲突、幂等、外键清理、生成互斥与两类回滚。脚本语法、`npx tsc --noEmit`、相关 lint、`git diff --check` 通过；专项未运行，因为 `.env.local` 缺完整 MySQL 连接变量且本机无 Playwright Chromium。下一 frontier：配置 MySQL 与 Chromium 后运行 #08 专项；随后进入 #09 的对话/工作区 MySQL-only 收口。
+
 **v1.3 #07 已拆分（2026-08-24）**：审查 handoff、当前未提交 diff 与依赖清单后，确认 #07 同时承担缺失行为补齐、两组 API/UI 收口、生产依赖删除、23 个 Mongo 相关验证脚本迁移和最终发布验收，已超过单个新上下文可可靠完成的范围。保留 #07 为总目标，新增 #08 tab/消息删除与截断、#09 对话/工作区 MySQL-only、#10 项目成果 API MySQL-only、#11 移除生产 Mongo 依赖、#12 验证基础设施迁移、#13 综合回放与发布验收。现有 25 个文件、约 3600 行删除的未提交收口尝试原样保留，作为 #09/#10 的审计输入，不能因类型检查通过直接交付。下一 frontier：#08；#10 在其既有 blocker 具备后可独立推进。
 
 **v1.3 #07 进行中（2026-08-24）**：已将项目、工作记录、聊天、冻结、文件上下文、项目文件、快照、tickets 与自动命名 API 收口为 UUID/MySQL 路径，并通过 `npx tsc --noEmit`。收口审计发现旧 Mongo 回退仍实际承载 tab 删除和消息删除/截断；MySQL 尚未有等价事务实现，因此 #07 不能标记完成，也不能删除 `mongoose` 依赖或旧模型。下一步必须先补齐这些 MySQL 操作、将前端的旧 ID 分流移除，再删除遗留代码并运行 MySQL 综合 replay。
