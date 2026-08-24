@@ -80,8 +80,8 @@ try {
     write(projectId, "需求分析.md", "# 需求分析"),
     write(projectId, "原型.md", "# 原型"),
     write(projectId, "prd.md", "# PRD"),
-    write(projectId, "issues/01-first.md", "# 第一张票", "ticket_splitter"),
-    write(projectId, "issues/v2/02-second.md", "# 第二张票", "ticket_splitter"),
+    write(projectId, "issues/01-first.md", "**What to build:** 第一张票\n\n**Blocked by:** None\n\n## 验收标准\n- [ ] 第一张票可交付", "ticket_splitter"),
+    write(projectId, "issues/v2/02-second.md", "**What to build:** 第二张票\n\n**Blocked by:** None\n\n## 验收标准\n- [ ] 第二张票可交付", "ticket_splitter"),
   ]);
   check("根文件白名单与 issues 路径可写", rootResults.every((result) => result.status === 201));
 
@@ -161,7 +161,7 @@ try {
   );
 
   const requirementUpdate = await write(projectId, "需求分析.md", "## 第二条需求", "requirement_analyst");
-  const ticketUpdate = await write(projectId, "issues/01-first.md", "# 第一张票\n\n更新验收标准", "ticket_splitter");
+  const ticketUpdate = await write(projectId, "issues/01-first.md", "**What to build:** 第一张票\n\n**Blocked by:** None\n\n## 验收标准\n- [ ] 更新验收标准", "ticket_splitter");
   const requirementDetail = await api(`/api/projects/${projectId}/files/${rootResults[0].body?.id}`);
   const ticketDetail = await api(`/api/projects/${projectId}/files/${rootResults[3].body?.id}`);
   check("正式需求 Markdown 追加语义保持", requirementUpdate.status === 201 && requirementDetail.body?.content?.includes("第二条需求"));

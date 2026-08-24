@@ -20,7 +20,7 @@ v1.0 已验收（2026-08-11），四环流水线端到端走通。
 
 ## 本次任务
 
-**v1.2 #12 实现但验收未通过（2026-08-24）**：新增 `scripts/verify-v12-replay.mjs`，固定以 `AI_MODE=replay` 探测服务端后按安全、冻结协议、生命周期、消息恢复、并发命名、项目文件边界和 tickets 交付顺序调用 11 个专项。综合入口只收集退出码与专项 `结果`，失败保留带专项类别的 ❌ 定位摘要；环境未就绪时明确报告未运行，不切换 live。综合运行确认服务端 replay，但 8 个专项通过、3 个失败：显式冻结等待状态超时，项目边界 4/13，文件协议 12/14；因此本票保持 claimed，不能标记 resolved。入口语法、`npx tsc --noEmit`、`git diff --check` 通过；未运行 `verify-ticket-splitter.mjs`（#11 版本交付专项已覆盖整套候选契约，故无需重复执行）。
+**v1.2 #12 已完成（2026-08-24）**：新增 `scripts/verify-v12-replay.mjs`，固定以 `AI_MODE=replay` 探测服务端后按安全、冻结协议、生命周期、消息恢复、并发命名、项目文件边界和 tickets 交付顺序调用 11 个专项。综合入口只收集退出码与专项 `结果`，失败保留带专项类别的 ❌ 定位摘要；环境未就绪时明确报告未运行，不切换 live。修复 #10/#11 后验证夹具：项目边界与冻结注入写入显式携带 replay system-write 头，文件协议 ticket fixture 满足产品契约。综合回放 11/11 专项、165/165 断言通过；未运行 `verify-ticket-splitter.mjs`（#11 版本交付专项已覆盖整套候选契约，故无需重复执行）。入口语法、`npx tsc --noEmit`、`git diff --check` 通过。
 
 **v1.2 #10 已完成（2026-08-24）**：新增 `MessageFileWrite` 持久化消息来源事实；每次项目文件写入记录消息、tab、项目、文件、创建/更新操作、文件版本、完成态与写入态。新 assistant 消息从 SSE `start` 即声明为实时，严格只认精确来源；仅缺少 `file_provenance_version` 的历史消息可按文件名兜底。产品 Agent 文件写入 API 必须提供已完成 assistant 来源并校验同 Agent、同项目；仅非生产 replay 的基础夹具可使用显式 system-write 测试旁路。重生成缺少已写文件时提供“更新文件”与“保持不变”，前者复用既有确认流并写入新来源记录，后者不覆盖。来源记录与文件写入事务优先；独立 MongoDB 回退时来源记录失败会按实际版本补偿撤销文件。`ProjectFile.version` 以原子递增覆盖 Agent 写入与手动编辑；消息、tab、工作记录和项目删除同步清理来源记录。`verify-message-file-provenance` 14/14、消息恢复 20/20、文件协议/快照 14/14、级联删除 23/23、`npx tsc --noEmit`、脚本语法与 diff check 均通过，全部使用 `AI_MODE=replay`。下一 frontier：v1.2 #11。
 

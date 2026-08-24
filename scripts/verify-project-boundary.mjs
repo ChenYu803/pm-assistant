@@ -70,12 +70,18 @@ try {
 
   const projectA = await api("/api/projects", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-pm-assistant-test-system-write": "1",
+    },
     body: JSON.stringify({ name: "隔离项目 A" }),
   });
   const projectB = await api("/api/projects", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-pm-assistant-test-system-write": "1",
+    },
     body: JSON.stringify({ name: "隔离项目 B" }),
   });
   check("创建项目 A/B", projectA.status === 201 && projectB.status === 201);
@@ -101,7 +107,10 @@ try {
 
   const fileA = await api(`/api/projects/${projectAId}/files`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-pm-assistant-test-system-write": "1",
+    },
     body: JSON.stringify({
       filename: "需求分析.md",
       content: "# 项目 A 文件",
@@ -110,7 +119,10 @@ try {
   });
   const fileB = await api(`/api/projects/${projectBId}/files`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-pm-assistant-test-system-write": "1",
+    },
     body: JSON.stringify({
       filename: "需求分析.md",
       content: "# 项目 B 文件",

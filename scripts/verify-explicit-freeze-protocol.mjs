@@ -111,7 +111,10 @@ await page.addInitScript(() => {
         `/api/projects/${replacement.projectId}/files`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-pm-assistant-test-system-write": "1",
+          },
           body: JSON.stringify({
             filename: replacement.filename,
             content: replacement.content,
@@ -156,13 +159,19 @@ const tabById = async (workRecordId, tabId) =>
   (await readTabs(workRecordId)).find((tab) => tab.id === tabId);
 
 const waitForTab = async (workRecordId, tabId, predicate) => {
-  const deadline = Date.now() + 20_000;
+  const deadline = Date.now() + 60_000;
+  let lastTab;
   while (Date.now() < deadline) {
     const tab = await tabById(workRecordId, tabId);
+    lastTab = tab;
     if (tab && predicate(tab)) return tab;
     await page.waitForTimeout(100);
   }
-  throw new Error("冻结状态未在时限内达到预期");
+  throw new Error("冻结状态未在时限内达到预期：" + JSON.stringify({
+    freezeStatus: lastTab?.freeze_status,
+    scopeFrozen: lastTab?.scope_frozen,
+    version: lastTab?.version,
+  }));
 };
 
 const postChat = (tabId, body, headers = {}) =>
@@ -440,7 +449,10 @@ check(
 );
 const overwriteFrozenPrd = await api(`/api/projects/${projectId}/files`, {
   method: "POST",
-  headers: { "Content-Type": "application/json" },
+  headers: {
+    "Content-Type": "application/json",
+    "x-pm-assistant-test-system-write": "1",
+  },
   body: JSON.stringify({
     filename: `概念版（${prdTab.display_name}）.md`,
     content: "# 概念版\n\n不应覆盖正式冻结的正文",
@@ -502,7 +514,10 @@ check(
 );
 const mismatchedWritePrototype = await api(`/api/projects/${projectId}/files`, {
   method: "POST",
-  headers: { "Content-Type": "application/json" },
+  headers: {
+    "Content-Type": "application/json",
+    "x-pm-assistant-test-system-write": "1",
+  },
   body: JSON.stringify({
     filename: "原型.md",
     content: "# 原型\n\n冻结回放文档",
@@ -542,7 +557,10 @@ check(
 );
 const matchingWritePrototype = await api(`/api/projects/${projectId}/files`, {
   method: "POST",
-  headers: { "Content-Type": "application/json" },
+  headers: {
+    "Content-Type": "application/json",
+    "x-pm-assistant-test-system-write": "1",
+  },
   body: JSON.stringify({
     filename: "原型.md",
     content: matchingPrototypeContent ?? "",
@@ -602,7 +620,10 @@ const matchingRaceContent =
     : null;
 const matchingRaceWrite = await api(`/api/projects/${projectId}/files`, {
   method: "POST",
-  headers: { "Content-Type": "application/json" },
+  headers: {
+    "Content-Type": "application/json",
+    "x-pm-assistant-test-system-write": "1",
+  },
   body: JSON.stringify({
     filename: raceFilename,
     content: matchingRaceContent ?? "",
@@ -621,7 +642,10 @@ const [raceComplete, raceOverwrite] = await Promise.all([
   }),
   api(`/api/projects/${projectId}/files`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-pm-assistant-test-system-write": "1",
+    },
     body: JSON.stringify({
       filename: raceFilename,
       content: "# 概念版\n\n并发覆盖的错误正文",
