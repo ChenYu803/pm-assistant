@@ -20,6 +20,8 @@ v1.0 已验收（2026-08-11），四环流水线端到端走通。
 
 ## 本次任务
 
+**v1.3 #09 已实现，待 MySQL 环境验证（2026-08-24）**：审计 #07 未提交的 MySQL-only 收口尝试后，对话、消息、冻结、tab、工作记录和自动命名公开入口现只接受 UUID 并走 MySQL ownership，不再为旧 ObjectId 回退 MongoDB。保留 #08 的 tab/消息删除、截断、请求幂等与版本冲突路径。工作区移除 `isMysqlWorkspace` / `isMysqlId` 分流，UUID 用户重新获得聊天、tab 关闭、消息管理、文件上下文、文件树、任务版本与冻结控件。MySQL 聊天直接读取 MySQL 上下文，恢复冻结后的 Agent 系统提醒，并在冻结生成 SSE `start` 事件返回 `generating` 状态。`npx tsc --noEmit`、相关 replay 脚本语法和 `git diff --check` 通过；MySQL 专项未运行，因为 `.env.local` 缺完整 MySQL 连接变量且本机无 Playwright Chromium。#10 项目成果 API 遗留改动保持未暂存；下一 frontier：配置环境后跑 #08/#09 专项，再推进 #10。
+
 **v1.3 #08 已实现，待 MySQL 环境验证（2026-08-24）**：UUID tab 现可在单个 MySQL 事务中删除，并清理 `agent_file_contexts`、`message_file_writes`、消息替换引用、消息及 `tab_operations`；专用 tombstone 操作表保留已物理删除 tab 的 `{ tabId, requestId }` 重放结果。消息 DELETE 支持单条删除与从用户消息开始的全量截断，都会处理来源、替换链/自引用、ownership、版本冲突和幂等；运行中的生成持有 tab 操作锁，删除会明确冲突。MySQL 工作区重新显示 tab 关闭入口并提交 `expectedVersion + requestId`。新增 `verify:mysql-tab-message-mutations` 覆盖 tab/消息删除、截断、非用户拒绝、ownership、冲突、幂等、外键清理、生成互斥与两类回滚。脚本语法、`npx tsc --noEmit`、相关 lint、`git diff --check` 通过；专项未运行，因为 `.env.local` 缺完整 MySQL 连接变量且本机无 Playwright Chromium。下一 frontier：配置 MySQL 与 Chromium 后运行 #08 专项；随后进入 #09 的对话/工作区 MySQL-only 收口。
 
 **v1.3 #07 已拆分（2026-08-24）**：审查 handoff、当前未提交 diff 与依赖清单后，确认 #07 同时承担缺失行为补齐、两组 API/UI 收口、生产依赖删除、23 个 Mongo 相关验证脚本迁移和最终发布验收，已超过单个新上下文可可靠完成的范围。保留 #07 为总目标，新增 #08 tab/消息删除与截断、#09 对话/工作区 MySQL-only、#10 项目成果 API MySQL-only、#11 移除生产 Mongo 依赖、#12 验证基础设施迁移、#13 综合回放与发布验收。现有 25 个文件、约 3600 行删除的未提交收口尝试原样保留，作为 #09/#10 的审计输入，不能因类型检查通过直接交付。下一 frontier：#08；#10 在其既有 blocker 具备后可独立推进。

@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 
 import { AGENT_SYSTEM_PROMPTS } from "@/lib/agent-prompts";
 import { createAIStream, isAIConfigured, type AIMessage } from "@/lib/ai";
-import { getLoadedContextFiles } from "@/lib/context-files";
 import { stripChangelogHeader } from "@/lib/file-helpers";
 import {
   freezeGenerationInstruction,
@@ -29,6 +28,7 @@ import {
   type MysqlReplacementKind,
   updateMysqlGeneratingMessage,
 } from "@/lib/mysql-conversation";
+import { listMysqlLoadedContextFiles } from "@/lib/mysql-project-artifacts";
 import {
   beginMysqlTabOperation,
   completeMysqlTabOperation,
@@ -46,6 +46,13 @@ class MysqlGenerationInterruptedError extends Error {
 }
 
 const encoder = new TextEncoder();
+
+const FROZEN_REMINDERS = {
+  mvp_prd:
+    "当前 PRD 范围已冻结。如果用户提出新的功能需求，请礼貌地提醒用户范围已冻结，并建议将新需求放入后续迭代。不要修改已冻结的 PRD 范围。",
+  prototype:
+    "当前原型方案已冻结（用户已确认「完满」）。如果用户提出新的修改意见，请礼貌地提醒用户原型已冻结，并建议将修改放入下一轮迭代。不要修改已冻结的原型。",
+} as const;
 
 function sse(type: string, data: Record<string, unknown>) {
   return encoder.encode(`data: ${JSON.stringify({ type, ...data })}\n\n`);
@@ -180,9 +187,13 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
   }
 
   let prompt = `${AGENT_SYSTEM_PROMPTS[tab.agent_type]}${(tab.agent_type === "requirement_analyst" || tab.agent_type === "mvp_prd") ? `\n\n## 当前标签页\n\n当前标签页名称：${tab.display_name}。` : ""}`;
-  const contextFiles = await getLoadedContextFiles(tab.id, tab.project_id);
+  const contextFiles = await listMysqlLoadedContextFiles(tab.id, tab.project_id);
   if (contextFiles.length > 0) {
     prompt += "\n\n## 已加载的项目文件\n\n以下文件已加载到你的上下文中，请基于这些文件的内容进行工作：\n\n" + contextFiles.map((file) => `### ${file.filename}\n\`\`\`markdown\n${stripChangelogHeader(file.content)}\n\`\`\``).join("\n\n");
+  }
+  if (freezeState.scopeFrozen) {
+    const reminder = FROZEN_REMINDERS[tab.agent_type as keyof typeof FROZEN_REMINDERS];
+    if (reminder) prompt += `\n\n## 范围冻结提醒\n\n${reminder}`;
   }
   if (isFreeze) {
     prompt += freezeGenerationInstruction({
@@ -248,7 +259,12 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
       let fullContent = "";
       let operationFinished = false;
       const generation = registerGeneration(assistant.id);
-      send(controller, "start", { ...messageJson(assistant), ...(userMessage ? { userMessageId: userMessage.id } : {}), tabVersion: operation.locked_version });
+      send(controller, "start", {
+        ...messageJson(assistant),
+        ...(userMessage ? { userMessageId: userMessage.id } : {}),
+        tabVersion: operation.locked_version,
+        ...(isFreeze ? { freezeStatus: "generating", freezeMessageId: assistant.id } : {}),
+      });
       try {
         const failureMode = process.env.NODE_ENV !== "production" ? request.headers.get("x-pm-verify-force-error") : null;
         if (failureMode === "zero-token") throw new Error("回放强制零 token 失败");

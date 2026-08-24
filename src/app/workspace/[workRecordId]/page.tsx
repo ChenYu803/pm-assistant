@@ -20,7 +20,6 @@ import {
 import type { TabData } from "@/lib/agent-constants";
 import type { ProjectFileData } from "@/lib/file-helpers";
 import { downloadFilename, ticketSetVersion } from "@/lib/file-helpers";
-import { isMysqlId } from "@/lib/identifiers";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -54,7 +53,6 @@ export default function WorkspacePage() {
   const params = useParams();
   const workRecordId = params.workRecordId as string;
   const storageKey = getActiveTabKey(workRecordId);
-  const isMysqlWorkspace = isMysqlId(workRecordId);
 
   const [tabs, setTabs] = useState<TabData[]>([]);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
@@ -111,10 +109,6 @@ export default function WorkspacePage() {
 
   // Fetch context files for active tab
   const fetchContextFiles = useCallback(async () => {
-    if (isMysqlWorkspace) {
-      setContextFiles([]);
-      return;
-    }
     if (!activeTabId) {
       setContextFiles([]);
       return;
@@ -131,7 +125,7 @@ export default function WorkspacePage() {
     } finally {
       setContextLoading(false);
     }
-  }, [activeTabId, isMysqlWorkspace]);
+  }, [activeTabId]);
 
   useEffect(() => {
     const refresh = window.setTimeout(() => {
@@ -253,12 +247,6 @@ export default function WorkspacePage() {
   // Fetch files when project is loaded
   const fetchFiles = useCallback(async () => {
     if (!project) return;
-    if (isMysqlId(project.id)) {
-      setFiles([]);
-      setFilesError("");
-      setFilesLoading(false);
-      return;
-    }
     setFilesLoading(true);
     setFilesError("");
     try {
@@ -619,7 +607,7 @@ export default function WorkspacePage() {
       <div className="flex min-h-0 flex-1 overflow-hidden">
         {/* Left: File tree */}
         <div className="flex min-h-0 w-64 flex-col border-r border-border">
-          {project && !isMysqlId(project.id) && (
+          {project && (
             <TicketSetPanel
               projectId={project.id}
               selectedVersion={selectedTicketVersion}
@@ -642,7 +630,7 @@ export default function WorkspacePage() {
         </div>
 
         {/* Agent context panel (only when a tab is active) */}
-        {activeTabId && !isMysqlWorkspace && (
+        {activeTabId && (
           <AgentContextPanel
             contextFiles={contextFiles}
             loading={contextLoading}
@@ -754,8 +742,6 @@ export default function WorkspacePage() {
                 )}
               </div>
             </div>
-          ) : isMysqlWorkspace ? (
-            <div className="flex flex-1 items-center justify-center bg-gray-50" />
           ) : (
             /* Chat area for active tab */
             <ChatArea

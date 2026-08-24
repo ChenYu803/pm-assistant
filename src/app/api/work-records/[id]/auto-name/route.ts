@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
-import dbConnect from "@/lib/mongodb";
-import { autoNameMysqlWorkRecord, autoNameWorkRecord } from "@/lib/auto-name";
-import { findOwnedTab, findOwnedWorkRecord, parseObjectId } from "@/lib/ownership";
+import { autoNameMysqlWorkRecord } from "@/lib/auto-name";
 import { isMysqlId } from "@/lib/identifiers";
 import { findOwnedMysqlConversationTab } from "@/lib/mysql-conversation";
 import { findOwnedMysqlWorkRecord } from "@/lib/mysql-account-workspace";
@@ -10,7 +8,7 @@ import { findOwnedMysqlWorkRecord } from "@/lib/mysql-account-workspace";
 /** 聊天完成后由页面单独调用；命名失败不会影响已完成的聊天。 */
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const userId = await requireAuth();
@@ -26,41 +24,23 @@ export async function POST(
       ? request.headers.get("x-auto-name-test-name")?.trim().slice(0, 20)
       : undefined;
     const failureInjected =
-      testHooksEnabled && request.headers.get("x-auto-name-test-failure") === "1";
-    if (isMysqlId(workRecordId) || isMysqlId(tabId)) {
-      if (!isMysqlId(workRecordId) || !isMysqlId(tabId)) {
-        return NextResponse.json({ error: "自动命名参数无效" }, { status: 400 });
-      }
-      const [workRecord, tab] = await Promise.all([
-        findOwnedMysqlWorkRecord(workRecordId, userId),
-        findOwnedMysqlConversationTab(tabId, userId),
-      ]);
-      if (!workRecord || !tab || tab.work_record_id !== workRecord.id) {
-        return NextResponse.json({ error: "工作记录或标签页不存在或无权操作" }, { status: 404 });
-      }
-      const name = await autoNameMysqlWorkRecord(tab.id, workRecord.id, {
-        testName,
-        forceFailureForTest: failureInjected,
-      });
-      return NextResponse.json({ name, ...(testHooksEnabled ? { testFailureInjected: failureInjected } : {}) });
-    }
-    if (!parseObjectId(workRecordId) || !parseObjectId(tabId)) {
+      testHooksEnabled &&
+      request.headers.get("x-auto-name-test-failure") === "1";
+    if (!isMysqlId(workRecordId) || !isMysqlId(tabId)) {
       return NextResponse.json({ error: "自动命名参数无效" }, { status: 400 });
     }
-
-    await dbConnect();
     const [workRecord, tab] = await Promise.all([
-      findOwnedWorkRecord(workRecordId, userId),
-      findOwnedTab(tabId, userId),
+      findOwnedMysqlWorkRecord(workRecordId, userId),
+      findOwnedMysqlConversationTab(tabId, userId),
     ]);
-    if (!workRecord || !tab || tab.work_record_id.toString() !== workRecord._id.toString()) {
+    if (!workRecord || !tab || tab.work_record_id !== workRecord.id) {
       return NextResponse.json(
         { error: "工作记录或标签页不存在或无权操作" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
-    const name = await autoNameWorkRecord(tab._id, workRecord._id, {
+    const name = await autoNameMysqlWorkRecord(tab.id, workRecord.id, {
       testName,
       forceFailureForTest: failureInjected,
     });
