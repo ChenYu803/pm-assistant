@@ -22,6 +22,7 @@ import {
   failMysqlGeneratingMessage,
   findOwnedMysqlConversationTab,
   findMysqlMessageByRequest,
+  getMysqlMessage,
   getVisibleMysqlMessages,
   listMysqlMessages,
   type MysqlMessage,
@@ -126,7 +127,7 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
   const tab = await findOwnedMysqlConversationTab(tabId, userId);
   if (!tab) return NextResponse.json({ error: "标签页不存在或无权操作" }, { status: 404 });
   const existing = await findMysqlMessageByRequest(tabId, mutation.requestId);
-  if (existing) return replayMysqlRequest(existing);
+  if (existing) return replayMysqlRequest(existing, tab.version);
   const freezeState = mysqlFreezeStateFromTab(tab);
   if (
     isFreeze &&
@@ -327,8 +328,9 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
         const saved = freezeFailure
           ? { ...assistant, content: fullContent, status: interrupted ? "interrupted" as const : "failed" as const, error_message: errorMessage }
           : await failMysqlGeneratingMessage(assistant.id, tabId, fullContent, interrupted ? "interrupted" : "failed", errorMessage);
+        const latest = saved ?? await getMysqlMessage(assistant.id);
         const tabVersion = operationFinished ? undefined : freezeFailure?.tabVersion ?? await failMysqlTabOperation(operation, errorMessage);
-        send(controller, "error", { message: errorMessage, interrupted, ...messageJson(saved ?? assistant), ...(userMessage ? { userMessageId: userMessage.id } : {}), ...(isFreeze ? { freezeStatus: "failed", freezeMessageId: assistant.id, freezeError: errorMessage } : {}), ...(tabVersion === undefined ? {} : { tabVersion }) });
+        send(controller, "error", { message: errorMessage, interrupted, ...messageJson(latest ?? assistant), ...(userMessage ? { userMessageId: userMessage.id } : {}), ...(isFreeze ? { freezeStatus: "failed", freezeMessageId: assistant.id, freezeError: errorMessage } : {}), ...(tabVersion === undefined ? {} : { tabVersion }) });
       } finally {
         releaseGeneration(assistant.id, generation);
         close(controller);

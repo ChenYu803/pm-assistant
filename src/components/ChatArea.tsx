@@ -29,8 +29,10 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { isWorkingDocFile, PRODUCT_TICKET_RE } from "@/lib/file-helpers";
-type AssistantMessageStatus = "generating" | "completed" | "interrupted" | "failed";
-type MessageReplacementKind = "regenerate" | "edit" | "retry";
+import type {
+  AssistantMessageStatus,
+  MessageReplacementKind,
+} from "@/lib/message-types";
 import {
   AlertDialog,
   AlertDialogAction,

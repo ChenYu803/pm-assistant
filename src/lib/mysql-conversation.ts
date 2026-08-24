@@ -2,11 +2,15 @@ import { randomUUID } from "node:crypto";
 import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
 import type { AgentType } from "@/lib/agent-constants";
+import type {
+  AssistantMessageStatus,
+  MessageReplacementKind,
+} from "@/lib/message-types";
 import { getMysqlPool } from "@/lib/mysql";
 import type { MysqlTab } from "@/lib/mysql-account-workspace";
 
-export type MysqlAssistantStatus = "generating" | "completed" | "interrupted" | "failed";
-export type MysqlReplacementKind = "regenerate" | "edit" | "retry";
+export type MysqlAssistantStatus = AssistantMessageStatus;
+export type MysqlReplacementKind = MessageReplacementKind;
 
 export interface MysqlMessage {
   id: string;

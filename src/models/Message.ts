@@ -1,23 +1,20 @@
 import mongoose, { Document, Model } from "mongoose";
+import {
+  ASSISTANT_MESSAGE_STATUSES,
+  MESSAGE_REPLACEMENT_KINDS,
+  type AssistantMessageStatus,
+  type MessageReplacementKind,
+} from "@/lib/message-types";
 
 export const MESSAGE_ROLES = ["user", "assistant", "system"] as const;
 export type MessageRole = (typeof MESSAGE_ROLES)[number];
 
-export const ASSISTANT_MESSAGE_STATUSES = [
-  "generating",
-  "completed",
-  "interrupted",
-  "failed",
-] as const;
-export type AssistantMessageStatus = (typeof ASSISTANT_MESSAGE_STATUSES)[number];
-
-export const MESSAGE_REPLACEMENT_KINDS = [
-  "regenerate",
-  "edit",
-  "retry",
-] as const;
-export type MessageReplacementKind =
-  (typeof MESSAGE_REPLACEMENT_KINDS)[number];
+export {
+  ASSISTANT_MESSAGE_STATUSES,
+  MESSAGE_REPLACEMENT_KINDS,
+  type AssistantMessageStatus,
+  type MessageReplacementKind,
+};
 
 interface IMessage {
   role: MessageRole;
