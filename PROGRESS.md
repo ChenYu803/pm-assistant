@@ -22,7 +22,7 @@ v1.0 已验收（2026-08-11），四环流水线端到端走通。
 
 **v1.3 MongoDB → MySQL grilling 第一阶段已完成（2026-08-24）**：已敲定 v1.3 只做存储底座替换、不迁移旧 MongoDB 数据、按空库全新注册；不提供切回 MongoDB 的产品回退路径，MongoDB 可留存但不作为应用依赖。目标环境为 Windows 本机 MySQL 9.7.2 LTS，未来部署配置不锁死；应用使用项目专用 MySQL 连接身份，Workbench 可继续使用 root。数据库结构由可重复执行的初始化/升级命令建立，真实连接信息通过环境变量/配置提供。验收必须覆盖全部 v1.2 固定回放并做一次从零人工冒烟；数据库类型对用户不可见；瞬断时当前操作明确失败、可手动重试。开发重置命令作为非阻塞辅助项，初始化失败不额外制作专门页面。架构决策见 `docs/adr/0005-mysql-as-v1-3-primary-database.md`；grilling 暂停，下一步应先将这些决策拆成 v1.3 spec/tickets，再进入实现。
 
-**v1.3 spec 与 tickets 已发布（2026-08-24）**：按 `to-spec` 将 grilling 决策写入 `.scratch/pm-assistant-v1.3/spec.md`（`ready-for-agent`），并拆为 5 张实现票：#01 MySQL 运行时与初始化基础、#02 关系模型与数据访问替换、#03 业务一致性与核心 API 迁移、#04 空库首次使用与诊断边界、#05 MySQL 综合回放与从零人工冒烟。已确认的最高测试 seam 是 MySQL 空库上的 replay/API 综合入口 + 一次从零人工冒烟；未纳入旧数据迁移、MongoDB 回退或实际线上部署。下一 frontier：v1.3 #01。
+**v1.3 spec 与 tickets 已发布（2026-08-24）**：按 `to-spec` 将 grilling 决策写入 `.scratch/pm-assistant-v1.3/spec.md`（`ready-for-agent`）；随后按 `to-tickets` 将最初 5 张横向/过粗票替换为 7 张 tracer-bullet 票：#01 MySQL 空库与初始化基础、#02 账号/项目/工作区骨架、#03 对话恢复与并发、#04 项目成果与 tickets、#05 显式冻结、#06 级联删除、#07 MySQL 单库收口与综合验收。采用 expand–contract：#01 先扩展且保持现有行为，#02–#06 按用户流程迁移，#07 删除 MongoDB 运行依赖并综合验收。最高测试 seam 是 MySQL 空库上的 replay/API 综合入口 + 一次从零人工冒烟；未纳入旧数据迁移、MongoDB 回退或实际线上部署。下一 frontier：v1.3 #01。
 
 **v1.2 #12 已完成（2026-08-24）**：新增 `scripts/verify-v12-replay.mjs`，固定以 `AI_MODE=replay` 探测服务端后按安全、冻结协议、生命周期、消息恢复、并发命名、项目文件边界和 tickets 交付顺序调用 11 个专项。综合入口只收集退出码与专项 `结果`，失败保留带专项类别的 ❌ 定位摘要；环境未就绪时明确报告未运行，不切换 live。修复 #10/#11 后验证夹具：项目边界与冻结注入写入显式携带 replay system-write 头，文件协议 ticket fixture 满足产品契约。综合回放 11/11 专项、165/165 断言通过；未运行 `verify-ticket-splitter.mjs`（#11 版本交付专项已覆盖整套候选契约，故无需重复执行）。入口语法、`npx tsc --noEmit`、`git diff --check` 通过。
 
