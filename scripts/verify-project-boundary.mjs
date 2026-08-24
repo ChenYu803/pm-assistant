@@ -70,18 +70,12 @@ try {
 
   const projectA = await api("/api/projects", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-pm-assistant-test-system-write": "1",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name: "隔离项目 A" }),
   });
   const projectB = await api("/api/projects", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-pm-assistant-test-system-write": "1",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name: "隔离项目 B" }),
   });
   check("创建项目 A/B", projectA.status === 201 && projectB.status === 201);
