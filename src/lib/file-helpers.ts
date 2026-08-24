@@ -14,6 +14,8 @@ const ROOT_DELIVERABLES = new Set(["需求分析.md", "原型.md", "prd.md"]);
 const WORKING_DOC_RE = /^需求分析-工作文档（[^/\\]+）\.md$/u;
 const CONCEPT_DOC_RE = /^概念版（[^/\\]+）\.md$/u;
 const ISSUE_RE = /^issues\/(?:v\d+\/)?\d{2}-[A-Za-z0-9\u4e00-\u9fff][A-Za-z0-9_\-\u4e00-\u9fff]*\.md$/u;
+export const PRODUCT_TICKET_RE = /^issues\/\d{2}-[A-Za-z0-9\u4e00-\u9fff][A-Za-z0-9_\-\u4e00-\u9fff]*\.md$/u;
+const TICKET_INTERNAL_FIELD_RE = /^\s*(?:#{1,6}\s*)?(?:\*\*)?(?:Status|Implementation)(?:\*\*)?\s*:?/im;
 
 export type FileWriteValidation =
   | { ok: true; filename: string }
@@ -68,6 +70,31 @@ export function validateFileSize(content: unknown): FileWriteValidation {
     return { ok: false, error: "文件内容超过 3 MiB 上限" };
   }
   return { ok: true, filename: "" };
+}
+
+/** 产品交付 ticket 只保留外部 Agent 所需的稳定契约字段。 */
+export function validateProductTicketContent(content: unknown): FileWriteValidation {
+  if (typeof content !== "string" || !content.trim()) {
+    return { ok: false, error: "ticket 内容不能为空" };
+  }
+  if (TICKET_INTERNAL_FIELD_RE.test(content)) {
+    return { ok: false, error: "产品 ticket 不得包含 Status 或 Implementation 字段" };
+  }
+  if (!/^\s*\*\*What to build:\*\*/im.test(content)) {
+    return { ok: false, error: "ticket 缺少 What to build 字段" };
+  }
+  if (!/^\s*\*\*Blocked by:\*\*/im.test(content)) {
+    return { ok: false, error: "ticket 缺少 Blocked by 字段" };
+  }
+  if (!/验收标准|acceptance criteria/i.test(content)) {
+    return { ok: false, error: "ticket 缺少验收标准" };
+  }
+  return { ok: true, filename: "" };
+}
+
+export function ticketSetVersion(filename: string): number {
+  const match = filename.match(/^issues\/v(\d+)\//u);
+  return match ? Number(match[1]) : 0;
 }
 
 export interface ProjectFileData {

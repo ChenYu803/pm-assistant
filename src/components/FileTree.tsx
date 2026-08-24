@@ -20,6 +20,7 @@ interface FileTreeProps {
   onEdit: (file: ProjectFileData) => void;
   onDownload: (file: ProjectFileData) => void;
   onDelete: (file: ProjectFileData) => void;
+  className?: string;
 }
 
 export default function FileTree({
@@ -33,6 +34,7 @@ export default function FileTree({
   onEdit,
   onDownload,
   onDelete,
+  className,
 }: FileTreeProps) {
   // 子目录分组（issues/NN-<slug>.md 等子路径文件）：根文件平铺在前，
   // 子路径文件按第一段目录分组展示（spec: Issues 文件集 → 文件树子目录展示）
@@ -157,7 +159,7 @@ export default function FileTree({
   }
 
   return (
-    <aside className="flex h-full w-56 shrink-0 flex-col border-r border-gray-200 bg-white">
+    <aside className={`flex h-full shrink-0 flex-col border-r border-gray-200 bg-white ${className ?? "w-56"}`}>
       {/* Header */}
       <div className="shrink-0 border-b border-gray-100 px-3 py-2.5">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400">

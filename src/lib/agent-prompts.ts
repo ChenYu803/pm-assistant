@@ -337,8 +337,6 @@ const TICKET_SPLITTER_PROMPT = `你是**任务拆分 Agent**。你的任务：�
 
 **Blocked by:** None — can start immediately
 
-**Status:** ready-for-agent
-
 - [ ] <验收标准 1：当 X → 系统 Y → 结果 Z>
 - [ ] <验收标准 2>
 %%%FILE_END%%%
@@ -351,13 +349,12 @@ const TICKET_SPLITTER_PROMPT = `你是**任务拆分 Agent**。你的任务：�
 - **标题**：# NN — <标题>（与草案一致）。
 - **What to build**：用户视角端到端行为，不是逐层实现清单；不写文件路径/代码片段。决策编码（状态机/schema 形状等）引用 prd.md 章节（如「见 prd.md 第 4 章 实体级数据模型」），不复制。
 - **Blocked by**：编号/标题引用（如「Blocked by: #03 数据模型 expand」）；无依赖写「None — can start immediately」。
-- **Status: ready-for-agent**。
 - **验收标准**：直接从 prd.md 第 5 章对应用户故事带走（当 X → 系统 Y → 结果 Z，主路径 + 关键异常），不重写。
 - **引用非复制**：正文提及 prd.md 章节用「见 prd.md 第 X 章」格式，绝不复制 prd.md 大段原文。
 
 ## 对话风格
 
-- 全程中文，语言简洁专业；issue 文件保留四字段英文键名（What to build / Blocked by / Status），正文与验收标准用中文。
+- 全程中文，语言简洁专业；issue 文件保留稳定契约字段英文键名（What to build / Blocked by），正文与验收标准用中文。
 - 草案用编号列表，不用整屏大表格。
 - 每轮回复以待回答的问题结尾（未确认不推进）。
 - 文件集输出后，可在回复末尾简述 frontier（当前可最先开工的 issue 编号），帮助用户决定实现顺序。`;

@@ -9,6 +9,7 @@ import AgentTypeDialog from "@/components/AgentTypeDialog";
 import InlineNameInput from "@/components/InlineNameInput";
 import FileTree from "@/components/FileTree";
 import FilePreviewPanel from "@/components/FilePreviewPanel";
+import TicketSetPanel from "@/components/TicketSetPanel";
 import PipelineProgressIndicator from "@/components/PipelineProgressIndicator";
 import AgentContextPanel, { type ContextFile } from "@/components/AgentContextPanel";
 import {
@@ -18,7 +19,7 @@ import {
 } from "@/lib/agent-constants";
 import type { TabData } from "@/lib/agent-constants";
 import type { ProjectFileData } from "@/lib/file-helpers";
-import { downloadFilename } from "@/lib/file-helpers";
+import { downloadFilename, ticketSetVersion } from "@/lib/file-helpers";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -73,6 +74,7 @@ export default function WorkspacePage() {
 
   // File tree state
   const [files, setFiles] = useState<ProjectFileData[]>([]);
+  const [selectedTicketVersion, setSelectedTicketVersion] = useState<number | null>(null);
   // 初始为 true：project 加载完成前文件列表视为「未就绪」，
   // ChatArea 据此延迟扫描历史消息，避免误弹已写入文件的确认框
   const [filesLoading, setFilesLoading] = useState(true);
@@ -311,6 +313,15 @@ export default function WorkspacePage() {
   }, [activeTabId, storageKey]);
 
   const activeTab = tabs.find((t) => t.id === activeTabId) ?? null;
+  const detectedTicketVersion = files
+    .filter((file) => file.filename.startsWith("issues/"))
+    .reduce((max, file) => Math.max(max, ticketSetVersion(file.filename)), -1);
+  const effectiveTicketVersion =
+    selectedTicketVersion ?? (detectedTicketVersion >= 0 ? detectedTicketVersion : null);
+  const visibleFiles = files.filter((file) => {
+    if (!file.filename.startsWith("issues/")) return true;
+    return effectiveTicketVersion === null || ticketSetVersion(file.filename) === effectiveTicketVersion;
+  });
 
   async function handleCreateTab(agentType: AgentType) {
     setShowAgentDialog(false);
@@ -587,8 +598,17 @@ export default function WorkspacePage() {
       {/* Main workspace area: file tree + context panel + chat */}
       <div className="flex min-h-0 flex-1 overflow-hidden">
         {/* Left: File tree */}
-        <FileTree
-          files={files}
+        <div className="flex min-h-0 w-64 flex-col border-r border-border">
+          {project && (
+            <TicketSetPanel
+              projectId={project.id}
+              selectedVersion={selectedTicketVersion}
+              onSelectVersion={setSelectedTicketVersion}
+            />
+          )}
+          <FileTree
+          className="w-full"
+          files={visibleFiles}
           loading={filesLoading}
           error={filesError}
           selectedFileId={selectedFile?.id ?? null}
@@ -598,7 +618,8 @@ export default function WorkspacePage() {
           onEdit={handleEditFile}
           onDownload={handleDownloadFile}
           onDelete={requestDeleteFile}
-        />
+          />
+        </div>
 
         {/* Agent context panel (only when a tab is active) */}
         {activeTabId && (

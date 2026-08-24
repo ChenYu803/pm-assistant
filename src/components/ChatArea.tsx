@@ -19,6 +19,7 @@ import FileConfirmDialog, {
   type FileToConfirm,
   type PendingFile,
 } from "@/components/FileConfirmDialog";
+import TicketSetConfirmDialog from "@/components/TicketSetConfirmDialog";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +28,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { isWorkingDocFile } from "@/lib/file-helpers";
+import { isWorkingDocFile, PRODUCT_TICKET_RE } from "@/lib/file-helpers";
 import type {
   AssistantMessageStatus,
   MessageReplacementKind,
@@ -548,6 +549,8 @@ export default function ChatArea({
   // Agent 一次输出的多个文件在同一个弹窗中统一勾选处理。
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
   const [showFileDialog, setShowFileDialog] = useState(false);
+  const [pendingTicketSet, setPendingTicketSet] = useState<PendingFile[]>([]);
+  const [showTicketSetDialog, setShowTicketSetDialog] = useState(false);
   const [fileConsistencyPrompt, setFileConsistencyPrompt] =
     useState<FileConsistencyPrompt | null>(null);
   const [savingFile, setSavingFile] = useState(false);
@@ -653,6 +656,57 @@ export default function ChatArea({
     [projectId, agentType, onFileSaved]
   );
 
+  const deliverTicketSet = useCallback(
+    async (mode: "replace" | "save") => {
+      if (!projectId || !agentType || pendingTicketSet.length === 0) return;
+      const sourceMessageId = pendingTicketSet[0].messageId;
+      if (!sourceMessageId) {
+        setError("ticket 候选集合缺少来源消息，无法交付");
+        return;
+      }
+      setSavingFile(true);
+      try {
+        const response = await fetch(`/api/projects/${projectId}/ticket-sets`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            mode,
+            source_message_id: sourceMessageId,
+            candidates: pendingTicketSet.map(({ filename, content }) => ({ filename, content })),
+          }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || "交付 tickets 失败");
+        if (Array.isArray(data.writes)) {
+          setMessages((previous) =>
+            previous.map((message) =>
+              message.id !== sourceMessageId
+                ? message
+                : {
+                    ...message,
+                    fileProvenance: {
+                      tracked: message.fileProvenance?.tracked ?? true,
+                      writes: [
+                        ...(message.fileProvenance?.writes ?? []),
+                        ...data.writes,
+                      ],
+                    },
+                  }
+            )
+          );
+        }
+        setPendingTicketSet([]);
+        setShowTicketSetDialog(false);
+        onFileSaved?.();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "交付 tickets 失败");
+      } finally {
+        setSavingFile(false);
+      }
+    },
+    [agentType, onFileSaved, pendingTicketSet, projectId]
+  );
+
   /** Persist completed HTML prototypes as project-scoped snapshots. */
   const saveHtmlSnapshots = useCallback(
     async (content: string) => {
@@ -692,6 +746,22 @@ export default function ChatArea({
       const markers = extractFileMarkers(message.content);
       if (markers.length > 0) {
         processedFileMessageIds.current.add(message.id);
+        const ticketMarkers = markers.filter((marker) => PRODUCT_TICKET_RE.test(marker.filename));
+        if (
+          agentType === "ticket_splitter" &&
+          (!historyReplay || message.fileProvenance?.tracked === true) &&
+          ticketMarkers.length === markers.length
+        ) {
+          setPendingTicketSet(
+            ticketMarkers.map((marker, index) => ({
+              ...marker,
+              id: `${message.id}-ticket-${index}-${pendingFileSequence.current++}`,
+              messageId: message.id,
+            }))
+          );
+          setShowTicketSetDialog(true);
+          return;
+        }
         // 同一回复可能同时带工作文档与正式文件 marker（如推进时既更新工作文档
         // 又输出需求分析.md）：工作文档静默写入，正式文件入队逐个弹确认框
         // （02: 任务拆分 Agent 一次输出多个 issue 文件，在同一弹窗中批量处理）。
@@ -729,7 +799,7 @@ export default function ChatArea({
         }
       }
     },
-    [existingFileNames, writeFileToServer]
+    [agentType, existingFileNames, writeFileToServer]
   );
 
   // ── Fetch message history on tab change ──────────────────────────────────
@@ -943,6 +1013,11 @@ export default function ChatArea({
     if (freezeStatusRef.current === "awaiting_write") {
       void submitFreezeWrite("cancel");
     }
+  }
+
+  function handleCancelTicketSet() {
+    setPendingTicketSet([]);
+    setShowTicketSetDialog(false);
   }
 
   function handleKeepFileConsistency() {
@@ -1566,16 +1641,20 @@ export default function ChatArea({
             filename={filename}
             written={hasWrittenFile(message, filename)}
               onWrite={() => {
-              setPendingFiles([
-                {
+                const pending = {
                   id: `${messageId}-${filename}-manual`,
                   filename,
                   content: markerContent,
                   messageId,
-                },
-              ]);
-              setShowFileDialog(true);
-            }}
+                };
+                if (agentType === "ticket_splitter" && PRODUCT_TICKET_RE.test(filename)) {
+                  setPendingTicketSet([pending]);
+                  setShowTicketSetDialog(true);
+                } else {
+                  setPendingFiles([pending]);
+                  setShowFileDialog(true);
+                }
+              }}
           />
         );
         // File content (shown inline for now — Ticket 5 will save to filesystem)
@@ -1950,6 +2029,14 @@ export default function ChatArea({
       </Dialog>
 
       {/* File confirmation dialog */}
+      <TicketSetConfirmDialog
+        open={showTicketSetDialog}
+        files={pendingTicketSet}
+        saving={savingFile}
+        onReplace={() => void deliverTicketSet("replace")}
+        onSaveAs={() => void deliverTicketSet("save")}
+        onCancel={handleCancelTicketSet}
+      />
       <FileConfirmDialog
         key={pendingFiles.map((file) => file.id).join("|")}
         open={showFileDialog}

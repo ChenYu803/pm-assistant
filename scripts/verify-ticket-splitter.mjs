@@ -2,8 +2,8 @@
 // - ticket_splitter tab 创建时自动加载 prd.md + 需求分析.md（02 已就位，顺带断言）
 // - 真实对话：先出草案（编号列表：标题/Blocked by/交付行为）→ quiz 三问 → 批准后输出
 // - 输出断言：一次输出多个 issues/NN-<slug>.md 文件（FILE markers）
-// - 单弹窗批量确认：仅勾选第一个 issue 写入，其余未勾选的不落盘
-// - issues 文件断言：四字段（What to build / Blocked by / Status: ready-for-agent / AC）
+// - 候选集合确认：替换或另存整套 tickets，不逐张混用
+// - issues 文件断言：What to build / Blocked by / AC，且不含 Status / Implementation
 // - blocked by 断言：首个 issue「None — can start immediately」；引用的编号 < 自身编号
 // - 编号序断言：NN 从 01 起、文件名递增、拓扑序（blockers first）
 // - 引用非复制断言：prd.md 长行（>40 字符）不得整段出现在 issue 正文中（AC 行「- [ ]」除外——
@@ -15,7 +15,7 @@
 // 用法: node scripts/verify-ticket-splitter.mjs
 import { chromium } from "playwright-core";
 
-const BASE = "http://localhost:3000";
+const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:3000";
 
 const email = `verify-ticket-${Date.now()}@test.local`;
 const password = "verify-pass-1234";
@@ -184,7 +184,10 @@ for (const [filename, content] of [["需求分析.md", reqContent], ["prd.md", p
   const writeRes = await page.evaluate(async ({ pid, filename, content }) => {
     const res = await fetch(`/api/projects/${pid}/files`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-pm-assistant-test-system-write": "1",
+      },
       body: JSON.stringify({ filename, content, agent_type: "ticket_splitter" }),
     });
     return { status: res.status };
@@ -222,15 +225,26 @@ await page.waitForTimeout(600);
 const rawReplies = []; // 原始消息（含 marker），做断言与诊断
 async function sendAndWait(text, roundNo) {
   console.log(`  [对话] 第 ${roundNo} 轮发送: ${text.slice(0, 60)}${text.length > 60 ? "…" : ""}`);
+  // 流式期间输入框仍保持可编辑，不能用 textarea.disabled 判断回复结束；
+  // 记录发送前 assistant 数量，等新消息进入终态后再发送下一轮。
+  const before = await page.evaluate(async (tid) => {
+    const res = await fetch(`/api/tabs/${tid}/messages`, { cache: "no-store" });
+    const data = await res.json();
+    return (data.messages ?? []).filter((message) => message.role === "assistant").length;
+  }, tabId);
   await page.locator("textarea").fill(text);
   await page.getByRole("button", { name: "发送" }).click();
-  // 等待回复完成：textarea 重新可用
+  // 等待正式 assistant 消息进入终态（completed / failed / interrupted）。
   await page.waitForFunction(
-    () => {
-      const ta = document.querySelector("textarea");
-      return ta && !ta.disabled;
+    async ({ tid, assistantCount }) => {
+      const res = await fetch(`/api/tabs/${tid}/messages`, { cache: "no-store" });
+      if (!res.ok) return false;
+      const data = await res.json();
+      const assistants = (data.messages ?? []).filter((message) => message.role === "assistant");
+      const latest = assistants.at(-1);
+      return assistants.length > assistantCount && latest && latest.status !== "generating";
     },
-    null,
+    { tid: tabId, assistantCount: before },
     { timeout: 180000 }
   );
   console.log(`  [对话] 第 ${roundNo} 轮回复完成`);
@@ -300,40 +314,30 @@ const nums = issueFilenames.map((f) => parseInt(f.match(/^issues\/(\d{2})-/)[1],
 const seqOk = nums.length >= 2 && nums[0] === 1 && nums.every((n, idx) => idx === 0 || n === nums[idx - 1] + 1);
 check("编号从 01 起递增且无跳号", seqOk, `(编号=${nums.join(",") || "无"})`);
 
-// ── 单弹窗批量确认：只勾选第一个 issue 写入，其余不落盘 ──
-let confirmedCount = 0;
-let cancelledCount = 0;
+// ── 候选集合确认：整套替换或另存，不能逐张混用 ──
+let deliveredSet = false;
 if (issuesRound !== -1) {
   try {
-    const fileDialog = page
+    const ticketDialog = page
       .getByRole("dialog")
-      .filter({ hasText: "Agent 产出文件" });
-    await fileDialog.waitFor({ state: "visible", timeout: 8000 });
-    const checkboxes = fileDialog.locator('input[type="checkbox"]');
-    const checkboxCount = await checkboxes.count();
-    if (checkboxCount !== issueFilenames.length) {
-      throw new Error(
-        `确认框文件数不匹配（checkbox=${checkboxCount}, issues=${issueFilenames.length}）`
-      );
-    }
-    for (let i = 1; i < checkboxCount; i++) {
-      await checkboxes.nth(i).uncheck();
-    }
-    await fileDialog.getByRole("button", { name: /批量写入/ }).click();
-    confirmedCount++;
-    cancelledCount = checkboxCount - 1;
-    console.log(
-      `  [确认框] 已批量写入第 1 个 issue，${cancelledCount} 个未勾选`
+      .filter({ hasText: "新的 tickets 版本" });
+    await ticketDialog.waitFor({ state: "visible", timeout: 8000 });
+    check(
+      "候选确认显示完整 ticket 集合",
+      (await ticketDialog.getByText(/issues\/01-/).count()) === 1 &&
+        (await ticketDialog.getByText(/issues\/02-/).count()) === 1
     );
+    await ticketDialog.getByRole("button", { name: "替换当前版本" }).click();
+    deliveredSet = true;
     await page.waitForTimeout(800);
   } catch (err) {
-    console.log(`  [确认框] 批量确认失败：${err.message}`);
+    console.log(`  [候选确认] 整套交付失败：${err.message}`);
   }
 }
 check(
-  "单弹窗批量确认（写入 1 个 + 未勾选 ≥1 个）",
-  confirmedCount >= 1 && cancelledCount >= 1,
-  `(写入=${confirmedCount}，未勾选=${cancelledCount})`
+  "用户选择替换时整套 tickets 一次性交付",
+  deliveredSet,
+  "未出现候选集合确认或替换操作失败"
 );
 
 // ── 断言 2：落盘与文件内容 ────────────────────────────
@@ -343,9 +347,10 @@ const files = await page.evaluate(async (pid) => {
 }, projectId);
 const issueDocs = files.filter((f) => /^issues\//.test(f.filename));
 check(
-  "只有确认的 issue 落盘（拒绝的不落盘）",
-  issueDocs.length === 1,
-  `(落盘=${issueDocs.map((f) => f.filename).join("、") || "无"}; 期望仅 ${issueFilenames[0] ?? "第一个"})`
+  "整套 tickets 写入后文件集合完整且无混用",
+  issueDocs.length === issueFilenames.length &&
+    issueDocs.every((file) => /^issues\/\d{2}-/.test(file.filename)),
+  `(落盘=${issueDocs.map((f) => f.filename).join("、") || "无"})`
 );
 
 async function readBody(file) {
@@ -358,19 +363,19 @@ async function readBody(file) {
   return data.replace(/^<!--\nchangelog:[\s\S]*?-->\n?/, "");
 }
 
-if (issueDocs.length === 1) {
-  const doc = issueDocs[0];
+if (issueDocs.length === issueFilenames.length) {
+  const doc = issueDocs.find((file) => file.filename === issueFilenames[0]) ?? issueDocs[0];
   const body = await readBody(doc);
-  // 四字段（06 决策 7：what to build + acceptance criteria + blocked by + Status）
+  // 产品 ticket 只交付稳定字段，不包含内部 triage/实现字段。
   const fields = [
     ["What to build", /^\*\*What to build:\*\*/m],
     ["Blocked by", /^\*\*Blocked by:\*\*/m],
-    ["Status: ready-for-agent", /^\*\*Status:\*\*\s*ready-for-agent/m],
     ["验收标准（AC）", /^- \[ \] /m],
   ];
   for (const [name, re] of fields) {
     check(`issue 四字段：${name}`, re.test(body), `(应含「${name}」; 正文头 80 字=${body.slice(0, 80).replace(/\n/g, " ")})`);
   }
+  check("产品 ticket 不含 Status 或 Implementation", !/^\s*(?:\*\*)?(?:Status|Implementation)/im.test(body));
   check("issue 标题 # NN —", /^# \d{2} — /m.test(body), `(应含「# 01 — …」标题)`);
   // 引用格式校验：issue 正文出现 prd.md 章节引用时，必须是「见 prd.md 第 X 章」格式。
   // 注意 prompt 只要求「提及章节时用该格式」「决策编码（schema/状态机等）引用章节」——
@@ -394,7 +399,7 @@ if (issueDocs.length === 1) {
 
 // ── 断言 3：引用非复制（prd.md 长行不得整段出现在 issue 中）──
 const prdDoc = files.find((f) => f.filename === "prd.md");
-if (prdDoc && issueDocs.length === 1) {
+if (prdDoc && issueDocs.length === issueFilenames.length) {
   const prdBody = await readBody(prdDoc);
   // 排除验收标准行（- [ ] 开头）：prompt 明确要求 AC「直接从 prd.md 第 5 章对应用户故事带走（不重写）」，
   // 整行复制 AC 是合规行为；引用非复制约束只针对 What to build / 正文描述等其余内容
@@ -431,13 +436,13 @@ if (issuesRound !== -1) {
   while (true) {
     const fileDialog = page
       .getByRole("dialog")
-      .filter({ hasText: "Agent 产出文件" });
+      .filter({ hasText: "新的 tickets 版本" });
     try {
       await fileDialog.waitFor({ state: "visible", timeout: 2000 });
     } catch {
       break;
     }
-    await fileDialog.getByRole("button", { name: "全部丢弃" }).click();
+    await fileDialog.getByRole("button", { name: "取消" }).click();
     await page.waitForTimeout(400);
   }
 }

@@ -21,6 +21,7 @@ import {
   isWorkingDocFile,
   validateAgentFilename,
   validateFileSize,
+  validateProductTicketContent,
 } from "@/lib/file-helpers";
 import {
   FROZEN_DOCUMENT_LOCKED_MESSAGE,
@@ -221,6 +222,12 @@ export async function POST(
     const contentValidation = validateFileSize(content);
     if (!contentValidation.ok) {
       return NextResponse.json({ error: contentValidation.error }, { status: 413 });
+    }
+    if (agent_type === "ticket_splitter" && typeof filename === "string" && filename.startsWith("issues/")) {
+      const ticketValidation = validateProductTicketContent(content);
+      if (!ticketValidation.ok) {
+        return NextResponse.json({ error: ticketValidation.error }, { status: 400 });
+      }
     }
     const sourceMessageId =
       typeof source_message_id === "string"
