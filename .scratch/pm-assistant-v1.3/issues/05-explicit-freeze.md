@@ -4,7 +4,7 @@
 
 **Blocked by:** #03 — 对话、恢复与并发切换；#04 — 项目成果与 tickets 交付切换
 
-**Status:** ready-for-agent
+**Status:** implemented-pending-mysql-verification
 
 - [ ] 冻结状态、冻结消息、目标文件、正文摘要和处理中的并发操作以 MySQL 持久化事实为准。
 - [ ] 普通聊天、肯定词、否定句和历史消息不能触发冻结；只有明确控件请求能推进状态。

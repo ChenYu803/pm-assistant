@@ -50,6 +50,8 @@ export async function getMysqlMessagesRoute(tabId: string, userId: string) {
     tabVersion: tab.version,
     freezeStatus: tab.freeze_status,
     scopeFrozen: tab.scope_frozen,
+    ...(tab.freeze_message_id ? { freezeMessageId: tab.freeze_message_id } : {}),
+    ...(tab.freeze_error ? { freezeError: tab.freeze_error } : {}),
   });
 }
 

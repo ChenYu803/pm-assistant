@@ -57,7 +57,7 @@ function parseOperation(row: MysqlTabOperation): MysqlTabOperation {
 
 async function getOwnedTabForUpdate(connection: PoolConnection, tabId: string, userId: string) {
   const [rows] = await connection.query<MysqlTab[]>(
-    `SELECT t.id, t.work_record_id, t.agent_type, t.display_name, t.position, t.version, t.scope_frozen, t.freeze_status, t.active_operation_id, t.created_at
+    `SELECT t.id, t.work_record_id, t.agent_type, t.display_name, t.position, t.version, t.scope_frozen, t.freeze_status, t.freeze_message_id, t.freeze_filename, t.freeze_document_digest, t.freeze_error, t.active_operation_id, t.created_at
      FROM tabs t
      JOIN work_records w ON w.id = t.work_record_id
      JOIN projects p ON p.id = w.project_id
@@ -139,20 +139,7 @@ export async function completeMysqlTabOperation(operation: MysqlTabOperation, re
   const connection = await getMysqlPool().getConnection();
   try {
     await connection.beginTransaction();
-    const lockedVersion = operation.locked_version ?? operation.expected_version;
-    let tabVersion = lockedVersion;
-    if (operation.operation !== "stop-generation") {
-      tabVersion = lockedVersion + 1;
-      const [updated] = await connection.execute<ResultSetHeader>(
-        "UPDATE tabs SET version = ?, active_operation_id = NULL WHERE id = ? AND version = ? AND active_operation_id = ?",
-        [tabVersion, operation.tab_id, lockedVersion, operation.request_id]
-      );
-      if (updated.affectedRows !== 1) throw new Error("标签页并发状态异常，无法完成操作");
-    }
-    await connection.execute<ResultSetHeader>(
-      "UPDATE tab_operations SET status = 'completed', response_json = ?, tab_version = ? WHERE id = ?",
-      [JSON.stringify(result), tabVersion, operation.id]
-    );
+    const tabVersion = await completeMysqlTabOperationInTransaction(connection, operation, result);
     await connection.commit();
     return tabVersion;
   } catch (error) {
@@ -163,22 +150,29 @@ export async function completeMysqlTabOperation(operation: MysqlTabOperation, re
   }
 }
 
+export async function completeMysqlTabOperationInTransaction(connection: PoolConnection, operation: MysqlTabOperation, result: Record<string, unknown> = {}) {
+  const lockedVersion = operation.locked_version ?? operation.expected_version;
+  let tabVersion = lockedVersion;
+  if (operation.operation !== "stop-generation") {
+    tabVersion = lockedVersion + 1;
+    const [updated] = await connection.execute<ResultSetHeader>(
+      "UPDATE tabs SET version = ?, active_operation_id = NULL WHERE id = ? AND version = ? AND active_operation_id = ?",
+      [tabVersion, operation.tab_id, lockedVersion, operation.request_id]
+    );
+    if (updated.affectedRows !== 1) throw new Error("标签页并发状态异常，无法完成操作");
+  }
+  await connection.execute<ResultSetHeader>(
+    "UPDATE tab_operations SET status = 'completed', response_json = ?, tab_version = ? WHERE id = ?",
+    [JSON.stringify(result), tabVersion, operation.id]
+  );
+  return tabVersion;
+}
+
 export async function failMysqlTabOperation(operation: MysqlTabOperation, error: string) {
   const connection = await getMysqlPool().getConnection();
   try {
     await connection.beginTransaction();
-    const lockedVersion = operation.locked_version ?? operation.expected_version;
-    const tabVersion = operation.operation === "stop-generation" ? lockedVersion : lockedVersion + 1;
-    if (operation.operation !== "stop-generation") {
-      await connection.execute<ResultSetHeader>(
-        "UPDATE tabs SET version = ?, active_operation_id = NULL WHERE id = ? AND version = ? AND active_operation_id = ?",
-        [tabVersion, operation.tab_id, lockedVersion, operation.request_id]
-      );
-    }
-    await connection.execute<ResultSetHeader>(
-      "UPDATE tab_operations SET status = 'failed', response_json = ?, tab_version = ? WHERE id = ?",
-      [JSON.stringify({ error }), tabVersion, operation.id]
-    );
+    const tabVersion = await failMysqlTabOperationInTransaction(connection, operation, error);
     await connection.commit();
     return tabVersion;
   } catch (failure) {
@@ -187,6 +181,22 @@ export async function failMysqlTabOperation(operation: MysqlTabOperation, error:
   } finally {
     connection.release();
   }
+}
+
+export async function failMysqlTabOperationInTransaction(connection: PoolConnection, operation: MysqlTabOperation, error: string) {
+  const lockedVersion = operation.locked_version ?? operation.expected_version;
+  const tabVersion = operation.operation === "stop-generation" ? lockedVersion : lockedVersion + 1;
+  if (operation.operation !== "stop-generation") {
+    await connection.execute<ResultSetHeader>(
+      "UPDATE tabs SET version = ?, active_operation_id = NULL WHERE id = ? AND version = ? AND active_operation_id = ?",
+      [tabVersion, operation.tab_id, lockedVersion, operation.request_id]
+    );
+  }
+  await connection.execute<ResultSetHeader>(
+    "UPDATE tab_operations SET status = 'failed', response_json = ?, tab_version = ? WHERE id = ?",
+    [JSON.stringify({ error }), tabVersion, operation.id]
+  );
+  return tabVersion;
 }
 
 export async function waitForMysqlTabOperation(operation: MysqlTabOperation, attempts = 40) {

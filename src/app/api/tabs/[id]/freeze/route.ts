@@ -22,6 +22,8 @@ import {
 } from "@/lib/freeze-document-binding";
 import type { FreezeStatus } from "@/lib/agent-constants";
 import { acquireTabWriteLease } from "@/lib/deletion-coordination";
+import { isMysqlId } from "@/lib/identifiers";
+import { postMysqlFreezeRoute } from "@/lib/mysql-freeze-route";
 
 type FreezeAction = "cancel" | "complete";
 
@@ -87,6 +89,9 @@ export async function POST(
 
     const { id: tabId } = await params;
     const body = await request.json().catch(() => null);
+    if (isMysqlId(tabId)) {
+      return postMysqlFreezeRoute(tabId, userId, body ?? {});
+    }
     const mutationRequest = parseTabMutationRequest(body);
     const action = body?.action as FreezeAction | undefined;
     if (!mutationRequest || (action !== "cancel" && action !== "complete")) {

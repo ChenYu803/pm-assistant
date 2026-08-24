@@ -31,6 +31,7 @@ import { isMysqlId } from "@/lib/identifiers";
 import {
   findMysqlProjectFileByFilename,
   listMysqlProjectFiles,
+  MysqlFrozenDocumentError,
   serializeMysqlProjectFile,
   writeMysqlProjectFile,
 } from "@/lib/mysql-project-artifacts";
@@ -293,6 +294,10 @@ export async function POST(
         agentType: agent_type as AgentType,
         ...(mysqlSourceMessageId ? { sourceMessageId: mysqlSourceMessageId } : {}),
         allowReplayFixture: isReplayFixtureSystemWrite,
+        forceReplayFailure:
+          process.env.NODE_ENV !== "production" &&
+          process.env.AI_MODE === "replay" &&
+          request.headers.get("x-pm-verify-mysql-write-fail") === "1",
       });
       if (result.kind === "not-found") return NextResponse.json({ error: "项目不存在或无权访问" }, { status: 404 });
       if (result.kind === "missing-source") return NextResponse.json({ error: "Agent 文件写入必须提供已完成的来源消息" }, { status: 400 });
@@ -535,6 +540,9 @@ export async function POST(
       await writeLease.release();
     }
   } catch (error) {
+    if (error instanceof MysqlFrozenDocumentError) {
+      return NextResponse.json({ error: FROZEN_DOCUMENT_LOCKED_MESSAGE }, { status: 409 });
+    }
     if (error instanceof FileWriteBlockedError) {
       return NextResponse.json(
         { error: FROZEN_DOCUMENT_LOCKED_MESSAGE },

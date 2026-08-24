@@ -38,7 +38,7 @@ function mapMessage(message: MysqlMessage): MysqlMessage {
 
 export async function findOwnedMysqlConversationTab(tabId: string, userId: string): Promise<MysqlConversationTab | null> {
   const [rows] = await getMysqlPool().query<MysqlConversationTab[]>(
-    `SELECT t.id, t.work_record_id, t.agent_type, t.display_name, t.position, t.version, t.scope_frozen, t.freeze_status, t.active_operation_id, t.created_at, w.project_id
+    `SELECT t.id, t.work_record_id, t.agent_type, t.display_name, t.position, t.version, t.scope_frozen, t.freeze_status, t.freeze_message_id, t.freeze_filename, t.freeze_document_digest, t.freeze_error, t.active_operation_id, t.created_at, w.project_id
      FROM tabs t
      JOIN work_records w ON w.id = t.work_record_id
      JOIN projects p ON p.id = w.project_id

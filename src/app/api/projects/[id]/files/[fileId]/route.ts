@@ -15,7 +15,7 @@ import {
 } from "@/lib/freeze-document-binding";
 import { acquireProjectWriteLease } from "@/lib/deletion-coordination";
 import { isMysqlId } from "@/lib/identifiers";
-import { deleteMysqlProjectFile, findOwnedMysqlProjectFile, serializeMysqlProjectFile, updateMysqlProjectFile } from "@/lib/mysql-project-artifacts";
+import { deleteMysqlProjectFile, findOwnedMysqlProjectFile, MysqlFrozenDocumentError, serializeMysqlProjectFile, updateMysqlProjectFile } from "@/lib/mysql-project-artifacts";
 
 export async function GET(
   request: Request,
@@ -134,6 +134,9 @@ export async function PATCH(
       await writeLease.release();
     }
   } catch (error) {
+    if (error instanceof MysqlFrozenDocumentError) {
+      return NextResponse.json({ error: FROZEN_DOCUMENT_LOCKED_MESSAGE }, { status: 409 });
+    }
     console.error("PATCH /api/projects/[id]/files/[fileId] error:", error);
     return NextResponse.json(
       { error: "更新文件失败" },
@@ -202,6 +205,9 @@ export async function DELETE(
       await writeLease.release();
     }
   } catch (error) {
+    if (error instanceof MysqlFrozenDocumentError) {
+      return NextResponse.json({ error: FROZEN_DOCUMENT_LOCKED_MESSAGE }, { status: 409 });
+    }
     console.error("DELETE /api/projects/[id]/files/[fileId] error:", error);
     return NextResponse.json(
       { error: "删除文件失败" },

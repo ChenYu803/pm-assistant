@@ -173,6 +173,20 @@ const MYSQL_MIGRATIONS = [
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
     ],
   },
+  {
+    id: "0006_explicit_freeze",
+    checksum: "8f9d5ad148a02ed1341f70d54d96900e3dc22c5e60579ec0d5b51fd9fe663efe",
+    statements: [
+      "ALTER TABLE tabs ADD COLUMN IF NOT EXISTS freeze_message_id CHAR(36) NULL",
+      "ALTER TABLE tabs ADD COLUMN IF NOT EXISTS freeze_filename VARCHAR(1024) NULL",
+      "ALTER TABLE tabs ADD COLUMN IF NOT EXISTS freeze_document_digest CHAR(64) NULL",
+      "ALTER TABLE tabs ADD COLUMN IF NOT EXISTS freeze_error TEXT NULL",
+      "ALTER TABLE project_files ADD COLUMN IF NOT EXISTS freeze_binding_tab_id CHAR(36) NULL",
+      "ALTER TABLE project_files ADD COLUMN IF NOT EXISTS freeze_binding_document_digest CHAR(64) NULL",
+      "ALTER TABLE project_files ADD COLUMN IF NOT EXISTS freeze_binding_locked_at DATETIME(3) NULL",
+      "CREATE INDEX IF NOT EXISTS project_files_freeze_binding_tab ON project_files (freeze_binding_tab_id)",
+    ],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {

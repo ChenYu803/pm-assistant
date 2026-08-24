@@ -15,6 +15,9 @@ export interface MysqlProjectFile extends RowDataPacket {
   version: number;
   created_at: Date;
   updated_at: Date;
+  freeze_binding_tab_id?: string | null;
+  freeze_binding_document_digest?: string | null;
+  freeze_binding_locked_at?: Date | null;
 }
 
 export interface MysqlPrototypeSnapshot extends RowDataPacket {
@@ -46,7 +49,13 @@ export interface MysqlLoadedFile {
   updated_at: Date;
 }
 
-const PROJECT_FILE_COLUMNS = "id, project_id, filename, content, version, created_at, updated_at";
+const PROJECT_FILE_COLUMNS = "id, project_id, filename, content, version, created_at, updated_at, freeze_binding_tab_id, freeze_binding_document_digest, freeze_binding_locked_at";
+
+export class MysqlFrozenDocumentError extends Error {
+  constructor() {
+    super("冻结文档已正式锁定，不能修改");
+  }
+}
 
 export async function listMysqlProjectFiles(projectId: string, userId: string) {
   if (!(await findOwnedMysqlProject(projectId, userId))) return null;
@@ -107,6 +116,7 @@ export async function writeMysqlProjectFile(input: {
   agentType: AgentType;
   sourceMessageId?: string;
   allowReplayFixture?: boolean;
+  forceReplayFailure?: boolean;
 }) {
   const connection = await getMysqlPool().getConnection();
   try {
@@ -123,6 +133,7 @@ export async function writeMysqlProjectFile(input: {
       [input.projectId, input.filename]
     );
     const existing = existingRows[0];
+    if (existing?.freeze_binding_tab_id) throw new MysqlFrozenDocumentError();
     const now = new Date();
     const file: MysqlProjectFile = existing
       ? { ...existing, content: input.content, version: Number(existing.version) + 1, updated_at: now }
@@ -134,8 +145,8 @@ export async function writeMysqlProjectFile(input: {
       );
     } else {
       await connection.execute<ResultSetHeader>(
-        `INSERT INTO project_files (${PROJECT_FILE_COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [file.id, file.project_id, file.filename, file.content, file.version, file.created_at, file.updated_at]
+        `INSERT INTO project_files (${PROJECT_FILE_COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [file.id, file.project_id, file.filename, file.content, file.version, file.created_at, file.updated_at, null, null, null]
       );
     }
     let write: MysqlMessageFileWrite | null = null;
@@ -150,6 +161,7 @@ export async function writeMysqlProjectFile(input: {
         [write.id, source.id, source.tab_id, input.projectId, file.id, file.filename, write.operation, write.file_version, write.written_at]
       );
     }
+    if (input.forceReplayFailure) throw new Error("回放强制 MySQL 文件写入失败");
     await connection.commit();
     return { kind: "written" as const, file, write };
   } catch (error) {
@@ -178,6 +190,7 @@ export async function updateMysqlProjectFile(input: { projectId: string; fileId:
     );
     const file = rows[0];
     if (!file) { await connection.rollback(); return null; }
+    if (file.freeze_binding_tab_id) throw new MysqlFrozenDocumentError();
     const updated = { ...file, content: input.content, version: Number(file.version) + 1, updated_at: new Date() } as MysqlProjectFile;
     await connection.execute<ResultSetHeader>("UPDATE project_files SET content = ?, version = ?, updated_at = ? WHERE id = ?", [updated.content, updated.version, updated.updated_at, updated.id]);
     await connection.commit();
@@ -190,6 +203,12 @@ export async function deleteMysqlProjectFile(projectId: string, fileId: string, 
   try {
     await connection.beginTransaction();
     if (!(await lockOwnedProject(connection, projectId, userId))) { await connection.rollback(); return false; }
+    const [files] = await connection.query<MysqlProjectFile[]>(
+      `SELECT ${PROJECT_FILE_COLUMNS} FROM project_files WHERE id = ? AND project_id = ? LIMIT 1 FOR UPDATE`,
+      [fileId, projectId]
+    );
+    if (!files[0]) { await connection.rollback(); return false; }
+    if (files[0].freeze_binding_tab_id) throw new MysqlFrozenDocumentError();
     const [result] = await connection.execute<ResultSetHeader>("DELETE FROM project_files WHERE id = ? AND project_id = ?", [fileId, projectId]);
     await connection.commit();
     return result.affectedRows === 1;
@@ -334,7 +353,7 @@ export async function deliverMysqlTicketSet(input: { projectId: string; userId: 
       if (existing) {
         await connection.execute<ResultSetHeader>("UPDATE project_files SET content = ?, version = ?, updated_at = ? WHERE id = ?", [file.content, file.version, file.updated_at, file.id]);
       } else {
-        await connection.execute<ResultSetHeader>(`INSERT INTO project_files (${PROJECT_FILE_COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?)`, [file.id, file.project_id, file.filename, file.content, file.version, file.created_at, file.updated_at]);
+        await connection.execute<ResultSetHeader>(`INSERT INTO project_files (${PROJECT_FILE_COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [file.id, file.project_id, file.filename, file.content, file.version, file.created_at, file.updated_at, null, null, null]);
       }
       const write = { id: randomUUID(), filename: file.filename, operation: existing ? "update" : "create", file_version: file.version, message_status: "completed", write_status: "written", written_at: now } as MysqlMessageFileWrite;
       await connection.execute<ResultSetHeader>(

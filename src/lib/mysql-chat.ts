@@ -5,6 +5,19 @@ import { createAIStream, isAIConfigured, type AIMessage } from "@/lib/ai";
 import { getLoadedContextFiles } from "@/lib/context-files";
 import { stripChangelogHeader } from "@/lib/file-helpers";
 import {
+  freezeGenerationInstruction,
+  getExpectedFreezeDocument,
+  SCOPE_FREEZE_PROPOSAL_MARKER,
+  supportsScopeFreeze,
+} from "@/lib/freeze-protocol";
+import {
+  completeMysqlFreezeGeneration,
+  failMysqlFreezeGeneration,
+  mysqlFreezeStateFromTab,
+  markMysqlFreezeProposed,
+  setMysqlFreezeGenerating,
+} from "@/lib/mysql-freeze";
+import {
   completeMysqlMessage,
   createMysqlChatStart,
   failMysqlGeneratingMessage,
@@ -101,13 +114,19 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
     (isRegenerate && typeof messageId !== "string") ||
     !mutation
   ) return NextResponse.json({ error: isRegenerate || isEdit || isRetry || isFreeze ? "生成请求参数无效" : "消息内容不能为空" }, { status: 400 });
-  if (isFreeze) return NextResponse.json({ error: "冻结流程尚未迁移完成" }, { status: 409 });
   if (!isAIConfigured()) return NextResponse.json({ error: "AI 服务未配置，请联系管理员设置 AI_API_KEY" }, { status: 500 });
 
   const tab = await findOwnedMysqlConversationTab(tabId, userId);
   if (!tab) return NextResponse.json({ error: "标签页不存在或无权操作" }, { status: 404 });
   const existing = await findMysqlMessageByRequest(tabId, mutation.requestId);
   if (existing) return replayMysqlRequest(existing);
+  const freezeState = mysqlFreezeStateFromTab(tab);
+  if (
+    isFreeze &&
+    (!supportsScopeFreeze(tab.agent_type) ||
+      freezeState.scopeFrozen ||
+      !["proposed", "failed"].includes(freezeState.freezeStatus))
+  ) return NextResponse.json({ error: "当前没有可确认的冻结提议" }, { status: 409 });
   const allMessages = await listMysqlMessages(tabId);
   const visible = getVisibleMysqlMessages(allMessages);
   let history = visible;
@@ -165,8 +184,14 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
   if (contextFiles.length > 0) {
     prompt += "\n\n## 已加载的项目文件\n\n以下文件已加载到你的上下文中，请基于这些文件的内容进行工作：\n\n" + contextFiles.map((file) => `### ${file.filename}\n\`\`\`markdown\n${stripChangelogHeader(file.content)}\n\`\`\``).join("\n\n");
   }
+  if (isFreeze) {
+    prompt += freezeGenerationInstruction({
+      agentType: tab.agent_type,
+      displayName: tab.display_name,
+    });
+  }
   const usableHistory = history.filter((message) => message.role !== "assistant" || message.status === "completed");
-  const appendUser = !isRegenerate && !isRetry;
+  const appendUser = !isRegenerate && !isRetry && !isFreeze;
   const userContent = replacementUserContent ?? (typeof content === "string" ? content.trim() : "");
   const messages: AIMessage[] = [
     { role: "system", content: prompt },
@@ -178,17 +203,27 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
   const operationStart = await beginMysqlTabOperation({
     tabId,
     userId,
-    operation: "chat",
+    operation: isFreeze ? "freeze-generate" : "chat",
     request: mutation,
-    onClaimed: (connection) => createMysqlChatStart(connection, {
-      tabId,
-      requestId: mutation.requestId,
-      timestamp,
-      replacementTargetId,
-      replacementKind,
-      ...(appendUser ? { userContent } : {}),
-      ...(replacementKind === "edit" && replacementUserContent ? { replacementUserContent } : {}),
-    }),
+    onClaimed: async (connection) => {
+      const started = await createMysqlChatStart(connection, {
+        tabId,
+        requestId: mutation.requestId,
+        timestamp,
+        replacementTargetId,
+        replacementKind,
+        ...(appendUser ? { userContent } : {}),
+        ...(replacementKind === "edit" && replacementUserContent ? { replacementUserContent } : {}),
+      });
+      if (isFreeze) {
+        await setMysqlFreezeGenerating(connection, {
+          tabId,
+          requestId: mutation.requestId,
+          messageId: started.assistant.id,
+        });
+      }
+      return started;
+    },
   });
   if (operationStart.kind === "not-found") return NextResponse.json({ error: "标签页不存在或无权操作" }, { status: 404 });
   if (operationStart.kind === "request-id-mismatch") return NextResponse.json({ error: "请求标识已用于其他操作" }, { status: 409 });
@@ -227,16 +262,57 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
           send(controller, "token", { messageId: assistant.id, content: delta });
           if (failureMode === "after-token") throw new Error("回放强制 partial 失败");
         }
-        const completed = await completeMysqlMessage({ messageId: assistant.id, tabId, content: fullContent, supersedeIds });
-        const tabVersion = await completeMysqlTabOperation(operation, { messageId: assistant.id });
+        const freezeCompletion = isFreeze
+          ? await completeMysqlFreezeGeneration((() => {
+              const document = getExpectedFreezeDocument({
+                agentType: tab.agent_type,
+                displayName: tab.display_name,
+                content: fullContent,
+              });
+              if (!document) throw new Error("冻结文档未按要求输出完整文件标记");
+              return {
+                tabId,
+                requestId: mutation.requestId,
+                messageId: assistant.id,
+                content: fullContent,
+                documentContent: document.content,
+                filename: document.filename,
+                operation,
+              };
+            })())
+          : null;
+        const completed = freezeCompletion
+          ? { ...assistant, content: fullContent, status: "completed" as const, error_message: null }
+          : await completeMysqlMessage({ messageId: assistant.id, tabId, content: fullContent, supersedeIds });
+        const proposedFreeze =
+          !isFreeze &&
+          supportsScopeFreeze(tab.agent_type) &&
+          fullContent.includes(SCOPE_FREEZE_PROPOSAL_MARKER);
+        if (proposedFreeze) {
+          await markMysqlFreezeProposed({ tabId, requestId: mutation.requestId });
+        }
+        const tabVersion = freezeCompletion?.tabVersion ?? await completeMysqlTabOperation(operation, { messageId: assistant.id });
         operationFinished = true;
-        send(controller, "done", { ...messageJson(completed), ...(userMessage ? { userMessageId: userMessage.id } : {}), ...(supersedeIds.length ? { replacesMessageIds: supersedeIds, replaceFromMessageId: replacementTargetId } : {}), tabVersion });
+        send(controller, "done", { ...messageJson(completed), ...(userMessage ? { userMessageId: userMessage.id } : {}), ...(supersedeIds.length ? { replacesMessageIds: supersedeIds, replaceFromMessageId: replacementTargetId } : {}), ...(isFreeze ? { freezeStatus: "awaiting_write", freezeMessageId: assistant.id } : proposedFreeze ? { freezeStatus: "proposed" } : {}), tabVersion });
       } catch (error) {
         const interrupted = error instanceof MysqlGenerationInterruptedError || generation.signal.aborted;
         const errorMessage = interrupted ? "生成已停止" : error instanceof Error ? error.message : "AI 请求失败，请稍后重试";
-        const saved = await failMysqlGeneratingMessage(assistant.id, tabId, fullContent, interrupted ? "interrupted" : "failed", errorMessage);
-        const tabVersion = operationFinished ? undefined : await failMysqlTabOperation(operation, errorMessage);
-        send(controller, "error", { message: errorMessage, interrupted, ...messageJson(saved ?? assistant), ...(userMessage ? { userMessageId: userMessage.id } : {}), ...(tabVersion === undefined ? {} : { tabVersion }) });
+        const freezeFailure = isFreeze
+          ? await failMysqlFreezeGeneration({
+              tabId,
+              requestId: mutation.requestId,
+              messageId: assistant.id,
+              content: fullContent,
+              status: interrupted ? "interrupted" : "failed",
+              errorMessage,
+              operation,
+            })
+          : null;
+        const saved = freezeFailure
+          ? { ...assistant, content: fullContent, status: interrupted ? "interrupted" as const : "failed" as const, error_message: errorMessage }
+          : await failMysqlGeneratingMessage(assistant.id, tabId, fullContent, interrupted ? "interrupted" : "failed", errorMessage);
+        const tabVersion = operationFinished ? undefined : freezeFailure?.tabVersion ?? await failMysqlTabOperation(operation, errorMessage);
+        send(controller, "error", { message: errorMessage, interrupted, ...messageJson(saved ?? assistant), ...(userMessage ? { userMessageId: userMessage.id } : {}), ...(isFreeze ? { freezeStatus: "failed", freezeMessageId: assistant.id, freezeError: errorMessage } : {}), ...(tabVersion === undefined ? {} : { tabVersion }) });
       } finally {
         releaseGeneration(assistant.id, generation);
         close(controller);
