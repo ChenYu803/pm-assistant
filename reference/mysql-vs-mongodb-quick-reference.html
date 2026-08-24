@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MySQL 与 MongoDB 对照速查</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+  <div class="lesson-shell">
+    <header class="lesson-header">
+      <p class="kicker">Reference · 一页速查</p>
+      <h1>MySQL 与 MongoDB 对照</h1>
+      <p class="dek">只保留 PM 需要用来判断需求、评估迁移风险和验收结果的词。</p>
+    </header>
+
+    <main>
+      <section>
+        <h2>核心词汇</h2>
+        <table class="compare-table">
+          <thead>
+            <tr><th>MongoDB</th><th>MySQL</th><th>PM 需要理解的含义</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Database</td><td>Database</td><td>一组业务数据的容器，例如当前项目的 <code>pm_assistant</code>。</td></tr>
+            <tr><td>Collection</td><td>Table 表</td><td>同一类数据的集合，例如用户表、项目表。</td></tr>
+            <tr><td>Document</td><td>Row 行</td><td>一条具体记录，例如一个用户或一条消息。</td></tr>
+            <tr><td>Field</td><td>Column 列</td><td>记录的一个属性，例如邮箱、名称、创建时间。</td></tr>
+            <tr><td>ObjectId</td><td>Primary Key 主键</td><td>一条记录的唯一身份。具体用数字、UUID 还是字符串，由实现方案决定。</td></tr>
+            <tr><td>嵌套对象/数组</td><td>关联表或 JSON 列</td><td>要先判断它是独立业务对象，还是只适合整体保存的附属数据。</td></tr>
+            <tr><td>Mongo Query</td><td>SQL</td><td>查询、创建、更新和删除数据的表达方式不同，不能机械翻译。</td></tr>
+            <tr><td>Transaction</td><td>Transaction 事务</td><td>一组操作要么一起成功，要么一起回滚，常用于高风险写入。</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h2>当前项目的业务关系</h2>
+        <div class="relationship">users <span class="arrow">-&gt;</span> projects <span class="arrow">-&gt;</span> work_records <span class="arrow">-&gt;</span> tabs <span class="arrow">-&gt;</span> messages</div>
+        <p>项目文件、文件上下文、原型快照和操作记录也有自己的归属关系。迁移验收时，不能只问“表有没有创建”，还要问“删除项目后，所有应该删除的记录是否一起消失”。</p>
+      </section>
+
+      <section>
+        <h2>四个 PM 判断</h2>
+        <ul class="guardrails">
+          <li><strong>关系是否清楚：</strong>一个项目能否准确找到它的工作记录、标签页、消息和文件。</li>
+          <li><strong>数据是否完整：</strong>迁移前后记录数量、关键字段和业务行为是否一致。</li>
+          <li><strong>失败是否可恢复：</strong>迁移中断后能否重试，是否有备份和回滚路径。</li>
+          <li><strong>权限是否保留：</strong>用户 A 不能读取用户 B 的项目、文件或消息。</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>看到这些词时怎么问</h2>
+        <table class="compare-table">
+          <thead><tr><th>实现方案里的词</th><th>你可以追问</th></tr></thead>
+          <tbody>
+            <tr><td>ORM / Driver</td><td>它负责让代码连接 MySQL；为什么选它？是否支持当前 Next.js 和部署环境？</td></tr>
+            <tr><td>Migration</td><td>旧数据怎么备份、转换、校验？失败后怎么重跑？</td></tr>
+            <tr><td>Foreign Key</td><td>父记录删除时，子记录怎么处理？是否符合产品删除语义？</td></tr>
+            <tr><td>Transaction</td><td>哪些操作必须原子完成？当前本地和部署环境都支持吗？</td></tr>
+            <tr><td>Seed / Fixture</td><td>这是演示数据还是生产数据？是否会污染真实数据库？</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+
+    <p class="footer-note"><a href="../lessons/0001-mysql-first-map.html">回到第 1 课</a> · 本速查表只覆盖当前学习阶段，后续会随项目决策更新。</p>
+  </div>
+</body>
+</html>

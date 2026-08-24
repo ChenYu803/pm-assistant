@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第 2 课：安装 MySQL 时 PM 需要做什么判断</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+  <div class="lesson-shell">
+    <header class="lesson-header">
+      <p class="kicker">第 2 课 · 安装与验收</p>
+      <h1>安装 MySQL：只做你该做的判断</h1>
+      <p class="dek">你不需要研究安装器的每个选项。你只需要知道下载目标、几个关键选择和“成功”长什么样。</p>
+      <div class="meta"><span>预计 10 分钟</span><span>不改项目代码</span><span>不卸载 MongoDB</span></div>
+    </header>
+
+    <main>
+      <section class="callout">
+        <h2>先说结论</h2>
+        <p>下载的是 <strong>MySQL Community Server</strong>，它才是保存数据的服务；Workbench 只是可选的图形化管理工具。</p>
+        <p>为了项目稳定，版本优先选官方标注的 <strong>LTS</strong>，不要因为数字最大就选择 Innovation 版本。具体版本由后续实现方案确认，先不凭感觉拍板。</p>
+      </section>
+
+      <section>
+        <h2>1. 从哪里下载</h2>
+        <ol class="steps">
+          <li>打开 <a href="https://dev.mysql.com/downloads/mysql/" target="_blank" rel="noreferrer">MySQL Community Server 官方下载页</a>。</li>
+          <li>选择 Windows 和官方标注为 LTS 的版本；不要从来路不明的软件下载站下载。</li>
+          <li>Windows 页面常见 MSI Installer 和 ZIP Archive。对初学者，优先选择 MSI Installer；ZIP 需要更多手动配置，不适合作为第一步。</li>
+          <li>如果安装器页面另有 web-community 和完整安装包：网络稳定可选 web-community，网络不稳定可选完整包。两者都是安装方式，不是两个不同的数据库产品。</li>
+        </ol>
+        <p class="source-note">官方当前下载页的版本和文件大小会变化；本课以页面上的 LTS 标记和文件类型为准，不把某个固定数字写死。</p>
+      </section>
+
+      <section>
+        <h2>2. 安装界面只关心四项</h2>
+        <table class="compare-table">
+          <thead><tr><th>安装项</th><th>建议</th><th>你要理解的原因</th></tr></thead>
+          <tbody>
+            <tr><td>安装内容</td><td>Server；Workbench 可选</td><td>Server 才保存数据。Workbench 方便你看数据，但项目代码不依赖它。</td></tr>
+            <tr><td>管理员密码</td><td>自己保存，不进 Git</td><td>这是数据库最高权限凭据。后续代码应使用单独的应用账号，不应把管理员密码写进仓库。</td></tr>
+            <tr><td>端口</td><td>先使用默认 3306</td><td>本机客户端和项目默认会按这个端口寻找 MySQL；如果冲突，再让实现者处理。</td></tr>
+            <tr><td>Windows 服务</td><td>建议启用自动启动</td><td>电脑重启后 MySQL 能自动运行，减少“项目连不上数据库”的人为原因。</td></tr>
+          </tbody>
+        </table>
+        <p class="source-note">官方 Windows 文档把 MySQL Installer 列为简单且推荐的安装方式，并说明可将服务器配置为 Windows 服务。见 <a href="https://dev.mysql.com/doc/refman/8.0/en/windows-installation.html" target="_blank" rel="noreferrer">官方安装说明</a>。</p>
+      </section>
+
+      <section>
+        <h2>3. 安装成功的验收信号</h2>
+        <p>不要以“安装器显示完成”作为唯一标准。至少确认下面三件事：</p>
+        <ul class="guardrails">
+          <li>Workbench 能连接到本机的 MySQL Server，地址通常是 <code>localhost</code>，端口通常是 <code>3306</code>。</li>
+          <li>能创建一个练习数据库，例如 <code>pm_assistant_lab</code>；这不是当前项目的正式数据。</li>
+          <li>能执行最小查询 <code>SELECT 1;</code> 并得到结果 <code>1</code>。</li>
+        </ul>
+        <p>这三个信号分别证明：服务在运行、你有权限、客户端和服务器能正常对话。任何一个失败，都先记录完整错误信息，再交给 vibe coding 或老师判断。</p>
+      </section>
+
+      <section class="pm-lens">
+        <h2>4. 这几件事暂时不要做</h2>
+        <ul>
+          <li>不要卸载 MongoDB。迁移完成并验收前，它是回退和对照来源。</li>
+          <li>不要把当前项目的 <code>MONGODB_URI</code> 直接改成一个猜出来的 MySQL 地址。</li>
+          <li>不要把管理员密码、数据库备份或真实用户数据提交到 Git。</li>
+          <li>不要把“能连上数据库”误认为“迁移完成”；迁移还需要关系、数据、权限和业务回归验收。</li>
+        </ul>
+      </section>
+
+      <section>
+        <div class="next-step">
+          <div>
+            <h2>完成后告诉我这四件事</h2>
+            <p>是否安装成功、你选的版本是否为 LTS、Workbench 能否连接、<code>SELECT 1;</code> 是否返回 1。遇到失败就贴完整错误，不要只说“报错了”。</p>
+          </div>
+          <a class="link-button" href="0001-mysql-first-map.html">回看第 1 课</a>
+        </div>
+        <p class="source-note">本课主要依据：<a href="https://www.mysql.com/products/community/" target="_blank" rel="noreferrer">MySQL Community Edition</a>、<a href="https://dev.mysql.com/downloads/mysql/" target="_blank" rel="noreferrer">官方 Community Server 下载页</a> 和 <a href="https://dev.mysql.com/doc/refman/8.0/en/windows-installation.html" target="_blank" rel="noreferrer">官方 Windows 安装文档</a>。</p>
+      </section>
+    </main>
+
+    <p class="footer-note">下一步课程会把这些安装结果连接到当前项目：哪些数据库概念会影响产品行为，哪些迁移验收标准必须写进需求。</p>
+  </div>
+</body>
+</html>

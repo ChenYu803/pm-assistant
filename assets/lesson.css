@@ -1,0 +1,292 @@
+:root {
+  --ink: #1f2933;
+  --muted: #61707d;
+  --paper: #fbfaf6;
+  --line: #d9dedf;
+  --teal: #176b67;
+  --teal-soft: #e4f1ee;
+  --yellow: #f2c94c;
+  --yellow-soft: #fff6d7;
+  --coral: #bd5947;
+  --coral-soft: #fae9e4;
+  --white: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+  line-height: 1.7;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  color: var(--teal);
+  font-weight: 650;
+}
+
+.lesson-shell {
+  margin: 0 auto;
+  max-width: 1040px;
+  padding: 48px 28px 72px;
+}
+
+.lesson-header {
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 30px;
+}
+
+.kicker {
+  color: var(--coral);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  margin: 0 0 14px;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  margin: 0;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 4rem);
+  max-width: 780px;
+  letter-spacing: 0;
+}
+
+h2 {
+  font-size: 1.55rem;
+  margin-bottom: 18px;
+}
+
+h3 {
+  font-size: 1.05rem;
+  margin-bottom: 8px;
+}
+
+p {
+  margin: 0 0 14px;
+}
+
+.dek {
+  color: var(--muted);
+  font-size: 1.08rem;
+  margin: 20px 0 18px;
+  max-width: 720px;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.meta span::before {
+  color: var(--yellow);
+  content: "•";
+  margin-right: 8px;
+}
+
+main > section {
+  border-bottom: 1px solid var(--line);
+  padding: 42px 0;
+}
+
+.callout,
+.pm-lens,
+.practice {
+  border-left: 5px solid var(--yellow);
+  background: var(--yellow-soft);
+  padding: 22px 24px;
+}
+
+.callout strong,
+.pm-lens strong {
+  color: var(--coral);
+}
+
+.three-up {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.mini-panel {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--teal);
+  padding: 18px;
+}
+
+.mini-panel p {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.compare-table {
+  border-collapse: collapse;
+  background: var(--white);
+  width: 100%;
+}
+
+.compare-table th,
+.compare-table td {
+  border: 1px solid var(--line);
+  padding: 12px 14px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.compare-table th {
+  background: var(--teal-soft);
+  color: var(--teal);
+}
+
+code {
+  background: #eef0ed;
+  border-radius: 3px;
+  font-family: Consolas, "Courier New", monospace;
+  padding: 1px 5px;
+}
+
+.relationship {
+  background: var(--ink);
+  color: var(--white);
+  font-family: Consolas, "Courier New", monospace;
+  margin: 20px 0;
+  overflow-x: auto;
+  padding: 18px;
+  white-space: nowrap;
+}
+
+.relationship .arrow {
+  color: var(--yellow);
+}
+
+.pm-lens ul,
+.steps,
+.guardrails {
+  margin: 10px 0 0;
+  padding-left: 22px;
+}
+
+.pm-lens li,
+.steps li,
+.guardrails li {
+  margin-bottom: 7px;
+}
+
+.question {
+  border-top: 1px solid var(--line);
+  padding: 20px 0;
+}
+
+.question:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 8px;
+}
+
+.choice {
+  background: var(--white);
+  border: 1px solid var(--teal);
+  border-radius: 4px;
+  color: var(--teal);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 8px 14px;
+}
+
+.choice:hover,
+.choice:focus-visible {
+  background: var(--teal);
+  color: var(--white);
+}
+
+.feedback {
+  color: var(--muted);
+  min-height: 1.7em;
+}
+
+.feedback.correct {
+  color: var(--teal);
+  font-weight: 700;
+}
+
+.feedback.incorrect {
+  color: var(--coral);
+}
+
+.next-step {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  justify-content: space-between;
+}
+
+.link-button {
+  background: var(--teal);
+  border-radius: 4px;
+  color: var(--white);
+  display: inline-block;
+  padding: 10px 15px;
+  text-decoration: none;
+}
+
+.link-button:hover,
+.link-button:focus-visible {
+  background: #0e4c49;
+}
+
+.source-note {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.footer-note {
+  color: var(--muted);
+  font-size: 0.9rem;
+  padding-top: 30px;
+}
+
+@media (max-width: 720px) {
+  .lesson-shell {
+    padding: 30px 18px 54px;
+  }
+
+  .three-up {
+    grid-template-columns: 1fr;
+  }
+
+  .compare-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .callout,
+  .pm-lens,
+  .practice {
+    padding: 18px;
+  }
+}

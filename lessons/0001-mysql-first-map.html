@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>第 1 课：从 MongoDB 到 MySQL</title>
+  <link rel="stylesheet" href="../assets/lesson.css">
+</head>
+<body>
+  <div class="lesson-shell">
+    <header class="lesson-header">
+      <p class="kicker">第 1 课 · 产品经理视角</p>
+      <h1>从 MongoDB 到 MySQL：先看懂地图</h1>
+      <p class="dek">这不是数据库工程课。今天只建立一张能帮助你做判断、提需求和验收 vibe coding 结果的地图。</p>
+      <div class="meta"><span>预计 10 分钟</span><span>一个小成果</span><span>不需要写代码</span></div>
+    </header>
+
+    <main>
+      <section class="callout">
+        <h2>这课只解决一个问题</h2>
+        <p>当别人说“把 MongoDB 换成 MySQL”时，你能知道他到底要换什么、可能影响什么，以及自己应该追问什么。</p>
+        <p><strong>先记一句：</strong>MongoDB 和 MySQL 都是数据库产品；差别主要在于它们组织数据和表达关系的方式不同。</p>
+      </section>
+
+      <section>
+        <h2>1. 先分清三个角色</h2>
+        <div class="three-up">
+          <article class="mini-panel">
+            <h3>MySQL Server</h3>
+            <p>真正保存数据、执行查询的服务。项目代码最终连接的是它。</p>
+          </article>
+          <article class="mini-panel">
+            <h3>Workbench</h3>
+            <p>一个图形化客户端，方便人查看、查询和管理 MySQL；它不是数据库本身。</p>
+          </article>
+          <article class="mini-panel">
+            <h3>项目代码</h3>
+            <p>通过驱动或 ORM 访问 Server。这个连接层可以交给 vibe coding 实现。</p>
+          </article>
+        </div>
+        <p class="source-note">官方说明也把 Workbench 描述为用于可视化建模、SQL 开发和管理的工具。见 <a href="https://www.mysql.com/products/community/" target="_blank" rel="noreferrer">Community Edition 说明</a>。</p>
+      </section>
+
+      <section>
+        <h2>2. MongoDB 和 MySQL 怎么对照</h2>
+        <table class="compare-table">
+          <thead>
+            <tr><th>你熟悉的 MongoDB</th><th>MySQL 中接近的概念</th><th>PM 视角的区别</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Collection 集合</td><td>Table 表</td><td>MySQL 通常先定义表的列和类型，再放入记录。</td></tr>
+            <tr><td>Document 文档</td><td>Row 行</td><td>一条业务记录通常占一行，而不是一个自由结构的文档。</td></tr>
+            <tr><td>Field 字段</td><td>Column 列</td><td>列通常有明确类型、是否必填和约束。</td></tr>
+            <tr><td>嵌套对象或数组</td><td>关联表，或 JSON 列</td><td>需要先判断它是不是独立业务对象；不能默认全部塞进一列。</td></tr>
+            <tr><td>ObjectId</td><td>Primary Key 主键</td><td>都是“这条记录是谁”的身份标识，具体格式是实现决策。</td></tr>
+            <tr><td>Mongo 查询</td><td>SQL</td><td>查询语言不同；迁移不是简单替换几个函数名。</td></tr>
+          </tbody>
+        </table>
+        <p><a class="link-button" href="../reference/mysql-vs-mongodb-quick-reference.html">打开一页速查表</a></p>
+      </section>
+
+      <section>
+        <h2>3. 套回当前项目</h2>
+        <p>当前项目不是只有一类数据。代码里已经有用户、项目、工作记录、标签页、消息、文件上下文、项目文件、原型快照和操作记录等模型。</p>
+        <div class="relationship">users <span class="arrow">-&gt;</span> projects <span class="arrow">-&gt;</span> work_records <span class="arrow">-&gt;</span> tabs <span class="arrow">-&gt;</span> messages</div>
+        <div class="pm-lens">
+          <strong>你需要把关的不是字段怎么写，而是这四件事：</strong>
+          <ul>
+            <li>一个用户只能看到自己的项目和项目文件。</li>
+            <li>删除项目时，应该一起消失的数据不能留下孤儿记录。</li>
+            <li>迁移失败可以重试，不能让用户误以为成功。</li>
+            <li>迁移前后，用户看到的核心产品行为保持一致。</li>
+          </ul>
+        </div>
+        <p>这些就是产品经理的数据库知识边界：理解数据的业务关系、完整性和风险，不要求你亲自写建表脚本。</p>
+      </section>
+
+      <section class="practice">
+        <h2>4. 轻量自测</h2>
+        <p>点击每题的答案。答错没有关系，反馈会告诉你要记住哪一个判断。</p>
+
+        <div class="question" data-answer="一张表格">
+          <h3>MongoDB 的 collection 最接近 MySQL 的什么？</h3>
+          <div class="choices">
+            <button class="choice" type="button" data-choice="一张表格">一张表格</button>
+            <button class="choice" type="button" data-choice="一行记录">一行记录</button>
+            <button class="choice" type="button" data-choice="一个字段">一个字段</button>
+          </div>
+          <p class="feedback" aria-live="polite"></p>
+        </div>
+
+        <div class="question" data-answer="图形客户端">
+          <h3>Workbench 更像什么？</h3>
+          <div class="choices">
+            <button class="choice" type="button" data-choice="数据库服务">数据库服务</button>
+            <button class="choice" type="button" data-choice="图形客户端">图形客户端</button>
+            <button class="choice" type="button" data-choice="项目代码库">项目代码库</button>
+          </div>
+          <p class="feedback" aria-live="polite"></p>
+        </div>
+
+        <div class="question" data-answer="梳理业务关系">
+          <h3>迁移前最应该先做什么？</h3>
+          <div class="choices">
+            <button class="choice" type="button" data-choice="梳理业务关系">梳理业务关系</button>
+            <button class="choice" type="button" data-choice="直接删除旧库">直接删除旧库</button>
+            <button class="choice" type="button" data-choice="只改界面文案">只改界面文案</button>
+          </div>
+          <p class="feedback" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section>
+        <div class="next-step">
+          <div>
+            <h2>下一步：只做安装判断</h2>
+            <p>下一课会告诉你下载哪一个 Community 组件、安装界面哪些选项值得你关心，以及怎么判断安装成功。</p>
+          </div>
+          <a class="link-button" href="0002-mysql-install-windows.html">进入第 2 课</a>
+        </div>
+        <p class="source-note">主要依据：<a href="https://dev.mysql.com/doc/refman/8.0/en/tutorial.html" target="_blank" rel="noreferrer">MySQL 官方 Tutorial</a> 和 <a href="https://www.mysql.com/products/community/" target="_blank" rel="noreferrer">MySQL Community Edition 官方说明</a>。有不明白的术语，直接问老师，不需要先自己查完。</p>
+      </section>
+    </main>
+
+    <p class="footer-note">完成自测后，回复我三句话：collection 对应什么、Workbench 是什么、迁移前先关注什么。你的回答会决定下一课从哪里开始。</p>
+  </div>
+
+  <script>
+    document.querySelectorAll(".question").forEach(function (question) {
+      var answer = question.dataset.answer;
+      var feedback = question.querySelector(".feedback");
+      question.querySelectorAll(".choice").forEach(function (choice) {
+        choice.addEventListener("click", function () {
+          var correct = choice.dataset.choice === answer;
+          feedback.textContent = correct
+            ? "答对了。这个对应关系先记住即可。"
+            : "先记住：" + answer + "。其余细节会在后续项目练习中反复出现。";
+          feedback.className = "feedback " + (correct ? "correct" : "incorrect");
+        });
+      });
+    });
+  </script>
+</body>
+</html>

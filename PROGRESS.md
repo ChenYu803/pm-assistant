@@ -36,6 +36,8 @@ v1.0 已验收（2026-08-11），四环流水线端到端走通。
 
 **本次任务：v1.2 票 02、票 03 已完成（2026-08-22）**：#02 的文件 API 现在同时校验用户、URL 项目与文件父项目；tab 文件加载/移除和聊天上下文过滤项目 ownership，历史跨项目上下文不会进入公开列表或 Agent 上下文；非法 `fileId` 返回 400 参数错误，合法但不存在返回 404。新增 `scripts/verify-project-boundary.mjs` replay/API 专项，13/13 通过。#03 新增根文件与 issues 路径白名单、控制字符/扩展名/Agent 校验、3 MiB 限制和独立 `PrototypeSnapshot` 多版本资产 API；HTML marker 在原型 UI 完成后自动保存，快照不进入普通文件树或 Agent 上下文。新增 `scripts/verify-file-protocol-snapshots.mjs`，14/14 通过；任务拆分相邻 replay 22/22 通过；tsc、全量 lint 和 diff check 通过，未调用真实模型。下一 frontier 是 v1.2 票 04。v1.1 票 08 的综合固定回放入口仍覆盖 6 个专项、115 条断言（17 + 28 + 25 + 12 + 6 + 27），未调用真实模型；发布候选时若需完整四环 live 回归，仍须先报备验证假设、轮数和 token/API 成本并取得同意。
 
+**MySQL 教学工作区已建立（2026-08-24）**：根据用户的明确学习目标新增 `MISSION.md`、`RESOURCES.md`、`NOTES.md`，以及 `lessons/0001-mysql-first-map.html`、`lessons/0002-mysql-install-windows.html`、`reference/mysql-vs-mongodb-quick-reference.html` 和共享样式。教学范围限定为 AI 产品经理需要的数据库概念、迁移风险、版本选择和验收判断；不改动当前 MongoDB/Mongoose 实现，不自动下载或安装软件。官方资料已核对，后续等待用户完成第一课自测或开始安装。
+
 **构建与 lint 收尾（2026-08-21）**：移除 `next/font/google` 的构建期网络依赖，改用 CSS 系统字体契约并同步 `verify-a11y`；修复全量 lint 的 8 个 error 和 11 个 warning，并将任务拆分验证脚本同步到单弹窗批量确认语义。`npx tsc --noEmit`、`npm run lint`（0 error / 0 warning）、`npm run build` 均通过；消息专项 28/28、a11y 13/13、任务拆分 22/22、综合 v1.1 replay 115/115 全部通过，未调用真实模型。
 
 **票 02 已完成（2026-08-21）**：消息 hover 复制/删除与确认弹窗、删除 API、停止生成及 partial 持久化、智能滚动、流式期间输入、单弹窗批量文件确认均已落地。固定回放 `verify-message-interactions.mjs` 28/28、`verify-protocols.mjs` 27/27、`verify-fixes.mjs` 10/10；tsc 与本次改动定向 lint 通过。全量 build 已在构建与 lint 收尾中通过。
