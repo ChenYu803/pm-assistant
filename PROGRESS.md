@@ -20,6 +20,10 @@ v1.0 已验收（2026-08-11），四环流水线端到端走通。
 
 ## 本次任务
 
+**v1.3 #07 已拆分（2026-08-24）**：审查 handoff、当前未提交 diff 与依赖清单后，确认 #07 同时承担缺失行为补齐、两组 API/UI 收口、生产依赖删除、23 个 Mongo 相关验证脚本迁移和最终发布验收，已超过单个新上下文可可靠完成的范围。保留 #07 为总目标，新增 #08 tab/消息删除与截断、#09 对话/工作区 MySQL-only、#10 项目成果 API MySQL-only、#11 移除生产 Mongo 依赖、#12 验证基础设施迁移、#13 综合回放与发布验收。现有 25 个文件、约 3600 行删除的未提交收口尝试原样保留，作为 #09/#10 的审计输入，不能因类型检查通过直接交付。下一 frontier：#08；#10 在其既有 blocker 具备后可独立推进。
+
+**v1.3 #07 进行中（2026-08-24）**：已将项目、工作记录、聊天、冻结、文件上下文、项目文件、快照、tickets 与自动命名 API 收口为 UUID/MySQL 路径，并通过 `npx tsc --noEmit`。收口审计发现旧 Mongo 回退仍实际承载 tab 删除和消息删除/截断；MySQL 尚未有等价事务实现，因此 #07 不能标记完成，也不能删除 `mongoose` 依赖或旧模型。下一步必须先补齐这些 MySQL 操作、将前端的旧 ID 分流移除，再删除遗留代码并运行 MySQL 综合 replay。
+
 **v1.3 #06 已实现，待 MySQL 环境验证（2026-08-24）**：UUID 项目/工作记录删除现使用专用 MySQL 事务：锁定拥有者父级后，按文件上下文、消息文件来源、消息恢复引用、消息、tab 操作、tab、工作记录、项目文件与快照的依赖顺序清理，最后物理删除父级。消息互相引用在删除前解除，避免外键阻断合法级联；事务回滚后可重试，项目/工作记录级边界分别保留或清理项目资产。新增 `verify:mysql-cascade-delete`，覆盖项目和工作记录的可观察关联结果、旧 URL、重复删除与中途故障的完整回滚。`npx tsc --noEmit`、`npm run lint`（仅 `ChatArea.tsx` 既有 1 条 warning）、`npm run build`、脚本语法与 diff check 通过；专项 replay 未运行，因为 `.env.local` 仍缺完整 MySQL 连接变量，且本机没有 Playwright Chromium。下一 frontier：配置 MySQL 与 Chromium 后运行 #01 至 #06 专项，再进入 #07。
 
 **v1.3 #05 已实现，待 MySQL 环境验证（2026-08-24）**：MySQL `tabs` 现持久化冻结消息、目标文件、正文摘要与错误状态；`project_files` 持久化文件绑定并拒绝普通写入、编辑和删除。MVP-PRD 与原型只会由当前轮 `%%%SCOPE_FREEZE_PROPOSAL%%%` 进入提议态，显式控件才可发起 `freeze-generate`；生成、失败、待写入、取消和正式冻结均经 tab 操作记录与事务化条件更新处理。新增 `verify:mysql-explicit-freeze`，覆盖提议、否定句、失败重试、重复请求、缺文件、取消、正确写入冻结、文件锁定和 MySQL 绑定。`npx tsc --noEmit`、`npm run lint`（仅 2 条既有 warning）、`npm run build`、脚本语法与 diff check 通过；专项 replay 尚未运行，因为本机仍缺 MySQL 连接变量与 Playwright Chromium。下一 frontier：配置环境后运行 #01 至 #05 专项，再进入 #06。
