@@ -40,6 +40,8 @@ v1.0 已验收（2026-08-11），四环流水线端到端走通。
 
 **MySQL 版本轨道说明已校准（2026-08-24）**：用户指出官方 Community Server 下载页同时展示 `26.7.0` 和 `9.7.2 LTS`。教学材料补充说明 Innovation 与 LTS 的区别，当前项目暂定 `9.7.2 LTS` 为第一候选，`8.4.11 LTS` 为兼容性备选；不因最高版本号直接选择 `26.7.0`。
 
+**MySQL 下载入口说明已补充（2026-08-24）**：若选择 `9.7.2 LTS`，应从 Community Server 页面下载对应 Windows MSI；独立的 MySQL Installer 页面当前主要提供 `8.0.46`，只有实现方案明确要求旧安装器时才使用它，避免初学者把两个入口和版本混在一起。
+
 **构建与 lint 收尾（2026-08-21）**：移除 `next/font/google` 的构建期网络依赖，改用 CSS 系统字体契约并同步 `verify-a11y`；修复全量 lint 的 8 个 error 和 11 个 warning，并将任务拆分验证脚本同步到单弹窗批量确认语义。`npx tsc --noEmit`、`npm run lint`（0 error / 0 warning）、`npm run build` 均通过；消息专项 28/28、a11y 13/13、任务拆分 22/22、综合 v1.1 replay 115/115 全部通过，未调用真实模型。
 
 **票 02 已完成（2026-08-21）**：消息 hover 复制/删除与确认弹窗、删除 API、停止生成及 partial 持久化、智能滚动、流式期间输入、单弹窗批量文件确认均已落地。固定回放 `verify-message-interactions.mjs` 28/28、`verify-protocols.mjs` 27/27、`verify-fixes.mjs` 10/10；tsc 与本次改动定向 lint 通过。全量 build 已在构建与 lint 收尾中通过。

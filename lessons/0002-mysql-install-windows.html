@@ -28,8 +28,9 @@
         <ol class="steps">
           <li>打开 <a href="https://dev.mysql.com/downloads/mysql/" target="_blank" rel="noreferrer">MySQL Community Server 官方下载页</a>。</li>
           <li>选择 Windows 和官方标注为 LTS 的版本；不要从来路不明的软件下载站下载。</li>
-          <li>Windows 页面常见 MSI Installer 和 ZIP Archive。对初学者，优先选择 MSI Installer；ZIP 需要更多手动配置，不适合作为第一步。</li>
-          <li>如果安装器页面另有 web-community 和完整安装包：网络稳定可选 web-community，网络不稳定可选完整包。两者都是安装方式，不是两个不同的数据库产品。</li>
+          <li>如果选择 <code>9.7.2 LTS</code>，直接下载 Community Server 页面中对应的 Windows <strong>MSI Installer</strong>；ZIP 需要更多手动配置，不适合作为第一步。</li>
+          <li>注意不要把 Community Server 的 MSI Installer 和另一个名为“MySQL Installer”的旧安装器混淆。后者当前主要提供 <code>8.0.46</code>，并不是 9.7.2 LTS 的下载入口。</li>
+          <li>如果实现方案最终要求 8.0.46，再使用官方 MySQL Installer 页面；网络稳定可选 web-community，网络不稳定可选完整包。</li>
         </ol>
         <p class="source-note">官方当前下载页的版本和文件大小会变化；本课以页面上的 LTS 标记和文件类型为准，不把某个固定数字写死。</p>
       </section>
