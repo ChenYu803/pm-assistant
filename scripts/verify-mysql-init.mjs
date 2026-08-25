@@ -10,7 +10,7 @@ const { loadEnvConfig } = nextEnv;
 loadEnvConfig(process.cwd());
 
 const { getMysqlAdminConfig, getMysqlAppConfig, MysqlConfigurationError } = await import("../src/lib/mysql-config.ts");
-const { initializeMysql, isAllowedApplicationGrant } = await import("../src/lib/mysql-bootstrap.ts");
+const { initializeMysql, isAllowedApplicationGrant, MYSQL_MIGRATIONS } = await import("../src/lib/mysql-bootstrap.ts");
 
 let pass = 0;
 let fail = 0;
@@ -28,10 +28,24 @@ function check(name, condition, detail = "") {
 async function main() {
   let adminConnection;
   try {
-    const first = await initializeMysql();
-    const second = await initializeMysql();
     const app = getMysqlAppConfig();
     const admin = getMysqlAdminConfig();
+    const beforeConnection = await mysql.createConnection({
+      host: admin.host,
+      port: admin.port,
+      user: admin.user,
+      password: admin.password,
+    });
+    let beforeRows = [];
+    try {
+      [beforeRows] = await beforeConnection.query(`SELECT id FROM \`${app.database}\`.schema_migrations`);
+    } catch (error) {
+      if (!["ER_BAD_DB_ERROR", "ER_NO_SUCH_TABLE"].includes(error?.code)) throw error;
+    }
+    await beforeConnection.end();
+
+    const first = await initializeMysql();
+    const second = await initializeMysql();
     adminConnection = await mysql.createConnection({
       host: admin.host,
       port: admin.port,
@@ -39,18 +53,22 @@ async function main() {
       password: admin.password,
       database: app.database,
     });
-    const [migrations] = await adminConnection.query(
-      "SELECT id, checksum FROM schema_migrations WHERE id = ?",
-      ["0001_mysql_bootstrap"]
-    );
+    const [migrations] = await adminConnection.query("SELECT id, checksum FROM schema_migrations ORDER BY id");
     const [grants] = await adminConnection.query(
       `SHOW GRANTS FOR ${mysql.escape(app.user)}@${mysql.escape(app.appHost)}`
     );
     const grantsText = grants.flatMap((grant) => Object.values(grant)).join("\n");
 
-    check("首次初始化通过精确版本校验", first.serverVersion.startsWith("9.7.2"));
-    check("重复初始化不会重复应用 bootstrap 迁移", first.migrationApplied && !second.migrationApplied);
-    check("迁移元数据仅有一条 bootstrap 记录", migrations.length === 1);
+    const migrationMap = new Map(migrations.map((migration) => [migration.id, migration.checksum]));
+    const complete = MYSQL_MIGRATIONS.every((migration) => migrationMap.get(migration.id) === migration.checksum);
+    check("初始化通过精确 MySQL 版本校验", first.serverVersion.startsWith("9.7.2"));
+    check(
+      "重复初始化保持幂等",
+      beforeRows.length < MYSQL_MIGRATIONS.length
+        ? first.migrationApplied && !second.migrationApplied
+        : !first.migrationApplied && !second.migrationApplied,
+    );
+    check("schema_migrations 包含全部已发布迁移且校验值一致", complete && migrations.length === MYSQL_MIGRATIONS.length);
     check(
       "应用账号仅获项目库 DML 权限",
       grants.some((grant) => grant.startsWith(`GRANT SELECT, INSERT, UPDATE, DELETE ON \`${app.database}\`.* TO `)) &&

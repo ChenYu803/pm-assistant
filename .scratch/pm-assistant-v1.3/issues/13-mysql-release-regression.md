@@ -6,7 +6,9 @@
 
 **Blocked by:** #12 — 验证基础设施迁移到 MySQL
 
-**Status:** ready-for-agent
+**Status:** implemented-pending-environment
+
+**实现记录（2026-08-25）**：已新增 `scripts/verify-v13-replay.mjs` 与 `verify:v13-replay` 入口；入口强制 replay、检查 9.7.2 LTS、完整迁移校验、空业务库、验证服务和 Chromium，再串行汇总现有专项。初始化专项同时校验全部迁移 checksum，并兼容已完成初始化的幂等重跑。尚未执行综合回放或四环冒烟：当前 `.env.local` 缺 MySQL 配置且 `AI_MODE=live`，真实环境信息需补齐后才能继续。
 
 - [ ] 综合入口运行前确认 MySQL 9.7.2 LTS、schema 版本和 `AI_MODE=replay`，环境不满足时明确停止，不调用真实模型。
 - [ ] 综合入口按类别运行初始化、账号/工作区、对话恢复与并发、tab/消息变更、项目成果、冻结、级联删除以及仍适用的 v1.2 安全/交互专项。

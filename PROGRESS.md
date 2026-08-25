@@ -20,6 +20,10 @@ v1.0 已验收（2026-08-11），四环流水线端到端走通。
 
 ## 本次任务
 
+**v1.3 #13 已实现入口，待环境与发布验收（2026-08-25）**：新增 `scripts/verify-v13-replay.mjs` / `verify:v13-replay`，按初始化、账号/工作区、对话恢复与并发、tab/消息变更、项目成果/tickets、冻结、级联删除及安全/UI/协议/四环类别串行运行现有专项。入口先强制 `AI_MODE=replay`，检查必要 MySQL 变量、验证服务 replay、Chromium、MySQL 9.7.2 LTS、全部 `schema_migrations` checksum 和业务表空库；子专项输出落 OS 临时日志，仅汇总名称、退出码和环境/失败定位，不自动切换 live。`verify-mysql-init` 改为校验完整迁移清单并支持已初始化数据库的幂等重跑。已通过脚本语法、定向 ESLint、`npx tsc --noEmit`、`AI_MODE=live`/缺 MySQL 变量门禁实测；尚未运行 MySQL 专项、综合回放或四环冒烟。当前真实环境缺 `MYSQL_*` 变量且 `.env.local` 为 `AI_MODE=live`，需补齐后再报备长验证；#07 与 v1.3 不能标记完成。
+
+**#13 环境探测补充（2026-08-25）**：Playwright Chromium 已自动安装并启动探测通过，Edge 同样可用；Windows `MySQL97` 服务正在运行，但未取得维护者/应用连接凭据，尚未验证实际 MySQL 版本、schema 或业务回放。综合入口在 replay 门禁和缺变量门禁均按预期停止，未调用真实模型。
+
 **v1.3 #12 已实现，待 MySQL/Playwright 环境验证（2026-08-25）**：新增 `docs/mysql-verification-coverage.md`，将 23 个旧 Mongo 验证入口逐项唯一归类为 MySQL 专项、公开 API/UI 专项、合并或退役；旧 v1.1/v1.2 综合编排入口和 live-only `verify-401` 已按边界退役，综合编排留给 #13。上下文用量、Markdown 安全、列表渲染和历史 UI 修复脚本改用 MySQL 测试连接与公开 API 创建的 UUID tab/项目夹具；其余保留脚本移除旧 24 位 ID 回退，所有 verify 入口固定 `AI_MODE=replay`。`mongoose` 及其传递依赖已从 `package.json`/锁文件删除，npm 脚本新增 5 个独立 MySQL UI/安全专项。静态搜索、全部 verify 脚本语法、`npx tsc --noEmit` 通过；lint 0 error、仅 `verify-list` 无用导入 warning 和既有 `ChatArea.tsx` Hook warning（无用导入随后已清理）。4 个迁移专项按 replay 运行均明确报告缺少 MySQL 连接变量而未运行；未调用真实模型，未运行需要 Chromium 的 UI 流程。#07 保持进行中。
 
 **v1.3 #11 已完成（2026-08-25）**：生产源码已删除 MongoDB 连接、全部 Mongoose models，以及无生产调用者的 ownership、文件上下文、旧 tab 并发/冻结、消息恢复和级联删除/协调实现；所有公开 API 已在 #09/#10 收口为 MySQL UUID 路径。`.env.example` 仅保留完整 MySQL 配置，客户端/共享类型/连接入口的旧 ObjectId、Mongoose/MongoDB 当前契约描述已清理。`mongoose` 暂时转入 `devDependencies`，只为 #12 尚未迁移的 23 个验证脚本保留；#12 完成迁移后必须将其及其传递 Mongo 依赖彻底移除。未新增 Mongo 回退、双写或数据迁移，空 MySQL 注册流程未改动。`npx tsc --noEmit`、`npm run build`、`git diff --check` 均通过，lint 为 0 error / 1 条既有 `ChatArea.tsx` Hook warning；`src/` 和 `.next/server` 的 Mongo/Mongoose/ObjectId 静态搜索均为零，production dependency tree 不含 Mongoose/MongoDB。#12 脚本按边界未运行、未改写；#07 保持进行中。

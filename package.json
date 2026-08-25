@@ -15,6 +15,7 @@
     "verify:mysql-explicit-freeze": "tsx scripts/verify-mysql-explicit-freeze.mjs",
     "verify:mysql-cascade-delete": "tsx scripts/verify-mysql-cascade-delete.mjs",
     "verify:mysql-tab-message-mutations": "tsx scripts/verify-mysql-tab-message-mutations.mjs",
+    "verify:v13-replay": "tsx scripts/verify-v13-replay.mjs",
     "verify:mysql-markdown-safety": "tsx scripts/verify-markdown-safety.mjs",
     "verify:mysql-context-usage": "tsx scripts/verify-context-usage.mjs",
     "verify:mysql-list-rendering": "tsx scripts/verify-list.mjs",

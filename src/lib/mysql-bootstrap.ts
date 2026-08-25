@@ -7,7 +7,7 @@ import {
   type MysqlAppConfig,
 } from "@/lib/mysql-config";
 
-const MYSQL_MIGRATIONS = [
+export const MYSQL_MIGRATIONS = [
   {
     id: "0001_mysql_bootstrap",
     checksum: "a5ab0ee5918634b01d8d00681f5f4f91f8e00cd074194d36ccbf2b6b9c4d56e5",
