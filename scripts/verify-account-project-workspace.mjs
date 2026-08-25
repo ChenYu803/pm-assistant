@@ -3,6 +3,7 @@
 import { chromium } from "playwright-core";
 import mysql from "mysql2/promise";
 import nextEnv from "@next/env";
+import { assertPlaywrightAvailable } from "./verify-mysql-fixtures.mjs";
 
 const { loadEnvConfig } = nextEnv;
 loadEnvConfig(process.cwd());
@@ -41,8 +42,8 @@ async function api(page, pathname, init) {
   );
 }
 
-if (process.env.AI_MODE === "live") {
-  console.error("❌ #02 验证禁止 AI_MODE=live");
+if (process.env.AI_MODE !== "replay") {
+  console.error("❌ #02 验证要求 AI_MODE=replay，未运行");
   process.exit(1);
 }
 
@@ -50,6 +51,8 @@ if (!process.env.MYSQL_HOST || !process.env.MYSQL_DATABASE || !process.env.MYSQL
   console.error("❌ #02 验证需要 MYSQL_HOST、MYSQL_DATABASE、MYSQL_USER 和 MYSQL_PASSWORD");
   process.exit(1);
 }
+
+await assertPlaywrightAvailable(chromium, { channel: "msedge" });
 
 const browser = await chromium.launch({ channel: "msedge", headless: true });
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });

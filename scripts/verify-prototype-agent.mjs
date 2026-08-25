@@ -7,10 +7,15 @@
 // - 用户「完满」确认 → tab.scope_frozen = true → Agent 输出原型.md → 确认框 → 落盘
 // - 原型.md 断言：五字段（目的/元素/操作/入口·出口/依赖）+ 用户流程 + 显示文案
 // - 轻量检查（WARN 不 fail）：对话回复表格 ≤5 行（5×5）；每轮问号 ≤4
-// 前置：dev server 运行在 localhost:3000，MongoDB 可连（.env.local 的 MONGODB_URI），
+// 前置：dev server 运行在 localhost:3000，MySQL 测试环境可用，
 //       默认 AI_MODE=replay；真实模型验证时才需要 AI_MODE=live + AI_API_KEY
 // 用法: node scripts/verify-prototype-agent.mjs
 import { chromium } from "playwright-core";
+
+if (process.env.AI_MODE !== "replay") {
+  console.error("❌ 验证要求 AI_MODE=replay，未运行");
+  process.exit(1);
+}
 
 const BASE = "http://localhost:3000";
 
@@ -57,7 +62,7 @@ await page.getByRole("button", { name: "新建项目" }).click();
 await page.fill('input[placeholder="输入项目名称"]', "验证原型 Agent");
 await page.locator('form button[type="submit"]').click();
 await page.getByRole("link", { name: /验证原型 Agent/ }).click();
-await page.waitForURL((u) => /\/projects\/[0-9a-f]{24}$/.test(u.pathname));
+await page.waitForURL((u) => /\/projects\/[0-9a-f-]{36}$/.test(u.pathname));
 await page.getByRole("button", { name: "新建工作记录" }).first().click();
 await page.getByRole("button", { name: "创建", exact: true }).click();
 await page.getByRole("link", { name: /未命名/ }).click();
@@ -87,7 +92,7 @@ const reqContent =
 const writeRes = await page.evaluate(async ({ pid, content }) => {
   const res = await fetch(`/api/projects/${pid}/files`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "x-pm-assistant-test-system-write": "1" },
     body: JSON.stringify({ filename: "需求分析.md", content, agent_type: "prototype" }),
   });
   return { status: res.status, body: await res.json().catch(() => ({})) };
@@ -105,7 +110,7 @@ const created = await page.evaluate(async (wid) => {
   return { status: res.status, tab: data.tab, context: (data.context_files ?? []).map((f) => f.filename) };
 }, workRecordId);
 check("创建原型 tab 成功", created.status === 201, `(status=${created.status})`);
-const tabId = created.tab?.id ?? created.tab?._id;
+const tabId = created.tab?.id;
 check("拿到 tab id", !!tabId, `(实际=${JSON.stringify(created.tab)?.slice(0, 120)})`);
 check(
   "原型 tab 自动加载 需求分析.md",
@@ -262,7 +267,7 @@ if (protoDoc) {
     const res = await fetch(`/api/projects/${pid}/files/${fid}`);
     const data = await res.json();
     return data.content ?? "";
-  }, { pid: projectId, fid: protoDoc.id ?? protoDoc._id });
+  }, { pid: projectId, fid: protoDoc.id });
   const body = protoContent.replace(/^<!--\nchangelog:[\s\S]*?-->\n?/, "");
   // 五字段（spec: 页面清单 目的/元素/操作/入口·出口/依赖）+ 用户流程
   const fiveFields = ["目的", "元素", "操作", "入口·出口", "依赖"];

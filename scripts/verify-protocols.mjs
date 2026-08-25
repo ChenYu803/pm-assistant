@@ -2,7 +2,11 @@
 // ① prompt 定义处 / ② chat route 冻结执法处 / ③ 前端 ChatArea marker 解析处
 // 三处保持同步，防重构 prompt 时漏改（spec: Testing Decisions）。
 // 用法: node scripts/verify-protocols.mjs
-// 前置：无 —— 纯静态读文件，dev server / MongoDB 均可关闭
+// 前置：无 —— 纯静态读文件，dev server 与数据库均可关闭
+if (process.env.AI_MODE !== "replay") {
+  console.error("❌ 验证要求 AI_MODE=replay，未运行");
+  process.exit(1);
+}
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";

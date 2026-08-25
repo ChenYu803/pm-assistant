@@ -4,10 +4,15 @@
 // - 真实对话：Agent 维护工作文档（「需求分析-工作文档（…）.md」出现在文件树）
 // - 工作文档不可加载进 Agent 上下文（POST 加载被 400 拒绝）
 // - 轻量检查（WARN 不 fail）：对话回复表格 ≤5 行（5×5 边界）；每轮问号 ≤2
-// 前置：dev server 运行在 localhost:3000，MongoDB 可连（.env.local 的 MONGODB_URI），
+// 前置：dev server 运行在 localhost:3000，MySQL 测试环境可用，
 //       默认 AI_MODE=replay；真实模型验证时才需要 AI_MODE=live + AI_API_KEY
 // 用法: node scripts/verify-requirement-analyst-discipline.mjs
 import { chromium } from "playwright-core";
+
+if (process.env.AI_MODE !== "replay") {
+  console.error("❌ 验证要求 AI_MODE=replay，未运行");
+  process.exit(1);
+}
 
 const BASE = "http://localhost:3000";
 
@@ -54,7 +59,7 @@ await page.getByRole("button", { name: "新建项目" }).click();
 await page.fill('input[placeholder="输入项目名称"]', "验证需求分析纪律");
 await page.locator('form button[type="submit"]').click();
 await page.getByRole("link", { name: /验证需求分析纪律/ }).click();
-await page.waitForURL((u) => /\/projects\/[0-9a-f]{24}$/.test(u.pathname));
+await page.waitForURL((u) => /\/projects\/[0-9a-f-]{36}$/.test(u.pathname));
 await page.getByRole("button", { name: "新建工作记录" }).first().click();
 await page.getByRole("button", { name: "创建", exact: true }).click();
 await page.getByRole("link", { name: /未命名/ }).click();
@@ -71,14 +76,14 @@ const projectId = wrRes.project_id;
 const created = await page.evaluate(async (wid) => {
   const res = await fetch(`/api/work-records/${wid}/tabs`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "x-pm-assistant-test-system-write": "1" },
     body: JSON.stringify({ agent_type: "requirement_analyst" }),
   });
   const data = await res.json();
   return { status: res.status, tab: data.tab, context: (data.context_files ?? []).map((f) => f.filename) };
 }, workRecordId);
 check("创建需求分析 tab 成功", created.status === 201, `(status=${created.status})`);
-const tabId = created.tab?.id ?? created.tab?._id;
+const tabId = created.tab?.id;
 check("拿到 tab id", !!tabId, `(实际=${JSON.stringify(created.tab)?.slice(0, 120)})`);
 
 // 激活该 tab（API 创建的 tab 需先刷新页面；TabBar 的 tab 是 div 而非 button）
@@ -201,7 +206,7 @@ if (reqDoc) {
     const res = await fetch(`/api/projects/${pid}/files/${fid}`);
     const data = await res.json();
     return data.content ?? "";
-  }, { pid: projectId, fid: reqDoc.id ?? reqDoc._id });
+  }, { pid: projectId, fid: reqDoc.id });
 
   const fourSections = ["用户与场景", "用户故事", "功能范围", "成功指标"];
   for (const s of fourSections) {
@@ -248,7 +253,7 @@ if (workDoc) {
       body: JSON.stringify({ file_id: fid }),
     });
     return { status: res.status, body: await res.json().catch(() => ({})) };
-  }, { tid: tabId, fid: workDoc.id ?? workDoc._id });
+  }, { tid: tabId, fid: workDoc.id });
   check(
     "工作文档不可加载进上下文（400 拒绝）",
     loadRes.status === 400,

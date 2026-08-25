@@ -2,6 +2,11 @@
 // 用法: node scripts/verify-a11y.mjs
 import { chromium } from "playwright-core";
 
+if (process.env.AI_MODE !== "replay") {
+  console.error("❌ 验证要求 AI_MODE=replay，未运行");
+  process.exit(1);
+}
+
 const BASE = "http://localhost:3000";
 const email = `verify-${Date.now()}@test.local`;
 const password = "verify-pass-123";
@@ -79,6 +84,7 @@ await page.keyboard.press("Escape");
 
 // 5. 文件编辑器弹窗：backdrop 点击不关闭（保持原行为）
 await page.request.post(`${BASE}/api/projects/${projectId}/files`, {
+  headers: { "x-pm-assistant-test-system-write": "1" },
   data: { filename: "需求分析.md", content: "# 测试\n\n内容", agent_type: "requirement_analyst" },
 });
 await page.reload();

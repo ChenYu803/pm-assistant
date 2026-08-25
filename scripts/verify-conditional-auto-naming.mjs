@@ -1,25 +1,18 @@
-// v1.2 #08：自动命名只能条件更新，不能覆盖手动命名或其他 tab 的先成功结果。
-// 用法：AI_MODE=replay AUTO_NAME_TEST_HOOKS=1 VERIFY_BASE_URL=http://localhost:3002 node scripts/verify-conditional-auto-naming.mjs
+// 自动命名只能条件更新，不能覆盖手动命名或其他 tab 的先成功结果。
+// 用法：AI_MODE=replay AUTO_NAME_TEST_HOOKS=1 npm run verify:mysql-auto-naming
 import { chromium } from "playwright-core";
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+import { assertReplayEnvironment } from "./verify-mysql-fixtures.mjs";
 const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:3000";
 
-if (process.env.AI_MODE !== "replay") {
-  console.error("❌ #08 验证只允许 AI_MODE=replay");
+try {
+  assertReplayEnvironment();
+} catch (error) {
+  console.error(`❌ ${error.message}`);
+  console.log("\n结果: 0 通过, 1 失败（未运行）");
   process.exit(1);
 }
 if (process.env.AUTO_NAME_TEST_HOOKS !== "1") {
   console.error("❌ #08 验证需要 AUTO_NAME_TEST_HOOKS=1");
-  process.exit(1);
-}
-
-const envRaw = fs.readFileSync(path.join(ROOT, ".env.local"), "utf8");
-if (!/MONGODB_URI=/.test(envRaw)) {
-  console.error("❌ MONGODB_URI 缺失");
   process.exit(1);
 }
 

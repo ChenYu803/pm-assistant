@@ -1,7 +1,7 @@
-// 列表渲染视觉验证：插入各种列表格式，检查 computed style + 截图
+// 列表渲染视觉验证：插入各种列表格式，检查 computed style + 截图。
+// 用法：AI_MODE=replay npm run verify:mysql-list-rendering
 import { chromium } from "playwright-core";
-import mongoose from "mongoose";
-import fs from "node:fs";
+import { assertPlaywrightAvailable, assertReplayEnvironment, connectMysqlForVerification, insertTestMessage } from "./verify-mysql-fixtures.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -9,27 +9,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const BASE = "http://localhost:3000";
 
-const envRaw = fs.readFileSync(path.join(ROOT, ".env.local"), "utf8");
-const env = Object.fromEntries(
-  envRaw
-    .split("\n")
-    .filter((l) => l && !l.trim().startsWith("#") && l.includes("="))
-    .map((l) => {
-      const i = l.indexOf("=");
-      return [l.slice(0, i).trim(), l.slice(i + 1).trim()];
-    })
-);
-await mongoose.connect(env.MONGODB_URI);
-const Message = mongoose.model(
-  "VMessage2",
-  new mongoose.Schema({
-    role: String,
-    content: String,
-    tab_id: mongoose.Schema.Types.ObjectId,
-    timestamp: Date,
-  }),
-  "messages"
-);
+try {
+  assertReplayEnvironment();
+  await assertPlaywrightAvailable(chromium, { channel: "msedge" });
+} catch (error) {
+  console.error(`❌ ${error.message}`);
+  console.log("\n结果: 0 通过, 1 失败（未运行）");
+  process.exit(1);
+}
+const connection = await connectMysqlForVerification();
 
 const email = `list-${Date.now()}@test.local`;
 const browser = await chromium.launch({ channel: "msedge", headless: true });
@@ -47,7 +35,7 @@ await page.getByRole("button", { name: "新建项目" }).click();
 await page.fill('input[placeholder="输入项目名称"]', "列表验证");
 await page.locator('form button[type="submit"]').click();
 await page.getByRole("link", { name: /列表验证/ }).click();
-await page.waitForURL((u) => /\/projects\/[0-9a-f]{24}$/.test(u.pathname));
+await page.waitForURL((u) => /\/projects\/[0-9a-f-]{36}$/.test(u.pathname));
 await page.getByRole("button", { name: "新建工作记录" }).first().click();
 await page.getByRole("button", { name: "创建", exact: true }).click();
 await page.getByRole("link", { name: /未命名/ }).click();
@@ -89,10 +77,11 @@ const msg = `以下是各种列表格式的测试：
 ## 数字中文格式
 1、方案一
 2、方案二`;
-await Message.create({
+await insertTestMessage(connection, {
   role: "assistant",
   content: msg,
-  tab_id: new mongoose.Types.ObjectId(tabId),
+  tabId,
+  status: "completed",
   timestamp: new Date(now.getTime() + 1000),
 });
 
@@ -122,9 +111,30 @@ const result = await page.evaluate(() => {
     };
   });
 });
+
+let pass = 0;
+let fail = 0;
+function check(name, ok, detail = "") {
+  if (ok) {
+    pass += 1;
+    console.log(`  ✅ ${name}`);
+  } else {
+    fail += 1;
+    console.error(`  ❌ ${name}${detail ? `：${detail}` : ""}`);
+  }
+}
+
+check("列表至少渲染一个列表项", result.length > 0, `实际=${result.length}`);
+check("无序列表使用列表项语义", result.some((item) => item.inUl && item.display === "list-item"));
+check("有序列表使用列表项语义", result.some((item) => item.inOl && item.display === "list-item"));
+check("列表项保留可见样式", result.every((item) => item.listStyleType !== "none" && item.display === "list-item"));
+check("嵌套列表结构存在", result.some((item) => item.text.includes("子项") && item.inUl));
 console.log(JSON.stringify(result, null, 1));
 await page.screenshot({
   path: path.join(ROOT, ".scratch", "screenshots", "verify", "04-list-render.png"),
 });
 await browser.close();
-await mongoose.disconnect();
+await connection.end();
+
+console.log(`\n结果: ${pass} 通过, ${fail} 失败`);
+process.exit(fail > 0 ? 1 : 0);

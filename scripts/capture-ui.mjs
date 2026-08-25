@@ -41,7 +41,7 @@ await page.fill('input[placeholder="输入项目名称"]', "校园二手交易�
 await page.locator('form button[type="submit"]').click();
 // 创建后停留在列表页，点击项目卡片进入项目页
 await page.getByRole("link", { name: /校园二手交易平台/ }).click();
-await page.waitForURL((u) => /\/projects\/[0-9a-f]{24}$/.test(u.pathname), { timeout: 15000 });
+await page.waitForURL((u) => /\/projects\/[0-9a-f-]{36}$/.test(u.pathname), { timeout: 15000 });
 const projectId = page.url().split("/").pop();
 await shot("04-workrecords-empty");
 await page.getByRole("button", { name: "新建工作记录" }).first().click();

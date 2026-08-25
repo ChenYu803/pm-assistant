@@ -14,7 +14,21 @@
     "verify:mysql-project-artifacts": "tsx scripts/verify-mysql-project-artifacts.mjs",
     "verify:mysql-explicit-freeze": "tsx scripts/verify-mysql-explicit-freeze.mjs",
     "verify:mysql-cascade-delete": "tsx scripts/verify-mysql-cascade-delete.mjs",
-    "verify:mysql-tab-message-mutations": "tsx scripts/verify-mysql-tab-message-mutations.mjs"
+    "verify:mysql-tab-message-mutations": "tsx scripts/verify-mysql-tab-message-mutations.mjs",
+    "verify:mysql-markdown-safety": "tsx scripts/verify-markdown-safety.mjs",
+    "verify:mysql-context-usage": "tsx scripts/verify-context-usage.mjs",
+    "verify:mysql-list-rendering": "tsx scripts/verify-list.mjs",
+    "verify:mysql-ui-fixes": "tsx scripts/verify-fixes.mjs",
+    "verify:mysql-auto-naming": "tsx scripts/verify-conditional-auto-naming.mjs",
+    "verify:a11y": "tsx scripts/verify-a11y.mjs",
+    "verify:agent-types": "tsx scripts/verify-agent-types.mjs",
+    "verify:prd-six-section": "tsx scripts/verify-prd-six-section.mjs",
+    "verify:prototype-agent": "tsx scripts/verify-prototype-agent.mjs",
+    "verify:requirement-analyst": "tsx scripts/verify-requirement-analyst-discipline.mjs",
+    "verify:ticket-splitter": "tsx scripts/verify-ticket-splitter.mjs",
+    "verify:v1-flow": "tsx scripts/verify-v1-flow.mjs",
+    "verify:file-protocol-snapshots": "tsx scripts/verify-file-protocol-snapshots.mjs",
+    "verify:protocols": "tsx scripts/verify-protocols.mjs"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "1.1.13",
@@ -42,7 +56,6 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
     "playwright-core": "^1.57.0",
-    "mongoose": "^9.9.1",
     "tailwindcss": "^4",
     "tsx": "^4.23.12",
     "typescript": "^5"

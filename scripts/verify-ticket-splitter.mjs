@@ -10,10 +10,15 @@
 //   验收标准按 prompt 要求直接从第 5 章带走）
 // - 文件树断言：issues/ 子路径文件出现在文件列表（文件树数据源）
 // - 重新切分（spec US19）：批准输出后用户要求重新切分 → Agent 能再次输出（无冻结）
-// 前置：dev server 运行在 localhost:3000，MongoDB 可连（.env.local 的 MONGODB_URI），
+// 前置：dev server 运行在 localhost:3000，MySQL 测试环境可用，
 //       默认 AI_MODE=replay；真实模型验证时才需要 AI_MODE=live + AI_API_KEY
 // 用法: node scripts/verify-ticket-splitter.mjs
 import { chromium } from "playwright-core";
+
+if (process.env.AI_MODE !== "replay") {
+  console.error("❌ 验证要求 AI_MODE=replay，未运行");
+  process.exit(1);
+}
 
 const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:3000";
 
@@ -54,7 +59,7 @@ await page.getByRole("button", { name: "新建项目" }).click();
 await page.fill('input[placeholder="输入项目名称"]', "验证任务拆分");
 await page.locator('form button[type="submit"]').click();
 await page.getByRole("link", { name: /验证任务拆分/ }).click();
-await page.waitForURL((u) => /\/projects\/[0-9a-f]{24}$/.test(u.pathname));
+await page.waitForURL((u) => /\/projects\/[0-9a-f-]{36}$/.test(u.pathname));
 await page.getByRole("button", { name: "新建工作记录" }).first().click();
 await page.getByRole("button", { name: "创建", exact: true }).click();
 await page.getByRole("link", { name: /未命名/ }).click();
@@ -206,7 +211,7 @@ const created = await page.evaluate(async (wid) => {
   return { status: res.status, tab: data.tab, context: (data.context_files ?? []).map((f) => f.filename) };
 }, workRecordId);
 check("创建 ticket_splitter tab 成功", created.status === 201, `(status=${created.status})`);
-const tabId = created.tab?.id ?? created.tab?._id;
+const tabId = created.tab?.id;
 check("拿到 tab id", !!tabId, `(实际=${JSON.stringify(created.tab)?.slice(0, 120)})`);
 const ctxNames = created.context ?? [];
 check(
@@ -358,7 +363,7 @@ async function readBody(file) {
     const res = await fetch(`/api/projects/${pid}/files/${fid}`);
     const d = await res.json();
     return d.content ?? "";
-  }, { pid: projectId, fid: file.id ?? file._id });
+  }, { pid: projectId, fid: file.id });
   // 剥离 changelog 头（同 stripChangelogHeader）
   return data.replace(/^<!--\nchangelog:[\s\S]*?-->\n?/, "");
 }

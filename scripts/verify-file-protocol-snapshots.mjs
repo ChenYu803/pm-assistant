@@ -3,8 +3,8 @@
 import { chromium } from "playwright-core";
 
 const BASE = process.env.BASE_URL || "http://localhost:3000";
-if (process.env.AI_MODE === "live") {
-  console.error("❌ #03 验证禁止 AI_MODE=live");
+if (process.env.AI_MODE !== "replay") {
+  console.error("❌ #03 验证要求 AI_MODE=replay，未运行");
   process.exit(1);
 }
 

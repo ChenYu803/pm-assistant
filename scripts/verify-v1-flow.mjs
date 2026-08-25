@@ -13,15 +13,20 @@
 //   - issues：四字段 + blocked by + 引用非复制 + 编号序（06）
 // 数据断言：
 //   - 文件树可见性：API 文件列表（文件树数据源）齐全 + DOM 抽查
-//   - MongoDB 落库正确：API 中介断言（files/messages/tabs API 即 DB 状态，同各环脚本模式）
+//   - 持久化结果正确：通过 files/messages/tabs API 断言（同各环脚本模式）
 //   - 协议标记落库：FILE/HTML/SCOPE_FROZEN 标记完整落在 messages 落库内容中
 //   - changelog 头规范：正式文件有 changelog 头、工作文档无
 // 幂等：每轮运行注册全新用户（Date.now() 邮箱建号），无需清场；
 //       累计测试用户留库为既有脚本一致行为。
-// 前置：dev server 运行在 localhost:3000，MongoDB 可连（.env.local 的 MONGODB_URI），
+// 前置：dev server 运行在 localhost:3000，MySQL 测试环境可用，
 //       默认 AI_MODE=replay；真实模型验证时才需要 AI_MODE=live + AI_API_KEY
 // 用法: node scripts/verify-v1-flow.mjs
 import { chromium } from "playwright-core";
+
+if (process.env.AI_MODE !== "replay") {
+  console.error("❌ 验证要求 AI_MODE=replay，未运行");
+  process.exit(1);
+}
 
 const BASE = "http://localhost:3000";
 
@@ -69,7 +74,7 @@ await page.getByRole("button", { name: "新建项目" }).click();
 await page.fill('input[placeholder="输入项目名称"]', "四环全流程验证");
 await page.locator('form button[type="submit"]').click();
 await page.getByRole("link", { name: /四环全流程验证/ }).click();
-await page.waitForURL((u) => /\/projects\/[0-9a-f]{24}$/.test(u.pathname));
+await page.waitForURL((u) => /\/projects\/[0-9a-f-]{36}$/.test(u.pathname));
 await page.getByRole("button", { name: "新建工作记录" }).first().click();
 await page.getByRole("button", { name: "创建", exact: true }).click();
 await page.getByRole("link", { name: /未命名/ }).click();
@@ -158,7 +163,7 @@ function htmlCount() {
 console.log("\n── 第一环：需求分析 ──────────────────────────────");
 const raCreated = await createTab("requirement_analyst");
 check("创建需求分析 tab 成功", raCreated.status === 201, `(status=${raCreated.status})`);
-ring.tabId = raCreated.tab?.id ?? raCreated.tab?._id;
+ring.tabId = raCreated.tab?.id;
 check("拿到 tab id", !!ring.tabId, `(实际=${JSON.stringify(raCreated.tab)?.slice(0, 120)})`);
 
 // 激活该 tab（API 创建的 tab 需先刷新页面；TabBar 的 tab 是 div 而非 button）
@@ -255,7 +260,7 @@ async function readRaw(pid, file) {
     const res = await fetch(`/api/projects/${pid}/files/${fid}`);
     const d = await res.json();
     return d.content ?? "";
-  }, { pid, fid: file.id ?? file._id });
+  }, { pid, fid: file.id });
   return data;
 }
 /** 剥离 changelog 头（同 stripChangelogHeader） */
@@ -299,7 +304,7 @@ if (workDoc) {
       body: JSON.stringify({ file_id: fid }),
     });
     return { status: res.status };
-  }, { tid: ring.tabId, fid: workDoc.id ?? workDoc._id });
+  }, { tid: ring.tabId, fid: workDoc.id });
   check("工作文档不可加载进上下文（POST 400）", loadRes.status === 400, `(status=${loadRes.status})`);
 }
 check("需求分析环对话中输出 FILE marker（落库）", raFinished, `(末轮片段=${(ring.rawReplies[ring.rawReplies.length - 1] ?? "").slice(0, 80).replace(/\n/g, " ")})`);
@@ -312,7 +317,7 @@ const raReplies = ring.rawReplies.slice();
 console.log("\n── 第二环：原型 ────────────────────────────────");
 const ptCreated = await createTab("prototype");
 check("创建原型 tab 成功", ptCreated.status === 201, `(status=${ptCreated.status})`);
-ring.tabId = ptCreated.tab?.id ?? ptCreated.tab?._id;
+ring.tabId = ptCreated.tab?.id;
 check(
   "原型 tab 自动加载 需求分析.md",
   (ptCreated.context ?? []).some((f) => f.includes("需求分析.md")),
@@ -441,7 +446,7 @@ const ptReplies = ring.rawReplies.slice(); // 本环回复快照（下一环 sen
 console.log("\n── 第三环：PRD ─────────────────────────────────");
 const prdCreated = await createTab("mvp_prd");
 check("创建 PRD tab 成功", prdCreated.status === 201, `(status=${prdCreated.status})`);
-ring.tabId = prdCreated.tab?.id ?? prdCreated.tab?._id;
+ring.tabId = prdCreated.tab?.id;
 const prdCtxNames = prdCreated.context ?? [];
 check(
   "PRD tab 自动加载 需求分析.md + 原型.md",
@@ -542,7 +547,7 @@ if (conceptDoc) {
       body: JSON.stringify({ file_id: fid }),
     });
     return { status: res.status };
-  }, { tid: ring.tabId, fid: conceptDoc.id ?? conceptDoc._id });
+  }, { tid: ring.tabId, fid: conceptDoc.id });
   check("概念版不可加载进 Agent 上下文（POST 400）", loadRes.status === 400, `(status=${loadRes.status})`);
   check("概念版有 changelog 头（正式文件规范）", /^<!--\nchangelog:/.test(await readRaw(projectId, conceptDoc)));
 }
@@ -691,7 +696,7 @@ const prdReplies = ring.rawReplies.slice(); // 本环回复快照（下一环 se
 console.log("\n── 第四环：任务拆分 ────────────────────────────");
 const tsCreated = await createTab("ticket_splitter");
 check("创建任务拆分 tab 成功", tsCreated.status === 201, `(status=${tsCreated.status})`);
-ring.tabId = tsCreated.tab?.id ?? tsCreated.tab?._id;
+ring.tabId = tsCreated.tab?.id;
 const tsCtxNames = tsCreated.context ?? [];
 check(
   "任务拆分 tab 自动加载 prd.md + 需求分析.md",
@@ -875,7 +880,7 @@ const issuesDomVisible = await page
   .catch(() => false);
 check("文件树 DOM 抽查：issues/ 子目录文件可见（显示名 NN-<slug>.md）", issuesDomVisible);
 
-// 协议标记落库：四环 messages API 返回的落库内容含对应标记（MongoDB 落库 = API 中介断言）
+// 协议标记持久化：四环 messages API 返回内容含对应标记。
 const markerChecks = [
   ["需求分析环", "requirement_analyst", /%%%FILE_BEGIN%%%\s*需求分析\.md/],
   ["原型环", "prototype", /%%%FILE_BEGIN%%%\s*原型\.md/],
@@ -889,7 +894,7 @@ for (const [ringName, agentType, re] of markerChecks) {
     const tabList = Array.isArray(tabs) ? tabs : (tabs.tabs ?? []);
     const tab = tabList.find((t) => t.agent_type === agentType);
     if (!tab) return [];
-    const res = await fetch(`/api/tabs/${tab.id ?? tab._id}/messages`);
+    const res = await fetch(`/api/tabs/${tab.id}/messages`);
     const data = await res.json();
     return (data.messages ?? []).filter((m) => m.role === "assistant").map((m) => m.content);
   }, { wid: workRecordId, agentType });
@@ -901,7 +906,7 @@ const ptMsgs = await page.evaluate(async (tid) => {
   const res = await fetch(`/api/tabs/${tid}/messages`);
   const data = await res.json();
   return (data.messages ?? []).filter((m) => m.role === "assistant").map((m) => m.content);
-}, ptCreated.tab?.id ?? ptCreated.tab?._id);
+}, ptCreated.tab?.id);
 const htmlBegin = ptMsgs.join("\n").split("%%%HTML_BEGIN%%%").length - 1;
 const htmlEnd = ptMsgs.join("\n").split("%%%HTML_END%%%").length - 1;
 check("HTML 标记成对落库（BEGIN=END≥1）", htmlBegin === htmlEnd && htmlBegin >= 1, `(BEGIN=${htmlBegin} END=${htmlEnd})`);

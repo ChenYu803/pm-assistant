@@ -65,7 +65,7 @@ try {
   await page.fill('input[placeholder="输入项目名称"]', "诊断流式渲染");
   await page.locator('form button[type="submit"]').click();
   await page.getByRole("link", { name: /诊断流式渲染/ }).click();
-  await page.waitForURL((u) => /\/projects\/[0-9a-f]{24}$/.test(u.pathname));
+  await page.waitForURL((u) => /\/projects\/[0-9a-f-]{36}$/.test(u.pathname));
   await page.getByRole("button", { name: "新建工作记录" }).first().click();
   await page.getByRole("button", { name: "创建", exact: true }).click();
   await page.getByRole("link", { name: /未命名/ }).click();

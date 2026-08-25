@@ -1,31 +1,21 @@
-// 验证四个修复：滚动条隔离 / Markdown 渲染 / 确认弹窗不重复 / 401 弹窗
-// 用法: node scripts/verify-fixes.mjs
-// 前置：dev server 可通过 VERIFY_BASE_URL 指定地址（默认 localhost:3000），
-// MongoDB 可连（.env.local 的 MONGODB_URI）
+// 固定回放验证：滚动条隔离、Markdown 渲染与确认弹窗不重复。
+// 用法：AI_MODE=replay npm run verify:mysql-ui-fixes
+// 前置：dev server 可通过 VERIFY_BASE_URL 指定地址，MySQL 测试连接可用。
 import { chromium } from "playwright-core";
-import mongoose from "mongoose";
-import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { assertPlaywrightAvailable, assertReplayEnvironment, connectMysqlForVerification, insertTestMessage, insertTestProjectFile } from "./verify-mysql-fixtures.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
 const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:3000";
 
-// ── 读 .env.local（纯 KEY=VALUE 解析）──────────────────────────────
-const envRaw = fs.readFileSync(path.join(ROOT, ".env.local"), "utf8");
-const env = Object.fromEntries(
-  envRaw
-    .split("\n")
-    .filter((l) => l && !l.trim().startsWith("#") && l.includes("="))
-    .map((l) => {
-      const i = l.indexOf("=");
-      return [l.slice(0, i).trim(), l.slice(i + 1).trim()];
-    })
-);
-const MONGODB_URI = env.MONGODB_URI;
-if (!MONGODB_URI) {
-  console.error("MONGODB_URI 缺失");
+try {
+  assertReplayEnvironment();
+  await assertPlaywrightAvailable(chromium, { channel: "msedge" });
+} catch (error) {
+  console.error(`❌ ${error.message}`);
+  console.log("\n结果: 0 通过, 1 失败（未运行）");
   process.exit(1);
 }
 
@@ -43,29 +33,7 @@ const check = (name, ok, detail = "") => {
   }
 };
 
-// ── 连接 Mongo（原生 schema，不依赖项目模型）────────────────────────
-await mongoose.connect(MONGODB_URI);
-const Message = mongoose.model(
-  "VMessage",
-  new mongoose.Schema({
-    role: String,
-    content: String,
-    tab_id: mongoose.Schema.Types.ObjectId,
-    timestamp: Date,
-  }),
-  "messages"
-);
-const ProjectFile = mongoose.model(
-  "VProjectFile",
-  new mongoose.Schema({
-    filename: String,
-    content: String,
-    project_id: mongoose.Schema.Types.ObjectId,
-    created_at: Date,
-    updated_at: Date,
-  }),
-  "project_files"
-);
+const connection = await connectMysqlForVerification();
 
 const browser = await chromium.launch({ channel: "msedge", headless: true });
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
@@ -95,7 +63,7 @@ await page.getByRole("button", { name: "新建项目" }).click();
 await page.fill('input[placeholder="输入项目名称"]', "验证修复");
 await page.locator('form button[type="submit"]').click();
 await page.getByRole("link", { name: /验证修复/ }).click();
-await page.waitForURL((u) => /\/projects\/[0-9a-f]{24}$/.test(u.pathname));
+await page.waitForURL((u) => /\/projects\/[0-9a-f-]{36}$/.test(u.pathname));
 await page.getByRole("button", { name: "新建工作记录" }).first().click();
 await page.getByRole("button", { name: "创建", exact: true }).click();
 await page.getByRole("link", { name: /未命名/ }).click();
@@ -125,12 +93,11 @@ const now = new Date();
 const CHANGELOG = `<!--\nchangelog:\n  requirement_count: 1\n  iteration:        1\n  last_editor:      requirement_analyst\n  timestamp:        ${now.toISOString()}\n-->`;
 const fileContent = `${CHANGELOG}\n# 需求分析文档\n\n## 1. 校园二手交易平台\n\n**用户与场景**：大二学生 C 想处理闲置教材。\n`;
 
-await ProjectFile.create({
+await insertTestProjectFile(connection, {
   filename: "需求分析.md",
   content: fileContent,
-  project_id: new mongoose.Types.ObjectId(projectId),
-  created_at: now,
-  updated_at: now,
+  projectId,
+  timestamp: now,
 });
 
 // 消息 1：带 file marker（文件名已存在 → 不应弹确认框）
@@ -147,10 +114,11 @@ const markerMsg = `需求分析完成，请确认以下产出：
 %%%FILE_END%%%
 
 请确认后写入项目文件。`;
-await Message.create({
+await insertTestMessage(connection, {
   role: "assistant",
   content: markerMsg,
-  tab_id: new mongoose.Types.ObjectId(tabId),
+  tabId,
+  status: "completed",
   timestamp: new Date(now.getTime() + 1000),
 });
 
@@ -196,10 +164,11 @@ const longMsg = `# 需求分析流程说明
 ## 预期产出
 
 最终将生成一份**四段分析**，经你确认后写入 需求分析.md，包含：用户与场景、用户故事、功能范围、成功指标。`;
-await Message.create({
+await insertTestMessage(connection, {
   role: "assistant",
   content: longMsg,
-  tab_id: new mongoose.Types.ObjectId(tabId),
+  tabId,
+  status: "completed",
   timestamp: new Date(now.getTime() + 2000),
 });
 
@@ -281,7 +250,7 @@ check("问题2: 无原始 ** 加粗语法", !markdownCheck.rawBold, markdownChec
 
 // ── 清理 ──────────────────────────────────────────────────────────
 await browser.close();
-await mongoose.disconnect();
+await connection.end();
 
 console.log(`\n结果: ${pass} 通过, ${fail} 失败`);
 process.exit(fail > 0 ? 1 : 0);

@@ -4,10 +4,15 @@
 //   ticket_splitter → prd.md + 需求分析.md
 // - 管线指示器四阶段 + 各 Agent 空态文案
 // - 新类型（prototype）可对话（默认使用 AI_MODE=replay，不消耗真实 API）
-// 前置：dev server 运行在 localhost:3000，MongoDB 可连（.env.local 的 MONGODB_URI），
+// 前置：dev server 运行在 localhost:3000，MySQL 测试环境可用，
 //       默认 AI_MODE=replay；真实模型冒烟时才需要 AI_MODE=live + AI_API_KEY
 // 用法: node scripts/verify-agent-types.mjs
 import { chromium } from "playwright-core";
+
+if (process.env.AI_MODE !== "replay") {
+  console.error("❌ 验证要求 AI_MODE=replay，未运行");
+  process.exit(1);
+}
 
 const BASE = "http://localhost:3000";
 
@@ -50,7 +55,7 @@ await page.getByRole("button", { name: "新建项目" }).click();
 await page.fill('input[placeholder="输入项目名称"]', "验证 Agent 类型");
 await page.locator('form button[type="submit"]').click();
 await page.getByRole("link", { name: /验证 Agent 类型/ }).click();
-await page.waitForURL((u) => /\/projects\/[0-9a-f]{24}$/.test(u.pathname));
+await page.waitForURL((u) => /\/projects\/[0-9a-f-]{36}$/.test(u.pathname));
 await page.getByRole("button", { name: "新建工作记录" }).first().click();
 await page.getByRole("button", { name: "创建", exact: true }).click();
 await page.getByRole("link", { name: /未命名/ }).click();
@@ -73,7 +78,7 @@ await page.evaluate(async (pid) => {
   for (const f of files) {
     const res = await fetch(`/api/projects/${pid}/files`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-pm-assistant-test-system-write": "1" },
       body: JSON.stringify(f),
     });
     if (!res.ok) throw new Error(`写入 ${f.filename} 失败: ${res.status}`);

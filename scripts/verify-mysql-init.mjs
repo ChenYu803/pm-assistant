@@ -1,6 +1,11 @@
 import nextEnv from "@next/env";
 import mysql from "mysql2/promise";
 
+if (process.env.AI_MODE !== "replay") {
+  console.error("❌ 验证要求 AI_MODE=replay，未运行");
+  process.exit(1);
+}
+
 const { loadEnvConfig } = nextEnv;
 loadEnvConfig(process.cwd());
 

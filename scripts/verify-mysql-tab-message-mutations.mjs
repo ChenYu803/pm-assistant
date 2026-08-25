@@ -4,6 +4,7 @@
 import { chromium } from "playwright-core";
 import mysql from "mysql2/promise";
 import nextEnv from "@next/env";
+import { assertPlaywrightAvailable } from "./verify-mysql-fixtures.mjs";
 
 if (process.env.AI_MODE !== "replay") {
   console.error("❌ 验证要求 AI_MODE=replay，拒绝调用真实模型");
@@ -18,6 +19,7 @@ nextEnv.loadEnvConfig(process.cwd());
 const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:3000";
 const email = `verify-tab-message-mutations-${Date.now()}@test.local`;
 const password = "verify-pass-1234";
+await assertPlaywrightAvailable(chromium);
 let pass = 0;
 let fail = 0;
 

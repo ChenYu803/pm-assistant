@@ -8,10 +8,15 @@
 // - prd.md 断言：六章齐全（概念/Out of Scope/页面清单/实体级数据模型/用户流程+验收标准/文案基调）
 // - prd.md 断言：第 3 章 = 原型.md 页面清单段原文（零转换嵌入）；第 5 章 = 用户流程段原文
 // - prd.md 断言：外部依赖声明只在概念章出现一次（单源）；概念版内容不写入 prd.md
-// 前置：dev server 运行在 localhost:3000，MongoDB 可连（.env.local 的 MONGODB_URI），
+// 前置：dev server 运行在 localhost:3000，MySQL 测试环境可用，
 //       默认 AI_MODE=replay；真实模型验证时才需要 AI_MODE=live + AI_API_KEY
 // 用法: node scripts/verify-prd-six-section.mjs
 import { chromium } from "playwright-core";
+
+if (process.env.AI_MODE !== "replay") {
+  console.error("❌ 验证要求 AI_MODE=replay，未运行");
+  process.exit(1);
+}
 
 const BASE = "http://localhost:3000";
 
@@ -58,7 +63,7 @@ await page.getByRole("button", { name: "新建项目" }).click();
 await page.fill('input[placeholder="输入项目名称"]', "验证 PRD 六章");
 await page.locator('form button[type="submit"]').click();
 await page.getByRole("link", { name: /验证 PRD 六章/ }).click();
-await page.waitForURL((u) => /\/projects\/[0-9a-f]{24}$/.test(u.pathname));
+await page.waitForURL((u) => /\/projects\/[0-9a-f-]{36}$/.test(u.pathname));
 await page.getByRole("button", { name: "新建工作记录" }).first().click();
 await page.getByRole("button", { name: "创建", exact: true }).click();
 await page.getByRole("link", { name: /未命名/ }).click();
@@ -117,7 +122,7 @@ for (const [filename, content] of [["需求分析.md", reqContent], ["原型.md"
   const writeRes = await page.evaluate(async ({ pid, filename, content }) => {
     const res = await fetch(`/api/projects/${pid}/files`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-pm-assistant-test-system-write": "1" },
       body: JSON.stringify({ filename, content, agent_type: "mvp_prd" }),
     });
     return { status: res.status };
@@ -136,7 +141,7 @@ const created = await page.evaluate(async (wid) => {
   return { status: res.status, tab: data.tab, context: (data.context_files ?? []).map((f) => f.filename) };
 }, workRecordId);
 check("创建 mvp_prd tab 成功", created.status === 201, `(status=${created.status})`);
-const tabId = created.tab?.id ?? created.tab?._id;
+const tabId = created.tab?.id;
 check("拿到 tab id", !!tabId, `(实际=${JSON.stringify(created.tab)?.slice(0, 120)})`);
 const ctxNames = created.context ?? [];
 check(
@@ -289,7 +294,7 @@ if (conceptDoc) {
       body: JSON.stringify({ file_id: fid }),
     });
     return { status: res.status, body: await res.json().catch(() => ({})) };
-  }, { tid: tabId, fid: conceptDoc.id ?? conceptDoc._id });
+  }, { tid: tabId, fid: conceptDoc.id });
   check("概念版不可加载进 Agent 上下文（POST 400）", loadRes.status === 400, `(status=${loadRes.status})`);
 }
 
@@ -306,7 +311,7 @@ async function readBody(pid, file) {
     const res = await fetch(`/api/projects/${pid}/files/${fid}`);
     const d = await res.json();
     return d.content ?? "";
-  }, { pid, fid: file.id ?? file._id });
+  }, { pid, fid: file.id });
   // 剥离 changelog 头（同 stripChangelogHeader）
   return data.replace(/^<!--\nchangelog:[\s\S]*?-->\n?/, "");
 }

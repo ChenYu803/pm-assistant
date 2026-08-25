@@ -4,6 +4,7 @@
 import { chromium } from "playwright-core";
 import mysql from "mysql2/promise";
 import nextEnv from "@next/env";
+import { assertPlaywrightAvailable } from "./verify-mysql-fixtures.mjs";
 
 nextEnv.loadEnvConfig(process.cwd());
 if (process.env.AI_MODE !== "replay") {
@@ -18,6 +19,7 @@ if (process.env.CASCADE_DELETE_TEST_HOOKS !== "1") {
 const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:3000";
 const email = `verify-mysql-cascade-${Date.now()}@test.local`;
 const password = "verify-pass-1234";
+await assertPlaywrightAvailable(chromium);
 let pass = 0;
 let fail = 0;
 

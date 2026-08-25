@@ -1,34 +1,15 @@
 // Markdown 安全渲染专项回放：固定恶意输入，检查用户可见的 DOM 安全边界。
-// 用法：AI_MODE=replay node scripts/verify-markdown-safety.mjs
+// 用法：AI_MODE=replay npm run verify:mysql-markdown-safety
 import { chromium } from "playwright-core";
-import mongoose from "mongoose";
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { assertPlaywrightAvailable, assertReplayEnvironment, connectMysqlForVerification, insertTestMessage } from "./verify-mysql-fixtures.mjs";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, "..");
 const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:3000";
-const aiMode = process.env.AI_MODE ?? "replay";
-
-if (aiMode !== "replay") {
-  console.error("本脚本只允许 AI_MODE=replay");
-  process.exit(1);
-}
-
-const envRaw = fs.readFileSync(path.join(ROOT, ".env.local"), "utf8");
-const env = Object.fromEntries(
-  envRaw
-    .split("\n")
-    .filter((line) => line && !line.trim().startsWith("#") && line.includes("="))
-    .map((line) => {
-      const index = line.indexOf("=");
-      return [line.slice(0, index).trim(), line.slice(index + 1).trim()];
-    }),
-);
-const MONGODB_URI = env.MONGODB_URI;
-if (!MONGODB_URI) {
-  console.error("MONGODB_URI 缺失");
+try {
+  assertReplayEnvironment();
+  await assertPlaywrightAvailable(chromium, { channel: "msedge" });
+} catch (error) {
+  console.error(`❌ ${error.message}`);
+  console.log("\n结果: 0 通过, 1 失败（未运行）");
   process.exit(1);
 }
 
@@ -46,17 +27,7 @@ const check = (name, ok, detail = "") => {
   }
 };
 
-await mongoose.connect(MONGODB_URI);
-const Message = mongoose.model(
-  "VMarkdownSafetyMessage",
-  new mongoose.Schema({
-    role: String,
-    content: String,
-    tab_id: mongoose.Schema.Types.ObjectId,
-    timestamp: Date,
-  }),
-  "messages",
-);
+const connection = await connectMysqlForVerification();
 
 const browser = await chromium.launch({ channel: "msedge", headless: true });
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
@@ -85,7 +56,7 @@ try {
   await page.fill('input[placeholder="输入项目名称"]', "Markdown 安全验证");
   await page.locator('form button[type="submit"]').click();
   await page.getByRole("link", { name: /Markdown 安全验证/ }).click();
-  await page.waitForURL((url) => /\/projects\/[0-9a-f]{24}$/.test(url.pathname));
+  await page.waitForURL((url) => /\/projects\/[0-9a-f-]{36}$/.test(url.pathname));
   await page.getByRole("button", { name: "新建工作记录" }).first().click();
   await page.getByRole("button", { name: "创建", exact: true }).click();
   await page.getByRole("link", { name: /未命名/ }).click();
@@ -98,9 +69,10 @@ try {
   const tabs = await page.evaluate(async (id) => (await fetch(`/api/work-records/${id}/tabs`)).json(), workRecordId);
   const tabId = tabs[0].id;
   const now = new Date();
-  await Message.create({
+  await insertTestMessage(connection, {
     role: "assistant",
-    tab_id: new mongoose.Types.ObjectId(tabId),
+    tabId,
+    status: "completed",
     timestamp: now,
     content: [
       "## 安全输入回放",
@@ -155,7 +127,7 @@ try {
   check("普通 Markdown 结构不回归", observed.hasHeading && observed.hasPre, JSON.stringify({ hasHeading: observed.hasHeading, hasPre: observed.hasPre }));
 } finally {
   await browser.close();
-  await mongoose.disconnect();
+  await connection.end();
 }
 
 console.log(`\n结果: ${pass} 通过, ${fail} 失败`);

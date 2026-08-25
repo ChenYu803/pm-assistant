@@ -4,9 +4,10 @@
 import { chromium } from "playwright-core";
 import mysql from "mysql2/promise";
 import nextEnv from "@next/env";
+import { assertPlaywrightAvailable } from "./verify-mysql-fixtures.mjs";
 
-if (process.env.AI_MODE === "live") {
-  console.error("❌ 验证拒绝 AI_MODE=live；请使用 AI_MODE=replay");
+if (process.env.AI_MODE !== "replay") {
+  console.error("❌ 验证要求 AI_MODE=replay，未运行");
   process.exit(1);
 }
 
@@ -14,6 +15,7 @@ nextEnv.loadEnvConfig(process.cwd());
 const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:3000";
 const email = `verify-freeze-${Date.now()}@test.local`;
 const password = "verify-pass-1234";
+await assertPlaywrightAvailable(chromium);
 let pass = 0;
 let fail = 0;
 
