@@ -20,7 +20,7 @@ v1.0 已验收（2026-08-11），四环流水线端到端走通。
 
 ## 本次任务
 
-**v1.3 #13 已实现入口，待环境与发布验收（2026-08-25）**：新增 `scripts/verify-v13-replay.mjs` / `verify:v13-replay`，按初始化、账号/工作区、对话恢复与并发、tab/消息变更、项目成果/tickets、冻结、级联删除及安全/UI/协议/四环类别串行运行现有专项。入口先强制 `AI_MODE=replay`，检查必要 MySQL 变量、验证服务 replay、Chromium、MySQL 9.7.2 LTS、全部 `schema_migrations` checksum 和业务表空库；子专项输出落 OS 临时日志，仅汇总名称、退出码和环境/失败定位，不自动切换 live。`verify-mysql-init` 改为校验完整迁移清单并支持已初始化数据库的幂等重跑。已通过脚本语法、定向 ESLint、`npx tsc --noEmit`、`AI_MODE=live`/缺 MySQL 变量门禁实测；尚未运行 MySQL 专项、综合回放或四环冒烟。当前真实环境缺 `MYSQL_*` 变量且 `.env.local` 为 `AI_MODE=live`，需补齐后再报备长验证；#07 与 v1.3 不能标记完成。
+**v1.3 #13 已实现入口，待环境与发布验收（2026-08-25）**：新增 `scripts/verify-v13-replay.mjs` / `verify:v13-replay`，按初始化、账号/工作区、对话恢复与并发、tab/消息变更、项目成果/tickets、冻结、级联删除及安全/UI/协议/四环类别串行运行现有专项。入口先强制 `AI_MODE=replay`，检查必要 MySQL 变量、验证服务 replay、Chromium、MySQL 9.7.2 LTS、全部 `schema_migrations` checksum 和业务表空库；子专项输出落 OS 临时日志，仅汇总名称、退出码和环境/失败定位，不自动切换 live。`verify-mysql-init` 改为校验完整迁移清单并支持已初始化数据库的幂等重跑。2026-08-25 首次真实 MySQL 初始化暴露并修复了未切换数据库上下文、MySQL 不支持 `ADD COLUMN IF NOT EXISTS`、联合索引超过 3072 字节及初始化验证脚本读取 grant 行对象等兼容性问题；当前 `npm run db:init` 成功，`npm run verify:mysql-init` 4/4 通过，`npx tsc --noEmit` 通过。尚未运行 MySQL 综合回放或四环冒烟。
 
 **#13 环境探测补充（2026-08-25）**：Playwright Chromium 已自动安装并启动探测通过，Edge 同样可用；Windows `MySQL97` 服务正在运行，但未取得维护者/应用连接凭据，尚未验证实际 MySQL 版本、schema 或业务回放。综合入口在 replay 门禁和缺变量门禁均按预期停止，未调用真实模型。
 

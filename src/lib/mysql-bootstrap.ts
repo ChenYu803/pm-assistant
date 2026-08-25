@@ -83,8 +83,8 @@ export const MYSQL_MIGRATIONS = [
     id: "0004_conversation_recovery_concurrency",
     checksum: "6e1b6826b9cd52c4bc6025c657fe126960feca1b52d8dcf390ed6c2a69a01478",
     statements: [
-      "ALTER TABLE tabs ADD COLUMN IF NOT EXISTS active_operation_id VARCHAR(160) NULL",
-      "ALTER TABLE tab_operations ADD COLUMN IF NOT EXISTS locked_version INT UNSIGNED NULL",
+      "ALTER TABLE tabs ADD COLUMN active_operation_id VARCHAR(160) NULL",
+      "ALTER TABLE tab_operations ADD COLUMN locked_version INT UNSIGNED NULL",
       "ALTER TABLE tab_operations MODIFY COLUMN status ENUM('pending', 'processing', 'completed', 'conflict', 'failed') NOT NULL",
       `CREATE TABLE IF NOT EXISTS messages (
         id CHAR(36) NOT NULL PRIMARY KEY,
@@ -120,7 +120,7 @@ export const MYSQL_MIGRATIONS = [
       `CREATE TABLE IF NOT EXISTS project_files (
         id CHAR(36) NOT NULL PRIMARY KEY,
         project_id CHAR(36) NOT NULL,
-        filename VARCHAR(1024) NOT NULL,
+        filename VARCHAR(700) NOT NULL,
         content MEDIUMTEXT NOT NULL,
         version INT UNSIGNED NOT NULL DEFAULT 0,
         created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -157,7 +157,7 @@ export const MYSQL_MIGRATIONS = [
         tab_id CHAR(36) NOT NULL,
         project_id CHAR(36) NOT NULL,
         project_file_id CHAR(36) NOT NULL,
-        filename VARCHAR(1024) NOT NULL,
+        filename VARCHAR(700) NOT NULL,
         operation ENUM('create', 'update') NOT NULL,
         file_version INT UNSIGNED NOT NULL,
         message_status ENUM('completed') NOT NULL,
@@ -177,14 +177,14 @@ export const MYSQL_MIGRATIONS = [
     id: "0006_explicit_freeze",
     checksum: "8f9d5ad148a02ed1341f70d54d96900e3dc22c5e60579ec0d5b51fd9fe663efe",
     statements: [
-      "ALTER TABLE tabs ADD COLUMN IF NOT EXISTS freeze_message_id CHAR(36) NULL",
-      "ALTER TABLE tabs ADD COLUMN IF NOT EXISTS freeze_filename VARCHAR(1024) NULL",
-      "ALTER TABLE tabs ADD COLUMN IF NOT EXISTS freeze_document_digest CHAR(64) NULL",
-      "ALTER TABLE tabs ADD COLUMN IF NOT EXISTS freeze_error TEXT NULL",
-      "ALTER TABLE project_files ADD COLUMN IF NOT EXISTS freeze_binding_tab_id CHAR(36) NULL",
-      "ALTER TABLE project_files ADD COLUMN IF NOT EXISTS freeze_binding_document_digest CHAR(64) NULL",
-      "ALTER TABLE project_files ADD COLUMN IF NOT EXISTS freeze_binding_locked_at DATETIME(3) NULL",
-      "CREATE INDEX IF NOT EXISTS project_files_freeze_binding_tab ON project_files (freeze_binding_tab_id)",
+      "ALTER TABLE tabs ADD COLUMN freeze_message_id CHAR(36) NULL",
+      "ALTER TABLE tabs ADD COLUMN freeze_filename VARCHAR(1024) NULL",
+      "ALTER TABLE tabs ADD COLUMN freeze_document_digest CHAR(64) NULL",
+      "ALTER TABLE tabs ADD COLUMN freeze_error TEXT NULL",
+      "ALTER TABLE project_files ADD COLUMN freeze_binding_tab_id CHAR(36) NULL",
+      "ALTER TABLE project_files ADD COLUMN freeze_binding_document_digest CHAR(64) NULL",
+      "ALTER TABLE project_files ADD COLUMN freeze_binding_locked_at DATETIME(3) NULL",
+      "CREATE INDEX project_files_freeze_binding_tab ON project_files (freeze_binding_tab_id)",
     ],
   },
   {
@@ -218,6 +218,17 @@ function quoteString(value: string) {
   return mysql.escape(value);
 }
 
+async function runMigrationStatement(connection: Connection, statement: string) {
+  try {
+    await connection.query(statement);
+  } catch (error) {
+    const code = (error as { code?: string })?.code;
+    // MySQL 没有 ADD COLUMN/CREATE INDEX IF NOT EXISTS；允许未记录迁移的重跑跳过已完成的结构变更。
+    if (code === "ER_DUP_FIELDNAME" || code === "ER_DUP_KEYNAME") return;
+    throw error;
+  }
+}
+
 function accountName(config: MysqlAppConfig) {
   return `${quoteString(config.user)}@${quoteString(config.appHost)}`;
 }
@@ -246,6 +257,8 @@ async function assertServerVersion(connection: Connection, config: MysqlAdminCon
 
 async function ensureMigrations(connection: Connection, app: MysqlAppConfig) {
   const database = quoteIdentifier(app.database);
+  // 迁移语句使用未限定表名，必须先切换到项目数据库上下文。
+  await connection.query(`USE ${database}`);
   await connection.query(
     `CREATE TABLE IF NOT EXISTS ${database}.schema_migrations (
       id VARCHAR(128) NOT NULL PRIMARY KEY,
@@ -267,7 +280,7 @@ async function ensureMigrations(connection: Connection, app: MysqlAppConfig) {
     if (existing) continue;
 
     for (const statement of migration.statements) {
-      await connection.query(`${statement}`);
+      await runMigrationStatement(connection, statement);
     }
     await connection.query(
       `INSERT INTO ${database}.schema_migrations (id, checksum) VALUES (?, ?)`,

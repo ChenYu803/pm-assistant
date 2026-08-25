@@ -1,13 +1,12 @@
 import nextEnv from "@next/env";
 import mysql from "mysql2/promise";
 
+nextEnv.loadEnvConfig(process.cwd());
+
 if (process.env.AI_MODE !== "replay") {
   console.error("❌ 验证要求 AI_MODE=replay，未运行");
   process.exit(1);
 }
-
-const { loadEnvConfig } = nextEnv;
-loadEnvConfig(process.cwd());
 
 const { getMysqlAdminConfig, getMysqlAppConfig, MysqlConfigurationError } = await import("../src/lib/mysql-config.ts");
 const { initializeMysql, isAllowedApplicationGrant, MYSQL_MIGRATIONS } = await import("../src/lib/mysql-bootstrap.ts");
@@ -57,7 +56,8 @@ async function main() {
     const [grants] = await adminConnection.query(
       `SHOW GRANTS FOR ${mysql.escape(app.user)}@${mysql.escape(app.appHost)}`
     );
-    const grantsText = grants.flatMap((grant) => Object.values(grant)).join("\n");
+    const grantValues = grants.flatMap((grant) => Object.values(grant)).map(String);
+    const grantsText = grantValues.join("\n");
 
     const migrationMap = new Map(migrations.map((migration) => [migration.id, migration.checksum]));
     const complete = MYSQL_MIGRATIONS.every((migration) => migrationMap.get(migration.id) === migration.checksum);
@@ -71,9 +71,9 @@ async function main() {
     check("schema_migrations 包含全部已发布迁移且校验值一致", complete && migrations.length === MYSQL_MIGRATIONS.length);
     check(
       "应用账号仅获项目库 DML 权限",
-      grants.some((grant) => grant.startsWith(`GRANT SELECT, INSERT, UPDATE, DELETE ON \`${app.database}\`.* TO `)) &&
+      grantValues.some((grant) => grant.startsWith(`GRANT SELECT, INSERT, UPDATE, DELETE ON \`${app.database}\`.* TO `)) &&
         grantsText.includes(`\`${app.database}\`.*`) &&
-        grants.every((grant) => isAllowedApplicationGrant(grant, app.database))
+        grantValues.every((grant) => isAllowedApplicationGrant(grant, app.database))
     );
   } catch (error) {
     const detail = error instanceof MysqlConfigurationError ? error.message : error.message;
