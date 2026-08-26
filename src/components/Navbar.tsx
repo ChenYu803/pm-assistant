@@ -11,7 +11,7 @@ export default function Navbar() {
   const pathname = usePathname();
 
   // Don't show navbar on auth pages
-  if (pathname === "/login" || pathname === "/register") {
+  if (pathname === "/" || pathname === "/login" || pathname === "/register") {
     return null;
   }
 
