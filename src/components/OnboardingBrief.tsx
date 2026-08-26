@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect } from "react";
 import styles from "./OnboardingExperience.module.css";
 
 const briefItems = [
@@ -8,6 +11,24 @@ const briefItems = [
 ] as const;
 
 export default function OnboardingBrief() {
+  useEffect(() => {
+    const reveals = document.querySelectorAll<HTMLElement>(`.${styles.reveal}`);
+    if (!("IntersectionObserver" in window)) {
+      reveals.forEach((element) => element.classList.add(styles.revealVisible));
+      return;
+    }
+    const observer = new IntersectionObserver((entries, io) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add(styles.revealVisible);
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.16 });
+    reveals.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className={`${styles.page} ${styles.briefPage}`}>
       <div className={styles.topline}><div className={`${styles.container} ${styles.toplineInner}`}><span className={styles.mono}>AI PRODUCT FIELD / ONBOARDING</span><span>一个真实的开始，不需要先注册</span></div></div>
@@ -31,12 +52,12 @@ export default function OnboardingBrief() {
         </section>
         <section className={styles.briefSection} data-od-id="mission-context">
           <div className={styles.container}>
-            <div className={styles.sectionHead}><span className={styles.sectionNumber}>01 / 03</span><div><p className={styles.eyebrow}>THE ASSIGNMENT</p><h2>思考。先不要急着<br /><em>做出答案。</em></h2></div></div>
-            <div className={styles.briefGrid}>{briefItems.map(([title, copy], index) => <article className={styles.briefItem} data-od-id={`brief-${["role", "mentor", "rule"][index]}`} key={title}><h3>{title}</h3><p>{copy}</p></article>)}</div>
+            <div className={`${styles.sectionHead} ${styles.reveal}`}><span className={styles.sectionNumber}>01 / 03</span><div><p className={styles.eyebrow}>THE ASSIGNMENT</p><h2>思考。先不要急着<br /><em>做出答案。</em></h2></div></div>
+            <div className={`${styles.briefGrid} ${styles.reveal}`}>{briefItems.map(([title, copy], index) => <article className={styles.briefItem} data-od-id={`brief-${["role", "mentor", "rule"][index]}`} key={title}><h3>{title}</h3><p>{copy}</p></article>)}</div>
           </div>
         </section>
         <section className={styles.briefSection} data-od-id="mission-start">
-          <div className={`${styles.container} ${styles.briefAction}`}>
+          <div className={`${styles.container} ${styles.briefAction} ${styles.reveal}`}>
             <div><p className={styles.eyebrow}>YOUR FIRST MOVE</p><h2>准备好就<br /><em>开始工作。</em></h2><p>无需注册。你的体验会从当前浏览器继续，选择只影响当下的反馈，不会改变任务路线。</p></div>
             <Link className={styles.primary} href="/onboarding/scenes?scene=1" data-od-id="enter-first-scene">进入第一个工作场景<span className={styles.arrow} aria-hidden="true" /></Link>
           </div>

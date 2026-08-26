@@ -90,7 +90,7 @@ v1.3 不迁移旧 MongoDB 数据，不提供 MongoDB 回退，不新增用户可
 | v1.3 综合 MySQL replay | 尚未运行，等待应用连接凭据和完整环境 |
 | v1.3 四环人工冒烟 | 尚未运行 |
 | v1.4 文档交付 | 重构后的 `PRODUCT.md`、spec、7 张 tickets、`CONTEXT.md` 和 `PROGRESS.md` 已提交，`git diff --check` 已通过；当前仅有落地页 HTML 原型 |
-| v1.4 #02 入职开场 | `/onboarding/brief`、`/onboarding/scenes?scene=1` 已实现；游客公开访问，四项全选后才可继续；浏览器冒烟覆盖桌面入口、反馈状态、刷新重置和 390px 移动布局 |
+| v1.4 #02 入职开场 | `/onboarding/brief`、`/onboarding/scenes?scene=1` 已实现；游客公开访问，四项全选后才可继续；浏览器冒烟覆盖桌面入口、反馈状态、刷新重置、滚动显现动效和 390px 移动布局 |
 | 真实模型验证 | 当前未运行；默认使用 `AI_MODE=replay` |
 
 ## 约束与坑
