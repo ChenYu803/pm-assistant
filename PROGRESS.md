@@ -88,7 +88,7 @@ v1.3 不迁移旧 MongoDB 数据，不提供 MongoDB 回退，不新增用户可
 | v1.3 类型检查 | `npx tsc --noEmit` 通过 |
 | v1.3 综合 MySQL replay | 尚未运行，等待应用连接凭据和完整环境 |
 | v1.3 四环人工冒烟 | 尚未运行 |
-| v1.4 文档交付 | 重构后的 spec、7 张 tickets、`git diff --check` 已通过；当前仅有落地页 HTML 原型 |
+| v1.4 文档交付 | 重构后的 `PRODUCT.md`、spec、7 张 tickets、`CONTEXT.md` 和 `PROGRESS.md` 已提交，`git diff --check` 已通过；当前仅有落地页 HTML 原型 |
 | 真实模型验证 | 当前未运行；默认使用 `AI_MODE=replay` |
 
 ## 约束与坑
