@@ -4,7 +4,7 @@
 
 **Blocked by:** #01 - 落地页与入职体验入口分流
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 ## 产品经理在 Agent 开始前提供
 

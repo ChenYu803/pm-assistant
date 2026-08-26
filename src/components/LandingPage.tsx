@@ -19,23 +19,8 @@ const experienceSteps = [
 
 const workflowSteps = ["需求分析", "原型", "PRD", "任务拆分"] as const;
 
-function OrientationButton({ className = "", children, onToast, pressable = false }: { className?: string; children: React.ReactNode; onToast: () => void; pressable?: boolean }) {
-  const [pressed, setPressed] = useState(false);
-  return (
-    <button type="button" className={`${className} ${styles.actionButton} ${pressed ? styles.pathCardEntering : ""}`} onClick={() => {
-      onToast();
-      if (pressable) {
-        setPressed(false);
-        requestAnimationFrame(() => setPressed(true));
-        window.setTimeout(() => setPressed(false), 420);
-      }
-    }}>{children}</button>
-  );
-}
-
 export default function LandingPage() {
   const [headerHidden, setHeaderHidden] = useState(false);
-  const [toastVisible, setToastVisible] = useState(false);
 
   useEffect(() => {
     const elements = document.querySelectorAll<HTMLElement>("[data-landing-reveal]");
@@ -67,12 +52,6 @@ export default function LandingPage() {
     return () => scrollTarget.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => {
-    if (!toastVisible) return;
-    const timer = window.setTimeout(() => setToastVisible(false), 3600);
-    return () => window.clearTimeout(timer);
-  }, [toastVisible]);
-
   return (
     <div className={styles.shell}>
       <aside className={`${styles.sideRail} ${styles.sideRailLeft}`} aria-hidden="true"><span>AI PRODUCT FIELD / 2026</span></aside>
@@ -90,7 +69,7 @@ export default function LandingPage() {
           <h1 className={styles.reveal} data-landing-reveal>把对 AI 的好奇，<br /><em>孵化成产品判断</em><span className={styles.dot} /></h1>
           <p className={`${styles.heroCopy} ${styles.reveal}`} data-landing-reveal>无需注册，先进入一场真实的 AI 产品任务，认识这个职业如何思考、判断与推进。</p>
           <div className={`${styles.pathActions} ${styles.reveal}`} data-landing-reveal>
-            <OrientationButton pressable className={`${styles.pathCard} ${styles.primary}`} onToast={() => setToastVisible(true)}><span className={styles.pathTop}><span>路径 01</span><span className={styles.pathArrow}>↗</span></span><span className={styles.pathTitle}>先认识 AI 产品经理</span><span className={styles.pathDesc}>无需注册，进入职业认知强流程。</span></OrientationButton>
+            <Link className={`${styles.pathCard} ${styles.primary}`} href="/onboarding/brief"><span className={styles.pathTop}><span>路径 01</span><span className={styles.pathArrow}>↗</span></span><span className={styles.pathTitle}>先认识 AI 产品经理</span><span className={styles.pathDesc}>无需注册，进入职业认知强流程。</span></Link>
             <Link className={styles.pathCard} href="/projects"><span className={styles.pathTop}><span>路径 02</span><span className={styles.pathArrow}>↗</span></span><span className={styles.pathTitle}>我已经准备好，开始做产品</span><span className={styles.pathDesc}>直接进入需求分析、原型、PRD 与任务拆分。</span></Link>
           </div>
         </div></div></section>
@@ -108,10 +87,9 @@ export default function LandingPage() {
           <div className={`${styles.workflowList} ${styles.reveal}`} aria-label="产品实践流程" data-landing-reveal>{workflowSteps.map((step, index) => <div className={styles.workflowItem} key={step}><span className={styles.workflowIndex}>0{index + 1}</span><h3>{step}</h3><span className={styles.workflowArrow}>{index === workflowSteps.length - 1 ? "↗" : "→"}</span></div>)}</div>
         </div></section>
         <section data-landing-id="testimonial-section"><div className={`${styles.container} ${styles.quoteLayout}`}><span className={styles.sectionNumber}>IV / 04</span><div><div className={`${styles.quote} ${styles.reveal}`} data-landing-reveal><div className={styles.quoteMark}>“</div><p>我终于知道，AI 产品经理不是一个“懂很多 AI 工具”的岗位，而是一个要不断做取舍的人。</p><small>来自一位正在寻找第一份产品实习的大学生 · 体验反馈示意</small></div></div></div></section>
-        <section id="closing" className={styles.cta} data-landing-id="cta-section"><div className={`${styles.container} ${styles.ctaInner}`}><div className={styles.reveal} data-landing-reveal><h2>你的第一个产品现场，<br /><em>现在就开始</em><span className={styles.dot} /></h2><p className={styles.ctaCopy}>不知道从哪里开始，就先走职业认知；已经有想法，就直接开始做产品。</p></div><OrientationButton className={styles.ctaButton} onToast={() => setToastVisible(true)}>进入职业认知体验&nbsp; ↗</OrientationButton></div></section>
+        <section id="closing" className={styles.cta} data-landing-id="cta-section"><div className={`${styles.container} ${styles.ctaInner}`}><div className={styles.reveal} data-landing-reveal><h2>你的第一个产品现场，<br /><em>现在就开始</em><span className={styles.dot} /></h2><p className={styles.ctaCopy}>不知道从哪里开始，就先走职业认知；已经有想法，就直接开始做产品。</p></div><Link className={styles.ctaButton} href="/onboarding/brief">进入职业认知体验&nbsp; ↗</Link></div></section>
       </main>
       <footer data-landing-id="site-footer"><div className={`${styles.container} ${styles.footerInner}`}><span>© 2026 AI 产品现场</span><div className={styles.footerLinks}><a href="#about">关于现场</a><a href="#practice">产品实践</a><Link href="/login">注册 / 登录</Link></div></div></footer>
-      <div className={`${styles.toast} ${toastVisible ? styles.toastShow : ""}`} role="status" aria-live="polite">职业认知体验即将开始：无需注册，先接手你的第一个任务。</div>
     </div>
   );
 }

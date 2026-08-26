@@ -72,6 +72,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return true;
       }
 
+      // 入职开场是游客可直接访问的预编排内容；后续受保护页面按票据单独放行。
+      if (pathname === "/onboarding/brief" || pathname === "/onboarding/scenes") {
+        return true;
+      }
+
       // All other paths require authentication
       if (isLoggedIn) return true;
 

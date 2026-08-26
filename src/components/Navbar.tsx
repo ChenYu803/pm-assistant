@@ -10,8 +10,8 @@ export default function Navbar() {
   const { data: session, status } = useSession();
   const pathname = usePathname();
 
-  // Don't show navbar on auth pages
-  if (pathname === "/" || pathname === "/login" || pathname === "/register") {
+  // 落地页、认证页和入职体验页使用各自的视觉导航。
+  if (pathname === "/" || pathname === "/login" || pathname === "/register" || pathname.startsWith("/onboarding")) {
     return null;
   }
 
