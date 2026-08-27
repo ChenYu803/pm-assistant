@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import styles from "./OnboardingExperience.module.css";
 
 const methods = [
@@ -30,7 +30,7 @@ export default function FirstWorkScene() {
   const missing = methods.filter(([value]) => !selected.has(value)).map(([, label]) => label);
   const selectedNames = methods.filter(([value]) => selected.has(value)).map(([, label]) => label);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const page = pageRef.current;
     if (!page) return;
     let revealed = new Set<string>();

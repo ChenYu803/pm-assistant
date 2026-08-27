@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./OnboardingExperience.module.css";
 
@@ -232,7 +232,6 @@ export default function WorkScenes({ initialScene, replayMotion = false }: { ini
   const [visited, setVisited] = useState<number[]>(() => Array.from(new Set([...inMemoryVisitedScenes, sceneId])));
   const [answers, setAnswers] = useState<AnswerState>(() => ({ ...inMemoryAnswers }));
   const [questionIndex, setQuestionIndex] = useState(0);
-  const [hydrated, setHydrated] = useState(false);
   const [feedbackPending, setFeedbackPending] = useState(false);
   const [feedbackCycle, setFeedbackCycle] = useState(0);
   const [pendingQuestionSwap, setPendingQuestionSwap] = useState(false);
@@ -249,17 +248,11 @@ export default function WorkScenes({ initialScene, replayMotion = false }: { ini
   const canReturn = (id: number) => visited.includes(id);
 
   useEffect(() => {
-    const frame = scheduleFrame(() => {
-      inMemoryVisitedScenes.add(1);
-      inMemoryVisitedScenes.add(sceneId);
-      setVisited(Array.from(inMemoryVisitedScenes));
-      setHydrated(true);
-    });
-    return () => cancelScheduledFrame(frame);
+    inMemoryVisitedScenes.add(1);
+    inMemoryVisitedScenes.add(sceneId);
   }, [sceneId]);
 
-  useEffect(() => {
-    if (!hydrated) return;
+  useLayoutEffect(() => {
     const page = pageRef.current;
     if (!page) return;
 
@@ -313,7 +306,7 @@ export default function WorkScenes({ initialScene, replayMotion = false }: { ini
     if (cachedTargets.length) reveal(cachedTargets, true);
 
     return () => observer.disconnect();
-  }, [hydrated, question.id, questionIndex, replayMotion]);
+  }, [question.id, questionIndex, replayMotion]);
 
   useEffect(() => {
     if (!feedbackCycle || !submitted || !feedbackRef.current) return;
