@@ -65,7 +65,7 @@
 .reveal { opacity: 0; transform: translateY(26px); transition: opacity .8s cubic-bezier(.22, 1, .36, 1), transform .8s cubic-bezier(.22, 1, .36, 1); }
 .revealVisible { opacity: 1; transform: translateY(0); }
 
-.scenePage { min-height: 100vh; background: var(--ink); color: var(--bone); }
+.scenePage { min-height: 100vh; flex: 0 0 auto; background: var(--ink); color: var(--bone); }
 .scenePage main { padding-bottom: 90px; }
 .scenePage .topline, .scenePage .nav { border-color: rgba(247, 241, 222, .22); }
 .scenePage .topline { color: rgba(247, 241, 222, .58); }
