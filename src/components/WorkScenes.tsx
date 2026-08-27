@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./OnboardingExperience.module.css";
 
@@ -287,13 +287,21 @@ export default function WorkScenes({ initialScene, replayMotion = false }: { ini
 
     const targets = [...page.querySelectorAll<HTMLElement>("[data-motion-key]")];
     const forceReplay = replayMotion && questionIndex === 0;
+    const applyMotionState = (keys: string[], staticMotion: boolean) => {
+      if (!keys.length) return;
+      setMotionVisibleKeys((current) => new Set([...current, ...keys]));
+      if (staticMotion) setMotionStaticKeys((current) => new Set([...current, ...keys]));
+    };
     const reveal = (targetsToReveal: HTMLElement[], staticMotion = false) => {
       const keys = targetsToReveal.map((target) => target.dataset.motionKey).filter((key): key is string => Boolean(key));
       if (keys.length === 0) return;
       keys.forEach((key) => revealed.add(key));
       try { window.sessionStorage.setItem(motionStorageKey, JSON.stringify([...revealed])); } catch { /* 动效记录失败时仍显示内容。 */ }
-      setMotionVisibleKeys((current) => new Set([...current, ...keys]));
-      if (staticMotion) setMotionStaticKeys((current) => new Set([...current, ...keys]));
+      targetsToReveal.forEach((target) => {
+        target.classList.add(styles.revealVisible);
+        if (staticMotion) target.classList.add(styles.motionStatic);
+      });
+      applyMotionState(keys, staticMotion);
     };
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) {
@@ -311,11 +319,13 @@ export default function WorkScenes({ initialScene, replayMotion = false }: { ini
       });
     }, { root: scrollRoot, rootMargin: "0px 0px -12% 0px", threshold: 0.12 });
 
+    const cachedTargets: HTMLElement[] = [];
     targets.forEach((target) => {
       const key = target.dataset.motionKey;
-      if (!forceReplay && key && revealed.has(key)) reveal([target], true);
+      if (!forceReplay && key && revealed.has(key)) cachedTargets.push(target);
       else observer.observe(target);
     });
+    if (cachedTargets.length) reveal(cachedTargets, true);
 
     return () => observer.disconnect();
   }, [hydrated, question.id, questionIndex, replayMotion]);
@@ -326,6 +336,19 @@ export default function WorkScenes({ initialScene, replayMotion = false }: { ini
     const frame = scheduleFrame(() => setFeedbackPending(false));
     return () => cancelScheduledFrame(frame);
   }, [feedbackCycle, submitted]);
+
+  useLayoutEffect(() => {
+    const submitButton = pageRef.current?.querySelector<HTMLElement>(`.${styles.submitRow} .${styles.scenePrimary}`);
+    const sessionAction = pageRef.current?.querySelector<HTMLElement>(`.${styles.sessionAction}`);
+    const actionButton = sessionAction?.querySelector<HTMLElement>("button");
+    if (!submitButton || !actionButton || !sessionAction || !submitted || editingQuestionId === question.id) {
+      sessionAction?.style.removeProperty("--action-offset");
+      return;
+    }
+    const offset = submitButton.getBoundingClientRect().top - actionButton.getBoundingClientRect().top;
+    sessionAction.style.setProperty("--action-offset", `${offset}px`);
+    return () => { sessionAction.style.removeProperty("--action-offset"); };
+  }, [question.id, submitted, editingQuestionId, feedbackCycle]);
 
   useEffect(() => {
     if (!pendingQuestionSwap) return;
@@ -386,7 +409,7 @@ export default function WorkScenes({ initialScene, replayMotion = false }: { ini
   ].filter(Boolean).join(" ");
 
   return (
-    <div ref={pageRef} className={`${styles.page} ${styles.scenePage}`}>
+    <div ref={pageRef} className={`${styles.page} ${styles.scenePage} ${styles.workScenesPage}`}>
       <div className={styles.topline}><div className={`${styles.container} ${styles.toplineInner}`}><span>AI PRODUCT FIELD / WORK SCENE {String(sceneId).padStart(2, "0")}</span><span>你的选择不会改变后续路线</span></div></div>
       <header className={`${styles.nav} ${styles.container}`}>
         <Link className={styles.brand} href="/onboarding/brief"><span className={styles.brandMark} aria-hidden="true">A</span><span>AI 产品现场</span></Link>

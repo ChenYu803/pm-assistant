@@ -115,6 +115,7 @@
 .submitNote { color: var(--ink-mute); font: 12px/1.45 Inter, system-ui, sans-serif; }
 .scenePrimary { min-height: 50px; padding: 0 22px; border: 1px solid var(--coral); background: var(--coral); color: var(--ink); font: 800 14px/1 Inter, system-ui, sans-serif; transition: background .18s, transform .18s; }
 .scenePrimary:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+.scenePrimary:disabled:hover { background: var(--coral); transform: none; }
 .scenePrimary:hover { background: var(--bone); transform: translateY(-3px); }
 .feedbackSlot { position: relative; min-height: 430px; margin-top: 34px; }
 .feedbackPlaceholder { min-height: 430px; padding-top: 18px; border-top: 1px dotted var(--line); color: var(--ink-mute); font: 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; }
@@ -162,6 +163,15 @@
 .sceneLinkActive { background: var(--coral); color: var(--ink); }
 .sceneLinkLocked { opacity: .35; }
 
+/* 场景 02—06 的题目布局：场景 01 保持 #02 原有结构。 */
+.workScenesPage .questionBox { width: calc(100% + 180px); margin-left: -180px; }
+.workScenesPage .questionSessionGrid { grid-template-columns: minmax(0, 1fr) minmax(460px, 1fr); gap: 32px; }
+.workScenesPage .submitRow .scenePrimary,
+.workScenesPage .sessionAction .continue,
+.workScenesPage .sessionAction .redoButton { width: 210px; min-width: 210px; flex: 0 0 210px; white-space: nowrap; }
+.workScenesPage .scenePrimary:not(:disabled):hover { background: var(--bone); transform: translateY(-3px); }
+.workScenesPage .sessionAction { justify-content: flex-start; gap: 18px; transform: translateY(var(--action-offset, 0px)); }
+
 @keyframes arrive { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes cardIn { from { opacity: 0; transform: translateY(40px) rotate(1.2deg); } to { opacity: 1; transform: translateY(0) rotate(1.2deg); } }
 @keyframes optionIn { from { opacity: .01; transform: translateX(34px); } to { opacity: 1; transform: translateX(0); } }
@@ -180,6 +190,16 @@
   .workGrid { grid-template-columns: 1fr; gap: 60px; }
   .questionSessionGrid { grid-template-columns: 1fr; gap: 32px; }
   .feedbackPanel { padding-top: 26px; padding-left: 0; border-top: 1px solid var(--line); border-left: 0; }
+  .workScenesPage .questionBox { width: auto; margin-left: 0; }
+  .workScenesPage .questionSessionGrid { grid-template-columns: 1fr; gap: 32px; }
+  .workScenesPage .sessionAction { transform: none; }
+}
+
+@media (min-width: 901px) and (max-width: 1100px) {
+  .workScenesPage .questionBox { width: auto; margin-left: 0; }
+  .workScenesPage .questionSessionGrid { grid-template-columns: 1fr; }
+  .workScenesPage .feedbackPanel { padding-top: 26px; padding-left: 0; border-top: 1px solid var(--line); border-left: 0; }
+  .workScenesPage .sessionAction { transform: none; }
 }
 
 @media (max-width: 600px) {
@@ -210,7 +230,10 @@
   .mentor { padding: 34px 0; }
   .mentorCopy { gap: 14px; }
   .continue { width: 100%; justify-content: center; }
-  .sessionAction { flex-wrap: wrap; }
+  .workScenesPage .submitRow .scenePrimary,
+  .workScenesPage .sessionAction .continue,
+  .workScenesPage .sessionAction .redoButton { width: 100%; min-width: 0; flex-basis: 100%; white-space: nowrap; }
+  .workScenesPage .sessionAction { flex-wrap: wrap; transform: none; }
   .redoButton { width: 100%; }
   .feedbackSlot, .feedbackPlaceholder { min-height: 560px; }
   .sceneNavInner { align-items: flex-start; flex-direction: column; }
