@@ -170,7 +170,8 @@
 .workScenesPage .sessionAction .continue,
 .workScenesPage .sessionAction .redoButton { width: 210px; min-width: 210px; flex: 0 0 210px; white-space: nowrap; }
 .workScenesPage .scenePrimary:not(:disabled):hover { background: var(--bone); transform: translateY(-3px); }
-.workScenesPage .sessionAction { justify-content: flex-start; gap: 18px; transform: translateY(var(--action-offset, 0px)); }
+.workScenesPage .sessionAction { justify-content: flex-start; gap: 18px; }
+.workScenesPage .feedbackColumns .actionNote { margin-top: 0; padding: 13px 0 0; }
 
 @keyframes arrive { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes cardIn { from { opacity: 0; transform: translateY(40px) rotate(1.2deg); } to { opacity: 1; transform: translateY(0) rotate(1.2deg); } }
@@ -192,14 +193,12 @@
   .feedbackPanel { padding-top: 26px; padding-left: 0; border-top: 1px solid var(--line); border-left: 0; }
   .workScenesPage .questionBox { width: auto; margin-left: 0; }
   .workScenesPage .questionSessionGrid { grid-template-columns: 1fr; gap: 32px; }
-  .workScenesPage .sessionAction { transform: none; }
 }
 
 @media (min-width: 901px) and (max-width: 1100px) {
   .workScenesPage .questionBox { width: auto; margin-left: 0; }
   .workScenesPage .questionSessionGrid { grid-template-columns: 1fr; }
   .workScenesPage .feedbackPanel { padding-top: 26px; padding-left: 0; border-top: 1px solid var(--line); border-left: 0; }
-  .workScenesPage .sessionAction { transform: none; }
 }
 
 @media (max-width: 600px) {
@@ -233,7 +232,7 @@
   .workScenesPage .submitRow .scenePrimary,
   .workScenesPage .sessionAction .continue,
   .workScenesPage .sessionAction .redoButton { width: 100%; min-width: 0; flex-basis: 100%; white-space: nowrap; }
-  .workScenesPage .sessionAction { flex-wrap: wrap; transform: none; }
+  .workScenesPage .sessionAction { flex-wrap: wrap; }
   .redoButton { width: 100%; }
   .feedbackSlot, .feedbackPlaceholder { min-height: 560px; }
   .sceneNavInner { align-items: flex-start; flex-direction: column; }
