@@ -206,9 +206,10 @@ const scenes: Scene[] = [
   },
 ];
 
-type SavedState = { visited: number[]; answers: Record<string, { selected: string; submitted: boolean }> };
-const storageKey = "pm-assistant-onboarding-work-scenes-v1";
+type AnswerState = Record<string, { selected: string; submitted: boolean }>;
 const motionStorageKey = "pm-assistant-work-scene-motion-v2";
+const inMemoryVisitedScenes = new Set<number>([1]);
+const inMemoryAnswers: AnswerState = {};
 
 function scheduleFrame(callback: () => void): number {
   return typeof window.requestAnimationFrame === "function"
@@ -221,17 +222,6 @@ function cancelScheduledFrame(frame: number) {
   else window.clearTimeout(frame);
 }
 
-function readSavedState(): SavedState {
-  try {
-    const raw = window.localStorage.getItem(storageKey);
-    if (!raw) return { visited: [1], answers: {} };
-    const parsed = JSON.parse(raw) as Partial<SavedState>;
-    return { visited: Array.isArray(parsed.visited) ? parsed.visited.filter((id): id is number => Number.isInteger(id) && id >= 1 && id <= 6) : [1], answers: parsed.answers && typeof parsed.answers === "object" ? parsed.answers : {} };
-  } catch {
-    return { visited: [1], answers: {} };
-  }
-}
-
 export default function WorkScenes({ initialScene, replayMotion = false }: { initialScene: number; replayMotion?: boolean }) {
   const router = useRouter();
   const pageRef = useRef<HTMLDivElement>(null);
@@ -239,8 +229,8 @@ export default function WorkScenes({ initialScene, replayMotion = false }: { ini
   const questionTransitionTimer = useRef<number | null>(null);
   const sceneId = Math.max(2, Math.min(6, initialScene));
   const scene = useMemo(() => scenes.find((item) => item.id === sceneId) ?? scenes[0], [sceneId]);
-  const [visited, setVisited] = useState<number[]>([1, sceneId]);
-  const [answers, setAnswers] = useState<SavedState["answers"]>({});
+  const [visited, setVisited] = useState<number[]>(() => Array.from(new Set([...inMemoryVisitedScenes, sceneId])));
+  const [answers, setAnswers] = useState<AnswerState>(() => ({ ...inMemoryAnswers }));
   const [questionIndex, setQuestionIndex] = useState(0);
   const [hydrated, setHydrated] = useState(false);
   const [feedbackPending, setFeedbackPending] = useState(false);
@@ -260,18 +250,13 @@ export default function WorkScenes({ initialScene, replayMotion = false }: { ini
 
   useEffect(() => {
     const frame = scheduleFrame(() => {
-      const saved = readSavedState();
-      setVisited(Array.from(new Set([...saved.visited, 1, sceneId])));
-      setAnswers(saved.answers);
+      inMemoryVisitedScenes.add(1);
+      inMemoryVisitedScenes.add(sceneId);
+      setVisited(Array.from(inMemoryVisitedScenes));
       setHydrated(true);
     });
     return () => cancelScheduledFrame(frame);
   }, [sceneId]);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    try { window.localStorage.setItem(storageKey, JSON.stringify({ visited, answers } satisfies SavedState)); } catch { /* 浏览器禁用存储时仍可继续当前体验。 */ }
-  }, [answers, hydrated, visited]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -349,23 +334,36 @@ export default function WorkScenes({ initialScene, replayMotion = false }: { ini
 
   function selectChoice(id: string) {
     if (answer?.submitted && editingQuestionId !== question.id) return;
-    setAnswers((current) => ({ ...current, [question.id]: { selected: id, submitted: false } }));
+    setAnswers((current) => {
+      const next = { ...current, [question.id]: { selected: id, submitted: false } };
+      Object.assign(inMemoryAnswers, next);
+      return next;
+    });
   }
 
   function submitChoice() {
     if (!answer?.selected) return;
     setFeedbackPending(true);
     setFeedbackCycle((current) => current + 1);
-    setAnswers((current) => ({ ...current, [question.id]: { selected: answer.selected, submitted: true } }));
+    setAnswers((current) => {
+      const next = { ...current, [question.id]: { selected: answer.selected, submitted: true } };
+      Object.assign(inMemoryAnswers, next);
+      return next;
+    });
     setEditingQuestionId(null);
-    setVisited((current) => Array.from(new Set([...current, sceneId])));
+    inMemoryVisitedScenes.add(sceneId);
+    setVisited(Array.from(inMemoryVisitedScenes));
   }
 
   function redoQuestion() {
     if (!answer?.submitted) return;
     setEditingQuestionId(question.id);
     setFeedbackPending(false);
-    setAnswers((current) => ({ ...current, [question.id]: { selected: answer.selected, submitted: false } }));
+    setAnswers((current) => {
+      const next = { ...current, [question.id]: { selected: answer.selected, submitted: false } };
+      Object.assign(inMemoryAnswers, next);
+      return next;
+    });
   }
 
   function next() {
