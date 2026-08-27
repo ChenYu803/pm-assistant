@@ -15,8 +15,8 @@ v1.4 已将原“A 路线”重新定义为正式功能“AI 产品经理入职�
 - 已有：落地页 HTML；
 - 已有：落地页 HTML 已按原型视觉参数接入 `/`，入口行为按 #02 更新为进入 `/onboarding/brief`；
 - 已有：任务简报 `/onboarding/brief` 与第一个工作场景 `/onboarding/scenes?scene=1`；
-- 已有：03 完整工作场景的产品内容稿 `.scratch/pm-assistant-v1.4/work-scenes-content.md`，固定 6 个场景；场景 01 沿用既有多选原型，场景 02 至 06 各含 2 个四选一判断；覆盖 AI 能力认知、AI 价值发现、人机协作、AI 提效和 Vibe Coding 成长位置；
-- 待制作：完整工作场景序列 HTML（基于内容稿接入）、任务地图、职业认知测试、认知文件 HTML；
+- 已有：03 完整工作场景序列 HTML 原型 `C:\Users\Administrator.DESKTOP-4HCDKBO\Desktop\prototype\work-scenes.html`；固定 6 个场景，场景 02 至 06 各含 2 个四选一判断；覆盖 AI 能力认知、AI 价值发现、人机协作、AI 提效和 Vibe Coding 成长位置；
+- 待制作：任务地图、职业认知测试、认知文件 HTML；
 - 最后制作：从任务简报走到认知文件入口的完整总入口 HTML。
 
 新 tickets 已明确产品经理输入、Agent 责任和 Agent 不负责的范围。游客不注册即可进入任务简报；已登录用户进入任务地图；工作场景选择只影响即时反馈，不改变唯一顺序；游客中断继续不写数据库；十题全对后才完成体验；认知文件查看和下载均需登录。
@@ -29,7 +29,7 @@ v1.3 的 MySQL 迁移实现已完成。#01 至 #12 已实现，#13 综合回放�
 
 ## 当前任务
 
-1. 制作完整 `work-scenes.html` 与场景内容/反馈清单，执行 #03；第一个场景已由 #02 接入，继续入口预留为 `scene=2`。
+1. 将 `C:\Users\Administrator.DESKTOP-4HCDKBO\Desktop\prototype\work-scenes.html` 接入现有场景路由并执行 #03；第一个场景已由 #02 接入，继续入口预留为 `scene=2`。
 2. 制作 `level-map.html` 与游客继续状态，执行 #04。
 3. 制作 `assessment.html`、十道题和错题回溯关系，执行 #05。
 4. 制作 `career-document.html`、认知文件正文和版本说明，执行 #06。
@@ -91,6 +91,7 @@ v1.3 不迁移旧 MongoDB 数据，不提供 MongoDB 回退，不新增用户可
 | v1.3 四环人工冒烟 | 尚未运行 |
 | v1.4 文档交付 | 重构后的 `PRODUCT.md`、spec、7 张 tickets、`CONTEXT.md` 和 `PROGRESS.md` 已提交，`git diff --check` 已通过；当前仅有落地页 HTML 原型 |
 | v1.4 #02 入职开场 | `/onboarding/brief`、`/onboarding/scenes?scene=1` 已实现；游客公开访问，四项全选后才可继续；浏览器冒烟覆盖桌面入口、反馈状态、刷新重置、滚动显现动效和 390px 移动布局 |
+| v1.4 #03 工作场景原型 | `work-scenes.html` 已完成场景 02-06、10 个判断、正确/错误反馈、返回与唯一顺序推进、场景 06 测试入口；默认 A 变体及 B/C 结构变体已完成桌面与 390px 移动截图复核；未调用 LLM |
 | 真实模型验证 | 当前未运行；默认使用 `AI_MODE=replay` |
 
 ## 约束与坑

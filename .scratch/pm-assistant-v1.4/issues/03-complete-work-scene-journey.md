@@ -4,7 +4,7 @@
 
 **Blocked by:** #02 - 入职任务简报与第一个工作场景
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 ## 产品经理在 Agent 开始前提供
 
