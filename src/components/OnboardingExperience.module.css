@@ -77,11 +77,19 @@
 .sceneIntro h1 { max-width: 930px; margin: 22px 0 28px; font: 500 clamp(50px, 7vw, 100px)/.95 Georgia, "Times New Roman", serif; letter-spacing: -.055em; }
 .sceneIntro h1 em { color: var(--coral); font-style: italic; }
 .sceneIntro p { max-width: 720px; margin: 0; padding-top: 22px; border-top: 1px solid rgba(247, 241, 222, .26); color: rgba(247, 241, 222, .65); font: clamp(18px, 2vw, 22px)/1.72 Inter, system-ui, sans-serif; }
+.sceneKicker { display: flex; align-items: center; gap: 12px; margin-top: 30px; color: rgba(247, 241, 222, .45); font: 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .06em; }
+.sceneKicker i { width: 32px; height: 1px; background: var(--coral); }
+.progress { display: flex; gap: 7px; margin-top: 38px; }
+.progress span { width: 44px; height: 3px; background: rgba(247, 241, 222, .23); }
+.progressDone, .progressCurrent { background: var(--coral) !important; }
 .workbench { padding: 78px 0 96px; border-top: 1px solid rgba(247, 241, 222, .18); background: var(--paper); color: var(--ink); }
 .workGrid { display: grid; grid-template-columns: .8fr 1.2fr; gap: 9vw; align-items: start; }
 .contextLabel { color: var(--coral); font: 12px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .12em; }
 .context h2 { margin: 22px 0; font: 500 clamp(35px, 4.5vw, 64px)/1 Georgia, "Times New Roman", serif; letter-spacing: -.05em; }
 .context p { max-width: 380px; color: var(--ink-mute); font: 15px/1.7 Inter, system-ui, sans-serif; }
+.contextList { display: grid; gap: 13px; max-width: 380px; margin: 28px 0 0; padding: 20px 0 0; border-top: 1px dotted var(--line); list-style: none; }
+.contextList li { display: grid; grid-template-columns: 40px 1fr; gap: 12px; color: var(--ink-mute); font: 12px/1.45 Inter, system-ui, sans-serif; }
+.contextList b { color: var(--coral); font: 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; }
 .questionBox { padding-top: 18px; border-top: 1px solid var(--ink); overflow-anchor: none; }
 .questionSessionGrid { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(280px, .88fr); gap: clamp(28px, 4vw, 64px); align-items: start; }
 .questionMain, .feedbackPanel { min-width: 0; }
@@ -89,6 +97,7 @@
 .questionMeta { display: flex; justify-content: space-between; gap: 20px; margin-bottom: 22px; color: var(--ink-mute); font: 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; }
 .questionBox h2 { margin: 0 0 14px; font: 500 clamp(27px, 3vw, 42px)/1.13 Georgia, "Times New Roman", serif; letter-spacing: -.035em; }
 .questionHelp { margin: 0 0 26px; color: var(--ink-mute); font: 14px/1.5 Inter, system-ui, sans-serif; }
+.questionConcept { margin: 0 0 12px; color: var(--coral); font: 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; }
 .options { display: grid; gap: 9px; }
 .option { position: relative; display: flex; align-items: center; gap: 16px; min-height: 64px; padding: 15px 18px; border: 1px solid var(--line); background: transparent; text-align: left; transition: background .18s, border-color .18s, transform .18s; }
 .options .option { opacity: 0; transform: translateX(38px); }
@@ -104,6 +113,7 @@
 .submitRow { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 24px; }
 .submitNote { color: var(--ink-mute); font: 12px/1.45 Inter, system-ui, sans-serif; }
 .scenePrimary { min-height: 50px; padding: 0 22px; border: 1px solid var(--coral); background: var(--coral); color: var(--ink); font: 800 14px/1 Inter, system-ui, sans-serif; transition: background .18s, transform .18s; }
+.scenePrimary:disabled { opacity: .4; cursor: not-allowed; transform: none; }
 .scenePrimary:hover { background: var(--bone); transform: translateY(-3px); }
 .feedbackSlot { position: relative; min-height: 430px; margin-top: 34px; }
 .feedbackPlaceholder { min-height: 430px; padding-top: 18px; border-top: 1px dotted var(--line); color: var(--ink-mute); font: 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; }
@@ -118,6 +128,9 @@
 .feedbackColumns > div { padding-top: 13px; border-top: 1px dotted var(--line); }
 .feedbackColumns strong { display: block; margin-bottom: 8px; font: 600 12px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .06em; }
 .feedbackColumns p { margin: 0; }
+.correctAnswer { color: var(--ink) !important; }
+.actionNote { margin-top: 25px; padding: 16px 0 0; border-top: 1px dotted var(--line); color: var(--ink-mute); font: 13px/1.6 Inter, system-ui, sans-serif; }
+.actionNote strong { color: var(--ink); }
 .mentor { padding: 42px 0; background: var(--ink); color: var(--bone); }
 .mentorInner { display: flex; align-items: center; justify-content: space-between; gap: 40px; }
 .mentorCopy { display: flex; align-items: flex-start; gap: 20px; }
@@ -129,6 +142,15 @@
 .sessionAction { min-height: 50px; margin-top: 18px; display: flex; justify-content: flex-end; align-items: center; }
 .scrollReveal { opacity: 0; transform: translateY(24px); transition: opacity .9s cubic-bezier(.16, 1, .3, 1), transform .9s cubic-bezier(.16, 1, .3, 1); }
 .scrollReveal.revealVisible { opacity: 1; transform: none; }
+.questionStatic .option:hover { transform: none; }
+.sceneNav { padding: 24px 0 36px; background: var(--ink); color: var(--bone); }
+.sceneNavInner { display: flex; align-items: center; justify-content: space-between; gap: 28px; }
+.sceneNavLabel { color: rgba(247, 241, 222, .5); font: 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; }
+.sceneLinks { display: flex; gap: 8px; }
+.sceneLink { width: 38px; height: 32px; display: grid; place-items: center; border: 1px solid rgba(247, 241, 222, .3); color: rgba(247, 241, 222, .5); font: 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.sceneLinkVisited { border-color: var(--coral); color: var(--bone); }
+.sceneLinkActive { background: var(--coral); color: var(--ink); }
+.sceneLinkLocked { opacity: .35; }
 
 @keyframes arrive { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes cardIn { from { opacity: 0; transform: translateY(40px) rotate(1.2deg); } to { opacity: 1; transform: translateY(0) rotate(1.2deg); } }
@@ -178,6 +200,7 @@
   .mentorCopy { gap: 14px; }
   .continue { width: 100%; justify-content: center; }
   .feedbackSlot, .feedbackPlaceholder { min-height: 560px; }
+  .sceneNavInner { align-items: flex-start; flex-direction: column; }
 }
 
 @media (prefers-reduced-motion: reduce) {
