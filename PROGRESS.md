@@ -15,7 +15,7 @@ v1.4 已将原“A 路线”重新定义为正式功能“AI 产品经理入职�
 - 已有：落地页 HTML；
 - 已有：落地页 HTML 已按原型视觉参数接入 `/`，入口行为按 #02 更新为进入 `/onboarding/brief`；
 - 已有：任务简报 `/onboarding/brief` 与第一个工作场景 `/onboarding/scenes?scene=1`；
-- 已有：03 完整工作场景的产品内容稿 `.scratch/pm-assistant-v1.4/work-scenes-content.md`，固定 5 个场景、每场 2 个四选一判断，共 10 个判断；覆盖 AI 能力认知、AI 价值发现、人机协作、AI 提效和 Vibe Coding 成长位置；
+- 已有：03 完整工作场景的产品内容稿 `.scratch/pm-assistant-v1.4/work-scenes-content.md`，固定 6 个场景；场景 01 沿用既有多选原型，场景 02 至 06 各含 2 个四选一判断；覆盖 AI 能力认知、AI 价值发现、人机协作、AI 提效和 Vibe Coding 成长位置；
 - 待制作：完整工作场景序列 HTML（基于内容稿接入）、任务地图、职业认知测试、认知文件 HTML；
 - 最后制作：从任务简报走到认知文件入口的完整总入口 HTML。
 
