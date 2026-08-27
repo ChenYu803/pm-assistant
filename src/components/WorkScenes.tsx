@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./OnboardingExperience.module.css";
 
@@ -208,6 +208,18 @@ const scenes: Scene[] = [
 
 type SavedState = { visited: number[]; answers: Record<string, { selected: string; submitted: boolean }> };
 const storageKey = "pm-assistant-onboarding-work-scenes-v1";
+const motionStorageKey = "pm-assistant-work-scene-motion-v2";
+
+function scheduleFrame(callback: () => void): number {
+  return typeof window.requestAnimationFrame === "function"
+    ? window.requestAnimationFrame(callback)
+    : window.setTimeout(callback, 0);
+}
+
+function cancelScheduledFrame(frame: number) {
+  if (typeof window.cancelAnimationFrame === "function") window.cancelAnimationFrame(frame);
+  else window.clearTimeout(frame);
+}
 
 function readSavedState(): SavedState {
   try {
@@ -220,25 +232,40 @@ function readSavedState(): SavedState {
   }
 }
 
-export default function WorkScenes({ initialScene }: { initialScene: number }) {
+export default function WorkScenes({ initialScene, replayMotion = false }: { initialScene: number; replayMotion?: boolean }) {
   const router = useRouter();
+  const pageRef = useRef<HTMLDivElement>(null);
+  const feedbackRef = useRef<HTMLDivElement>(null);
+  const questionTransitionTimer = useRef<number | null>(null);
   const sceneId = Math.max(2, Math.min(6, initialScene));
   const scene = useMemo(() => scenes.find((item) => item.id === sceneId) ?? scenes[0], [sceneId]);
   const [visited, setVisited] = useState<number[]>([1, sceneId]);
   const [answers, setAnswers] = useState<SavedState["answers"]>({});
   const [questionIndex, setQuestionIndex] = useState(0);
   const [hydrated, setHydrated] = useState(false);
+  const [feedbackPending, setFeedbackPending] = useState(false);
+  const [feedbackCycle, setFeedbackCycle] = useState(0);
+  const [pendingQuestionSwap, setPendingQuestionSwap] = useState(false);
+  const [questionSwapOut, setQuestionSwapOut] = useState(false);
+  const [questionTransitioning, setQuestionTransitioning] = useState(false);
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
+  const [motionVisibleKeys, setMotionVisibleKeys] = useState<Set<string>>(() => new Set());
+  const [motionStaticKeys, setMotionStaticKeys] = useState<Set<string>>(() => new Set());
   const question = scene.questions[questionIndex];
   const answer = answers[question.id];
+  const selected = answer?.selected;
+  const submitted = answer?.submitted;
+  const correct = selected === question.correct;
+  const canReturn = (id: number) => visited.includes(id);
 
   useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
+    const frame = scheduleFrame(() => {
       const saved = readSavedState();
       setVisited(Array.from(new Set([...saved.visited, 1, sceneId])));
       setAnswers(saved.answers);
       setHydrated(true);
     });
-    return () => window.cancelAnimationFrame(frame);
+    return () => cancelScheduledFrame(frame);
   }, [sceneId]);
 
   useEffect(() => {
@@ -246,43 +273,132 @@ export default function WorkScenes({ initialScene }: { initialScene: number }) {
     try { window.localStorage.setItem(storageKey, JSON.stringify({ visited, answers } satisfies SavedState)); } catch { /* 浏览器禁用存储时仍可继续当前体验。 */ }
   }, [answers, hydrated, visited]);
 
+  useEffect(() => {
+    if (!hydrated) return;
+    const page = pageRef.current;
+    if (!page) return;
+
+    let revealed = new Set<string>();
+    try {
+      revealed = new Set(JSON.parse(window.sessionStorage.getItem(motionStorageKey) || "[]"));
+    } catch {
+      revealed = new Set();
+    }
+
+    const targets = [...page.querySelectorAll<HTMLElement>("[data-motion-key]")];
+    const forceReplay = replayMotion && questionIndex === 0;
+    const reveal = (targetsToReveal: HTMLElement[], staticMotion = false) => {
+      const keys = targetsToReveal.map((target) => target.dataset.motionKey).filter((key): key is string => Boolean(key));
+      if (keys.length === 0) return;
+      keys.forEach((key) => revealed.add(key));
+      try { window.sessionStorage.setItem(motionStorageKey, JSON.stringify([...revealed])); } catch { /* 动效记录失败时仍显示内容。 */ }
+      setMotionVisibleKeys((current) => new Set([...current, ...keys]));
+      if (staticMotion) setMotionStaticKeys((current) => new Set([...current, ...keys]));
+    };
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) {
+      reveal(targets, true);
+      return;
+    }
+
+    const scrollRoot = page.parentElement instanceof HTMLElement ? page.parentElement : null;
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const target = entry.target as HTMLElement;
+        reveal([target]);
+        observer.unobserve(target);
+      });
+    }, { root: scrollRoot, rootMargin: "0px 0px -12% 0px", threshold: 0.12 });
+
+    targets.forEach((target) => {
+      const key = target.dataset.motionKey;
+      if (!forceReplay && key && revealed.has(key)) reveal([target], true);
+      else observer.observe(target);
+    });
+
+    return () => observer.disconnect();
+  }, [hydrated, question.id, questionIndex, replayMotion]);
+
+  useEffect(() => {
+    if (!feedbackCycle || !submitted || !feedbackRef.current) return;
+    void feedbackRef.current.offsetWidth;
+    const frame = scheduleFrame(() => setFeedbackPending(false));
+    return () => cancelScheduledFrame(frame);
+  }, [feedbackCycle, submitted]);
+
+  useEffect(() => {
+    if (!pendingQuestionSwap) return;
+    const timer = window.setTimeout(() => setPendingQuestionSwap(false), 620);
+    return () => window.clearTimeout(timer);
+  }, [pendingQuestionSwap]);
+
+  useEffect(() => () => {
+    if (questionTransitionTimer.current !== null) window.clearTimeout(questionTransitionTimer.current);
+  }, []);
+
   function selectChoice(id: string) {
-    if (answer?.submitted) return;
+    if (answer?.submitted && editingQuestionId !== question.id) return;
     setAnswers((current) => ({ ...current, [question.id]: { selected: id, submitted: false } }));
   }
 
   function submitChoice() {
     if (!answer?.selected) return;
+    setFeedbackPending(true);
+    setFeedbackCycle((current) => current + 1);
     setAnswers((current) => ({ ...current, [question.id]: { selected: answer.selected, submitted: true } }));
+    setEditingQuestionId(null);
     setVisited((current) => Array.from(new Set([...current, sceneId])));
+  }
+
+  function redoQuestion() {
+    if (!answer?.submitted) return;
+    setEditingQuestionId(question.id);
+    setFeedbackPending(false);
+    setAnswers((current) => ({ ...current, [question.id]: { selected: answer.selected, submitted: false } }));
   }
 
   function next() {
     if (!answer?.submitted) return;
-    if (questionIndex < scene.questions.length - 1) setQuestionIndex((current) => current + 1);
-    else if (sceneId < 6) router.push(`/onboarding/scenes?scene=${sceneId + 1}`);
-    else router.push("/onboarding/assessment");
+    if (questionIndex < scene.questions.length - 1) {
+      if (questionTransitioning) return;
+      setQuestionTransitioning(true);
+      setQuestionSwapOut(true);
+      questionTransitionTimer.current = window.setTimeout(() => {
+        setQuestionSwapOut(false);
+        setPendingQuestionSwap(true);
+        setQuestionIndex((current) => current + 1);
+        setQuestionTransitioning(false);
+        questionTransitionTimer.current = null;
+      }, 420);
+    } else {
+      pageRef.current?.scrollTo({ top: 0, behavior: "auto" });
+      pageRef.current?.parentElement?.scrollTo({ top: 0, behavior: "auto" });
+      if (sceneId < 6) router.push(`/onboarding/scenes?scene=${sceneId + 1}`);
+      else router.push("/onboarding/assessment");
+    }
   }
 
-  const selected = answer?.selected;
-  const submitted = answer?.submitted;
-  const correct = selected === question.correct;
-  const canReturn = (id: number) => visited.includes(id);
+  const titleParts = scene.title.split("，");
+  const motionClasses = (key: string) => [
+    motionVisibleKeys.has(key) ? styles.revealVisible : "",
+    motionStaticKeys.has(key) ? styles.motionStatic : "",
+  ].filter(Boolean).join(" ");
 
   return (
-    <div className={`${styles.page} ${styles.scenePage}`}>
+    <div ref={pageRef} className={`${styles.page} ${styles.scenePage}`}>
       <div className={styles.topline}><div className={`${styles.container} ${styles.toplineInner}`}><span>AI PRODUCT FIELD / WORK SCENE {String(sceneId).padStart(2, "0")}</span><span>你的选择不会改变后续路线</span></div></div>
       <header className={`${styles.nav} ${styles.container}`}>
         <Link className={styles.brand} href="/onboarding/brief"><span className={styles.brandMark} aria-hidden="true">A</span><span>AI 产品现场</span></Link>
         <Link className={styles.navBack} href="/onboarding/brief">← 返回任务简报</Link>
       </header>
       <main>
-        <section className={`${styles.container} ${styles.sceneIntro}`}><span className={styles.sceneNo}>{String(sceneId).padStart(2, "0")} / 06</span><div><p className={styles.eyebrow}>工作场景 {String(sceneId).padStart(2, "0")} · {scene.phase}</p><h1>{scene.title}</h1><p>{scene.background}</p><div className={styles.sceneKicker}><i /><span>成果链 · {sceneId === 2 ? "问题定义" : sceneId === 3 ? "AI 能力地图" : sceneId === 4 ? "AI 机会判断" : sceneId === 5 ? "人机协作方案" : "可验证产品方案"}</span></div><div className={styles.progress}>{[1, 2, 3, 4, 5, 6].map((id) => <span key={id} className={id < sceneId ? styles.progressDone : id === sceneId ? styles.progressCurrent : ""} />)}</div></div></section>
-        <section className={styles.workbench}><div className={`${styles.container} ${styles.workGrid}`}><div className={styles.context}><span className={styles.contextLabel}>SCENE {String(sceneId).padStart(2, "0")} / FIELD NOTE</span><h2>{scene.contextTitle.split("\n").map((line) => <span key={line}>{line}<br /></span>)}</h2><p>{scene.contextCopy}</p><ul className={styles.contextList}><li><b>IN</b><span>上一场景的已确认成果</span></li><li><b>NOW</b><span>{scene.questions.length} 个连续判断</span></li><li><b>OUT</b><span>{sceneId === 6 ? "进入职业认知测试" : "推进下一场景"}</span></li></ul></div><div className={`${styles.questionBox} ${submitted ? styles.questionStatic : ""}`}>
-          <div className={styles.questionSessionGrid}><div className={styles.questionMain}><div className={styles.questionMeta}><span>判断 {questionIndex + 1} / {scene.questions.length} · 四选一</span><span>{submitted ? "已提交" : "未作答"}</span></div><p className={styles.questionConcept}>{question.concept}</p><h2>{question.question}</h2><p className={styles.questionHelp}>提示：{question.hint}</p><div className={styles.options} role="group" aria-label={question.question}>{question.options.map((option) => <button type="button" key={option.id} className={`${styles.option} ${selected === option.id ? styles.optionSelected : ""}`} disabled={submitted} onClick={() => selectChoice(option.id)}><span className={styles.check}>{selected === option.id ? "✓" : ""}</span><span className={styles.optionCopy}><strong>{option.id} · {option.label}</strong><span>{option.detail}</span></span></button>)}</div><div className={styles.submitRow}><span className={styles.submitNote}>选择只影响即时反馈，不改变剧情和后续顺序。</span><button className={styles.scenePrimary} type="button" disabled={!selected || submitted} onClick={submitChoice}>{submitted ? "已完成判断" : "提交我的判断"} ↗</button></div></div><div className={styles.feedbackPanel}><div className={`${styles.feedbackSlot} ${submitted ? styles.feedbackVisible : ""}`}>{submitted ? <div className={styles.feedback}><div className={styles.feedbackTop}><h3>前辈的反馈</h3><span className={styles.feedbackStatus}>{correct ? "判断成立" : "再想一步"}</span></div><p>{correct ? "你的判断抓住了这道题的关键。" : "这个选项有它的直觉，但还不足以支撑当前的产品判断。错误不会让任务失败，回到问题本身再看一遍。"}</p><div className={styles.feedbackColumns}><div><strong>你的选择</strong><p>{selected} · {question.options.find((item) => item.id === selected)?.label}</p></div><div><strong>{correct ? "为什么成立" : "为什么需要调整"}</strong><p>{correct ? question.correctReason : question.wrongReason[selected ?? ""]}</p></div><div><strong>正确答案</strong><p className={styles.correctAnswer}>{question.correct} · {question.options.find((item) => item.id === question.correct)?.label}<br />{question.correctReason}</p></div></div><div className={styles.actionNote}><strong>下一步项目动作：</strong>{question.action}</div></div> : <div className={styles.feedbackPlaceholder}>前辈的反馈 · 提交后在此展开</div>}</div><div className={styles.sessionAction}><button className={`${styles.scenePrimary} ${styles.continueVisible}`} type="button" disabled={!submitted} onClick={next}>{sceneId === 6 && questionIndex === scene.questions.length - 1 ? "进入职业认知测试" : questionIndex === scene.questions.length - 1 ? "进入下一个工作场景" : "进入下一判断"} ↗</button></div></div></div>
+        <section className={`${styles.container} ${styles.sceneIntro} ${styles.scrollReveal} ${motionClasses(`scene-${sceneId}-intro`)}`} data-motion-key={`scene-${sceneId}-intro`}><span className={styles.sceneNo}>{String(sceneId).padStart(2, "0")} / 06</span><div><p className={styles.eyebrow}>工作场景 {String(sceneId).padStart(2, "0")} · {scene.phase}</p><h1>{titleParts[0]}{titleParts.length > 1 ? <>{"，"}<br /><em>{titleParts.slice(1).join("，")}</em></> : null}</h1><p>{scene.background}</p><div className={styles.sceneKicker}><i /><span>成果链 · {sceneId === 2 ? "问题定义" : sceneId === 3 ? "AI 能力地图" : sceneId === 4 ? "AI 机会判断" : sceneId === 5 ? "人机协作方案" : "可验证产品方案"}</span></div><div className={styles.progress}>{[1, 2, 3, 4, 5, 6].map((id) => <span key={id} className={id < sceneId ? styles.progressDone : id === sceneId ? styles.progressCurrent : ""} />)}</div></div></section>
+        <section className={styles.workbench}><div className={`${styles.container} ${styles.workGrid}`}><div className={`${styles.context} ${styles.scrollReveal} ${motionClasses(`scene-${sceneId}-brief`)}`} data-motion-key={`scene-${sceneId}-brief`}><span className={styles.contextLabel}>SCENE {String(sceneId).padStart(2, "0")} / FIELD NOTE</span><h2>{scene.contextTitle.split("\n").map((line) => <span key={line}>{line}<br /></span>)}</h2><p>{scene.contextCopy}</p><ul className={styles.contextList}><li><b>IN</b><span>上一场景的已确认成果</span></li><li><b>NOW</b><span>{scene.questions.length} 个连续判断</span></li><li><b>OUT</b><span>{sceneId === 6 ? "进入职业认知测试" : "推进下一场景"}</span></li></ul></div><div className={`${styles.questionBox} ${styles.scrollReveal} ${questionSwapOut ? styles.questionSwapOut : ""} ${pendingQuestionSwap ? styles.questionSwapIn : ""} ${submitted ? styles.questionStatic : ""} ${motionClasses(`scene-${sceneId}-question-${question.id}`)}`} data-motion-key={`scene-${sceneId}-question-${question.id}`}>
+          <div className={styles.questionSessionGrid}><div className={styles.questionMain}><div className={styles.questionMeta}><span>判断 {questionIndex + 1} / {scene.questions.length} · 四选一</span><span>{submitted ? "已提交" : editingQuestionId === question.id ? "重新作答" : "未作答"}</span></div><p className={styles.questionConcept}>{question.concept}</p><h2>{question.question}</h2><p className={styles.questionHelp}>提示：{question.hint}</p><div className={`${styles.options} ${styles.scrollReveal} ${motionClasses(`scene-${sceneId}-question-${question.id}-options`)}`} data-motion-key={`scene-${sceneId}-question-${question.id}-options`} role="group" aria-label={question.question}>{question.options.map((option, index) => <button type="button" key={option.id} className={`${styles.option} ${selected === option.id ? styles.optionSelected : ""}`} style={{ "--option-index": index } as CSSProperties} disabled={submitted && editingQuestionId !== question.id} onClick={() => selectChoice(option.id)}><span className={styles.check}>{selected === option.id ? "✓" : ""}</span><span className={styles.optionCopy}><strong>{option.id} · {option.label}</strong><span>{option.detail}</span></span></button>)}</div><div className={styles.submitRow}><span className={styles.submitNote}>选择只影响即时反馈，不改变剧情和后续顺序。</span><button className={styles.scenePrimary} type="button" disabled={!selected || (submitted && editingQuestionId !== question.id)} onClick={submitChoice}>{submitted ? "已完成判断" : "提交我的判断"} ↗</button></div></div><div className={styles.feedbackPanel}><div className={styles.feedbackSlot}>{!submitted ? <div className={styles.feedbackPlaceholder}>前辈的反馈 · 提交后在此展开</div> : null}<div ref={feedbackRef} className={`${styles.feedback} ${submitted ? styles.feedbackVisible : ""} ${feedbackPending ? styles.feedbackPending : ""}`}><div className={styles.feedbackTop}><h3>前辈的反馈</h3><span className={styles.feedbackStatus}>{correct ? "判断成立" : "再想一步"}</span></div><p>{correct ? "你的判断抓住了这道题的关键。" : "这个选项有它的直觉，但还不足以支撑当前的产品判断。错误不会让任务失败，回到问题本身再看一遍。"}</p><div className={styles.feedbackColumns}><div><strong>你的选择</strong><p>{selected} · {question.options.find((item) => item.id === selected)?.label}</p></div><div><strong>{correct ? "为什么成立" : "为什么需要调整"}</strong><p>{correct ? question.correctReason : question.wrongReason[selected ?? ""]}</p></div><div><strong>正确答案</strong><p className={styles.correctAnswer}>{question.correct} · {question.options.find((item) => item.id === question.correct)?.label}<br />{question.correctReason}</p></div></div><div className={styles.actionNote}><strong>下一步项目动作：</strong>{question.action}</div></div></div><div className={styles.sessionAction}><button className={`${styles.scenePrimary} ${styles.continue} ${submitted ? styles.continueVisible : ""}`} type="button" disabled={!submitted} onClick={next}>{sceneId === 6 && questionIndex === scene.questions.length - 1 ? "进入职业认知测试" : questionIndex === scene.questions.length - 1 ? "进入下一个工作场景" : "进入下一判断"} ↗</button>{submitted ? <button className={styles.redoButton} type="button" onClick={redoQuestion}>重新作答</button> : null}</div></div></div>
         </div></div></section>
-        <section className={styles.mentor}><div className={`${styles.container} ${styles.mentorInner}`}><div className={styles.mentorCopy}><span className={styles.mentorMark}>“</span><div><p>{scene.mentor}</p><small>你的前辈 · AI 教育产品团队</small></div></div></div></section>
-        <section className={styles.sceneNav}><div className={`${styles.container} ${styles.sceneNavInner}`}><span className={styles.sceneNavLabel}>已体验的工作场景 · 可返回重做</span><div className={styles.sceneLinks}>{[1, 2, 3, 4, 5, 6].map((id) => id === 1 ? <Link className={`${styles.sceneLink} ${sceneId === 1 ? styles.sceneLinkActive : ""} ${styles.sceneLinkVisited}`} href="/onboarding/scenes?scene=1" key={id}>01</Link> : canReturn(id) ? <Link className={`${styles.sceneLink} ${sceneId === id ? styles.sceneLinkActive : ""} ${styles.sceneLinkVisited}`} href={`/onboarding/scenes?scene=${id}`} key={id}>{String(id).padStart(2, "0")}</Link> : <span className={`${styles.sceneLink} ${styles.sceneLinkLocked}`} aria-disabled="true" key={id}>{String(id).padStart(2, "0")}</span>)}</div></div></section>
+        <section className={`${styles.mentor} ${styles.scrollReveal}`} data-motion-key={`scene-${sceneId}-mentor`}><div className={`${styles.container} ${styles.mentorInner}`}><div className={styles.mentorCopy}><span className={styles.mentorMark}>“</span><div><p>{scene.mentor}</p><small>你的前辈 · AI 教育产品团队</small></div></div></div></section>
+        <section className={`${styles.sceneNav} ${styles.scrollReveal}`} data-motion-key={`scene-${sceneId}-nav`}><div className={`${styles.container} ${styles.sceneNavInner}`}><span className={styles.sceneNavLabel}>已体验的工作场景 · 可返回重做</span><div className={styles.sceneLinks}>{[1, 2, 3, 4, 5, 6].map((id) => id === 1 ? <Link className={`${styles.sceneLink} ${sceneId === 1 ? styles.sceneLinkActive : ""} ${styles.sceneLinkVisited}`} href="/onboarding/scenes?scene=1" key={id}>01</Link> : canReturn(id) ? <Link className={`${styles.sceneLink} ${sceneId === id ? styles.sceneLinkActive : ""} ${styles.sceneLinkVisited}`} href={`/onboarding/scenes?scene=${id}`} key={id}>{String(id).padStart(2, "0")}</Link> : <span className={`${styles.sceneLink} ${styles.sceneLinkLocked}`} aria-disabled="true" key={id}>{String(id).padStart(2, "0")}</span>)}</div></div></section>
       </main>
     </div>
   );

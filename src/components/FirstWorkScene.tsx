@@ -13,6 +13,12 @@ const methods = [
 
 const motionStorageKey = "pm-assistant-work-scene-motion-v2";
 
+function scheduleFrame(callback: () => void): number {
+  return typeof window.requestAnimationFrame === "function"
+    ? window.requestAnimationFrame(callback)
+    : window.setTimeout(callback, 0);
+}
+
 export default function FirstWorkScene() {
   const pageRef = useRef<HTMLDivElement>(null);
   const feedbackRef = useRef<HTMLDivElement>(null);
@@ -34,19 +40,21 @@ export default function FirstWorkScene() {
       revealed = new Set();
     }
     const targets = [...page.querySelectorAll<HTMLElement>("[data-motion-key]")];
-    const reveal = (target: HTMLElement, completeOptions = false) => {
+    const reveal = (target: HTMLElement, completeOptions = false, staticMotion = false) => {
       const key = target.dataset.motionKey;
       if (key) {
         revealed.add(key);
-        sessionStorage.setItem(motionStorageKey, JSON.stringify([...revealed]));
+        try { sessionStorage.setItem(motionStorageKey, JSON.stringify([...revealed])); } catch { /* 动效记录失败时仍显示内容。 */ }
       }
       target.classList.add(styles.revealVisible);
+      if (staticMotion) target.classList.add(styles.motionStatic);
       if (completeOptions) target.classList.add(styles.motionComplete);
     };
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) {
-      targets.forEach((target) => reveal(target, target.classList.contains(styles.options)));
+      targets.forEach((target) => reveal(target, target.classList.contains(styles.options), true));
       return;
     }
+    const scrollRoot = page.parentElement instanceof HTMLElement ? page.parentElement : null;
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
@@ -54,9 +62,9 @@ export default function FirstWorkScene() {
         reveal(target);
         observer.unobserve(target);
       });
-    }, { rootMargin: "0px 0px -12% 0px", threshold: 0.12 });
+    }, { root: scrollRoot, rootMargin: "0px 0px -12% 0px", threshold: 0.12 });
     targets.forEach((target) => {
-      if (target.dataset.motionKey && revealed.has(target.dataset.motionKey)) reveal(target, target.classList.contains(styles.options));
+      if (target.dataset.motionKey && revealed.has(target.dataset.motionKey)) reveal(target, target.classList.contains(styles.options), true);
       else observer.observe(target);
     });
     return () => observer.disconnect();
@@ -65,7 +73,7 @@ export default function FirstWorkScene() {
   useEffect(() => {
     if (!feedbackCycle || !submitted || !feedbackRef.current) return;
     void feedbackRef.current.offsetWidth;
-    window.requestAnimationFrame(() => setFeedbackPending(false));
+    scheduleFrame(() => setFeedbackPending(false));
   }, [feedbackCycle, submitted]);
 
   function toggle(value: string) {
