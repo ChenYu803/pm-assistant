@@ -92,6 +92,7 @@ export default function CareerAssessment() {
   function showResult() {
     setModal(null);
     setView("result");
+    scheduleFrame(() => scrollPageTop("smooth"));
   }
 
   function restartTest() {
@@ -152,6 +153,14 @@ export default function CareerAssessment() {
           </header>
           <header className={styles.testHead}><div className={`${styles.container} ${styles.testHeadGrid}`}><span className={`${styles.sectionNumber} ${styles.mono}`}>02 / 03</span><div><p className={styles.eyebrow}>THE ASSESSMENT</p><h2>请选择一个在当前约束下<br /><em>最值得先做的判断。</em></h2><p>这是一份体验回顾，不是职业能力测评。请按题干给出的业务、资源和风险约束作答，十题全部选择后即可提交。</p><div className={styles.testBar}><span className={styles.mono}>第 <b>{answeredCount}</b> / 10 题</span><span className={styles.testBarLine}><span style={{ width: `${answeredCount * 10}%` }} /></span><span className={styles.mono}>完成十题后查看本轮结果</span></div></div></div></header>
           <div className={styles.questionArea}>
+            <div className={styles.container}>
+              <div className={styles.questionIntro}>
+                <div>
+                  <p className={styles.eyebrow}>THE DECISION ROOM</p>
+                  <h2>十个新现场，<br /><em>一次完整判断。</em></h2>
+                </div>
+                <p>滚动浏览全部题目。每道题都只有一个综合最优答案。</p>
+              </div>
             {assessmentQuestions.map((question, index) => {
               const selected = answers[index];
               return <section className={styles.questionSession} data-assessment-reveal key={question.number} style={{ "--question-index": index } as React.CSSProperties}>
@@ -167,6 +176,7 @@ export default function CareerAssessment() {
                 </div>
               </section>;
             })}
+            </div>
           </div>
           <div className={styles.submitWrap}><div className={styles.container}><button className={styles.submit} type="button" disabled={answeredCount !== assessmentQuestions.length} onClick={submitTest}>{answeredCount === assessmentQuestions.length ? "查看测试结果" : "请选择答案"}</button></div></div>
         </section>
@@ -176,7 +186,7 @@ export default function CareerAssessment() {
         <section className={styles.resultView}>
           <div className={styles.darkTopline}><div className={styles.container}><span className={styles.mono}>AI PRODUCT FIELD / ASSESSMENT</span><span>一份体验回顾，不是能力结论</span></div></div>
           <header className={styles.resultHead}><div className={`${styles.container} ${styles.resultGrid}`}><span className={`${styles.sectionNumber} ${styles.mono}`}>03 / 03</span><div><p className={styles.eyebrow}>THE REVIEW</p><h1>本轮测试完成。</h1><div className={styles.score}><span>{score}</span><small>/ 10 题答对</small></div><p className={styles.resultNote}>这份分数只记录本轮固定题目的作答情况，不代表你的职业能力或岗位适配度。</p></div></div></header>
-          <section className={styles.reviewSection}><div className={styles.container}><div className={styles.reviewHeading}><p className={styles.eyebrow}>逐题解析</p><h2>值得复盘的判断（{assessmentQuestions.length - score} 题）</h2><p>每道题的前辈复盘默认展开，你可以回看自己的选择和项目动作。</p></div><div className={styles.reviewList}>{assessmentQuestions.map((question, index) => {
+          <section className={styles.reviewSection}><div className={styles.container}><div className={styles.reviewHeading}><div><p className={styles.eyebrow}>MENTOR REVIEW</p><h2>值得复盘的判断（{assessmentQuestions.length - score} 题）</h2></div><p>逐题解析默认展开。你可以先读完本轮反馈，再决定是否开始新一轮测试。</p></div><div className={styles.reviewList}>{assessmentQuestions.map((question, index) => {
             const selected = answers[index];
             const isCorrect = selected === question.correct;
             const selectedText = answerLabel(question, selected);

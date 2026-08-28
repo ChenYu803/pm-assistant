@@ -24,6 +24,7 @@ await page.waitForLoadState("domcontentloaded");
 check("游客可以直接访问测试介绍页", (await page.getByRole("button", { name: "开始测试" }).count()) === 1);
 
 await page.getByRole("button", { name: "开始测试" }).click();
+check("答题页展示 THE DECISION ROOM 引导", (await page.getByText("THE DECISION ROOM", { exact: true }).count()) === 1);
 const radios = page.getByRole("radio");
 check("固定十题、每题四个选项", (await radios.count()) === 40, `选项数 ${await radios.count()}`);
 const submit = page.getByRole("button", { name: "请选择答案" });
@@ -37,6 +38,9 @@ check("十题全部选择后提交按钮启用", await resultButton.isEnabled())
 await resultButton.click();
 check("提交确认弹窗出现", (await page.getByRole("dialog").count()) === 1);
 await page.getByRole("button", { name: "提交并查看结果" }).click();
+await page.waitForTimeout(900);
+check("提交后回到页面顶端", (await page.evaluate(() => window.scrollY)) <= 2);
+check("复盘页展示 MENTOR REVIEW 标题", (await page.getByText("MENTOR REVIEW", { exact: true }).count()) === 1);
 check("结果页展示十题逐题解析", (await page.getByText(/题目 10 \/ 10/).count()) === 1);
 check("结果页展示精炼学习笔记入口", (await page.getByRole("link", { name: /获取精炼学习笔记/ }).count()) === 1);
 const documentHref = await page.getByRole("link", { name: /获取精炼学习笔记/ }).getAttribute("href");

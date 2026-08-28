@@ -3,3 +3,21 @@
 @media(max-width:900px){.container{width:min(100% - 64px,760px)}.hero{min-height:auto;grid-template-columns:1fr;gap:72px;padding:85px 0 120px}.contextCard{width:min(100%,600px);margin:auto}.startSection{padding-top:110px}.startGrid,.testHeadGrid,.resultGrid,.reviewHeading,.completionInner,.questionIntro{grid-template-columns:1fr;gap:22px}.rules{grid-template-columns:1fr}.rule,.rule+.rule{min-height:0;padding:25px 0;border-left:0;border-bottom:1px dotted var(--line)}.questionSession{width:min(100% - 64px,760px);grid-template-columns:1fr;gap:18px}.questionNo{padding-top:0}.reviewList{width:100%;margin-top:30px}.entryNote{padding:22px 0 0;border-left:0;border-top:1px solid var(--coral)}}
 @media(max-width:600px){.container{width:calc(100% - 32px)}.topline>div span:last-child,.darkTopline>div span:last-child{display:none}.nav,.darkNav{min-height:60px}.hero{gap:56px;padding:68px 0 96px}.hero h1{font-size:clamp(52px,15vw,80px)}.contextCard{min-height:420px;padding:28px 24px;box-shadow:14px 16px 0 var(--paper-dark)}.contextCard h2{font-size:clamp(41px,13vw,64px)}.startSection{padding:86px 0 80px}.testHead,.resultHead{padding:65px 0 58px}.testHead h2,.resultHead h1{font-size:clamp(42px,12vw,72px)}.testBar{align-items:flex-start;flex-direction:column;gap:11px}.testBarLine{width:100%;flex:auto}.questionArea{padding-top:0}.questionSession{width:calc(100% - 32px);padding:42px 0}.questionContent h3{font-size:clamp(27px,8vw,42px)}.questionContext{font-size:15px}.option{padding:14px}.optionCopy{font-size:15px}.submitWrap{padding-bottom:50px}.submitWrap .container{padding-top:20px}.submit{width:100%}.reviewSection,.completion{padding:65px 0 80px}.reviewItem{padding:32px 0}.reviewAnswer{grid-template-columns:1fr;gap:16px}.resultActions{flex-direction:column;align-items:stretch}.resultActions a,.resultActions button{width:100%}.modal{padding:26px 22px}.modalActions{flex-direction:column-reverse}.modalActions button{width:100%}}
 @media(prefers-reduced-motion:reduce){.page *,.page *:before,.page *:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}.questionSession{opacity:1;transform:none}}
+/* 原型对齐：答题引导与复盘标题采用 Editorial 的左右阅读结构。 */
+.questionArea{padding:88px 0 112px}
+.questionIntro{display:flex;justify-content:space-between;align-items:flex-end;gap:30px;padding:0 0 35px;border-bottom:1px solid var(--ink)}
+.questionIntro>p{max-width:31ch;margin:0;color:var(--ink-mute);font:16px/1.65 Inter,sans-serif;text-align:right}
+.reviewHeading{display:flex;align-items:flex-end;justify-content:space-between;gap:30px;margin-bottom:37px;padding-bottom:25px;border-bottom:1px solid var(--ink)}
+.reviewHeading h2{margin:14px 0 0;font:500 clamp(36px,5vw,66px)/.98 Georgia,serif;letter-spacing:-.05em}
+.reviewHeading>p{max-width:34ch;margin:0;color:var(--ink-mute);font:16px/1.65 Inter,sans-serif;text-align:right}
+.reviewMeta{font-size:13px;line-height:1.3}
+.reviewKicker{font:13px/1.3 ui-monospace,monospace;letter-spacing:.1em}
+@media(max-width:900px){
+  .questionIntro,.reviewHeading{display:block}
+  .questionIntro>p,.reviewHeading>p{max-width:42ch;margin-top:18px;text-align:left}
+}
+@media(max-width:600px){
+  .questionArea{padding:62px 0 84px}
+  .questionIntro>p,.reviewHeading>p{font-size:15px}
+  .reviewKicker{font-size:13px;line-height:1.45}
+}
