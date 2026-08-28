@@ -30,7 +30,7 @@ v1.3 的 MySQL 迁移实现已完成。#01 至 #12 已实现，#13 综合回放�
 ## 当前任务
 
 1. 将 `C:\Users\Administrator.DESKTOP-4HCDKBO\Desktop\prototype\work-scenes.html` 接入现有场景路由并执行 #03；第一个场景由 #02 接入，继续入口为 `scene=2`。本次已完成，动效回归修复也已完成。
-2. `C:\Users\Administrator.DESKTOP-4HCDKBO\Desktop\prototype\assessment.html` 已完成：包含测试介绍、十题连续作答、全部作答后提交、得分与默认展开的逐题解析、重测确认和游客/已登录入口占位；题目内容由 `assessment-content.md` 内嵌解析，不手工改写。当前已按工作场景原型调整辅助文字阅读层级，并改为点击“开始测试”后停留在测试页顶部、用户自行滚至第一题触发统一入场动画；下一步由 #04 将该原型接入正式应用。
+2. `C:\Users\Administrator.DESKTOP-4HCDKBO\Desktop\prototype\assessment.html` 已完成：包含测试介绍、十题连续作答、全部作答后提交、得分与默认展开的逐题解析、重测确认，以及游客跳转本地登录页、已登录下载占位；题目内容由 `assessment-content.md` 内嵌解析，不手工改写。当前已按工作场景原型调整辅助文字阅读层级，并改为点击“开始测试”后停留在测试页顶部、用户自行滚至第一题触发统一入场动画；下一步由 #04 将该原型接入正式应用。
 3. 制作 `career-document.html`，使用已完成的认知文件正文和版本说明，执行 #05。
 4. 最后制作完整总入口 HTML，执行 #06 回放。
 5. v1.3 #13 的 MySQL 发布验收单独保留，不能用 v1.4 进度替代。
