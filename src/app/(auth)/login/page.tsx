@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CAREER_DOCUMENT_DOWNLOAD_PATH } from "@/lib/career-document";
 import { safeCallbackUrl } from "@/lib/safe-callback";
 
 function LoginForm() {
@@ -39,6 +40,8 @@ function LoginForm() {
 
       if (result?.error) {
         setError("邮箱或密码错误");
+      } else if (callbackUrl === CAREER_DOCUMENT_DOWNLOAD_PATH) {
+        window.location.assign(callbackUrl);
       } else {
         router.push(callbackUrl);
         router.refresh();

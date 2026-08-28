@@ -4,7 +4,7 @@
 
 **Blocked by:** #04 - 十题职业认知测试与通过反馈
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 ## 产品经理在 Agent 开始前提供
 

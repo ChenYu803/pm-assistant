@@ -4,12 +4,11 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 import { assessmentQuestions, type AssessmentQuestion } from "@/lib/assessment-content";
+import { CAREER_DOCUMENT_DOWNLOAD_PATH } from "@/lib/career-document";
 import styles from "./CareerAssessment.module.css";
 
 type View = "intro" | "test" | "result";
 type Modal = "submit" | "restart" | null;
-
-const DOCUMENT_PATH = "/onboarding/career-document";
 
 function scrollPageTop(behavior: ScrollBehavior = "auto") {
   const scrollTarget = document.querySelector<HTMLElement>("body > main");
@@ -43,8 +42,8 @@ export default function CareerAssessment() {
   );
   const isMember = sessionStatus === "authenticated" && !!session?.user;
   const documentHref = isMember
-    ? DOCUMENT_PATH
-    : `/login?callbackUrl=${encodeURIComponent(DOCUMENT_PATH)}`;
+    ? CAREER_DOCUMENT_DOWNLOAD_PATH
+    : `/login?callbackUrl=${encodeURIComponent(CAREER_DOCUMENT_DOWNLOAD_PATH)}`;
 
   useEffect(() => {
     if (view !== "test") return;
@@ -193,7 +192,7 @@ export default function CareerAssessment() {
             const feedback = (isCorrect ? question.correctFeedback : question.wrongFeedback).replace("{selected_option}", selectedText);
             return <article className={styles.reviewItem} key={question.number}><div className={styles.reviewMeta}><span>题目 {question.number} / 10</span><span className={isCorrect ? styles.correct : styles.needsReview}>{isCorrect ? "判断一致" : "值得复盘"}</span></div><p className={styles.reviewKicker}>{question.title} · {question.focus}</p><h3>{question.prompt}</h3><div className={styles.reviewAnswer}><div><strong>你的选择</strong><p>{selectedText}</p></div><div className={styles.correct}><strong>综合最优答案</strong><p>{answerLabel(question, question.correct)}</p></div></div><details className={styles.reviewExpand} open><summary>前辈复盘 · {isCorrect ? question.correctFeedbackTitle : question.wrongFeedbackTitle}</summary><p>{feedback}</p><p><b>项目动作：</b>{question.projectAction}</p>{question.options.map((option) => <p key={option.letter}><b>{option.letter}：</b>{question.optionAnalyses[option.letter]}</p>)}</details></article>;
           })}</div></div></section>
-          <section className={styles.completion}><div className={`${styles.container} ${styles.completionInner}`}><div><p className={styles.eyebrow}>COMPLETION NOTE</p><h2>{score === assessmentQuestions.length ? "你完成了这次职业认知检查" : "你完成了本轮判断"}</h2>{score === assessmentQuestions.length ? <><p>十题全对，恭喜你完成了本轮全部判断！</p><p className={styles.boundary}>这不是一张职业能力证书，也不代表你已经达到任何岗位标准。</p></> : <><p>你答对了 {score} 题。错题不是结论，而是下一次复盘的线索。你可以先读逐题解析，也可以直接开始新一轮测试。</p><p className={styles.boundary}>重新测试不会覆盖本轮记录，也不限次数。</p></>}<div className={styles.resultActions}><button className={styles.secondary} type="button" onClick={() => setModal("restart")}>重新测试</button><Link className={styles.resultPrimary} href={documentHref}>获取精炼学习笔记<span className={styles.arrow} aria-hidden="true" /></Link></div></div><div className={styles.entryNote}><strong>{isMember ? "查看 AI 产品经理认知文件" : "登录后查看认知文件"}</strong><p>{isMember ? "这是一份产品预先编写的固定文件，用来沉淀本次体验中的职业认知。" : "认知文件仅对已登录用户开放。登录或注册后，我们会带你回到文件入口。"}</p></div></div></section>
+          <section className={styles.completion}><div className={`${styles.container} ${styles.completionInner}`}><div><p className={styles.eyebrow}>COMPLETION NOTE</p><h2>{score === assessmentQuestions.length ? "你完成了这次职业认知检查" : "你完成了本轮判断"}</h2>{score === assessmentQuestions.length ? <><p>十题全对，恭喜你完成了本轮全部判断！</p><p className={styles.boundary}>这不是一张职业能力证书，也不代表你已经达到任何岗位标准。</p></> : <><p>你答对了 {score} 题。错题不是结论，而是下一次复盘的线索。你可以先读逐题解析，也可以直接开始新一轮测试。</p><p className={styles.boundary}>重新测试不会覆盖本轮记录，也不限次数。</p></>}<div className={styles.resultActions}><button className={styles.secondary} type="button" onClick={() => setModal("restart")}>重新测试</button><Link className={styles.resultPrimary} href={documentHref}>获取精炼学习笔记<span className={styles.arrow} aria-hidden="true" /></Link></div></div><div className={styles.entryNote}><strong>{isMember ? "下载 AI 产品经理精炼学习笔记" : "登录后下载精炼学习笔记"}</strong><p>{isMember ? "点击后浏览器会立即下载产品预先编写的固定 Markdown 文件。" : "登录或注册成功后，浏览器会立即下载固定的 Markdown 文件。"}</p></div></div></section>
         </section>
       ) : null}
 

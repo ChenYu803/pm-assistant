@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CAREER_DOCUMENT_DOWNLOAD_PATH } from "@/lib/career-document";
 import { safeCallbackUrl } from "@/lib/safe-callback";
 
 function RegisterForm() {
@@ -55,7 +56,7 @@ function RegisterForm() {
         return;
       }
 
-      // Auto-login after successful registration
+      // 注册成功后自动登录。
       const result = await signIn("credentials", {
         email,
         password,
@@ -64,6 +65,8 @@ function RegisterForm() {
 
       if (result?.error) {
         router.push(callbackUrl === "/projects" ? "/login" : `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+      } else if (callbackUrl === CAREER_DOCUMENT_DOWNLOAD_PATH) {
+        window.location.assign(callbackUrl);
       } else {
         router.push(callbackUrl);
         router.refresh();
