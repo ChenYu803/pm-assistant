@@ -4,7 +4,7 @@
 
 **Blocked by:** #03 - 完整工作场景序列与职业认知反馈
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 ## 产品经理在 Agent 开始前提供
 

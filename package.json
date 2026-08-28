@@ -28,6 +28,7 @@
     "verify:requirement-analyst": "tsx scripts/verify-requirement-analyst-discipline.mjs",
     "verify:ticket-splitter": "tsx scripts/verify-ticket-splitter.mjs",
     "verify:v1-flow": "tsx scripts/verify-v1-flow.mjs",
+    "verify:career-assessment": "node scripts/verify-career-assessment.mjs",
     "verify:file-protocol-snapshots": "tsx scripts/verify-file-protocol-snapshots.mjs",
     "verify:protocols": "tsx scripts/verify-protocols.mjs"
   },

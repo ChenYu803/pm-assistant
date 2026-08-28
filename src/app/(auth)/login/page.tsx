@@ -1,15 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { safeCallbackUrl } from "@/lib/safe-callback";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const candidate = searchParams.get("callbackUrl");
+  const callbackUrl = safeCallbackUrl(candidate, "/projects");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -36,7 +40,7 @@ export default function LoginPage() {
       if (result?.error) {
         setError("邮箱或密码错误");
       } else {
-        router.push("/projects");
+        router.push(callbackUrl);
         router.refresh();
       }
     } catch {
@@ -100,7 +104,7 @@ export default function LoginPage() {
         <p className="mt-6 text-center text-sm text-muted-foreground">
           还没有账号？{" "}
           <Link
-            href="/register"
+            href={callbackUrl === "/projects" ? "/register" : `/register?callbackUrl=${encodeURIComponent(callbackUrl)}`}
             className="font-medium underline underline-offset-2"
           >
             注册
@@ -109,4 +113,8 @@ export default function LoginPage() {
       </div>
     </div>
   );
+}
+
+export default function LoginPage() {
+  return <Suspense fallback={<div className="flex flex-1 items-center justify-center px-4">加载中...</div>}><LoginForm /></Suspense>;
 }

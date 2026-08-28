@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { findMysqlUserByEmail, normalizeEmail } from "@/lib/mysql-account-workspace";
+import { safeCallbackUrl } from "@/lib/safe-callback";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -62,7 +63,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // Allow login/register pages
       if (pathname === "/login" || pathname === "/register") {
         if (isLoggedIn) {
-          return Response.redirect(new URL("/projects", nextUrl));
+          return Response.redirect(new URL(safeCallbackUrl(nextUrl.searchParams.get("callbackUrl"), "/projects"), nextUrl));
         }
         return true;
       }
@@ -73,7 +74,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
 
       // 入职开场是游客可直接访问的预编排内容；后续受保护页面按票据单独放行。
-      if (pathname === "/onboarding/brief" || pathname === "/onboarding/scenes") {
+      if (pathname === "/onboarding/brief" || pathname === "/onboarding/scenes" || pathname === "/onboarding/assessment") {
         return true;
       }
 
@@ -86,7 +87,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
 
       // Explicit redirect (more reliable than `return false` across NextAuth v5 beta builds)
-      return Response.redirect(new URL("/login", nextUrl));
+      const loginUrl = new URL("/login", nextUrl);
+      if (nextUrl.pathname !== "/login" && nextUrl.pathname !== "/register") {
+        loginUrl.searchParams.set("callbackUrl", `${nextUrl.pathname}${nextUrl.search}`);
+      }
+      return Response.redirect(loginUrl);
     },
     async jwt({ token, user }) {
       if (user) {
