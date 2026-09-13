@@ -132,6 +132,15 @@ v1.3 不迁移旧 MongoDB 数据，不提供 MongoDB 回退，不新增用户可
 
 本轮 v1.4 spec、tickets、`PRODUCT.md`、`CONTEXT.md` 和本文件的调整由当前会话收尾提交；提交后 push 仍需用户明确确认。
 
+## 本机开发环境（2026-09-13 新系统恢复）
+
+- 开发工具已独立配置在 D 盘：Node.js 24.21.0 LTS / npm 11.19.0 位于 `D:\DevTools\Node`，Git for Windows 2.54.0 位于 `D:\DevTools\Git`，MySQL Community Server 9.7.2 位于 `D:\DevTools\MySQL-9.7.2`；用户 PATH 已配置，Git 身份沿用旧系统配置，GitHub HTTPS 凭据将在首次需要认证时由 Credential Manager 获取。
+- npm 缓存位于 `D:\DevCache\npm`，Playwright Chromium、Headless Shell、FFmpeg 和 Winldd 位于 `D:\DevCache\ms-playwright`；项目依赖已通过 `npm ci` 按锁文件重建。npm 报告 4 个上游依赖告警（3 high、1 critical），未擅自运行会改变依赖版本的 `npm audit fix` / `--force`。
+- MySQL 数据目录位于 `D:\DevData\MySQL-9.7.2\Data`，Windows 服务名为 `PMAssistantMySQL97`、启动类型 Automatic；`npm run db:init` 成功，`npm run verify:mysql-init` 4/4 通过。旧 E 盘 MySQL 数据未迁移。
+- `.env.local` 保持 `AI_MODE=replay`，并已为新系统生成新的本地 `AUTH_SECRET`。Next.js 在当前 Codex 文件隔离层向加密的 `%APPDATA%\nextjs-nodejs\Config` 执行同目录 rename 会错误返回 `EXDEV`；用户环境已设置 `NEXT_TELEMETRY_DISABLED=1`，设置后 `npm run build` 完整通过。
+- 新环境验证：`npx tsc --noEmit` 通过；`npm run lint` 0 error、保留既有 `ChatArea.tsx` hook warning；`npm run build` 通过；Playwright Chromium 与系统 Edge 均可启动；开发服务器页面标题、可见性和控制台检查通过。
+- 旧 Codex 数据已原样备份到 `D:\Backups\Codex\old-system-2026-09-13\.codex`（7,322 文件、1,715,977,434 bytes，关键数据库与索引哈希一致）；当前新系统数据在合并前备份到 `D:\Backups\Codex\new-system-before-merge-2026-09-13`。已将旧 Agent2 的 225 个可见线程、272 个会话文件、148 条索引和 25,871 条历史消息项按 ID 合并到新库，保留本机现有线程；两个 SQLite 库 `integrity_check=ok`、外键错误 0。Codex 桌面端需退出并重新打开后刷新侧边栏缓存。
+
 ## 文档地图
 
 - 产品决策与领域词汇：`CONTEXT.md`
