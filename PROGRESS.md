@@ -140,6 +140,7 @@ v1.3 不迁移旧 MongoDB 数据，不提供 MongoDB 回退，不新增用户可
 - `.env.local` 保持 `AI_MODE=replay`，并已为新系统生成新的本地 `AUTH_SECRET`。Next.js 在当前 Codex 文件隔离层向加密的 `%APPDATA%\nextjs-nodejs\Config` 执行同目录 rename 会错误返回 `EXDEV`；用户环境已设置 `NEXT_TELEMETRY_DISABLED=1`，设置后 `npm run build` 完整通过。
 - 新环境验证：`npx tsc --noEmit` 通过；`npm run lint` 0 error、保留既有 `ChatArea.tsx` hook warning；`npm run build` 通过；Playwright Chromium 与系统 Edge 均可启动；开发服务器页面标题、可见性和控制台检查通过。
 - 旧 Codex 数据已原样备份到 `D:\Backups\Codex\old-system-2026-09-13\.codex`（7,322 文件、1,715,977,434 bytes，关键数据库与索引哈希一致）；当前新系统数据在合并前备份到 `D:\Backups\Codex\new-system-before-merge-2026-09-13`。已将旧 Agent2 的 225 个可见线程、272 个会话文件、148 条索引和 25,871 条历史消息项按 ID 合并到新库，保留本机现有线程；两个 SQLite 库 `integrity_check=ok`、外键错误 0。Codex 桌面端需退出并重新打开后刷新侧边栏缓存。
+- 2026-09-14 修复聊天历史迁移遗漏：续接 rollout 的 `history_base.thread_id` 与文件名后缀线程 ID 已递归纳入；演练及当前库合并后，“梳理 FDE 项目简历写法”关联线程计数为 1/47/5，两个 SQLite 库完整性 `ok`、外键错误 0。需退出并重新打开 Codex 让侧边栏刷新。
 
 ## 文档地图
 
