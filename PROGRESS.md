@@ -6,6 +6,16 @@
 
 ## 当前阶段
 
+### v1.41：规格已收敛，等待 open-design 原型与拆票
+
+v1.41 将重铸认证后的四环实践工作台，同时解决现有流程难用和视觉粗糙的问题。领域模型已经收敛为“项目拥有唯一文件树，产品迭代组织目标、四环状态和阶段会话”：需求分析、原型、PRD 和任务拆分文件均属于项目，用户通过上下文文件区域决定当前会话可以读取哪些正文。
+
+`.scratch/pm-assistant-v1.41/spec.md` 已按 grilling 结论发布为 `ready-for-agent`，覆盖产品迭代身份与目标、四环一级导航、阶段状态和多会话、项目文件树、手动上下文、候选确认、纯 Markdown、内容修订与一次撤回、永久来源记录、任务拆分整套更新、删除语义、响应式工作台和视觉责任边界。v1.41 按全新数据库验收，不迁移或兼容旧数据；本次规格阶段未清空数据库。
+
+实现前需要产品经理按 ticket 在 open-design 中准备对应的原型状态包。原型负责视觉层级、布局、控件、响应式和动效，spec 负责行为、权限和数据事实；两者冲突时必须在实现前显式处理，不能由 implement Agent 自行猜测。`to-tickets` 可以先拆行为票；每张票必须列出产品经理输入、Agent 负责、Agent 不负责、阻塞关系和验收标准，必需输入未齐时保持阻塞，当前尚未创建 v1.41 tickets。
+
+最高验收 seam 已确定为一条 `AI_MODE=replay` 四环浏览器全流程回放，通过真实应用、公开 API 和 MySQL 可观察结果覆盖创建产品迭代、四环状态、多阶段会话、候选确认、项目文件树、手动上下文、修订/撤回/删除、任务整套和迭代删除；旧 changelog 与旧文件模型断言必须退役。
+
 ### v1.4：#01-#06 已完成，入职体验全流程回放已收口
 
 v1.4 已将原“A 路线”重新定义为正式功能“AI 产品经理入职体验”：用户扮演刚入职的 AI 产品经理，接手“大学生 AI 学习助手”这一入职任务，沿唯一顺序完成任务简报、工作场景判断和职场前辈反馈，最后完成职业认知测试并获取受保护的精炼学习笔记。
@@ -30,17 +40,10 @@ v1.3 的 MySQL 迁移实现已完成。#01 至 #12 已实现，#13 综合回放�
 
 ## 当前任务
 
-1. 将 `C:\Users\Administrator.DESKTOP-4HCDKBO\Desktop\prototype\work-scenes.html` 接入现有场景路由并执行 #03；第一个场景由 #02 接入，继续入口为 `scene=2`。本次已完成，动效回归修复也已完成。
-2. `C:\Users\Administrator.DESKTOP-4HCDKBO\Desktop\prototype\assessment.html` 已接入正式 `/onboarding/assessment`：固定十题、四选一、全部作答后提交确认、得分与默认展开逐题解析、重测确认、十题全对祝贺，以及游客认证回跳/已登录精炼学习笔记下载入口；题目内容由 `src/lib/assessment-content.ts` 固定提供，不调用 LLM。点击“开始测试”后停留在测试页顶部，用户自行滚动触发题目入场动画。
-3. `.scratch/pm-assistant-v1.4/career-document.md` 已通过 #05 接入受保护下载：已登录用户点击后立即下载，游客注册或登录成功后立即下载，正文逐字节保持不变。
-4. #06 已新增 `npm run verify:onboarding-experience` 全流程回放入口并完成验收；产品侧未提供完整总入口 HTML，因此本轮只依据已确认的各页面原型和行为契约做可用性检查，不进行该缺失原型的逐像素比对。
-5. v1.3 #13 的 MySQL 发布验收单独保留，不能用 v1.4 进度替代。
-
-v1.4 tickets：
-
-`#01 入口分流` → `#02 入职开场` → `#03 完整工作场景` → `#04 十题测试` → `#05 精炼学习笔记下载` → `#06 全流程回放`
-
-v1.4 #01 至 #06 已完成并完成全流程回放；原“任务地图、回溯与游客中断继续”票已删除。后续仅在产品经理补充完整总入口 HTML 时，按其已确认视觉状态补做视觉对照，不由 Agent 自行设计该原型。
+1. 产品经理依据 v1.41 spec 梳理各票所需的 open-design 原型状态包；不要求拆票前一次性完成全部原型，但每张视觉/交互票在 Agent 开始前必须具备对应的桌面、移动、空、加载、生成、失败、禁用、确认和跳转状态，或明确复用既有原型。
+2. 运行 `to-tickets`，按可独立验收的纵向行为拆分 v1.41 tickets；每张票必须包含“产品经理在 Agent 开始前提供”“Agent 负责”“Agent 不负责”“Blocked by”和验收标准，并把确定性四环浏览器回放作为最终收口票。
+3. 实现阶段按 L2 协议改动处理；开发和验收从空 MySQL 数据库开始，不承担旧数据迁移。任何实际清库操作都属于后续实施步骤，不在规格会话执行。
+4. v1.3 #13 的 MySQL 发布验收仍单独保留，不能用 v1.4 或 v1.41 的进度替代。
 
 ## 已完成版本
 
@@ -125,12 +128,12 @@ v1.3 不迁移旧 MongoDB 数据，不提供 MongoDB 回退，不新增用户可
 
 ## 当前工作区注意事项
 
-以下改动不属于本轮 v1.4 文档交付，后续操作必须保留：
+以下改动不属于本轮 v1.41 规格交付，后续操作必须保留：
 
 - `.codex/config.toml`：用户/其他会话的未提交修改；
 - `.scratch/scene2-bottom-check.png`、`.scratch/scene2-layout-check.png`：#03 视觉检查截图。
 
-本轮 v1.4 spec、tickets、`PRODUCT.md`、`CONTEXT.md` 和本文件的调整由当前会话收尾提交；提交后 push 仍需用户明确确认。
+本轮只提交 v1.41 的 `CONTEXT.md`、spec 和本文件；尚未创建 tickets，也未修改实现代码或数据库。提交后 push 仍需用户明确确认。
 
 ## 本机开发环境（2026-09-13 新系统恢复）
 
@@ -145,8 +148,9 @@ v1.3 不迁移旧 MongoDB 数据，不提供 MongoDB 回退，不新增用户可
 ## 文档地图
 
 - 产品决策与领域词汇：`CONTEXT.md`
-- 当前规范：`.scratch/pm-assistant-v1.4/spec.md`
-- 当前实现票：`.scratch/pm-assistant-v1.4/issues/`
+- 当前规范：`.scratch/pm-assistant-v1.41/spec.md`
+- 当前实现票：尚未创建；等待 open-design 原型确认后运行 `to-tickets`
+- v1.4 历史规范与票：`.scratch/pm-assistant-v1.4/spec.md`、`.scratch/pm-assistant-v1.4/issues/`
 - v1.3 历史规范：`.scratch/pm-assistant-v1.3/spec.md`
 - 实现纪律与协议快照：`AGENTS.md`、`docs/agents/implement-context-hygiene.md`
 - 架构决策：`docs/adr/`
