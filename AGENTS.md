@@ -7,9 +7,11 @@
 | 2 | `docs/agents/implement-context-hygiene.md` | 阅读纪律 + 协议耦合点快照（其中 120k/150k 阈值已废弃，以本文件为准） |
 | 3 | `PROGRESS.md` | 单点真相：当前阶段 / 本次任务 / 坑（**开始必读，结束必写**） |
 | 4 | 当前 ticket（`.scratch/<feature-slug>/issues/NN-<slug>.md`） | 任务定义 + AC + Blocked by（`Status:` 行记录 claimed/resolved） |
-| 5 | `spec.md` 相关章节 | 需求总纲（目的驱动：ticket 引用到的部分） |
+| 5 | `docs/agents/v1.41-implement-prototype-contract.md` | v1.41 专属：产品经理原型输入的开工检查、阻塞和实现边界 |
+| 6 | ticket 中“产品经理在 Agent 开始前提供”列出的原型/素材 | 视觉与关键交互事实（仅在 ticket 要求时读取） |
+| 7 | `spec.md` 相关章节 | 需求总纲（目的驱动：ticket 引用到的部分） |
 
-5 之后按需读核心源码与 `scripts/verify-*.mjs` 头尾（风格参考：命名 `verify-<主题>.mjs`、中文注释、✅/❌ 计数、`process.exit(fail>0?1:0)`）。
+7 之后按需读核心源码与 `scripts/verify-*.mjs` 头尾（风格参考：命名 `verify-<主题>.mjs`、中文注释、✅/❌ 计数、`process.exit(fail>0?1:0)`）。
 
 ## 改动风险分级与验证策略
 

@@ -6,13 +6,13 @@
 
 ## 当前阶段
 
-### v1.41：规格已收敛，tickets 已创建，等待 open-design 原型输入
+### v1.41：规格与 tickets 已收敛，等待原型输入与验收实施
 
 v1.41 将重铸认证后的四环实践工作台，同时解决现有流程难用和视觉粗糙的问题。领域模型已经收敛为“项目拥有唯一文件树，产品迭代组织目标、四环状态和阶段会话”：需求分析、原型、PRD 和任务拆分文件均属于项目，用户通过上下文文件区域决定当前会话可以读取哪些正文。
 
 `.scratch/pm-assistant-v1.41/spec.md` 已按 grilling 结论发布为 `ready-for-agent`，覆盖产品迭代身份与目标、四环一级导航、阶段状态和多会话、项目文件树、手动上下文、候选确认、纯 Markdown、内容修订与一次撤回、永久来源记录、任务拆分整套更新、删除语义、响应式工作台和视觉责任边界。v1.41 按全新数据库验收，不迁移或兼容旧数据；本次规格阶段未清空数据库。
 
-实现前需要产品经理按 ticket 提供关键主流程原型或明确复用已有视觉来源。原型负责关键视觉层级、布局、控件和特殊交互，spec 负责行为、权限和数据事实；普通加载、失败、禁用、无特殊要求的移动端适配和技术实现由 Agent 按已确认方向补齐。两者在关键决策处冲突时必须在实现前显式处理，不能由 implement Agent 自行猜测。`to-tickets` 已拆出 10 张纵向票；每张票包含产品经理输入、Agent 负责、Agent 不负责、阻塞关系和验收标准，关键输入未齐时保持 `needs-info`。
+实现前需要产品经理按 ticket 提供关键主流程原型或明确复用已有视觉来源。原型负责关键视觉层级、布局、控件和特殊交互，spec 负责行为、权限和数据事实；普通加载、失败、禁用、无特殊要求的移动端适配和技术实现由 Agent 按已确认方向补齐。两者在关键决策处冲突时必须在实现前显式处理，不能由 implement Agent 自行猜测。新增 `.scratch/pm-assistant-v1.41/v1.41-prototype-inputs.md` 作为 v1.41 专属的逐票原型交付清单，新增 `docs/agents/v1.41-implement-prototype-contract.md` 作为 v1.41 专属的 Implement Agent 开工检查和阻塞纪律；v1.41 最终验收票会删除后者并从 AGENTS.md 移除对应开工步骤。当前票据已按可独立演示的纵向切片重拆为 24 张草稿票；原型输入未齐前保持 needs-info，补齐并检查通过后再改为 ready-for-agent。
 
 最高验收 seam 已确定为一条 `AI_MODE=replay` 四环浏览器全流程回放，通过真实应用、公开 API 和 MySQL 可观察结果覆盖创建产品迭代、四环状态、多阶段会话、候选确认、项目文件树、手动上下文、修订/撤回/删除、任务整套和迭代删除；旧 changelog 与旧文件模型断言必须退役。
 
@@ -40,8 +40,8 @@ v1.3 的 MySQL 迁移实现已完成。#01 至 #12 已实现，#13 综合回放�
 
 ## 当前任务
 
-1. 产品经理按 ticket 提供关键主流程的 open-design 原型、明确复用来源或特殊行为/文案；不需要提供数据库、API、组件、system prompt、事务、测试脚本或每个普通异常状态的设计。关键输入未齐的票保持 `needs-info`。
-2. v1.41 已按可独立验收的纵向行为拆分 10 张 tickets；每张票包含“产品经理在 Agent 开始前提供”“Agent 负责”“Agent 不负责”“Blocked by”和验收标准，并把确定性四环浏览器回放作为最终收口票。
+1. 产品经理按 `.scratch/pm-assistant-v1.41/v1.41-prototype-inputs.md` 和各 ticket 提供关键主流程的 open-design 原型、明确复用来源或特殊行为/文案；不需要提供数据库、API、组件、system prompt、事务、测试脚本或每个普通异常状态的设计。关键输入未齐的票保持 needs-info，不得被 Implement Agent claim。
+2. v1.41 当前按可独立验收的纵向行为拆分为 24 张草稿 tickets；19 号票准备验收基础设施，20-23 号票分别覆盖专项回放，24 号票执行从空库开始的完整连续回放、发布判断和 v1.41 专属纪律清理。
 3. 实现阶段按 L2 协议改动处理；开发和验收从空 MySQL 数据库开始，不承担旧数据迁移。任何实际清库操作都属于后续实施步骤，不在规格会话执行。
 4. v1.3 #13 的 MySQL 发布验收仍单独保留，不能用 v1.4 或 v1.41 的进度替代。
 
@@ -133,7 +133,7 @@ v1.3 不迁移旧 MongoDB 数据，不提供 MongoDB 回退，不新增用户可
 - `.codex/config.toml`：用户/其他会话的未提交修改；
 - `.scratch/scene2-bottom-check.png`、`.scratch/scene2-layout-check.png`：#03 视觉检查截图。
 
-本轮只提交 v1.41 的 `CONTEXT.md`、spec 和本文件；尚未创建 tickets，也未修改实现代码或数据库。提交后 push 仍需用户明确确认。
+本轮只提交 v1.41 的 `CONTEXT.md`、spec、原型输入契约和 tickets；尚未修改实现代码或数据库。提交后 push 仍需用户明确确认。
 
 ## 本机开发环境（2026-09-13 新系统恢复）
 
@@ -149,8 +149,8 @@ v1.3 不迁移旧 MongoDB 数据，不提供 MongoDB 回退，不新增用户可
 
 - 产品决策与领域词汇：`CONTEXT.md`
 - 当前规范：`.scratch/pm-assistant-v1.41/spec.md`
-- 当前实现票：已创建 `.scratch/pm-assistant-v1.41/issues/01-` 至 `10-` 共 10 张；各票等待产品经理补齐关键主流程原型或确认复用后进入 `ready-for-agent`
+- 当前实现票：已重拆 `.scratch/pm-assistant-v1.41/issues/01-` 至 `24-` 共 24 张草稿；19-23 号票为专项验收，24 号票为最终发布闸。各票等待产品经理补齐关键主流程原型或确认复用后进入 ready-for-agent
 - v1.4 历史规范与票：`.scratch/pm-assistant-v1.4/spec.md`、`.scratch/pm-assistant-v1.4/issues/`
 - v1.3 历史规范：`.scratch/pm-assistant-v1.3/spec.md`
-- 实现纪律与协议快照：`AGENTS.md`、`docs/agents/implement-context-hygiene.md`
+- 实现纪律与协议快照：`AGENTS.md`、`docs/agents/implement-context-hygiene.md`；v1.41 专属原型清单：`.scratch/pm-assistant-v1.41/v1.41-prototype-inputs.md`；v1.41 专属原型纪律：`docs/agents/v1.41-implement-prototype-contract.md`
 - 架构决策：`docs/adr/`
