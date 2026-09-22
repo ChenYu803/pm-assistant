@@ -45,6 +45,8 @@ v1.3 的 MySQL 迁移实现已完成。#01 至 #12 已实现，#13 综合回放�
 3. 实现阶段按 L2 协议改动处理；开发和验收从空 MySQL 数据库开始，不承担旧数据迁移。任何实际清库操作都属于后续实施步骤，不在规格会话执行。
 4. v1.3 #13 的 MySQL 发布验收仍单独保留，不能用 v1.4 或 v1.41 的进度替代。
 
+本次会话（2026-09-22）已新增用户手动调用的原型设计规范 skill：`C:\Users\Administrator\.agents\skills\ai-product-prototype-standard\SKILL.md`，事实参考位于同目录 `references/visual-standard.md`。该 skill 以 5 个产品原型为基线、以 `opendesign落地页.html` 为编辑化参考，并通过 `disable-model-invocation: true` 禁止 Agent 自主调用。
+
 ## 已完成版本
 
 ### v1.0
