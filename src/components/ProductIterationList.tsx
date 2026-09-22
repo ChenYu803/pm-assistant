@@ -17,6 +17,7 @@ interface ProductIteration {
 interface Project {
   id: string;
   name: string;
+  created_at?: string;
 }
 
 interface ProductIterationListProps {
@@ -28,6 +29,19 @@ type DrawerMode = "create" | "edit";
 
 function formatIterationNumber(value: number) {
   return `迭代 ${String(value).padStart(2, "0")}`;
+}
+
+function formatProjectCode(id: string) {
+  return `PRODUCT-${id.replace(/[^a-z0-9]/gi, "").slice(0, 3).toUpperCase() || "001"}`;
+}
+
+function formatUpdated(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "刚刚";
+  const now = new Date();
+  return date.toDateString() === now.toDateString()
+    ? `今天 ${date.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" })}`
+    : date.toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" });
 }
 
 export default function ProductIterationList({ projectId, embedded = false }: ProductIterationListProps) {
@@ -46,6 +60,7 @@ export default function ProductIterationList({ projectId, embedded = false }: Pr
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
   const [toast, setToast] = useState("");
+  const [iterationMenuId, setIterationMenuId] = useState<string | null>(null);
 
   const fetchIterations = useCallback(async () => {
     try {
@@ -78,6 +93,7 @@ export default function ProductIterationList({ projectId, embedded = false }: Pr
     setTargetMode("");
     setRiskConfirmed(false);
     setRiskOpen(false);
+    setIterationMenuId(null);
     setFormError("");
   }
 
@@ -87,6 +103,7 @@ export default function ProductIterationList({ projectId, embedded = false }: Pr
     setName(iteration.display_name);
     setGoal(iteration.goal ?? "");
     setFormError("");
+    setIterationMenuId(null);
   }
 
   function closeDrawer() {
@@ -180,18 +197,17 @@ export default function ProductIterationList({ projectId, embedded = false }: Pr
       <main className="iteration-main">
         <header className="iteration-project-head">
           <div>
-            <p className="iteration-eyebrow">SELECTED PROJECT</p>
+            <p className="iteration-eyebrow">SELECTED PROJECT / {project ? formatProjectCode(project.id) : "PRODUCT-001"}</p>
             <h2>{project?.name || "项目"}</h2>
-            <p className="iteration-project-note">项目文件属于这里的长期资产；产品迭代只组织本轮工作。</p>
+            <div className="iteration-project-meta"><span>{project ? formatProjectCode(project.id) : "PRODUCT-001"}</span><span>最近更新 {project?.created_at ? formatUpdated(project.created_at) : "刚刚"}</span></div>
           </div>
-          <button className="iteration-button iteration-button-primary" type="button" onClick={openCreate}>创建产品迭代</button>
         </header>
 
         {loading ? <div className="iteration-state"><p>正在加载产品迭代...</p></div> : error && iterations.length === 0 ? <div className="iteration-state"><h3>加载失败</h3><p>{error}</p><button className="iteration-button iteration-button-primary" type="button" onClick={() => void fetchIterations()}>重试</button></div> : (
           <section className="iteration-list-section" aria-labelledby="iteration-list-title">
-            <div className="iteration-section-head"><div><p className="iteration-eyebrow">WORK CYCLES</p><h3 id="iteration-list-title">这一项目的产品迭代</h3><p>稳定编号只增不减，展示名称和本轮目标可以随时更新。</p></div><span className="iteration-count">{iterations.length} 个迭代</span></div>
+            <div className="iteration-section-head"><div><h3 id="iteration-list-title">产品迭代</h3><p>一个项目可以有多个迭代，稳定编号只增不减。</p></div><button className="iteration-button iteration-button-primary iteration-create-button" type="button" onClick={openCreate}>创建产品迭代</button></div>
             {error && <p className="iteration-error" role="alert">{error}</p>}
-            {iterations.length === 0 ? <div className="iteration-empty"><span className="iteration-empty-index">01</span><div><h3>还没有产品迭代</h3><p>创建第一轮工作，明确这一次最想改变什么。</p></div><button className="iteration-button iteration-button-primary" type="button" onClick={openCreate}>创建产品迭代</button></div> : <div className="iteration-table" role="list">{iterations.map((iteration) => <article className="iteration-row" role="listitem" key={iteration.id}><span className="iteration-number">{formatIterationNumber(iteration.iteration_number)}</span><div className="iteration-row-content"><h4>{iteration.display_name}</h4><p className={iteration.goal ? "" : "iteration-goal-empty"}>{iteration.goal || "尚未填写本轮目标"}</p></div><span className="iteration-status">未开始</span><div className="iteration-row-actions"><button className="iteration-button iteration-button-quiet" type="button" onClick={() => openEdit(iteration)}>编辑迭代</button><button className="iteration-button iteration-button-dark" type="button" onClick={() => router.push(`/projects/${projectId}/iterations/${iteration.id}`)}>进入工作区</button></div></article>)}</div>}
+            {iterations.length === 0 ? <div className="iteration-empty"><p>这个项目还没有产品迭代。</p><button className="iteration-button iteration-button-primary" type="button" onClick={openCreate}>创建产品迭代</button></div> : <div className="iteration-table" role="list">{iterations.map((iteration) => { const menuOpen = iterationMenuId === iteration.id; return <article className="iteration-row" role="listitem" key={iteration.id}><span className="iteration-number">{formatIterationNumber(iteration.iteration_number)}</span><div className="iteration-name"><strong title={iteration.display_name}>{iteration.display_name}</strong></div><p className={`iteration-goal${iteration.goal ? "" : " empty"}`}>{iteration.goal || "尚未填写本轮目标"}</p><span className="iteration-status">未开始</span><span className="iteration-updated">更新 · {formatUpdated(iteration.updated_at)}</span><div className="iteration-row-actions"><button className="iteration-button iteration-button-quiet" type="button" onClick={() => router.push(`/projects/${projectId}/iterations/${iteration.id}`)}>进入工作区</button><button className="iteration-button iteration-button-quiet" type="button" onClick={() => openEdit(iteration)}>编辑迭代</button><button className="iteration-more" type="button" aria-label={`${iteration.display_name} 更多功能`} aria-expanded={menuOpen} onClick={() => setIterationMenuId(menuOpen ? null : iteration.id)}>···</button>{menuOpen && <div className="iteration-menu"><button className="iteration-menu-action danger" type="button" onClick={() => { setIterationMenuId(null); setToast("删除产品迭代将在后续阶段开放。"); }}>删除产品迭代</button></div>}</div></article>; })}</div>}
           </section>
         )}
       </main>
