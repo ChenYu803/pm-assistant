@@ -21,6 +21,7 @@ interface Project {
 
 interface ProductIterationListProps {
   projectId: string;
+  embedded?: boolean;
 }
 
 type DrawerMode = "create" | "edit";
@@ -29,7 +30,7 @@ function formatIterationNumber(value: number) {
   return `迭代 ${String(value).padStart(2, "0")}`;
 }
 
-export default function ProductIterationList({ projectId }: ProductIterationListProps) {
+export default function ProductIterationList({ projectId, embedded = false }: ProductIterationListProps) {
   const router = useRouter();
   const [project, setProject] = useState<Project | null>(null);
   const [iterations, setIterations] = useState<ProductIteration[]>([]);
@@ -169,7 +170,7 @@ export default function ProductIterationList({ projectId }: ProductIterationList
   }, [toast]);
 
   return (
-    <div className="iteration-page">
+    <div className={`iteration-page${embedded ? " iteration-embedded" : ""}`}>
       <aside className="iteration-rail" aria-label="项目导航">
         <Link className="iteration-brand" href="/projects"><span className="iteration-brand-mark">A</span><span>AI 产品现场</span></Link>
         <div className="iteration-rail-heading"><p className="iteration-eyebrow">PROJECT / ITERATIONS</p><h1>产品迭代</h1><p>在同一个项目里，组织每一轮要改变的事情。</p></div>

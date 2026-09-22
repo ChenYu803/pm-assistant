@@ -11,7 +11,7 @@ export default function Navbar() {
   const pathname = usePathname();
 
   // 落地页、认证页和入职体验页使用各自的视觉导航。
-  if (pathname === "/" || pathname === "/login" || pathname === "/register" || pathname.startsWith("/onboarding")) {
+  if (pathname === "/" || pathname === "/login" || pathname === "/register" || pathname.startsWith("/onboarding") || pathname.startsWith("/projects")) {
     return null;
   }
 

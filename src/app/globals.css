@@ -223,3 +223,63 @@
   .iteration-placeholder-topline { flex-direction: column; }
 }
 @media (prefers-reduced-motion: reduce) { .iteration-drawer, .iteration-risk-dialog { animation: none; } .iteration-button { transition: none; } }
+
+/* v1.41 #01 项目入口：左侧项目导航与右侧迭代工作区共用同一视觉壳。 */
+.project-workspace-shell { display: grid; grid-template-columns: 278px minmax(0, 1fr); min-height: 100%; color: #15140f; background: #efe7d2; }
+.project-workspace-rail { min-width: 0; padding: 32px 20px 40px 24px; border-right: 1px solid rgba(21,20,15,.18); background: #d7c9a8; }
+.project-workspace-brand { display: inline-flex; align-items: center; gap: 11px; color: #15140f; font-weight: 700; text-decoration: none; }
+.project-workspace-mark { display: grid; width: 30px; height: 30px; place-items: center; border: 1px solid #ed6f5c; border-radius: 50%; color: #ed6f5c; font: italic 18px Georgia, serif; }
+.project-workspace-heading { margin-top: 58px; }
+.project-workspace-heading h1 { margin: 10px 0 0; font: 500 34px/.98 Georgia, "Times New Roman", serif; letter-spacing: -.025em; }
+.project-workspace-heading p:not(.project-workspace-eyebrow) { max-width: 210px; margin: 12px 0 0; color: #484236; font-size: 13px; line-height: 1.55; }
+.project-workspace-eyebrow { margin: 0; color: #79372f; font: 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .13em; text-transform: uppercase; }
+.project-workspace-create { width: 100%; min-height: 43px; margin-top: 22px; border: 1px solid #ed6f5c; padding: 0 17px; color: #15140f; background: #ed6f5c; cursor: pointer; font: 600 13px/1 var(--font-app-sans); }
+.project-workspace-create:hover { background: #df5e4d; }
+.project-workspace-list { display: grid; gap: 7px; margin-top: 28px; }
+.project-workspace-item { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 36px; gap: 3px; align-items: stretch; min-width: 0; border: 1px solid transparent; }
+.project-workspace-item.selected { border-color: #15140f; background: #f7f1de; }
+.project-workspace-select { min-width: 0; border: 0; padding: 13px 11px; color: #15140f; background: transparent; text-align: left; cursor: pointer; }
+.project-workspace-select:hover { background: rgba(247,241,222,.42); }
+.project-workspace-select strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+.project-workspace-select span { display: block; margin-top: 4px; color: #484236; font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.project-workspace-more { align-self: center; width: 32px; height: 36px; margin-right: 2px; border: 1px solid transparent; color: #15140f; background: transparent; cursor: pointer; font-size: 19px; letter-spacing: 2px; }
+.project-workspace-more:hover { border-color: rgba(21,20,15,.18); background: #efe7d2; }
+.project-workspace-main { min-width: 0; overflow: hidden; background: #efe7d2; }
+.iteration-embedded { display: block; min-height: 100%; }
+.iteration-embedded .iteration-rail { display: none; }
+.iteration-embedded .iteration-main { min-height: 100%; }
+.project-workspace-empty { min-height: 70vh; display: grid; place-items: center; align-content: center; gap: 19px; padding: 40px; text-align: center; }
+.project-workspace-empty h2 { margin: 0; font: 500 clamp(54px,7vw,92px)/.92 Georgia, "Times New Roman", serif; letter-spacing: -.035em; }
+.project-workspace-empty p { max-width: 420px; margin: 0; color: #5a5448; }
+.project-workspace-create-main { width: auto; min-width: 210px; margin-top: 0; }
+.project-workspace-mobile-break { display: none; }
+.project-workspace-error { margin: 15px 0 0; color: #9f2f23; font-size: 12px; line-height: 1.5; }
+.project-workspace-dialog-backdrop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px; background: rgba(21,20,15,.46); }
+.project-workspace-dialog { width: min(560px, 100%); padding: 42px; background: #f7f1de; box-shadow: 0 24px 60px rgba(21,20,15,.2); }
+.project-workspace-dialog h2 { margin: 14px 0 22px; font: 500 42px/1 Georgia, "Times New Roman", serif; }
+.project-workspace-dialog p:not(.project-workspace-eyebrow) { color: #5a5448; font-size: 14px; line-height: 1.7; }
+.project-workspace-dialog label { display: grid; gap: 9px; color: #15140f; font-size: 13px; font-weight: 700; }
+.project-workspace-dialog input { width: 100%; box-sizing: border-box; border: 1px solid rgba(21,20,15,.18); border-radius: 0; padding: 13px 14px; color: #15140f; background: transparent; font: 14px/1.5 var(--font-app-sans); }
+.project-workspace-dialog input:focus { border-color: #15140f; outline: 2px solid #ed6f5c; outline-offset: 2px; }
+.project-workspace-dialog-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 34px; }
+.project-workspace-dialog-actions button { min-height: 43px; border: 1px solid transparent; padding: 0 17px; color: #5a5448; background: transparent; cursor: pointer; font: 600 13px/1 var(--font-app-sans); }
+.project-workspace-dialog-actions button.primary { border-color: #ed6f5c; color: #15140f; background: #ed6f5c; }
+.project-workspace-dialog-actions button.danger { border-color: #9f2f23; color: #f7f1de; background: #9f2f23; }
+.project-workspace-dialog-actions button:disabled { opacity: .6; cursor: wait; }
+@media (max-width: 760px) {
+  .project-workspace-shell { display: block; }
+  .project-workspace-rail { padding: 22px 16px 24px; border-right: 0; border-bottom: 1px solid rgba(21,20,15,.18); }
+  .project-workspace-heading { margin-top: 33px; }
+  .project-workspace-heading h1 { font-size: 31px; }
+  .project-workspace-heading p:not(.project-workspace-eyebrow) { max-width: none; }
+  .project-workspace-create { margin-top: 17px; }
+  .project-workspace-list { margin-top: 22px; }
+  .project-workspace-main .iteration-main { padding: 35px 16px 76px; }
+  .project-workspace-empty { min-height: 54vh; padding: 24px 16px; }
+  .project-workspace-empty h2 { font-size: clamp(44px,13vw,64px); }
+  .project-workspace-mobile-break { display: inline; }
+  .project-workspace-dialog { padding: 28px 20px; }
+  .project-workspace-dialog h2 { font-size: 36px; }
+  .project-workspace-dialog-actions { flex-direction: column-reverse; }
+  .project-workspace-dialog-actions button { width: 100%; }
+}
