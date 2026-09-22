@@ -3,467 +3,119 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="v1.41 01 号原型：创建与管理产品迭代">
-  <title>产品迭代工作台 · AI 产品现场</title>
+  <meta name="description" content="v1.41 01 号高保真原型：创建与管理项目产品迭代">
+  <title>项目与产品迭代 · AI 产品现场</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
     :root {
-      --paper: #efe7d2;
-      --paper-dark: #d7c9a8;
-      --paper-light: #f7f1de;
-      --ink: #15140f;
-      --ink-soft: #2d2a24;
-      --ink-mute: #5a5448;
-      --ink-faint: rgba(21, 20, 15, .52);
-      --coral: #ed6f5c;
-      --coral-text: #9f4035;
-      --coral-soft: rgba(237, 111, 92, .14);
-      --line: rgba(21, 20, 15, .18);
-      --dark-line: rgba(247, 241, 222, .22);
-      --serif: "Playfair Display", Georgia, serif;
-      --sans: "Inter Tight", Inter, system-ui, sans-serif;
-      --body: Inter, system-ui, sans-serif;
-      --mono: "JetBrains Mono", "Courier New", monospace;
+      --paper: #efe7d2; --paper-deep: #d7c9a8; --paper-light: #f7f1de; --ink: #15140f;
+      --ink-mute: #5a5448; --ink-faint: rgba(21,20,15,.54); --coral: #ed6f5c; --coral-text: #79372f;
+      --coral-soft: rgba(237,111,92,.14); --line: rgba(21,20,15,.18); --serif: "Playfair Display", Georgia, serif;
+      --sans: "Inter Tight", Inter, system-ui, sans-serif; --body: Inter, system-ui, sans-serif; --mono: "JetBrains Mono", "Courier New", monospace;
     }
-
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
-    body { margin: 0; color: var(--ink); background: var(--paper); font: 16px/1.55 var(--body); }
-    button, input, textarea { font: inherit; }
-    button { cursor: pointer; }
+    body { margin: 0; color: var(--ink); background: var(--paper); font: 15px/1.55 var(--body); }
+    body::before { content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .16; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.12'/%3E%3C/svg%3E"); mix-blend-mode: multiply; z-index: 60; }
+    button, input, textarea { font: inherit; } button { cursor: pointer; }
     button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--coral); outline-offset: 4px; }
     ::selection { color: var(--paper-light); background: var(--coral); }
-    .mono { font-family: var(--mono); }
-    .eyebrow { margin: 0; color: var(--coral-text); font: 11px/1.2 var(--mono); letter-spacing: .13em; text-transform: uppercase; }
-    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-
-    .topline { min-height: 34px; padding: 9px 8px; color: rgba(247, 241, 222, .7); background: var(--ink); font: 11px var(--mono); letter-spacing: .08em; }
-    .topline-inner { width: min(1440px, calc(100% - 128px)); margin: 0 auto; padding-inline: 8px; display: flex; justify-content: space-between; gap: 20px; }
-    .topline strong { color: var(--paper-light); font-weight: 500; }
-
-    .shell { width: min(1440px, calc(100% - 128px)); margin: 0 auto; display: grid; grid-template-columns: 226px minmax(0, 1fr); min-height: calc(100vh - 34px); }
-    .rail { padding: 34px 28px 34px 0; border-right: 1px solid var(--line); }
-    .brand { display: flex; align-items: center; gap: 11px; color: var(--ink); text-decoration: none; font: 600 14px var(--sans); }
+    .mono { font-family: var(--mono); } .eyebrow { margin: 0; color: var(--coral-text); font: 11px/1.2 var(--mono); letter-spacing: .13em; text-transform: uppercase; }
+    .topline { min-height: 36px; padding: 9px 24px; color: rgba(247,241,222,.72); background: var(--ink); font: 11px var(--mono); letter-spacing: .08em; }
+    .topline-inner { display: flex; justify-content: space-between; gap: 20px; max-width: 1600px; margin: 0 auto; } .topline strong { color: var(--paper-light); font-weight: 500; }
+    .app-shell { display: grid; grid-template-columns: 278px minmax(0,1fr); min-height: calc(100vh - 36px); }
+    .project-rail { --ink-mute: #484236; min-width: 0; padding: 32px 20px 40px 24px; border-right: 1px solid var(--line); background: var(--paper-deep); }
+    .brand { display: inline-flex; align-items: center; gap: 11px; color: var(--ink); text-decoration: none; font: 600 14px var(--sans); }
     .mark { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid var(--coral); border-radius: 50%; color: var(--coral); font: italic 18px var(--serif); }
-    .rail-project { margin: 50px 0 42px; padding-bottom: 22px; border-bottom: 1px dotted var(--line); }
-    .rail-project strong { display: block; margin-top: 9px; font: 500 21px/1.15 var(--serif); }
-    .rail-project span { display: block; margin-top: 9px; color: var(--ink-mute); font: 12px var(--mono); }
-    .rail-nav { display: grid; gap: 6px; }
-    .rail-nav a { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; color: var(--ink-mute); text-decoration: none; border-left: 2px solid transparent; font: 14px var(--sans); }
-    .rail-nav a:hover { color: var(--ink); border-left-color: var(--coral); background: rgba(247, 241, 222, .46); }
-    .rail-nav a.active { color: var(--paper-light); border-left-color: var(--coral); background: var(--ink); }
-    .rail-nav .nav-index { color: var(--ink-faint); font: 11px var(--mono); }
-    .rail-note { margin-top: 62px; color: var(--ink-faint); font-size: 13px; line-height: 1.65; }
-
-    .main { min-width: 0; padding: 34px 0 100px 52px; }
-    .main-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 30px; padding-bottom: 27px; border-bottom: 1px solid var(--line); }
-    .main-header h1 { margin: 12px 0 0; font: 500 68px/.94 var(--serif); letter-spacing: -.035em; }
-    .main-header p:not(.eyebrow) { max-width: 590px; margin: 18px 0 0; color: var(--ink-mute); font-size: 16px; line-height: 1.65; }
-    .button { min-height: 50px; padding: 0 20px; border: 1px solid var(--ink); border-radius: 0; color: var(--ink); background: transparent; font: 600 14px var(--sans); transition: transform .2s ease, background .2s ease, color .2s ease; }
-    .button:hover { transform: translateY(-2px); }
-    .button.primary { border-color: var(--coral); background: var(--coral); }
-    .button.primary:hover { background: var(--ink); color: var(--paper-light); border-color: var(--ink); }
-    .button.dark { color: var(--paper-light); background: var(--ink); border-color: var(--ink); }
-    .button.dark:hover { background: var(--coral); color: var(--ink); border-color: var(--coral); }
-    .button.quiet { color: var(--ink-mute); border-color: var(--line); }
-    .button.quiet:hover { color: var(--ink); border-color: var(--ink); }
-    .button:disabled { cursor: not-allowed; opacity: .48; transform: none; }
-
-    .project-strip { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 22px 0 23px; border-bottom: 1px dotted var(--line); }
-    .project-strip small { display: block; color: var(--ink-faint); font: 12px var(--mono); letter-spacing: .11em; text-transform: uppercase; }
-    .project-strip strong { display: inline-block; margin-top: 6px; font: 600 23px var(--sans); }
-    .project-id { margin-left: 10px; color: var(--ink-mute); font: 12px var(--mono); }
-    .project-stat { color: var(--ink-mute); font: 12px var(--mono); white-space: nowrap; }
-    .project-stat::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: var(--coral); }
-
-    .list-toolbar { display: flex; justify-content: space-between; align-items: end; gap: 18px; padding: 42px 0 20px; }
-    .list-toolbar p { margin: 0; color: var(--ink-mute); font-size: 14px; }
-    .list-toolbar p strong { display: block; margin-bottom: 5px; color: var(--ink); font: 500 28px/1 var(--serif); }
-    .iteration-list { border-top: 1px solid var(--ink); }
-    .iteration-row { display: grid; grid-template-columns: 92px minmax(210px, 1.2fr) minmax(220px, 1.5fr) 105px 145px auto; align-items: center; gap: 20px; min-height: 116px; padding: 20px 0; border-bottom: 1px dotted var(--line); }
-    .iteration-row:hover { background: rgba(247, 241, 222, .45); }
-    .iteration-number { color: var(--coral-text); font: 14px var(--mono); }
-    .iteration-name { min-width: 0; }
+    .project-heading { margin-top: 58px; } .project-heading h1 { margin: 10px 0 0; font: 500 34px/.98 var(--serif); letter-spacing: -.025em; }
+    .project-heading p:not(.eyebrow) { max-width: 210px; margin: 12px 0 0; color: var(--ink-mute); font-size: 13px; line-height: 1.55; }
+    .new-project { width: 100%; margin-top: 22px; } .project-list { display: grid; gap: 7px; margin-top: 28px; }
+    .project-item { position: relative; display: grid; grid-template-columns: minmax(0,1fr) 36px; gap: 3px; align-items: stretch; min-width: 0; border: 1px solid transparent; }
+    .project-item.selected { border-color: var(--ink); background: var(--paper-light); }
+    .project-select { min-width: 0; padding: 13px 11px; color: var(--ink); border: 0; background: transparent; text-align: left; }
+    .project-select:hover { background: rgba(247,241,222,.42); } .project-select strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 15px var(--sans); }
+    .project-select span { display: block; margin-top: 4px; color: var(--ink-mute); font: 11px var(--mono); }
+    .more-trigger { align-self: center; width: 32px; height: 36px; margin-right: 2px; border: 1px solid transparent; color: var(--ink); background: transparent; font-size: 20px; line-height: 1; letter-spacing: 2px; }
+    .more-trigger:hover, .more-trigger[aria-expanded="true"] { border-color: var(--line); background: var(--paper); }
+    .project-menu, .iteration-menu { position: absolute; z-index: 8; display: none; width: 210px; padding: 8px; border: 1px solid var(--ink); background: var(--paper-light); box-shadow: 8px 8px 0 rgba(215,201,168,.92); }
+    .project-menu.open, .iteration-menu.open { display: grid; gap: 3px; } .project-menu { top: 58px; right: 4px; }
+    .menu-meta { padding: 7px 9px 9px; color: var(--ink-mute); border-bottom: 1px dotted var(--line); font-size: 12px; line-height: 1.65; }
+    .menu-action { min-height: 37px; padding: 0 9px; color: var(--ink); border: 0; background: transparent; text-align: left; font-size: 13px; }
+    .menu-action:hover { background: var(--coral); } .menu-action.danger { color: var(--coral-text); }
+    .main { min-width: 0; padding: 44px clamp(28px,6vw,88px) 100px 54px; overflow: hidden; background: var(--paper); }
+    .empty-state { min-height: 70vh; display: grid; place-items: center; align-content: center; gap: 19px; text-align: center; }
+    .empty-state h2 { margin: 0; font: 500 clamp(54px,7vw,92px)/.92 var(--serif); letter-spacing: -.035em; } .mobile-break { display: none; } .empty-state p { max-width: 420px; margin: 0; color: var(--ink-mute); }
+    .empty-state .button { min-width: 210px; } .project-view { display: none; min-height: 70vh; } .project-view.active { display: block; }
+    .project-view.enter-once { animation: project-enter .42s cubic-bezier(.22,1,.36,1) both; }
+    @keyframes project-enter { from { opacity: 0; transform: translateX(58px); filter: blur(2px); } to { opacity: 1; transform: translateX(0); filter: blur(0); } }
+    .project-summary { display: flex; justify-content: space-between; align-items: flex-start; gap: 28px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .project-summary h2 { max-width: 820px; margin: 12px 0 0; font: 500 clamp(45px,6vw,76px)/.93 var(--serif); letter-spacing: -.035em; }
+    .project-summary-meta { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 17px; color: var(--ink-mute); font: 12px var(--mono); }
+    .project-summary-meta span + span::before { content: "/"; margin-right: 14px; color: var(--ink-faint); }
+    .iteration-section { padding-top: 38px; } .iteration-section-head { display: flex; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 20px; }
+    .iteration-section-head h3 { margin: 0; font: 500 42px/.95 var(--serif); letter-spacing: -.025em; } .iteration-section-head p { margin: 10px 0 0; color: var(--ink-mute); font-size: 14px; }
+    .create-iteration { min-height: 58px; padding-inline: 22px; font-size: 15px; white-space: nowrap; }
+    .iteration-list { border-top: 1px solid var(--ink); } .iteration-row { position: relative; display: grid; grid-template-columns: 90px minmax(190px,1.05fr) minmax(230px,1.5fr) 104px 164px auto; gap: 18px; align-items: center; min-height: 119px; padding: 20px 0; border-bottom: 1px dotted var(--line); }
+    .iteration-row:hover { background: rgba(247,241,222,.42); } .iteration-number { color: var(--coral-text); font: 13px var(--mono); } .iteration-name { min-width: 0; }
     .iteration-name strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 19px/1.22 var(--sans); }
-    .iteration-name span, .iteration-goal { display: block; margin-top: 6px; color: var(--ink-mute); font-size: 13px; }
-    .iteration-goal { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-height: 1.45; }
-    .iteration-goal.empty { color: var(--ink-faint); font-style: italic; }
-    .status { display: inline-flex; align-items: center; width: max-content; padding: 7px 9px; color: var(--ink-mute); border: 1px solid var(--line); background: rgba(247, 241, 222, .36); font: 12px var(--mono); white-space: nowrap; }
-    .status.active { color: var(--ink); border-color: rgba(237, 111, 92, .55); background: rgba(237, 111, 92, .1); }
-    .status::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: var(--ink-faint); }
-    .status.active::before { background: var(--coral); }
-    .updated { color: var(--ink-faint); font: 12px var(--mono); }
-    .row-action { display: flex; justify-self: end; gap: 8px; min-width: max-content; }
-    .row-action .button { min-height: 44px; padding: 0 12px; font-size: 13px; white-space: nowrap; }
-    .row-action .button.edit { color: var(--ink-mute); border-color: var(--line); }
-    .row-action .button.edit:hover { color: var(--ink); border-color: var(--ink); }
-
-    .workspace { margin-top: 70px; padding: 28px 0 32px; border-top: 1px solid var(--ink); scroll-margin-top: 20px; }
-    .workspace-placeholder { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 25px 28px; color: var(--paper-light); background: var(--ink); }
-    .workspace-placeholder p { margin: 0; font-size: 16px; }
-    .workspace-placeholder .button { flex: 0 0 auto; color: var(--paper-light); border-color: rgba(247, 241, 222, .42); }
-    .workspace-placeholder .button:hover { color: var(--ink); border-color: var(--coral); background: var(--coral); }
-    .field { margin-top: 15px; }
-    .field label, fieldset legend { display: block; margin-bottom: 8px; color: var(--ink-mute); font: 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
-    input[type="text"], textarea { width: 100%; padding: 13px 14px; color: var(--ink); border: 1px solid var(--line); border-radius: 0; background: rgba(247, 241, 222, .82); font-size: 16px; }
-    input[type="text"]:disabled { color: var(--ink-faint); background: rgba(21, 20, 15, .05); }
-    textarea { min-height: 116px; resize: vertical; line-height: 1.55; }
-    .edit-actions { display: flex; justify-content: flex-end; margin-top: 18px; }
-
-    .drawer-backdrop, .risk-backdrop { position: fixed; inset: 0; z-index: 20; display: none; align-items: stretch; justify-content: flex-end; background: rgba(21, 20, 15, .66); }
-    .drawer-backdrop.open, .risk-backdrop.open { display: flex; }
-    .drawer { width: min(560px, 100%); height: 100%; overflow-y: auto; padding: 42px 42px 48px; color: var(--ink); background: var(--paper); box-shadow: -22px 0 36px rgba(21, 20, 15, .16); }
-    .drawer-head { display: flex; justify-content: space-between; gap: 20px; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
-    .drawer h2 { margin: 13px 0 0; font: 500 46px/.96 var(--serif); letter-spacing: -.03em; }
-    .close-button { width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 0; color: var(--ink); background: transparent; font-size: 22px; line-height: 1; }
-    .close-button:hover { color: var(--paper-light); border-color: var(--ink); background: var(--ink); }
-    .drawer-intro { margin: 21px 0 31px; color: var(--ink-mute); font-size: 16px; line-height: 1.65; }
-    .choice-group { margin: 28px 0 0; padding: 0; border: 0; }
-    .choice-list { display: grid; gap: 9px; }
-    .choice { display: flex; align-items: flex-start; gap: 14px; min-height: 82px; padding: 17px 16px; border: 1px solid var(--line); transition: border-color .18s ease, background .18s ease, transform .18s ease; }
-    .choice:hover { transform: translateX(3px); border-color: var(--ink); }
-    .choice.selected { border-color: var(--coral); background: var(--coral-soft); }
-    .choice:focus-within { outline: 2px solid var(--coral); outline-offset: 3px; }
-    .choice input { position: absolute; opacity: 0; pointer-events: none; }
-    .choice-marker { display: grid; place-items: center; flex: 0 0 22px; width: 22px; height: 22px; border: 1px solid var(--ink-mute); color: var(--ink); font: 11px var(--mono); }
-    .choice.selected .choice-marker { border-color: var(--coral); background: var(--coral); }
-    .choice strong { display: block; font: 600 16px var(--sans); }
-    .choice span:last-child { display: block; margin-top: 5px; color: var(--ink-mute); font-size: 13px; line-height: 1.5; }
-    .target-field { display: none; margin-top: 17px; }
-    .target-field.show { display: block; }
-    .form-error { min-height: 21px; margin: 12px 0 0; color: #9c3f32; font-size: 12px; }
-    .drawer-actions, .risk-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 26px; padding-top: 21px; border-top: 1px dotted var(--line); }
-
-    .risk-backdrop { align-items: center; justify-content: center; padding: 24px; z-index: 30; }
-    .risk-dialog { width: min(600px, 100%); max-height: calc(100vh - 48px); overflow-y: auto; padding: 38px; border: 1px solid var(--ink); background: var(--paper); box-shadow: 14px 16px 0 var(--paper-dark); }
-    .risk-dialog h2 { margin: 12px 0 0; font: 500 46px/.96 var(--serif); letter-spacing: -.03em; }
-    .risk-dialog > p:not(.eyebrow) { margin: 17px 0 0; color: var(--ink-mute); font-size: 16px; }
-    .risk-items { display: grid; gap: 11px; margin-top: 24px; }
-    .risk-item { padding: 15px 16px; border: 1px solid var(--line); background: rgba(247, 241, 222, .5); }
-    .risk-item strong { display: block; color: var(--coral-text); font: 12px var(--mono); letter-spacing: .11em; text-transform: uppercase; }
-    .risk-item p { margin: 6px 0 0; color: var(--ink-mute); font-size: 14px; line-height: 1.6; }
-    .risk-footnote { margin: 20px 0 0; color: var(--ink-faint); font-size: 13px; }
-
-    .toast { position: fixed; right: 24px; bottom: 24px; z-index: 40; display: none; max-width: min(380px, calc(100% - 32px)); padding: 13px 16px; color: var(--paper-light); border-left: 3px solid var(--coral); background: var(--ink); font-size: 12px; box-shadow: 0 12px 24px rgba(21, 20, 15, .18); }
-    .toast.show { display: block; animation: toast-in .24s ease-out both; }
-    @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-    @media (max-width: 1100px) {
-      .iteration-row { grid-template-columns: 70px minmax(170px, 1.2fr) minmax(150px, 1.3fr) 76px auto; }
-      .updated { display: none; }
-    }
-    @media (max-width: 900px) {
-      .topline-inner, .shell { width: min(100% - 64px, 760px); }
-      .shell { display: block; }
-      .rail { padding: 22px 0 18px; border-right: 0; border-bottom: 1px solid var(--line); }
-      .rail-project { display: inline-block; margin: 20px 32px 0 0; padding: 0 0 8px; border: 0; vertical-align: top; }
-      .rail-nav { display: inline-flex; flex-wrap: wrap; vertical-align: top; }
-      .rail-note { display: none; }
-      .main { padding: 40px 0 80px; }
-      .iteration-row { grid-template-columns: 70px minmax(170px, 1fr) 78px auto; }
-      .iteration-goal { display: none; }
-    }
-    @media (max-width: 600px) {
-      .topline-inner, .shell { width: calc(100% - 32px); }
-      .topline-inner span:last-child { display: none; }
-      .rail { padding-top: 16px; }
-      .rail-project { display: block; margin: 18px 0 12px; }
-      .rail-nav { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .main { padding-top: 34px; }
-      .main-header { display: block; }
-      .main-header h1 { font-size: 42px; }
-      .main-header .button { width: 100%; margin-top: 24px; }
-      .project-strip { align-items: flex-start; flex-direction: column; gap: 11px; }
-      .list-toolbar { align-items: flex-start; flex-direction: column; }
-      .list-toolbar .button { width: 100%; }
-      .iteration-row { grid-template-columns: 58px minmax(0, 1fr) auto; gap: 7px 10px; min-height: 116px; padding: 17px 0; }
-      .iteration-number { align-self: start; padding-top: 3px; }
-      .iteration-name { align-self: start; }
-      .iteration-name strong { white-space: normal; line-height: 1.25; font-size: 17px; }
-      .iteration-goal { display: -webkit-box; grid-column: 2; grid-row: 2; margin-top: 0; font-size: 12px; -webkit-line-clamp: 2; }
-      .status { display: inline-flex; grid-column: 2; grid-row: 3; margin-top: 2px; padding: 4px 7px; font-size: 12px; }
-      .updated { display: none; }
-      .row-action { grid-column: 3; grid-row: 1 / span 3; align-self: center; flex-direction: column; }
-      .row-action .button { min-height: 44px; padding: 0 9px; }
-      .workspace { margin-top: 52px; }
-      .workspace-placeholder { align-items: flex-start; flex-direction: column; padding: 22px 20px; }
-      .workspace-placeholder .button { width: 100%; }
-      .drawer { padding: 28px 20px 34px; }
-      .workspace-actions .button { min-height: 44px; }
-      .drawer h2, .risk-dialog h2 { font-size: 34px; }
-      .risk-dialog { padding: 25px 20px; }
-      .drawer-actions, .risk-actions { flex-direction: column-reverse; }
-      .drawer-actions .button, .risk-actions .button { width: 100%; }
-      .toast { right: 16px; bottom: 16px; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
-    }
+    .iteration-goal { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; margin: 0; color: var(--ink-mute); font-size: 13px; line-height: 1.48; } .iteration-goal.empty { color: var(--ink-faint); font-style: italic; }
+    .status { display: inline-flex; align-items: center; width: max-content; padding: 7px 9px; color: var(--ink-mute); border: 1px solid var(--line); background: rgba(247,241,222,.36); font: 12px var(--mono); white-space: nowrap; }
+    .status::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: var(--ink-faint); } .status.active { color: var(--ink); border-color: rgba(237,111,92,.55); background: var(--coral-soft); } .status.active::before { background: var(--coral); }
+    .updated { color: var(--ink-faint); font: 12px var(--mono); } .iteration-actions { display: flex; justify-content: flex-end; align-items: center; gap: 7px; } .iteration-actions .button { min-height: 43px; padding: 0 12px; font-size: 13px; white-space: nowrap; } .iteration-actions .more-trigger { position: relative; margin: 0; }
+    .iteration-menu { top: 70px; right: 0; width: 185px; } .empty-iterations { padding: 44px 0; border-bottom: 1px dotted var(--line); color: var(--ink-mute); text-align: center; } .empty-iterations p { margin: 0 0 18px; }
+    .workspace-placeholder { display: flex; align-items: center; justify-content: space-between; gap: 22px; margin-top: 38px; padding: 22px 24px; color: var(--paper-light); background: var(--ink); } .workspace-placeholder p { margin: 0; font-size: 15px; }
+    .button { min-height: 48px; padding: 0 18px; border: 1px solid var(--ink); border-radius: 0; color: var(--ink); background: transparent; font: 600 14px var(--sans); transition: transform .2s ease, background .2s ease, color .2s ease, border-color .2s ease; }
+    .button:hover { transform: translateY(-2px); } .button.primary { border-color: var(--coral); background: var(--coral); } .button.primary:hover { border-color: var(--ink); color: var(--paper-light); background: var(--ink); }
+    .button.dark { border-color: var(--ink); color: var(--paper-light); background: var(--ink); } .button.dark:hover { border-color: var(--coral); color: var(--ink); background: var(--coral); } .button.quiet { color: var(--ink-mute); border-color: var(--line); } .button.quiet:hover { color: var(--ink); border-color: var(--ink); }
+    .button.danger { color: var(--paper-light); border-color: var(--coral-text); background: var(--coral-text); } .button.danger:hover { color: var(--paper-light); border-color: var(--ink); background: var(--ink); } .button:disabled { cursor: not-allowed; opacity: .48; transform: none; }
+    .modal-backdrop, .drawer-backdrop, .risk-backdrop { position: fixed; inset: 0; z-index: 30; display: none; background: rgba(21,20,15,.7); } .modal-backdrop.open, .drawer-backdrop.open, .risk-backdrop.open { display: flex; }
+    .modal-backdrop, .risk-backdrop { align-items: center; justify-content: center; padding: 24px; } .modal { width: min(560px,100%); max-height: calc(100vh - 48px); overflow-y: auto; padding: 34px; border: 1px solid var(--ink); background: var(--paper); box-shadow: 13px 15px 0 var(--paper-deep); }
+    .modal h2, .risk-dialog h2 { margin: 12px 0 0; font: 500 43px/.96 var(--serif); letter-spacing: -.03em; } .modal > p:not(.eyebrow), .risk-dialog > p:not(.eyebrow) { margin: 17px 0 0; color: var(--ink-mute); font-size: 15px; line-height: 1.65; }
+    .field { margin-top: 19px; } .field label, fieldset legend { display: block; margin-bottom: 8px; color: var(--ink-mute); font: 12px var(--mono); letter-spacing: .07em; text-transform: uppercase; }
+    input[type="text"], textarea { width: 100%; padding: 13px 14px; color: var(--ink); border: 1px solid var(--line); border-radius: 0; background: rgba(247,241,222,.86); font-size: 16px; } input[type="text"]:disabled { color: var(--ink-faint); background: rgba(21,20,15,.06); } textarea { min-height: 112px; resize: vertical; line-height: 1.55; }
+    .modal-actions, .drawer-actions, .risk-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 26px; padding-top: 21px; border-top: 1px dotted var(--line); } .danger-copy { margin-top: 22px !important; padding: 16px 17px; border: 1px solid var(--coral-text); background: rgba(237,111,92,.12); color: var(--ink) !important; }
+    .drawer-backdrop { align-items: stretch; justify-content: flex-end; } .drawer { width: min(580px,100%); height: 100%; overflow-y: auto; padding: 43px 42px 50px; background: var(--paper); box-shadow: -22px 0 36px rgba(21,20,15,.16); }
+    .drawer-head { display: flex; justify-content: space-between; gap: 20px; padding-bottom: 24px; border-bottom: 1px solid var(--line); } .drawer h2 { margin: 13px 0 0; font: 500 46px/.96 var(--serif); letter-spacing: -.03em; }
+    .close-button { width: 35px; height: 35px; border: 1px solid var(--line); border-radius: 0; color: var(--ink); background: transparent; font-size: 22px; line-height: 1; } .close-button:hover { color: var(--paper-light); border-color: var(--ink); background: var(--ink); }
+    .drawer-intro { margin: 21px 0 31px; color: var(--ink-mute); font-size: 15px; line-height: 1.65; } .choice-group { margin: 28px 0 0; padding: 0; border: 0; } .choice-list { display: grid; gap: 9px; }
+    .choice { display: flex; align-items: flex-start; gap: 14px; min-height: 82px; padding: 17px 16px; border: 1px solid var(--line); transition: border-color .18s ease, background .18s ease, transform .18s ease; } .choice:hover { transform: translateX(3px); border-color: var(--ink); } .choice.selected { border-color: var(--coral); background: var(--coral-soft); } .choice:focus-within { outline: 2px solid var(--coral); outline-offset: 3px; }
+    .choice input { position: absolute; opacity: 0; pointer-events: none; } .choice-marker { display: grid; place-items: center; flex: 0 0 22px; width: 22px; height: 22px; border: 1px solid var(--ink-mute); color: var(--ink); font: 11px var(--mono); } .choice.selected .choice-marker { border-color: var(--coral); background: var(--coral); }
+    .choice strong { display: block; font: 600 16px var(--sans); } .choice span:last-child { display: block; margin-top: 5px; color: var(--ink-mute); font-size: 13px; line-height: 1.5; } .target-field { display: none; margin-top: 17px; } .target-field.show { display: block; }
+    .form-error { min-height: 21px; margin: 12px 0 0; color: var(--coral-text); font-size: 12px; } .risk-dialog { width: min(610px,100%); max-height: calc(100vh - 48px); overflow-y: auto; padding: 39px; border: 1px solid var(--ink); background: var(--paper); box-shadow: 13px 15px 0 var(--paper-deep); }
+    .risk-items { display: grid; gap: 11px; margin-top: 24px; } .risk-item { padding: 15px 16px; border: 1px solid var(--line); background: rgba(247,241,222,.5); } .risk-item strong { display: block; color: var(--coral-text); font: 12px var(--mono); letter-spacing: .11em; text-transform: uppercase; } .risk-item p { margin: 6px 0 0; color: var(--ink-mute); font-size: 14px; line-height: 1.6; } .risk-footnote { margin: 20px 0 0; color: var(--ink-faint); font-size: 13px; }
+    .toast { position: fixed; right: 24px; bottom: 24px; z-index: 55; display: none; max-width: min(390px,calc(100% - 32px)); padding: 13px 16px; color: var(--paper-light); border-left: 3px solid var(--coral); background: var(--ink); font-size: 12px; box-shadow: 0 12px 24px rgba(21,20,15,.18); } .toast.show { display: block; animation: toast-in .24s ease-out both; } @keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width:1120px) { .iteration-row { grid-template-columns: 72px minmax(170px,1fr) minmax(170px,1.2fr) 90px auto; } .updated { display: none; } }
+    @media (max-width:860px) { .app-shell { grid-template-columns: 224px minmax(0,1fr); } .main { padding-left: 34px; } .iteration-row { grid-template-columns: 64px minmax(150px,1fr) 118px auto; } .iteration-goal { display: none; } .project-summary h2 { font-size: 56px; } }
+    @media (max-width:640px) { .topline { padding-inline: 16px; } .topline-inner span:last-child { display: none; } .app-shell { display: block; } .project-rail { padding: 22px 16px 24px; border-right: 0; border-bottom: 1px solid var(--line); } .project-heading { margin-top: 33px; } .project-heading h1 { font-size: 31px; } .project-heading p:not(.eyebrow) { max-width: none; } .new-project { margin-top: 17px; } .project-list { margin-top: 22px; } .main { padding: 35px 16px 76px; } .empty-state { min-height: 54vh; } .empty-state h2 { max-width: 340px; font-size: clamp(44px,13vw,64px); } .mobile-break { display: inline; } .project-summary { display: block; padding-bottom: 23px; } .project-summary h2 { font-size: 48px; } .iteration-section { padding-top: 30px; } .iteration-section-head { display: block; } .iteration-section-head h3 { font-size: 38px; } .create-iteration { width: 100%; margin-top: 18px; } .iteration-row { grid-template-columns: 52px minmax(0,1fr) auto; gap: 8px 10px; min-height: 128px; padding: 17px 0; } .iteration-number { align-self: start; padding-top: 3px; } .iteration-name { align-self: start; } .iteration-name strong { white-space: normal; font-size: 17px; line-height: 1.25; } .iteration-goal { display: -webkit-box; grid-column: 2; grid-row: 2; margin: 0; font-size: 12px; -webkit-line-clamp: 2; } .status { grid-column: 2; grid-row: 3; align-self: start; padding: 4px 7px; font-size: 11px; } .iteration-actions { grid-column: 3; grid-row: 1 / span 3; flex-direction: column; align-self: center; } .iteration-actions .button { min-height: 43px; padding-inline: 9px; } .workspace-placeholder { align-items: flex-start; flex-direction: column; padding: 20px; } .workspace-placeholder button { width: 100%; } .project-menu { right: 2px; } .modal { padding: 27px 20px; } .drawer { padding: 29px 20px 36px; } .drawer h2, .risk-dialog h2, .modal h2 { font-size: 36px; } .risk-dialog { padding: 28px 20px; } .modal-actions, .drawer-actions, .risk-actions { flex-direction: column-reverse; } .modal-actions .button, .drawer-actions .button, .risk-actions .button { width: 100%; } .toast { right: 16px; bottom: 16px; } }
+    @media (prefers-reduced-motion:reduce) { *, *::before, *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; } }
   </style>
 </head>
 <body>
   <div class="topline"><div class="topline-inner"><span>AI 产品现场 / V1.41 原型</span><span><strong>01</strong> · 创建与管理产品迭代</span></div></div>
-
-  <div class="shell">
-    <aside class="rail" aria-label="项目导航">
-      <a class="brand" href="#iterations"><span class="mark">A</span><span>AI 产品现场</span></a>
-      <div class="rail-project">
-        <p class="eyebrow">当前项目</p>
-        <strong>小红书新用户体验</strong>
-        <span>PRODUCT-042</span>
-      </div>
-      <nav class="rail-nav">
-        <a class="active" href="#iterations"><span class="nav-index">01</span>产品迭代</a>
-      </nav>
-      <p class="rail-note">项目拥有一棵文件树。<br>迭代只组织本轮目标、阶段和会话，不拥有项目文件。</p>
-    </aside>
-
-    <main class="main">
-      <header class="main-header" id="iterations">
-        <div>
-          <p class="eyebrow">PROJECT / ITERATIONS</p>
-          <h1>产品迭代</h1>
-          <p>把本轮要改变的事情说清楚，再进入你的工作区。稳定编号不会复用，展示名称和目标可以继续调整。</p>
-        </div>
-        <button class="button primary" id="open-create" type="button">创建产品迭代</button>
-      </header>
-
-      <section class="project-strip" aria-label="当前项目摘要">
-        <div><small>项目 Project</small><strong>小红书新用户体验</strong><span class="project-id">/ PRODUCT-042</span></div>
-        <span class="project-stat" id="iteration-count">2 个迭代</span>
-      </section>
-
-      <div class="list-toolbar"><p><strong>你的产品迭代</strong>最近更新 <span class="mono">·</span> 稳定编号只增不减</p><span class="mono" style="color: var(--ink-faint); font-size: 12px;">PROJECT SCOPE / SHARED FILE TREE</span></div>
-      <section class="iteration-list" id="iteration-list" aria-label="产品迭代列表"></section>
-
-      <section class="workspace" id="workspace" aria-label="工作区占位" hidden>
-        <div class="workspace-placeholder">
-          <p id="workspace-placeholder-text">工作区已打开。这里的工作台界面由后续原型定义。</p>
-          <button class="button" id="back-to-list" type="button">返回迭代列表</button>
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <div class="drawer-backdrop" id="edit-layer" role="presentation">
-    <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="edit-title">
-      <div class="drawer-head"><div><p class="eyebrow">ITERATION / EDIT</p><h2 id="edit-title">编辑迭代</h2></div><button class="close-button" data-close="edit-layer" type="button" aria-label="关闭编辑面板">×</button></div>
-      <p class="drawer-intro">展示名称和本轮目标可以随时更新。稳定编号是这次迭代的长期身份，创建后不可修改。</p>
-      <form id="edit-form" novalidate>
-        <div class="field"><label for="edit-number">稳定编号</label><input id="edit-number" type="text" disabled></div>
-        <div class="field"><label for="edit-name">展示名称 <span class="mono">REQUIRED</span></label><input id="edit-name" type="text" maxlength="80" required></div>
-        <div class="field"><label for="edit-goal">本轮目标 <span class="mono">OPTIONAL</span></label><textarea id="edit-goal" maxlength="500" placeholder="这一轮最想改变什么？"></textarea></div>
-        <p class="form-error" id="edit-error" role="alert"></p>
-        <div class="drawer-actions"><button class="button quiet" data-close="edit-layer" type="button">取消</button><button class="button dark" id="save-edit" type="submit">保存修改</button></div>
-      </form>
-    </aside>
-  </div>
-
-  <div class="drawer-backdrop" id="create-layer" role="presentation">
-    <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="create-title">
-      <div class="drawer-head"><div><p class="eyebrow">NEW ITERATION / CREATE</p><h2 id="create-title">建立下一轮工作</h2></div><button class="close-button" data-close="create-layer" type="button" aria-label="关闭创建面板">×</button></div>
-      <p class="drawer-intro">先给这一轮一个可读的名字，再明确你是否要提供本轮目标。两个选项都不会替你默认选择。</p>
-      <form id="create-form" novalidate>
-        <div class="field"><label for="create-name">展示名称 <span class="mono">REQUIRED</span></label><input id="create-name" type="text" maxlength="80" placeholder="例如：降低首次使用流失" required></div>
-        <fieldset class="choice-group"><legend>本轮目标 <span class="mono">CHOOSE ONE</span></legend><div class="choice-list">
-          <label class="choice" data-choice="fill"><input type="radio" name="target-mode" value="fill"><span class="choice-marker">A</span><span><strong>填写本轮目标</strong><span>让四个阶段的 Agent 知道这一轮要解决什么。</span></span></label>
-          <label class="choice" data-choice="skip"><input type="radio" name="target-mode" value="skip"><span class="choice-marker">B</span><span><strong>暂不填写</strong><span>稍后仍可补充，但 Agent 不会替你猜测目标。</span></span></label>
-        </div></fieldset>
-        <div class="target-field" id="create-goal-field"><label for="create-goal">本轮目标</label><textarea id="create-goal" maxlength="500" placeholder="这一轮最想改变什么？"></textarea></div>
-        <p class="form-error" id="create-error" role="alert"></p>
-        <div class="drawer-actions"><button class="button quiet" data-close="create-layer" type="button">取消</button><button class="button primary" type="submit">创建并进入工作区</button></div>
-      </form>
-    </aside>
-  </div>
-
-  <div class="risk-backdrop" id="risk-layer" role="presentation">
-    <section class="risk-dialog" role="dialog" aria-modal="true" aria-labelledby="risk-title">
-      <p class="eyebrow">DECISION CHECK / TARGET</p><h2 id="risk-title">暂不填写本轮目标？</h2>
-      <p>你可以继续，但请确认你了解这会给本轮工作带来的边界。</p>
-      <div class="risk-items"><div class="risk-item"><strong>Agent 已知</strong><p>项目、迭代编号、你手动加载的文件，以及你在对话中提供的内容。</p></div><div class="risk-item"><strong>Agent 未知</strong><p>它不会知道本轮要改变什么，也不会根据迭代名称或文件目录替你猜测。</p></div></div>
-      <p class="risk-footnote">确认后，本次创建不再重复警告。创建后回到迭代列表，你仍然可以补充或修改本轮目标。</p>
-      <div class="risk-actions"><button class="button quiet" id="risk-return" type="button">返回重新选择</button><button class="button primary" id="risk-confirm" type="button">确认暂不填写</button></div>
-    </section>
-  </div>
-
+  <div class="app-shell"><aside class="project-rail" aria-label="我的项目"><a class="brand" href="#top"><span class="mark">A</span><span>AI 产品现场</span></a><div class="project-heading"><p class="eyebrow">PROJECTS / WORKSPACE</p><h1>我的项目</h1><p>选择一个项目，管理它的产品迭代。</p></div><button class="button primary new-project" data-create-project type="button">新建一个项目</button><div class="project-list" id="project-list" aria-label="项目列表"></div></aside><main class="main" id="top"></main></div>
+  <div class="modal-backdrop" id="modal-layer" role="presentation"><section class="modal" id="modal-content" role="dialog" aria-modal="true"></section></div>
+  <div class="drawer-backdrop" id="drawer-layer" role="presentation"><aside class="drawer" id="drawer-content" role="dialog" aria-modal="true"></aside></div>
+  <div class="risk-backdrop" id="risk-layer" role="presentation"><section class="risk-dialog" role="dialog" aria-modal="true" aria-labelledby="risk-title"><p class="eyebrow">DECISION CHECK / TARGET</p><h2 id="risk-title">暂不填写本轮目标？</h2><p>你可以继续，但请确认你了解这会给本轮工作带来的边界。</p><div class="risk-items"><div class="risk-item"><strong>Agent 已知</strong><p>项目、迭代编号、你手动加载的文件，以及你在对话中提供的内容。</p></div><div class="risk-item"><strong>Agent 未知</strong><p>它不会知道本轮要改变什么，也不会根据迭代名称或文件目录替你猜测。</p></div></div><p class="risk-footnote">确认后，本次创建不再重复警告。创建后回到迭代列表，你仍然可以补充或修改本轮目标。</p><div class="risk-actions"><button class="button quiet" id="risk-return" type="button">返回重新选择</button><button class="button primary" id="risk-confirm" type="button">确认暂不填写</button></div></section></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
   <script>
-    const state = {
-      iterations: [
-        { id: 1, name: "重做新用户 onboarding", goal: "让第一次打开产品的人，在 10 分钟内理解 AI 产品经理的工作方式。", status: "进行中", updated: "刚刚" },
-        { id: 2, name: "降低首次使用流失", goal: "", status: "未开始", updated: "昨天" }
-      ],
-      nextId: 3,
-      currentId: null,
-      riskConfirmed: false,
-      draftMode: ""
-    };
-
-    const $ = (selector) => document.querySelector(selector);
-    const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
-    const pad = (number) => String(number).padStart(2, "0");
-    const escapeHtml = (value) => String(value).replace(/[&<>\"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[char]));
-
-    function showToast(message) {
-      const toast = $("#toast");
-      toast.textContent = message;
-      toast.classList.add("show");
-      window.clearTimeout(showToast.timer);
-      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 3200);
-    }
-
-    let lastTrigger = null;
-
-    function setLayer(id, isOpen) {
-      const layer = $("#" + id);
-      layer.classList.toggle("open", isOpen);
-      if (isOpen) document.body.style.overflow = "hidden";
-      else if (!$(".drawer-backdrop.open") && !$(".risk-backdrop.open")) {
-        document.body.style.overflow = "";
-        if (lastTrigger && document.contains(lastTrigger)) { lastTrigger.focus(); lastTrigger = null; }
-      }
-    }
-
-    function renderList() {
-      $("#iteration-count").textContent = `${state.iterations.length} 个迭代`;
-      $("#iteration-list").innerHTML = state.iterations.map((item) => `
-        <article class="iteration-row">
-          <span class="iteration-number">迭代 ${pad(item.id)}</span>
-          <div class="iteration-name"><strong title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</strong><span>展示名称 · 可修改</span></div>
-          <span class="iteration-goal${item.goal ? "" : " empty"}">${item.goal ? escapeHtml(item.goal) : "尚未填写本轮目标 · 不会自动猜测"}</span>
-          <span class="status${item.status === "进行中" ? " active" : ""}">${item.status}</span>
-          <span class="updated">更新 · ${escapeHtml(item.updated)}</span>
-          <span class="row-action"><button class="button edit" type="button" data-edit="${item.id}">编辑迭代</button><button class="button quiet" type="button" data-enter="${item.id}">进入工作区</button></span>
-        </article>
-      `).join("");
-      $$('[data-enter]').forEach((button) => button.addEventListener("click", () => openWorkspace(Number(button.dataset.enter))));
-      $$('[data-edit]').forEach((button) => button.addEventListener("click", () => openEdit(Number(button.dataset.edit), button)));
-    }
-
-    function openWorkspace(id) {
-      const item = state.iterations.find((entry) => entry.id === id);
-      if (!item) return;
-      state.currentId = id;
-      $("#workspace-placeholder-text").textContent = `工作区已打开 · 迭代 ${pad(item.id)}「${item.name}」。工作台界面由后续原型定义。`;
-      $("#workspace").hidden = false;
-      renderList();
-      window.requestAnimationFrame(() => $("#workspace").scrollIntoView({ behavior: "smooth", block: "start" }));
-    }
-
-    function openEdit(id, trigger) {
-      const item = state.iterations.find((entry) => entry.id === id);
-      if (!item) return;
-      state.currentId = id;
-      lastTrigger = trigger;
-      $("#edit-number").value = `迭代 ${pad(item.id)}`;
-      $("#edit-name").value = item.name;
-      $("#edit-goal").value = item.goal;
-      $("#edit-error").textContent = "";
-      setLayer("edit-layer", true);
-      window.setTimeout(() => $("#edit-name").focus(), 30);
-    }
-
-    function resetCreateForm() {
-      $("#create-form").reset();
-      $("#create-goal-field").classList.remove("show");
-      $("#create-error").textContent = "";
-      state.riskConfirmed = false;
-      state.draftMode = "";
-      $$(".choice").forEach((choice) => choice.classList.remove("selected"));
-    }
-
-    function openCreate() {
-      resetCreateForm();
-      lastTrigger = $("#open-create");
-      setLayer("create-layer", true);
-      window.setTimeout(() => $("#create-name").focus(), 30);
-    }
-
-    function selectMode(mode) {
-      state.draftMode = mode;
-      $$(".choice").forEach((choice) => choice.classList.toggle("selected", choice.dataset.choice === mode));
-      $("#create-goal-field").classList.toggle("show", mode === "fill");
-      if (mode === "skip" && !state.riskConfirmed) {
-        setLayer("risk-layer", true);
-        window.setTimeout(() => $("#risk-confirm").focus(), 30);
-      }
-    }
-
-    $("#open-create").addEventListener("click", openCreate);
-    $$('[data-close]').forEach((button) => button.addEventListener("click", () => setLayer(button.dataset.close, false)));
-    $$(".choice").forEach((choice) => choice.addEventListener("click", () => {
-      const input = choice.querySelector("input");
-      input.checked = true;
-      selectMode(input.value);
-    }));
-    $("#risk-return").addEventListener("click", () => { setLayer("risk-layer", false); window.setTimeout(() => $("[data-choice=skip] input").focus(), 0); });
-    $("#risk-confirm").addEventListener("click", () => {
-      state.riskConfirmed = true;
-      setLayer("risk-layer", false);
-      showToast("已记录选择。创建前仍可返回填写目标。");
-    });
-    $("#create-form").addEventListener("submit", (event) => {
-      event.preventDefault();
-      const name = $("#create-name").value.trim();
-      const mode = state.draftMode;
-      const goal = $("#create-goal").value.trim();
-      const error = $("#create-error");
-      if (!name) { error.textContent = "请先填写展示名称。"; $("#create-name").focus(); return; }
-      if (!mode) { error.textContent = "请选择填写本轮目标，或确认暂不填写。"; return; }
-      if (mode === "fill" && !goal) { error.textContent = "填写目标分支需要至少写下一句话。"; $("#create-goal").focus(); return; }
-      if (mode === "skip" && !state.riskConfirmed) { setLayer("risk-layer", true); window.setTimeout(() => $("#risk-confirm").focus(), 30); return; }
-      const item = { id: state.nextId++, name, goal: mode === "fill" ? goal : "", status: "未开始", updated: "刚刚" };
-      state.iterations.unshift(item);
-      setLayer("create-layer", false);
-      openWorkspace(item.id);
-      showToast(`迭代 ${pad(item.id)} 已创建，已进入工作区。`);
-    });
-    $("#back-to-list").addEventListener("click", () => {
-      $("#workspace").hidden = true;
-      state.currentId = null;
-      renderList();
-      $("#iterations").scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-    $("#edit-form").addEventListener("submit", (event) => {
-      event.preventDefault();
-      const item = state.iterations.find((entry) => entry.id === state.currentId);
-      const name = $("#edit-name").value.trim();
-      if (!item || !name) { $("#edit-error").textContent = "展示名称不能为空。"; $("#edit-name").focus(); return; }
-      const button = $("#save-edit");
-      button.disabled = true;
-      button.textContent = "保存中...";
-      window.setTimeout(() => {
-        item.name = name;
-        item.goal = $("#edit-goal").value.trim();
-        item.updated = "刚刚";
-        button.disabled = false;
-        button.textContent = "保存修改";
-        setLayer("edit-layer", false);
-        renderList();
-        showToast("迭代信息已保存，稳定编号保持不变。");
-      }, 420);
-    });
-    ["create-layer", "edit-layer", "risk-layer"].forEach((id) => $("#" + id).addEventListener("click", (event) => { if (event.target.id === id) setLayer(id, false); }));
-    document.addEventListener("keydown", (event) => {
-      const activeLayer = $("#risk-layer.open") || $("#create-layer.open") || $("#edit-layer.open");
-      if (event.key === "Escape") {
-        if ($("#risk-layer.open")) setLayer("risk-layer", false);
-        else if ($("#create-layer.open")) setLayer("create-layer", false);
-        else if ($("#edit-layer.open")) setLayer("edit-layer", false);
-        return;
-      }
-      if (event.key !== "Tab" || !activeLayer) return;
-      const focusable = $$('button:not([disabled]), input:not([disabled]), textarea, [tabindex="0"]', activeLayer);
-      if (!focusable.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-    });
-    renderList();
+    const state = { projects: [{ id:1,name:"小红书新用户体验",code:"PRODUCT-042",updated:"今天 10:42" },{ id:2,name:"AI 学习助手",code:"PRODUCT-018",updated:"昨天 16:20" },{ id:3,name:"求职作品集改版",code:"PRODUCT-007",updated:"3 天前" }], iterations: { 1:[{id:1,name:"重做新用户 onboarding",goal:"让第一次打开产品的人，在 10 分钟内理解 AI 产品经理的工作方式。",status:"进行中",updated:"刚刚"},{id:2,name:"降低首次使用流失",goal:"",status:"未开始",updated:"昨天"}], 2:[{id:1,name:"学习路径重构",goal:"",status:"已完成",updated:"昨天"}], 3:[{id:1,name:"作品案例结构调整",goal:"让面试官在 3 分钟内理解项目判断。",status:"进行中",updated:"3 天前"}] }, nextProject:4,nextIteration:{1:3,2:2,3:2},selectedProject:null,menu:null,modal:null,drawer:null,workspace:null,riskConfirmed:false,draftMode:"",animateProject:false,lastTrigger:null };
+    const $ = (s) => document.querySelector(s); const $$ = (s,r=document) => Array.from(r.querySelectorAll(s)); const pad = (n) => String(n).padStart(2,"0"); const escapeHtml = (v) => String(v).replace(/[&<>\"']/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); const currentIterations = () => state.selectedProject ? (state.iterations[state.selectedProject] || []) : []; const selectedProject = () => state.projects.find((p) => p.id === state.selectedProject);
+    function showToast(message) { const toast=$("#toast"); toast.textContent=message; toast.classList.add("show"); clearTimeout(showToast.timer); showToast.timer=setTimeout(()=>toast.classList.remove("show"),3200); }
+    function focusFirst(root) { setTimeout(()=>root?.querySelector("input:not([disabled]), textarea, button")?.focus(),20); } function openLayer(id) { $("#"+id).classList.add("open"); document.body.style.overflow="hidden"; } function closeLayer(id) { $("#"+id).classList.remove("open"); if (!["modal-layer","drawer-layer","risk-layer"].some((l)=>$("#"+l).classList.contains("open"))) { document.body.style.overflow=""; if(state.lastTrigger && document.contains(state.lastTrigger)) state.lastTrigger.focus(); state.lastTrigger=null; } }
+    function projectListHtml() { return state.projects.map((p)=>{ const open=state.menu===`project-${p.id}`, count=(state.iterations[p.id]||[]).length; return `<div class="project-item${state.selectedProject===p.id?" selected":""}"><button class="project-select" data-project="${p.id}" type="button"><strong title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</strong><span>${p.code}</span></button><button class="more-trigger" data-project-menu="${p.id}" type="button" aria-label="${escapeHtml(p.name)} 更多功能" aria-expanded="${open}">···</button><div class="project-menu${open?" open":""}"><div class="menu-meta">最近更新时间 · ${escapeHtml(p.updated)}<br>产品迭代数量 · ${count} 个</div><button class="menu-action" data-rename-project="${p.id}" type="button">重命名</button><button class="menu-action danger" data-delete-project="${p.id}" type="button">删除项目</button></div></div>`; }).join(""); }
+    function iterationListHtml() { const items=currentIterations(); if(!items.length) return `<div class="empty-iterations"><p>这个项目还没有产品迭代。</p><button class="button primary" data-create-iteration type="button">创建产品迭代</button></div>`; return items.map((item)=>{ const open=state.menu===`iteration-${item.id}`; return `<article class="iteration-row"><span class="iteration-number">迭代 ${pad(item.id)}</span><div class="iteration-name"><strong title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</strong></div><p class="iteration-goal${item.goal?"":" empty"}">${item.goal?escapeHtml(item.goal):"尚未填写本轮目标 · 不会自动猜测"}</p><span class="status${item.status==="进行中"?" active":""}">${item.status}</span><span class="updated">更新 · ${escapeHtml(item.updated)}</span><div class="iteration-actions"><button class="button quiet" data-edit-iteration="${item.id}" type="button">编辑迭代</button><button class="more-trigger" data-iteration-menu="${item.id}" type="button" aria-label="${escapeHtml(item.name)} 更多功能" aria-expanded="${open}">···</button><div class="iteration-menu${open?" open":""}"><button class="menu-action" data-enter-iteration="${item.id}" type="button">进入工作区</button><button class="menu-action danger" data-delete-iteration="${item.id}" type="button">删除产品迭代</button></div></div></article>`; }).join(""); }
+    function mainHtml() { if(!state.selectedProject) return `<section class="empty-state"><h2>让我们<span class="mobile-break"><br></span>开始工作</h2><p>先创建一个项目，或从左侧选择已有项目。</p><button class="button primary" data-create-project type="button">新建一个项目</button></section>`; const p=selectedProject(); if(state.workspace) return `<section class="workspace-placeholder"><p>工作区已打开。这里的工作台界面由后续原型定义。</p></section>`; return `<section class="project-view active${state.animateProject?" enter-once":""}"><header class="project-summary"><div><p class="eyebrow">SELECTED PROJECT / ${p.code}</p><h2>${escapeHtml(p.name)}</h2><div class="project-summary-meta"><span>${p.code}</span><span>最近更新 ${escapeHtml(p.updated)}</span></div></div></header><section class="iteration-section"><div class="iteration-section-head"><div><h3>产品迭代</h3><p>一个项目可以有多个迭代，稳定编号只增不减。</p></div><button class="button primary create-iteration" data-create-iteration type="button">创建产品迭代</button></div><div class="iteration-list">${iterationListHtml()}</div></section></section>`; }
+    function render() { const animate=state.animateProject; $("#project-list").innerHTML=projectListHtml(); $(".main").innerHTML=mainHtml(); state.animateProject=false; bind(); if(animate) setTimeout(()=>$(".project-view")?.classList.remove("enter-once"),520); }
+    function openModal(kind,payload={},trigger=null) { state.modal={kind,...payload}; state.lastTrigger=trigger||document.activeElement; const c=$("#modal-content"); if(kind==="create-project") c.innerHTML=`<p class="eyebrow">PROJECT / CREATE</p><h2>新建一个项目</h2><p>项目是长期容器，产品迭代和项目文件都归属于它。</p><div class="field"><label for="project-name">项目名称</label><input id="project-name" type="text" maxlength="80" placeholder="例如：小红书新用户体验"></div><div class="field"><label for="project-desc">项目描述（可选）</label><textarea id="project-desc" maxlength="300" placeholder="这个项目要解决什么问题？"></textarea></div><div class="modal-actions"><button class="button quiet" data-close-modal type="button">取消</button><button class="button primary" data-save-project type="button">创建项目</button></div>`; if(kind==="rename-project") c.innerHTML=`<p class="eyebrow">PROJECT / RENAME</p><h2>重命名项目</h2><div class="field"><label for="rename-project-name">项目名称</label><input id="rename-project-name" type="text" maxlength="80" value="${escapeHtml(payload.project.name)}"></div><div class="modal-actions"><button class="button quiet" data-close-modal type="button">取消</button><button class="button primary" data-save-rename type="button">保存名称</button></div>`; if(kind==="delete-project") c.innerHTML=`<p class="eyebrow">PROJECT / DELETE</p><h2>删除项目？</h2><p class="danger-copy">删除“${escapeHtml(payload.project.name)}”后，该项目下的产品迭代、聊天记录和项目文件都会被永久删除，且无法恢复。</p><div class="modal-actions"><button class="button quiet" data-close-modal type="button">取消</button><button class="button danger" data-confirm-delete-project type="button">确认删除项目</button></div>`; if(kind==="delete-iteration") c.innerHTML=`<p class="eyebrow">ITERATION / DELETE · 迭代 ${pad(payload.item.id)}</p><h2>删除产品迭代？</h2><p class="danger-copy">删除后，这一轮的聊天记录和还没确认保存的内容会被删除，但已确认保存的内容及其变更记录会保留。你可以在文件树内把这些内容彻底删除。</p><div class="modal-actions"><button class="button quiet" data-close-modal type="button">取消</button><button class="button danger" data-confirm-delete-iteration type="button">确认删除迭代</button></div>`; openLayer("modal-layer"); focusFirst(c); }
+    function openDrawer(kind,payload={},trigger=null) { state.drawer={kind,...payload}; state.lastTrigger=trigger||document.activeElement; const c=$("#drawer-content"); if(kind==="create-iteration") c.innerHTML=`<div class="drawer-head"><div><p class="eyebrow">ITERATION / CREATE</p><h2>创建产品迭代</h2></div><button class="close-button" data-close-drawer type="button" aria-label="关闭创建面板">×</button></div><p class="drawer-intro">先给这一轮一个可读的名字，再明确你是否要提供本轮目标。两个选项都不会替你默认选择。</p><form id="create-form" novalidate><div class="field"><label for="create-name">展示名称 <span class="mono">REQUIRED</span></label><input id="create-name" type="text" maxlength="80" placeholder="例如：降低首次使用流失" required></div><fieldset class="choice-group"><legend>本轮目标 <span class="mono">CHOOSE ONE</span></legend><div class="choice-list"><label class="choice" data-choice="fill"><input type="radio" name="target-mode" value="fill"><span class="choice-marker">A</span><span><strong>填写本轮目标</strong><span>让四个阶段的 Agent 知道这一轮要解决什么。</span></span></label><label class="choice" data-choice="skip"><input type="radio" name="target-mode" value="skip"><span class="choice-marker">B</span><span><strong>暂不填写</strong><span>稍后仍可补充，但 Agent 不会替你猜测目标。</span></span></label></div></fieldset><div class="target-field" id="create-goal-field"><label for="create-goal">本轮目标</label><textarea id="create-goal" maxlength="500" placeholder="这一轮最想改变什么？"></textarea></div><p class="form-error" id="create-error" role="alert"></p><div class="drawer-actions"><button class="button quiet" data-close-drawer type="button">取消</button><button class="button primary" type="submit">创建并进入工作区</button></div></form>`; if(kind==="edit-iteration") c.innerHTML=`<div class="drawer-head"><div><p class="eyebrow">ITERATION / EDIT · 迭代 ${pad(payload.item.id)}</p><h2>编辑产品迭代</h2></div><button class="close-button" data-close-drawer type="button" aria-label="关闭编辑面板">×</button></div><p class="drawer-intro">展示名称和本轮目标可以随时更新。稳定编号是这次迭代的长期身份，创建后不可修改。</p><form id="edit-form" novalidate><div class="field"><label for="edit-number">稳定编号</label><input id="edit-number" type="text" value="迭代 ${pad(payload.item.id)}" disabled></div><div class="field"><label for="edit-name">展示名称 <span class="mono">REQUIRED</span></label><input id="edit-name" type="text" maxlength="80" value="${escapeHtml(payload.item.name)}" required></div><div class="field"><label for="edit-goal">本轮目标 <span class="mono">OPTIONAL</span></label><textarea id="edit-goal" maxlength="500" placeholder="这一轮最想改变什么？">${escapeHtml(payload.item.goal)}</textarea></div><p class="form-error" id="edit-error" role="alert"></p><div class="drawer-actions"><button class="button quiet" data-close-drawer type="button">取消</button><button class="button dark" id="save-edit" type="submit">保存修改</button></div></form>`; openLayer("drawer-layer"); bindDrawer(); focusFirst(c); }
+    function selectProject(id) { if(state.selectedProject===id) { state.workspace=null; state.menu=null; render(); return; } state.selectedProject=id; state.workspace=null; state.menu=null; state.animateProject=true; render(); }
+    function bind() { $$('[data-project]').forEach((b)=>b.addEventListener("click",()=>selectProject(Number(b.dataset.project)))); $$('[data-project-menu]').forEach((b)=>b.addEventListener("click",(e)=>{e.stopPropagation();const k=`project-${b.dataset.projectMenu}`;state.menu=state.menu===k?null:k;render();})); $$('[data-create-project]').forEach((b)=>b.addEventListener("click",()=>openModal("create-project",{},b))); $$('[data-rename-project]').forEach((b)=>b.addEventListener("click",()=>{const p=state.projects.find((x)=>x.id===Number(b.dataset.renameProject));openModal("rename-project",{project:p},b);})); $$('[data-delete-project]').forEach((b)=>b.addEventListener("click",()=>{const p=state.projects.find((x)=>x.id===Number(b.dataset.deleteProject));openModal("delete-project",{project:p},b);})); $$('[data-create-iteration]').forEach((b)=>b.addEventListener("click",()=>openDrawer("create-iteration",{},b))); $$('[data-edit-iteration]').forEach((b)=>b.addEventListener("click",()=>{const item=currentIterations().find((x)=>x.id===Number(b.dataset.editIteration));openDrawer("edit-iteration",{item},b);})); $$('[data-iteration-menu]').forEach((b)=>b.addEventListener("click",(e)=>{e.stopPropagation();const k=`iteration-${b.dataset.iterationMenu}`;state.menu=state.menu===k?null:k;render();})); $$('[data-enter-iteration]').forEach((b)=>b.addEventListener("click",()=>{const item=currentIterations().find((x)=>x.id===Number(b.dataset.enterIteration));if(item){state.workspace=item;state.menu=null;render();}})); $$('[data-delete-iteration]').forEach((b)=>b.addEventListener("click",()=>{const item=currentIterations().find((x)=>x.id===Number(b.dataset.deleteIteration));openModal("delete-iteration",{item},b);})); $$('[data-back-list]').forEach((b)=>b.addEventListener("click",()=>{state.workspace=null;render();})); }
+    function bindDrawer() { $$('[data-close-drawer]').forEach((b)=>b.addEventListener("click",()=>{closeLayer("drawer-layer");state.drawer=null;})); $$(".choice").forEach((choice)=>choice.addEventListener("click",()=>{const input=choice.querySelector("input");input.checked=true;state.draftMode=input.value;$(".choice-list")&&$$(".choice").forEach((e)=>e.classList.toggle("selected",e===choice));$("#create-goal-field")?.classList.toggle("show",state.draftMode==="fill");if(state.draftMode==="skip"&&!state.riskConfirmed){openLayer("risk-layer");setTimeout(()=>$("#risk-confirm")?.focus(),20);}})); $("#create-form")?.addEventListener("submit",(e)=>{e.preventDefault();const name=$("#create-name").value.trim(),mode=state.draftMode,goal=$("#create-goal")?.value.trim()||"",error=$("#create-error");if(!name){error.textContent="请先填写展示名称。";$("#create-name").focus();return;}if(!mode){error.textContent="请选择填写本轮目标，或确认暂不填写。";return;}if(mode==="fill"&&!goal){error.textContent="填写目标分支需要至少写下一句话。";$("#create-goal").focus();return;}if(mode==="skip"&&!state.riskConfirmed){openLayer("risk-layer");return;}const id=state.nextIteration[state.selectedProject]||1;state.nextIteration[state.selectedProject]=id+1;const item={id,name,goal:mode==="fill"?goal:"",status:"未开始",updated:"刚刚"};state.iterations[state.selectedProject].unshift(item);selectedProject().updated="刚刚";closeLayer("drawer-layer");state.drawer=null;state.workspace=item;render();showToast(`迭代 ${pad(item.id)} 已创建，已进入工作区。`);}); $("#edit-form")?.addEventListener("submit",(e)=>{e.preventDefault();const item=state.drawer.item,name=$("#edit-name").value.trim();if(!name){$("#edit-error").textContent="展示名称不能为空。";$("#edit-name").focus();return;}const save=$("#save-edit");save.disabled=true;save.textContent="保存中...";setTimeout(()=>{item.name=name;item.goal=$("#edit-goal").value.trim();item.updated="刚刚";selectedProject().updated="刚刚";save.disabled=false;closeLayer("drawer-layer");state.drawer=null;render();showToast("迭代信息已保存，稳定编号保持不变。");},420);}); }
+    $("#modal-layer").addEventListener("click",(e)=>{if(e.target.id==="modal-layer"){closeLayer("modal-layer");state.modal=null;render();}}); $("#modal-content").addEventListener("click",(e)=>{const t=e.target;if(t.matches("[data-close-modal]")){closeLayer("modal-layer");state.modal=null;render();return;}if(t.matches("[data-save-project]")){const name=$("#project-name").value.trim();if(!name){$("#project-name").focus();return;}const id=state.nextProject++;state.projects.unshift({id,name,code:`PRODUCT-${String(id).padStart(3,"0")}`,updated:"刚刚"});state.iterations[id]=[];state.nextIteration[id]=1;state.selectedProject=id;state.workspace=null;state.animateProject=true;closeLayer("modal-layer");state.modal=null;render();showToast("项目已创建。");return;}if(t.matches("[data-save-rename]")){const p=state.modal.project,name=$("#rename-project-name").value.trim();if(name){p.name=name;p.updated="刚刚";}closeLayer("modal-layer");state.modal=null;render();showToast("项目名称已更新。");return;}if(t.matches("[data-confirm-delete-project]")){const id=state.modal.project.id;state.projects=state.projects.filter((p)=>p.id!==id);delete state.iterations[id];delete state.nextIteration[id];state.selectedProject=null;state.workspace=null;closeLayer("modal-layer");state.modal=null;render();showToast("项目已删除。");return;}if(t.matches("[data-confirm-delete-iteration]")){const id=state.modal.item.id;state.iterations[state.selectedProject]=currentIterations().filter((item)=>item.id!==id);if(state.workspace?.id===id)state.workspace=null;selectedProject().updated="刚刚";closeLayer("modal-layer");state.modal=null;state.menu=null;render();showToast("产品迭代已删除。");}});
+    $("#risk-return").addEventListener("click",()=>{closeLayer("risk-layer");$("[data-choice='skip'] input")?.focus();}); $("#risk-confirm").addEventListener("click",()=>{state.riskConfirmed=true;closeLayer("risk-layer");showToast("已记录选择。创建前仍可返回填写目标。");}); $("#risk-layer").addEventListener("click",(e)=>{if(e.target.id==="risk-layer")closeLayer("risk-layer")}); $("#drawer-layer").addEventListener("click",(e)=>{if(e.target.id==="drawer-layer"){closeLayer("drawer-layer");state.drawer=null;}}); document.addEventListener("click",(e)=>{if(!e.target.closest(".project-item,.iteration-actions")&&state.menu){state.menu=null;render();}}); document.addEventListener("keydown",(e)=>{if(e.key!=="Escape")return;if($("#risk-layer.open"))closeLayer("risk-layer");else if($("#drawer-layer.open")){closeLayer("drawer-layer");state.drawer=null;}else if($("#modal-layer.open")){closeLayer("modal-layer");state.modal=null;render();}else if(state.menu){state.menu=null;render();}});
+    render();
   </script>
 </body>
 </html>
