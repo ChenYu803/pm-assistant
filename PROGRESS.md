@@ -12,7 +12,7 @@ v1.41 将重铸认证后的四环实践工作台，同时解决现有流程难�
 
 `.scratch/pm-assistant-v1.41/spec.md` 已按 grilling 结论发布为 `ready-for-agent`，覆盖产品迭代身份与目标、四环一级导航、阶段状态和多会话、项目文件树、手动上下文、候选确认、纯 Markdown、内容修订与一次撤回、永久来源记录、任务拆分整套更新、删除语义、响应式工作台和视觉责任边界。v1.41 按全新数据库验收，不迁移或兼容旧数据；本次规格阶段未清空数据库。
 
-实现前需要产品经理按 ticket 提供关键主流程原型或明确复用已有视觉来源。原型负责关键视觉层级、布局、控件和特殊交互，spec 负责行为、权限和数据事实；普通加载、失败、禁用、无特殊要求的移动端适配和技术实现由 Agent 按已确认方向补齐。两者在关键决策处冲突时必须在实现前显式处理，不能由 implement Agent 自行猜测。新增 `.scratch/pm-assistant-v1.41/v1.41-prototype-inputs.md` 作为 v1.41 专属的逐票原型交付清单，新增 `docs/agents/v1.41-implement-prototype-contract.md` 作为 v1.41 专属的 Implement Agent 开工检查和阻塞纪律；v1.41 最终验收票会删除后者并从 AGENTS.md 移除对应开工步骤。当前 01 号票已交付可访问 HTML 原型并改为 ready-for-agent，已收敛为单一 A 方案的高保真项目入口：左侧我的项目列表、项目菜单与 CRUD（含项目描述查看/编辑），右侧项目迭代列表、创建/编辑/删除和单行工作区占位；切换项目动画仅播放一次，并完成桌面/移动端无横向溢出检查。Impeccable detector 已恢复并通过 SHA-256 校验，当前仅保留既定视觉基线的 Inter/暖纸色与纸色上的辅助文字提示；其余票仍等待对应输入。
+实现前需要产品经理按 ticket 提供关键主流程原型或明确复用已有视觉来源。原型负责关键视觉层级、布局、控件和特殊交互，spec 负责行为、权限和数据事实；普通加载、失败、禁用、无特殊要求的移动端适配和技术实现由 Agent 按已确认方向补齐。两者在关键决策处冲突时必须在实现前显式处理，不能由 implement Agent 自行猜测。新增 `.scratch/pm-assistant-v1.41/v1.41-prototype-inputs.md` 作为 v1.41 专属的逐票原型交付清单，新增 `docs/agents/v1.41-implement-prototype-contract.md` 作为 v1.41 专属的 Implement Agent 开工检查和阻塞纪律；v1.41 最终验收票会删除后者并从 AGENTS.md 移除对应开工步骤。当前 01 号票已实现并收口：项目详情页接入产品迭代列表、创建/编辑抽屉、目标填写/暂不填写风险确认、稳定编号和工作区占位页；产品迭代使用独立 `product_iterations` 表，迁移 `0009_v141_product_iterations_reset` 清理旧版本数据库内容，不回填或兼容旧 `work_records` 数据。项目行锁保证编号单调递增，工作区占位页校验用户与项目归属。专项回放 `verify:v141-iteration-lifecycle` 已 14/14 通过，类型检查、lint、MySQL 初始化验证通过；Impeccable detector 仅提示既有基线字体/侧边强调问题，已在本票 CSS 中改为项目字体变量和内嵌强调线。其余票仍等待对应输入。
 
 最高验收 seam 已确定为一条 `AI_MODE=replay` 四环浏览器全流程回放，通过真实应用、公开 API 和 MySQL 可观察结果覆盖创建产品迭代、四环状态、多阶段会话、候选确认、项目文件树、手动上下文、修订/撤回/删除、任务整套和迭代删除；旧 changelog 与旧文件模型断言必须退役。
 
@@ -138,6 +138,8 @@ v1.3 不迁移旧 MongoDB 数据，不提供 MongoDB 回退，不新增用户可
 - 已新增 `render.yaml`、`.node-version`、`docs/deploy-demo.md` 和 `scripts/deploy-demo-wizard.sh`，用于 Render 部署与人工配置引导。向导不自动上传密钥，数据库管理员变量不写入 Render 运行时。
 - 仍有发布前置阻塞：当前 `db:init` 严格要求 MySQL 9.7.2、一次性管理员权限，连接代码尚无 TLS/CA 配置；Render 官方 MySQL 模板默认 MySQL 8，不能未经验证直接接入。线上首次应保持 `AI_MODE=replay` 完成低成本冒烟，再决定是否启用真实模型。
 - 本轮未修改应用行为、数据库协议或验证断言；未运行真实 LLM、未创建第三方服务、未提交本机 `.env.local`。
+- 后续部署适配已完成第一轮：MySQL 版本要求改为环境变量前缀（本机未配置时仍保持 9.7.2，云端可填 8/8.0 等），连接池大小可配置，云端 TLS/CA 统一接入并强制证书校验；新增 `npm run db:migrate`，可用一次性 DDL 迁移账号执行已有数据库的表结构迁移，网站运行时只使用应用账号。`docs/deploy-demo.md` 已改写为非技术岗可执行的 Agent/用户分工剧本，向导同步更新版本和迁移说明。
+- 本轮验证：`npx tsc --noEmit`、`npm run build`、`git diff --check` 和 Git Bash `bash -n scripts/deploy-demo-wizard.sh` 通过；未执行云端迁移、未创建服务、未提交或推送。
 
 以下改动不属于本轮 v1.41 规格交付，后续操作必须保留：
 
@@ -160,7 +162,7 @@ v1.3 不迁移旧 MongoDB 数据，不提供 MongoDB 回退，不新增用户可
 
 - 产品决策与领域词汇：`CONTEXT.md`
 - 当前规范：`.scratch/pm-assistant-v1.41/spec.md`
-- 当前实现票：已重拆 `.scratch/pm-assistant-v1.41/issues/01-` 至 `24-` 共 24 张草稿；01 号票已交付 `.scratch/pm-assistant-v1.41/prototypes/01-product-iteration-lifecycle.html` 并进入 ready-for-agent；19-23 号票为专项验收，24 号票为最终发布闸。其余票等待产品经理补齐关键主流程原型或确认复用后进入 ready-for-agent
+- 当前实现票：已重拆 `.scratch/pm-assistant-v1.41/issues/01-` 至 `24-` 共 24 张草稿；01 号票已实现并标记 resolved；19-23 号票为专项验收，24 号票为最终发布闸。其余票等待产品经理补齐关键主流程原型或确认复用后进入 ready-for-agent
 - v1.4 历史规范与票：`.scratch/pm-assistant-v1.4/spec.md`、`.scratch/pm-assistant-v1.4/issues/`
 - v1.3 历史规范：`.scratch/pm-assistant-v1.3/spec.md`
 - 实现纪律与协议快照：`AGENTS.md`、`docs/agents/implement-context-hygiene.md`；v1.41 专属原型清单：`.scratch/pm-assistant-v1.41/v1.41-prototype-inputs.md`；v1.41 专属原型纪律：`docs/agents/v1.41-implement-prototype-contract.md`

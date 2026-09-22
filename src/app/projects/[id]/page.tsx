@@ -1,4 +1,4 @@
-import WorkRecordList from "@/components/WorkRecordList";
+import ProductIterationList from "@/components/ProductIterationList";
 
 interface WorkRecordsPageProps {
   params: Promise<{ id: string }>;
@@ -9,5 +9,5 @@ export default async function WorkRecordsPage({
 }: WorkRecordsPageProps) {
   const { id } = await params;
 
-  return <WorkRecordList projectId={id} />;
+  return <ProductIterationList projectId={id} />;
 }

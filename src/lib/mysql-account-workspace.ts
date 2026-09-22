@@ -27,6 +27,16 @@ export interface MysqlWorkRecord extends RowDataPacket {
   created_at: Date;
 }
 
+export interface MysqlProductIteration extends RowDataPacket {
+  id: string;
+  project_id: string;
+  iteration_number: number;
+  display_name: string;
+  goal: string | null;
+  created_at: Date;
+  updated_at: Date;
+};
+
 export interface MysqlTab extends RowDataPacket {
   id: string;
   work_record_id: string;
@@ -130,6 +140,18 @@ export async function listMysqlWorkRecords(projectId: string, userId: string): P
   return rows;
 }
 
+export async function listMysqlProductIterations(projectId: string, userId: string): Promise<MysqlProductIteration[] | null> {
+  if (!(await findOwnedMysqlProject(projectId, userId))) return null;
+  const [rows] = await getMysqlPool().query<MysqlProductIteration[]>(
+    `SELECT id, project_id, iteration_number, display_name, goal, created_at, updated_at
+     FROM product_iterations
+     WHERE project_id = ?
+     ORDER BY iteration_number DESC, id DESC`,
+    [projectId]
+  );
+  return rows;
+}
+
 export async function findOwnedMysqlWorkRecord(workRecordId: string, userId: string): Promise<MysqlWorkRecord | null> {
   if (!isMysqlId(workRecordId)) return null;
   const [rows] = await getMysqlPool().query<MysqlWorkRecord[]>(
@@ -140,6 +162,82 @@ export async function findOwnedMysqlWorkRecord(workRecordId: string, userId: str
     [workRecordId, userId]
   );
   return rows[0] ?? null;
+}
+
+export async function findOwnedMysqlProductIteration(iterationId: string, userId: string): Promise<MysqlProductIteration | null> {
+  if (!isMysqlId(iterationId)) return null;
+  const [rows] = await getMysqlPool().query<MysqlProductIteration[]>(
+    `SELECT i.id, i.project_id, i.iteration_number, i.display_name, i.goal, i.created_at, i.updated_at
+     FROM product_iterations i
+     JOIN projects p ON p.id = i.project_id
+     WHERE i.id = ? AND p.user_id = ? LIMIT 1`,
+    [iterationId, userId]
+  );
+  return rows[0] ?? null;
+}
+
+export async function createMysqlProductIteration(
+  projectId: string,
+  userId: string,
+  name: string,
+  goal: string | null,
+): Promise<MysqlProductIteration | null> {
+  if (!isMysqlId(projectId)) return null;
+  const connection = await getMysqlPool().getConnection();
+  try {
+    await connection.beginTransaction();
+    const [projectRows] = await connection.query<Array<RowDataPacket & { id: string; next_iteration_number: number }>>(
+      "SELECT id, next_iteration_number FROM projects WHERE id = ? AND user_id = ? FOR UPDATE",
+      [projectId, userId],
+    );
+    const project = projectRows[0];
+    if (!project) {
+      await connection.rollback();
+      return null;
+    }
+
+    const iterationNumber = Number(project.next_iteration_number || 1);
+    const iteration = {
+      id: newMysqlId(),
+      project_id: projectId,
+      iteration_number: iterationNumber,
+      display_name: name,
+      goal,
+      created_at: new Date(),
+      updated_at: new Date(),
+    } as MysqlProductIteration;
+    await connection.execute<ResultSetHeader>(
+      `INSERT INTO product_iterations (id, project_id, iteration_number, display_name, goal, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [iteration.id, iteration.project_id, iteration.iteration_number, iteration.display_name, iteration.goal, iteration.created_at, iteration.updated_at],
+    );
+    await connection.execute<ResultSetHeader>(
+      "UPDATE projects SET next_iteration_number = ? WHERE id = ? AND user_id = ?",
+      [iterationNumber + 1, projectId, userId],
+    );
+    await connection.commit();
+    return iteration;
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function updateMysqlProductIteration(
+  iterationId: string,
+  userId: string,
+  name: string,
+  goal: string | null,
+): Promise<MysqlProductIteration | null> {
+  const iteration = await findOwnedMysqlProductIteration(iterationId, userId);
+  if (!iteration) return null;
+  await getMysqlPool().execute<ResultSetHeader>(
+    "UPDATE product_iterations SET display_name = ?, goal = ? WHERE id = ?",
+    [name, goal, iteration.id],
+  );
+  return findOwnedMysqlProductIteration(iteration.id, userId);
 }
 
 export async function createMysqlWorkRecord(projectId: string, userId: string, name: string): Promise<MysqlWorkRecord | null> {

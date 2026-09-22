@@ -3,6 +3,9 @@ import mysql, { type Connection, type RowDataPacket } from "mysql2/promise";
 import {
   getMysqlAdminConfig,
   getMysqlAppConfig,
+  getMysqlMigrationConfig,
+  getMysqlConnectionOptions,
+  getMysqlRequiredVersion,
   type MysqlAdminConfig,
   type MysqlAppConfig,
 } from "@/lib/mysql-config";
@@ -203,6 +206,61 @@ export const MYSQL_MIGRATIONS = [
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
     ],
   },
+  {
+    id: "0008_product_iteration_lifecycle",
+    checksum: "8b52bc37f6ce8b0a4e3a6b2a7c6f4d2a1c9e8b7d6f5a4c3b2a19081726354455",
+    statements: [
+      "ALTER TABLE projects ADD COLUMN next_iteration_number INT UNSIGNED NOT NULL DEFAULT 1",
+      "ALTER TABLE work_records ADD COLUMN iteration_number INT UNSIGNED NULL",
+      "ALTER TABLE work_records ADD COLUMN goal TEXT NULL",
+      "ALTER TABLE work_records ADD COLUMN updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)",
+      "ALTER TABLE work_records ADD UNIQUE KEY work_records_project_iteration_unique (project_id, iteration_number)",
+    ],
+  },
+  {
+    id: "0009_v141_product_iterations_reset",
+    checksum: "e7fefc4f5a3d8d5e7d2b95cfd6d77f745db9c6cfb2b484cdce6a0f9a6c7e2d11",
+    statements: [
+      // v1.41 从全新迭代模型开始，旧版本数据和工作区记录全部退役。
+      "SET FOREIGN_KEY_CHECKS = 0",
+      "TRUNCATE TABLE message_file_writes",
+      "TRUNCATE TABLE agent_file_contexts",
+      "TRUNCATE TABLE messages",
+      "TRUNCATE TABLE tab_operations",
+      "TRUNCATE TABLE tab_deletion_operations",
+      "TRUNCATE TABLE tabs",
+      "TRUNCATE TABLE project_files",
+      "TRUNCATE TABLE prototype_snapshots",
+      "TRUNCATE TABLE work_records",
+      "TRUNCATE TABLE projects",
+      "TRUNCATE TABLE users",
+      "SET FOREIGN_KEY_CHECKS = 1",
+      "UPDATE projects SET next_iteration_number = 1",
+      `CREATE TABLE IF NOT EXISTS product_iterations (
+        id CHAR(36) NOT NULL PRIMARY KEY,
+        project_id CHAR(36) NOT NULL,
+        iteration_number INT UNSIGNED NOT NULL,
+        display_name VARCHAR(255) NOT NULL,
+        goal TEXT NULL,
+        created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+        updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+        CONSTRAINT product_iterations_name_not_blank CHECK (CHAR_LENGTH(TRIM(display_name)) > 0),
+        CONSTRAINT product_iterations_project_fk FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+        UNIQUE KEY product_iterations_project_number_unique (project_id, iteration_number),
+        KEY product_iterations_project_updated (project_id, updated_at, id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
+    ],
+  },
+  {
+    id: "0010_v141_retire_legacy_iteration_columns",
+    checksum: "a6c6f7baf6f6d32a16c9f6bcb8f1457f2d74bf9e8c2e0e5a4af3af4c5f3f7a12",
+    statements: [
+      "ALTER TABLE work_records DROP INDEX work_records_project_iteration_unique",
+      "ALTER TABLE work_records DROP COLUMN iteration_number",
+      "ALTER TABLE work_records DROP COLUMN goal",
+      "ALTER TABLE work_records DROP COLUMN updated_at",
+    ],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {
@@ -243,10 +301,15 @@ export function isAllowedApplicationGrant(grant: string, database: string) {
 
 function versionIsSupported(version: string, requiredVersion: string) {
   const actual = version.match(/^(\d+\.\d+(?:\.\d+)?)/)?.[1];
-  return actual === requiredVersion;
+  if (!actual) return false;
+  const actualParts = actual.split(".");
+  return requiredVersion.split(",").some((requirement) => {
+    const requiredParts = requirement.split(".");
+    return requiredParts.every((part, index) => actualParts[index] === part);
+  });
 }
 
-async function assertServerVersion(connection: Connection, config: MysqlAdminConfig) {
+async function assertServerVersion(connection: Connection, config: Pick<MysqlAdminConfig, "requiredVersion">) {
   const [rows] = await connection.query<Array<RowDataPacket & { version: string }>>("SELECT VERSION() AS version");
   const version = rows[0]?.version;
   if (!version || !versionIsSupported(version, config.requiredVersion)) {
@@ -306,13 +369,7 @@ async function ensureApplicationAccount(connection: Connection, app: MysqlAppCon
 }
 
 async function assertApplicationConnection(app: MysqlAppConfig) {
-  const connection = await mysql.createConnection({
-    host: app.host,
-    port: app.port,
-    database: app.database,
-    user: app.user,
-    password: app.password,
-  });
+  const connection = await mysql.createConnection(getMysqlConnectionOptions(app));
   try {
     await connection.query("SELECT 1");
   } finally {
@@ -323,12 +380,7 @@ async function assertApplicationConnection(app: MysqlAppConfig) {
 export async function initializeMysql(env: NodeJS.ProcessEnv = process.env): Promise<MysqlInitializationResult> {
   const app = getMysqlAppConfig(env);
   const admin = getMysqlAdminConfig(env);
-  const connection = await mysql.createConnection({
-    host: admin.host,
-    port: admin.port,
-    user: admin.user,
-    password: admin.password,
-  });
+  const connection = await mysql.createConnection(getMysqlConnectionOptions(admin));
 
   try {
     const serverVersion = await assertServerVersion(connection, admin);
@@ -337,6 +389,25 @@ export async function initializeMysql(env: NodeJS.ProcessEnv = process.env): Pro
     const migrationApplied = await ensureMigrations(connection, app);
     await ensureApplicationAccount(connection, app);
     await assertApplicationConnection(app);
+    return { serverVersion, migrationApplied };
+  } finally {
+    await connection.end();
+  }
+}
+
+/**
+ * 托管数据库常常不允许 CREATE USER/CREATE DATABASE。该入口只使用应用账号
+ * 执行已存在数据库中的迁移，管理员初始化仍由 initializeMysql 负责。
+ */
+export async function migrateMysql(env: NodeJS.ProcessEnv = process.env): Promise<MysqlInitializationResult> {
+  const app = getMysqlMigrationConfig(env);
+  const connection = await mysql.createConnection(getMysqlConnectionOptions(app));
+
+  try {
+    const serverVersion = await assertServerVersion(connection, {
+      requiredVersion: getMysqlRequiredVersion(env),
+    });
+    const migrationApplied = await ensureMigrations(connection, app);
     return { serverVersion, migrationApplied };
   } finally {
     await connection.end();
