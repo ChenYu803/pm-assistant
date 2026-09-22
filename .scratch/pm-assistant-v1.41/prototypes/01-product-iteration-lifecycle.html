@@ -18,6 +18,7 @@
       --ink-mute: #5a5448;
       --ink-faint: rgba(21, 20, 15, .52);
       --coral: #ed6f5c;
+      --coral-text: #9f4035;
       --coral-soft: rgba(237, 111, 92, .14);
       --line: rgba(21, 20, 15, .18);
       --dark-line: rgba(247, 241, 222, .22);
@@ -35,11 +36,11 @@
     button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--coral); outline-offset: 4px; }
     ::selection { color: var(--paper-light); background: var(--coral); }
     .mono { font-family: var(--mono); }
-    .eyebrow { margin: 0; color: var(--coral); font: 10px/1.2 var(--mono); letter-spacing: .13em; text-transform: uppercase; }
+    .eyebrow { margin: 0; color: var(--coral-text); font: 11px/1.2 var(--mono); letter-spacing: .13em; text-transform: uppercase; }
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
-    .topline { min-height: 34px; padding: 9px 0; color: rgba(247, 241, 222, .7); background: var(--ink); font: 10px var(--mono); letter-spacing: .08em; }
-    .topline-inner { width: min(1440px, calc(100% - 128px)); margin: 0 auto; display: flex; justify-content: space-between; gap: 20px; }
+    .topline { min-height: 34px; padding: 9px 8px; color: rgba(247, 241, 222, .7); background: var(--ink); font: 11px var(--mono); letter-spacing: .08em; }
+    .topline-inner { width: min(1440px, calc(100% - 128px)); margin: 0 auto; padding-inline: 8px; display: flex; justify-content: space-between; gap: 20px; }
     .topline strong { color: var(--paper-light); font-weight: 500; }
 
     .shell { width: min(1440px, calc(100% - 128px)); margin: 0 auto; display: grid; grid-template-columns: 226px minmax(0, 1fr); min-height: calc(100vh - 34px); }
@@ -48,12 +49,12 @@
     .mark { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid var(--coral); border-radius: 50%; color: var(--coral); font: italic 18px var(--serif); }
     .rail-project { margin: 50px 0 42px; padding-bottom: 22px; border-bottom: 1px dotted var(--line); }
     .rail-project strong { display: block; margin-top: 9px; font: 500 21px/1.15 var(--serif); }
-    .rail-project span { display: block; margin-top: 9px; color: var(--ink-mute); font: 11px var(--mono); }
+    .rail-project span { display: block; margin-top: 9px; color: var(--ink-mute); font: 12px var(--mono); }
     .rail-nav { display: grid; gap: 6px; }
     .rail-nav a { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; color: var(--ink-mute); text-decoration: none; border-left: 2px solid transparent; font: 14px var(--sans); }
     .rail-nav a:hover { color: var(--ink); border-left-color: var(--coral); background: rgba(247, 241, 222, .46); }
     .rail-nav a.active { color: var(--paper-light); border-left-color: var(--coral); background: var(--ink); }
-    .rail-nav .nav-index { color: var(--ink-faint); font: 10px var(--mono); }
+    .rail-nav .nav-index { color: var(--ink-faint); font: 11px var(--mono); }
     .rail-note { margin-top: 62px; color: var(--ink-faint); font-size: 13px; line-height: 1.65; }
 
     .main { min-width: 0; padding: 34px 0 100px 52px; }
@@ -71,7 +72,7 @@
     .button:disabled { cursor: not-allowed; opacity: .48; transform: none; }
 
     .project-strip { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 22px 0 23px; border-bottom: 1px dotted var(--line); }
-    .project-strip small { display: block; color: var(--ink-faint); font: 10px var(--mono); letter-spacing: .11em; text-transform: uppercase; }
+    .project-strip small { display: block; color: var(--ink-faint); font: 12px var(--mono); letter-spacing: .11em; text-transform: uppercase; }
     .project-strip strong { display: inline-block; margin-top: 6px; font: 600 23px var(--sans); }
     .project-id { margin-left: 10px; color: var(--ink-mute); font: 12px var(--mono); }
     .project-stat { color: var(--ink-mute); font: 12px var(--mono); white-space: nowrap; }
@@ -83,7 +84,7 @@
     .iteration-list { border-top: 1px solid var(--ink); }
     .iteration-row { display: grid; grid-template-columns: 92px minmax(210px, 1.2fr) minmax(220px, 1.5fr) 105px 145px auto; align-items: center; gap: 20px; min-height: 116px; padding: 20px 0; border-bottom: 1px dotted var(--line); }
     .iteration-row:hover { background: rgba(247, 241, 222, .45); }
-    .iteration-number { color: var(--coral); font: 14px var(--mono); }
+    .iteration-number { color: var(--coral-text); font: 14px var(--mono); }
     .iteration-name { min-width: 0; }
     .iteration-name strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 19px/1.22 var(--sans); }
     .iteration-name span, .iteration-goal { display: block; margin-top: 6px; color: var(--ink-mute); font-size: 13px; }
@@ -94,41 +95,22 @@
     .status::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 6px; border-radius: 50%; background: var(--ink-faint); }
     .status.active::before { background: var(--coral); }
     .updated { color: var(--ink-faint); font: 12px var(--mono); }
-    .row-action { justify-self: end; }
-    .row-action .button { min-height: 44px; padding: 0 14px; font-size: 13px; }
+    .row-action { display: flex; justify-self: end; gap: 8px; min-width: max-content; }
+    .row-action .button { min-height: 44px; padding: 0 12px; font-size: 13px; white-space: nowrap; }
+    .row-action .button.edit { color: var(--ink-mute); border-color: var(--line); }
+    .row-action .button.edit:hover { color: var(--ink); border-color: var(--ink); }
 
-    .workspace { margin-top: 70px; padding-top: 30px; border-top: 1px solid var(--ink); scroll-margin-top: 20px; }
-    .workspace-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding-bottom: 26px; border-bottom: 1px solid var(--line); }
-    .workspace-title { display: flex; align-items: baseline; flex-wrap: wrap; gap: 14px; }
-    .workspace-title h2 { margin: 12px 0 0; font: 500 58px/.95 var(--serif); letter-spacing: -.035em; }
-    .workspace-number { color: var(--ink-mute); font: 13px var(--mono); }
-    .workspace-desc { max-width: 690px; margin: 17px 0 0; color: var(--ink-mute); font-size: 16px; }
-    .workspace-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 9px; }
-    .workflow { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 28px; border: 1px solid var(--line); }
-    .stage { min-height: 112px; padding: 16px 15px; border-right: 1px solid var(--line); }
-    .stage:last-child { border-right: 0; }
-    .stage.active { color: var(--paper-light); background: var(--ink); }
-    .stage-index { color: var(--coral); font: 11px var(--mono); }
-    .stage strong { display: block; margin-top: 17px; font: 600 16px var(--sans); }
-    .stage small { display: block; margin-top: 7px; color: var(--ink-faint); font: 12px var(--mono); }
-    .stage.active small { color: rgba(247, 241, 222, .62); }
-    .workspace-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(250px, .8fr); gap: 34px; margin-top: 30px; }
-    .stage-brief { padding: 26px 28px; color: var(--paper-light); background: var(--ink); }
-    .stage-brief h3 { margin: 12px 0 10px; font: 500 36px/1.05 var(--serif); }
-    .stage-brief p:not(.eyebrow) { max-width: 660px; margin: 0; color: rgba(247, 241, 222, .78); font-size: 16px; line-height: 1.7; }
-    .brief-meta { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 25px; color: rgba(247, 241, 222, .64); font: 12px var(--mono); }
-    .edit-panel { padding: 26px 25px 23px; border: 1px solid var(--line); background: rgba(247, 241, 222, .44); }
-    .edit-panel h3 { margin: 0; font: 600 18px var(--sans); }
-    .edit-panel > p { margin: 8px 0 22px; color: var(--ink-mute); font-size: 13px; line-height: 1.6; }
+    .workspace { margin-top: 70px; padding: 28px 0 32px; border-top: 1px solid var(--ink); scroll-margin-top: 20px; }
+    .workspace-placeholder { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 25px 28px; color: var(--paper-light); background: var(--ink); }
+    .workspace-placeholder p { margin: 0; font-size: 16px; }
+    .workspace-placeholder .button { flex: 0 0 auto; color: var(--paper-light); border-color: rgba(247, 241, 222, .42); }
+    .workspace-placeholder .button:hover { color: var(--ink); border-color: var(--coral); background: var(--coral); }
     .field { margin-top: 15px; }
     .field label, fieldset legend { display: block; margin-bottom: 8px; color: var(--ink-mute); font: 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
     input[type="text"], textarea { width: 100%; padding: 13px 14px; color: var(--ink); border: 1px solid var(--line); border-radius: 0; background: rgba(247, 241, 222, .82); font-size: 16px; }
     input[type="text"]:disabled { color: var(--ink-faint); background: rgba(21, 20, 15, .05); }
     textarea { min-height: 116px; resize: vertical; line-height: 1.55; }
     .edit-actions { display: flex; justify-content: flex-end; margin-top: 18px; }
-    .save-note { min-height: 20px; margin: 9px 0 0; color: var(--ink-mute); font-size: 11px; text-align: right; }
-    .files-note { margin-top: 27px; padding-top: 19px; border-top: 1px dotted var(--line); color: var(--ink-mute); font-size: 11px; }
-    .files-note strong { color: var(--ink); font-weight: 600; }
 
     .drawer-backdrop, .risk-backdrop { position: fixed; inset: 0; z-index: 20; display: none; align-items: stretch; justify-content: flex-end; background: rgba(21, 20, 15, .66); }
     .drawer-backdrop.open, .risk-backdrop.open { display: flex; }
@@ -145,13 +127,13 @@
     .choice.selected { border-color: var(--coral); background: var(--coral-soft); }
     .choice:focus-within { outline: 2px solid var(--coral); outline-offset: 3px; }
     .choice input { position: absolute; opacity: 0; pointer-events: none; }
-    .choice-marker { display: grid; place-items: center; flex: 0 0 22px; width: 22px; height: 22px; border: 1px solid var(--ink-mute); color: var(--ink); font: 10px var(--mono); }
+    .choice-marker { display: grid; place-items: center; flex: 0 0 22px; width: 22px; height: 22px; border: 1px solid var(--ink-mute); color: var(--ink); font: 11px var(--mono); }
     .choice.selected .choice-marker { border-color: var(--coral); background: var(--coral); }
     .choice strong { display: block; font: 600 16px var(--sans); }
     .choice span:last-child { display: block; margin-top: 5px; color: var(--ink-mute); font-size: 13px; line-height: 1.5; }
     .target-field { display: none; margin-top: 17px; }
     .target-field.show { display: block; }
-    .form-error { min-height: 21px; margin: 12px 0 0; color: #9c3f32; font-size: 11px; }
+    .form-error { min-height: 21px; margin: 12px 0 0; color: #9c3f32; font-size: 12px; }
     .drawer-actions, .risk-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 26px; padding-top: 21px; border-top: 1px dotted var(--line); }
 
     .risk-backdrop { align-items: center; justify-content: center; padding: 24px; z-index: 30; }
@@ -160,7 +142,7 @@
     .risk-dialog > p:not(.eyebrow) { margin: 17px 0 0; color: var(--ink-mute); font-size: 16px; }
     .risk-items { display: grid; gap: 11px; margin-top: 24px; }
     .risk-item { padding: 15px 16px; border: 1px solid var(--line); background: rgba(247, 241, 222, .5); }
-    .risk-item strong { display: block; color: var(--coral); font: 10px var(--mono); letter-spacing: .11em; text-transform: uppercase; }
+    .risk-item strong { display: block; color: var(--coral-text); font: 12px var(--mono); letter-spacing: .11em; text-transform: uppercase; }
     .risk-item p { margin: 6px 0 0; color: var(--ink-mute); font-size: 14px; line-height: 1.6; }
     .risk-footnote { margin: 20px 0 0; color: var(--ink-faint); font-size: 13px; }
 
@@ -176,11 +158,10 @@
       .topline-inner, .shell { width: min(100% - 64px, 760px); }
       .shell { display: block; }
       .rail { padding: 22px 0 18px; border-right: 0; border-bottom: 1px solid var(--line); }
-      .rail-project { display: inline-block; margin: 20px 32px 0 0; padding: 0; border: 0; vertical-align: top; }
+      .rail-project { display: inline-block; margin: 20px 32px 0 0; padding: 0 0 8px; border: 0; vertical-align: top; }
       .rail-nav { display: inline-flex; flex-wrap: wrap; vertical-align: top; }
       .rail-note { display: none; }
       .main { padding: 40px 0 80px; }
-      .workspace-grid { grid-template-columns: 1fr; }
       .iteration-row { grid-template-columns: 70px minmax(170px, 1fr) 78px auto; }
       .iteration-goal { display: none; }
     }
@@ -202,19 +183,13 @@
       .iteration-name { align-self: start; }
       .iteration-name strong { white-space: normal; line-height: 1.25; font-size: 17px; }
       .iteration-goal { display: -webkit-box; grid-column: 2; grid-row: 2; margin-top: 0; font-size: 12px; -webkit-line-clamp: 2; }
-      .status { display: inline-flex; grid-column: 2; grid-row: 3; margin-top: 2px; padding: 4px 7px; font-size: 11px; }
+      .status { display: inline-flex; grid-column: 2; grid-row: 3; margin-top: 2px; padding: 4px 7px; font-size: 12px; }
       .updated { display: none; }
-      .row-action { grid-column: 3; grid-row: 1 / span 3; align-self: center; }
+      .row-action { grid-column: 3; grid-row: 1 / span 3; align-self: center; flex-direction: column; }
       .row-action .button { min-height: 44px; padding: 0 9px; }
       .workspace { margin-top: 52px; }
-      .workspace-head { display: block; }
-      .workspace-title h2 { font-size: 40px; }
-      .workspace-actions { justify-content: flex-start; margin-top: 22px; }
-      .workflow { grid-template-columns: repeat(2, 1fr); }
-      .stage:nth-child(2) { border-right: 0; }
-      .stage:nth-child(-n + 2) { border-bottom: 1px solid var(--line); }
-      .stage-brief { padding: 23px 20px; }
-      .stage-brief h3 { font-size: 27px; }
+      .workspace-placeholder { align-items: flex-start; flex-direction: column; padding: 22px 20px; }
+      .workspace-placeholder .button { width: 100%; }
       .drawer { padding: 28px 20px 34px; }
       .workspace-actions .button { min-height: 44px; }
       .drawer h2, .risk-dialog h2 { font-size: 34px; }
@@ -241,8 +216,6 @@
       </div>
       <nav class="rail-nav">
         <a class="active" href="#iterations"><span class="nav-index">01</span>产品迭代</a>
-        <a href="#workspace"><span class="nav-index">02</span>工作区</a>
-        <a href="#files"><span class="nav-index">03</span>项目文件树</a>
       </nav>
       <p class="rail-note">项目拥有一棵文件树。<br>迭代只组织本轮目标、阶段和会话，不拥有项目文件。</p>
     </aside>
@@ -252,7 +225,7 @@
         <div>
           <p class="eyebrow">PROJECT / ITERATIONS</p>
           <h1>产品迭代</h1>
-          <p>把本轮要改变的事情说清楚，再进入四环工作区。稳定编号不会复用，展示名称和目标可以继续调整。</p>
+          <p>把本轮要改变的事情说清楚，再进入你的工作区。稳定编号不会复用，展示名称和目标可以继续调整。</p>
         </div>
         <button class="button primary" id="open-create" type="button">创建产品迭代</button>
       </header>
@@ -262,48 +235,30 @@
         <span class="project-stat" id="iteration-count">2 个迭代</span>
       </section>
 
-      <div class="list-toolbar"><p><strong>你的产品迭代</strong>最近更新 <span class="mono">·</span> 稳定编号只增不减</p><span class="mono" style="color: var(--ink-faint); font-size: 11px;">PROJECT SCOPE / SHARED FILE TREE</span></div>
+      <div class="list-toolbar"><p><strong>你的产品迭代</strong>最近更新 <span class="mono">·</span> 稳定编号只增不减</p><span class="mono" style="color: var(--ink-faint); font-size: 12px;">PROJECT SCOPE / SHARED FILE TREE</span></div>
       <section class="iteration-list" id="iteration-list" aria-label="产品迭代列表"></section>
 
-      <section class="workspace" id="workspace" aria-labelledby="workspace-title" hidden>
-        <div class="workspace-head">
-          <div>
-            <p class="eyebrow">CURRENT ITERATION / WORKSPACE</p>
-            <div class="workspace-title"><h2 id="workspace-title">—</h2><span class="workspace-number" id="workspace-number">迭代 00</span></div>
-            <p class="workspace-desc" id="workspace-goal">—</p>
-          </div>
-          <div class="workspace-actions"><button class="button dark" id="jump-to-edit" type="button">编辑迭代</button><button class="button quiet" id="back-to-list" type="button">返回迭代列表</button><span class="mono" style="align-self:center;color:var(--ink-faint);font-size:10px;">WORKSPACE OPEN</span></div>
-        </div>
-
-        <div class="workflow" aria-label="四环工作流">
-          <div class="stage active"><span class="stage-index">01</span><strong>需求分析</strong><small>未开始</small></div>
-          <div class="stage"><span class="stage-index">02</span><strong>原型设计</strong><small>未开始</small></div>
-          <div class="stage"><span class="stage-index">03</span><strong>PRD</strong><small>未开始</small></div>
-          <div class="stage"><span class="stage-index">04</span><strong>任务拆分</strong><small>未开始</small></div>
-        </div>
-
-        <div class="workspace-grid">
-          <div>
-            <article class="stage-brief">
-              <p class="eyebrow">STAGE 01 / 需求分析</p>
-              <h3>从本轮目标开始。</h3>
-              <p>告诉 Agent 你想解决的问题、已有证据和限制条件。项目文件树只会提供目录，只有你手动加载的文件才会进入这次会话。</p>
-              <div class="brief-meta"><span>阶段状态 · 未开始</span><span>本轮写入 · 0 个文件</span><span>阶段会话 · 尚未创建</span></div>
-            </article>
-            <p class="files-note" id="files"><strong>项目文件树</strong>　需求分析 / 原型 / PRD / 任务拆分<br>迭代组织本轮工作，文件仍属于项目本身。</p>
-          </div>
-          <aside class="edit-panel" aria-label="编辑迭代信息">
-            <h3>编辑迭代信息</h3>
-            <p>展示名称和本轮目标可以随时更新。稳定编号创建后不可修改。</p>
-            <div class="field"><label for="edit-number">稳定编号</label><input id="edit-number" type="text" disabled></div>
-            <div class="field"><label for="edit-name">展示名称</label><input id="edit-name" type="text" maxlength="80"></div>
-            <div class="field"><label for="edit-goal">本轮目标 <span class="mono">OPTIONAL</span></label><textarea id="edit-goal" maxlength="500"></textarea></div>
-            <div class="edit-actions"><button class="button dark" id="save-edit" type="button">保存修改</button></div>
-            <p class="save-note" id="save-note" role="status"></p>
-          </aside>
+      <section class="workspace" id="workspace" aria-label="工作区占位" hidden>
+        <div class="workspace-placeholder">
+          <p id="workspace-placeholder-text">工作区已打开。这里的工作台界面由后续原型定义。</p>
+          <button class="button" id="back-to-list" type="button">返回迭代列表</button>
         </div>
       </section>
     </main>
+  </div>
+
+  <div class="drawer-backdrop" id="edit-layer" role="presentation">
+    <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="edit-title">
+      <div class="drawer-head"><div><p class="eyebrow">ITERATION / EDIT</p><h2 id="edit-title">编辑迭代</h2></div><button class="close-button" data-close="edit-layer" type="button" aria-label="关闭编辑面板">×</button></div>
+      <p class="drawer-intro">展示名称和本轮目标可以随时更新。稳定编号是这次迭代的长期身份，创建后不可修改。</p>
+      <form id="edit-form" novalidate>
+        <div class="field"><label for="edit-number">稳定编号</label><input id="edit-number" type="text" disabled></div>
+        <div class="field"><label for="edit-name">展示名称 <span class="mono">REQUIRED</span></label><input id="edit-name" type="text" maxlength="80" required></div>
+        <div class="field"><label for="edit-goal">本轮目标 <span class="mono">OPTIONAL</span></label><textarea id="edit-goal" maxlength="500" placeholder="这一轮最想改变什么？"></textarea></div>
+        <p class="form-error" id="edit-error" role="alert"></p>
+        <div class="drawer-actions"><button class="button quiet" data-close="edit-layer" type="button">取消</button><button class="button dark" id="save-edit" type="submit">保存修改</button></div>
+      </form>
+    </aside>
   </div>
 
   <div class="drawer-backdrop" id="create-layer" role="presentation">
@@ -328,7 +283,7 @@
       <p class="eyebrow">DECISION CHECK / TARGET</p><h2 id="risk-title">暂不填写本轮目标？</h2>
       <p>你可以继续，但请确认你了解这会给本轮工作带来的边界。</p>
       <div class="risk-items"><div class="risk-item"><strong>Agent 已知</strong><p>项目、迭代编号、你手动加载的文件，以及你在对话中提供的内容。</p></div><div class="risk-item"><strong>Agent 未知</strong><p>它不会知道本轮要改变什么，也不会根据迭代名称或文件目录替你猜测。</p></div></div>
-      <p class="risk-footnote">确认后，本次创建不再重复警告。进入工作区后，你仍然可以补充或修改本轮目标。</p>
+      <p class="risk-footnote">确认后，本次创建不再重复警告。创建后回到迭代列表，你仍然可以补充或修改本轮目标。</p>
       <div class="risk-actions"><button class="button quiet" id="risk-return" type="button">返回重新选择</button><button class="button primary" id="risk-confirm" type="button">确认暂不填写</button></div>
     </section>
   </div>
@@ -381,27 +336,34 @@
           <span class="iteration-goal${item.goal ? "" : " empty"}">${item.goal ? escapeHtml(item.goal) : "尚未填写本轮目标 · 不会自动猜测"}</span>
           <span class="status${item.status === "进行中" ? " active" : ""}">${item.status}</span>
           <span class="updated">更新 · ${escapeHtml(item.updated)}</span>
-          <span class="row-action"><button class="button quiet" type="button" data-enter="${item.id}">进入工作区</button></span>
+          <span class="row-action"><button class="button edit" type="button" data-edit="${item.id}">编辑迭代</button><button class="button quiet" type="button" data-enter="${item.id}">进入工作区</button></span>
         </article>
       `).join("");
       $$('[data-enter]').forEach((button) => button.addEventListener("click", () => openWorkspace(Number(button.dataset.enter))));
+      $$('[data-edit]').forEach((button) => button.addEventListener("click", () => openEdit(Number(button.dataset.edit), button)));
     }
 
     function openWorkspace(id) {
       const item = state.iterations.find((entry) => entry.id === id);
       if (!item) return;
       state.currentId = id;
-      $("#workspace-title").textContent = item.name;
-      $("#workspace-number").textContent = `迭代 ${pad(item.id)}`;
-      $("#workspace-goal").textContent = item.goal || "尚未填写本轮目标。你可以在右侧补充，也可以直接开始讨论。";
-      $("#workspace-goal").style.fontStyle = item.goal ? "normal" : "italic";
-      $("#edit-number").value = `迭代 ${pad(item.id)}`;
-      $("#edit-name").value = item.name;
-      $("#edit-goal").value = item.goal;
-      $("#save-note").textContent = "";
+      $("#workspace-placeholder-text").textContent = `工作区已打开 · 迭代 ${pad(item.id)}「${item.name}」。工作台界面由后续原型定义。`;
       $("#workspace").hidden = false;
       renderList();
       window.requestAnimationFrame(() => $("#workspace").scrollIntoView({ behavior: "smooth", block: "start" }));
+    }
+
+    function openEdit(id, trigger) {
+      const item = state.iterations.find((entry) => entry.id === id);
+      if (!item) return;
+      state.currentId = id;
+      lastTrigger = trigger;
+      $("#edit-number").value = `迭代 ${pad(item.id)}`;
+      $("#edit-name").value = item.name;
+      $("#edit-goal").value = item.goal;
+      $("#edit-error").textContent = "";
+      setLayer("edit-layer", true);
+      window.setTimeout(() => $("#edit-name").focus(), 30);
     }
 
     function resetCreateForm() {
@@ -465,14 +427,11 @@
       renderList();
       $("#iterations").scrollIntoView({ behavior: "smooth", block: "start" });
     });
-    $("#jump-to-edit").addEventListener("click", () => {
-      $(".edit-panel").scrollIntoView({ behavior: "smooth", block: "center" });
-      window.setTimeout(() => $("#edit-name").focus(), 350);
-    });
-    $("#save-edit").addEventListener("click", () => {
+    $("#edit-form").addEventListener("submit", (event) => {
+      event.preventDefault();
       const item = state.iterations.find((entry) => entry.id === state.currentId);
       const name = $("#edit-name").value.trim();
-      if (!item || !name) { $("#save-note").textContent = "展示名称不能为空。"; $("#edit-name").focus(); return; }
+      if (!item || !name) { $("#edit-error").textContent = "展示名称不能为空。"; $("#edit-name").focus(); return; }
       const button = $("#save-edit");
       button.disabled = true;
       button.textContent = "保存中...";
@@ -482,17 +441,18 @@
         item.updated = "刚刚";
         button.disabled = false;
         button.textContent = "保存修改";
-        openWorkspace(item.id);
-        $("#save-note").textContent = "已保存 · 稳定编号未改变";
+        setLayer("edit-layer", false);
+        renderList();
         showToast("迭代信息已保存，稳定编号保持不变。");
       }, 420);
     });
-    ["create-layer", "risk-layer"].forEach((id) => $("#" + id).addEventListener("click", (event) => { if (event.target.id === id) setLayer(id, false); }));
+    ["create-layer", "edit-layer", "risk-layer"].forEach((id) => $("#" + id).addEventListener("click", (event) => { if (event.target.id === id) setLayer(id, false); }));
     document.addEventListener("keydown", (event) => {
-      const activeLayer = $("#risk-layer.open") || $("#create-layer.open");
+      const activeLayer = $("#risk-layer.open") || $("#create-layer.open") || $("#edit-layer.open");
       if (event.key === "Escape") {
         if ($("#risk-layer.open")) setLayer("risk-layer", false);
         else if ($("#create-layer.open")) setLayer("create-layer", false);
+        else if ($("#edit-layer.open")) setLayer("edit-layer", false);
         return;
       }
       if (event.key !== "Tab" || !activeLayer) return;
