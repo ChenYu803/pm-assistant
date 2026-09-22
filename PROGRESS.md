@@ -6,7 +6,7 @@
 
 ## 当前阶段
 
-### v1.41：01 号原型输入已交付，等待实现验收
+### v1.41：01 号工作场景原型已交付，等待接入实现
 
 v1.41 将重铸认证后的四环实践工作台，同时解决现有流程难用和视觉粗糙的问题。领域模型已经收敛为“项目拥有唯一文件树，产品迭代组织目标、四环状态和阶段会话”：需求分析、原型、PRD 和任务拆分文件均属于项目，用户通过上下文文件区域决定当前会话可以读取哪些正文。
 
@@ -151,7 +151,7 @@ v1.3 不迁移旧 MongoDB 数据，不提供 MongoDB 回退，不新增用户可
 
 - 产品决策与领域词汇：`CONTEXT.md`
 - 当前规范：`.scratch/pm-assistant-v1.41/spec.md`
-- 当前实现票：已重拆 `.scratch/pm-assistant-v1.41/issues/01-` 至 `24-` 共 24 张草稿；01 号票已交付 `.scratch/pm-assistant-v1.41/prototypes/01-product-iteration-lifecycle.html` 并进入 ready-for-agent；其余票仍等待关键主流程原型或确认复用后进入 ready-for-agent。19-23 号票为专项验收，24 号票为最终发布闸
+- 当前实现票：已重拆 `.scratch/pm-assistant-v1.41/issues/01-` 至 `24-` 共 24 张草稿；01 号票已交付 `.scratch/pm-assistant-v1.41/prototypes/01-product-iteration-lifecycle.html` 并进入 ready-for-agent；19-23 号票为专项验收，24 号票为最终发布闸。其余票等待产品经理补齐关键主流程原型或确认复用后进入 ready-for-agent
 - v1.4 历史规范与票：`.scratch/pm-assistant-v1.4/spec.md`、`.scratch/pm-assistant-v1.4/issues/`
 - v1.3 历史规范：`.scratch/pm-assistant-v1.3/spec.md`
 - 实现纪律与协议快照：`AGENTS.md`、`docs/agents/implement-context-hygiene.md`；v1.41 专属原型清单：`.scratch/pm-assistant-v1.41/v1.41-prototype-inputs.md`；v1.41 专属原型纪律：`docs/agents/v1.41-implement-prototype-contract.md`
