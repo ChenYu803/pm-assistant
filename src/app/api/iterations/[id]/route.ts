@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import { mysqlUnavailableMessage } from "@/lib/mysql";
 import {
+  deleteMysqlProductIteration,
   findOwnedMysqlProductIteration,
   updateMysqlProductIteration,
 } from "@/lib/mysql-account-workspace";
@@ -44,6 +45,23 @@ export async function PATCH(
     return NextResponse.json(iteration);
   } catch (error) {
     console.error("PATCH /api/iterations/[id] error:", error);
+    return NextResponse.json({ error: mysqlUnavailableMessage() }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const userId = await requireAuth();
+    if (userId instanceof NextResponse) return userId;
+    const { id } = await params;
+    const deleted = await deleteMysqlProductIteration(id, userId);
+    if (!deleted) return NextResponse.json({ error: "产品迭代不存在或无权操作" }, { status: 404 });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("DELETE /api/iterations/[id] error:", error);
     return NextResponse.json({ error: mysqlUnavailableMessage() }, { status: 500 });
   }
 }

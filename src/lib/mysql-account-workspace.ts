@@ -240,6 +240,55 @@ export async function updateMysqlProductIteration(
   return findOwnedMysqlProductIteration(iteration.id, userId);
 }
 
+export async function deleteMysqlProductIteration(
+  iterationId: string,
+  userId: string,
+): Promise<boolean> {
+  if (!isMysqlId(iterationId)) return false;
+  const connection = await getMysqlPool().getConnection();
+  try {
+    await connection.beginTransaction();
+    const [iterationRows] = await connection.query<Array<RowDataPacket & { project_id: string }>>(
+      "SELECT project_id FROM product_iterations WHERE id = ? LIMIT 1",
+      [iterationId],
+    );
+    const projectId = iterationRows[0]?.project_id;
+    if (!projectId) {
+      await connection.rollback();
+      return false;
+    }
+    const [projectRows] = await connection.query<Array<RowDataPacket & { id: string }>>(
+      "SELECT id FROM projects WHERE id = ? AND user_id = ? LIMIT 1 FOR UPDATE",
+      [projectId, userId],
+    );
+    if (!projectRows[0]) {
+      await connection.rollback();
+      return false;
+    }
+    const [rows] = await connection.query<Array<RowDataPacket & { id: string }>>(
+      "SELECT id FROM product_iterations WHERE id = ? AND project_id = ? LIMIT 1 FOR UPDATE",
+      [iterationId, projectId],
+    );
+    const iteration = rows[0];
+    if (!iteration) {
+      await connection.rollback();
+      return false;
+    }
+    const [result] = await connection.execute<ResultSetHeader>(
+      "DELETE FROM product_iterations WHERE id = ? AND project_id = ?",
+      [iteration.id, projectId],
+    );
+    if (result.affectedRows !== 1) throw new Error("产品迭代删除未完成");
+    await connection.commit();
+    return true;
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
 export async function createMysqlWorkRecord(projectId: string, userId: string, name: string): Promise<MysqlWorkRecord | null> {
   if (!(await findOwnedMysqlProject(projectId, userId))) return null;
   const workRecord = { id: newMysqlId(), project_id: projectId, name, created_at: new Date() } as MysqlWorkRecord;

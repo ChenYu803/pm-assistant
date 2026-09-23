@@ -118,6 +118,8 @@
 .iteration-button:disabled { cursor: wait; opacity: .6; }
 .iteration-button-primary { border-color: var(--iteration-coral); background: var(--iteration-coral); }
 .iteration-button-primary:hover:not(:disabled) { background: #df5e4d; }
+.iteration-button-danger { border-color: #9f2f23; color: #fffaf0; background: #9f2f23; }
+.iteration-button-danger:hover:not(:disabled) { background: #84251d; }
 .iteration-button-dark { border-color: var(--iteration-ink); background: var(--iteration-ink); color: var(--iteration-paper-light); }
 .iteration-button-quiet { border-color: transparent; color: var(--iteration-muted); }
 .iteration-button-quiet:hover:not(:disabled) { background: rgba(21,20,15,.06); color: var(--iteration-ink); }

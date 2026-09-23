@@ -59,6 +59,9 @@ export default function ProductIterationList({ projectId }: ProductIterationList
   const [formError, setFormError] = useState("");
   const [toast, setToast] = useState("");
   const [iterationMenuId, setIterationMenuId] = useState<string | null>(null);
+  const [deletingIteration, setDeletingIteration] = useState<ProductIteration | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const fetchIterations = useCallback(async () => {
     try {
@@ -178,6 +181,24 @@ export default function ProductIterationList({ projectId }: ProductIterationList
     }
   }
 
+  async function confirmDeleteIteration() {
+    if (!deletingIteration || deleting) return;
+    setDeleting(true);
+    setDeleteError("");
+    try {
+      const response = await fetch(`/api/iterations/${deletingIteration.id}`, { method: "DELETE" });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.error || "删除产品迭代失败");
+      setIterations((current) => current.filter((item) => item.id !== deletingIteration.id));
+      setToast(`${formatIterationNumber(deletingIteration.iteration_number)} 已删除。项目文件和已确认内容未受影响。`);
+      setDeletingIteration(null);
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : "删除产品迭代失败，请重试。");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   useEffect(() => {
     if (!toast) return;
     const timer = window.setTimeout(() => setToast(""), 3200);
@@ -199,7 +220,7 @@ export default function ProductIterationList({ projectId }: ProductIterationList
           <section className="iteration-list-section" aria-labelledby="iteration-list-title">
             <div className="iteration-section-head"><div><h3 id="iteration-list-title">产品迭代</h3><p>一个项目可以有多个迭代，稳定编号只增不减。</p></div><button className="iteration-button iteration-button-primary iteration-create-button" type="button" onClick={openCreate}>创建产品迭代</button></div>
             {error && <p className="iteration-error" role="alert">{error}</p>}
-            {iterations.length === 0 ? <div className="iteration-empty"><p>这个项目还没有产品迭代。</p><button className="iteration-button iteration-button-primary" type="button" onClick={openCreate}>创建产品迭代</button></div> : <div className="iteration-table" role="list">{iterations.map((iteration) => { const menuOpen = iterationMenuId === iteration.id; return <article className="iteration-row" role="listitem" key={iteration.id}><span className="iteration-number">{formatIterationNumber(iteration.iteration_number)}</span><div className="iteration-name"><strong title={iteration.display_name}>{iteration.display_name}</strong></div><p className={`iteration-goal${iteration.goal ? "" : " empty"}`}>{iteration.goal || "尚未填写本轮目标"}</p><span className="iteration-status">未开始</span><span className="iteration-updated">更新 · {formatUpdated(iteration.updated_at)}</span><div className="iteration-row-actions"><button className="iteration-button iteration-button-quiet" type="button" onClick={() => router.push(`/projects/${projectId}/iterations/${iteration.id}`)}>进入工作区</button><button className="iteration-button iteration-button-quiet" type="button" onClick={() => openEdit(iteration)}>编辑迭代</button><button className="iteration-more" type="button" aria-label={`${iteration.display_name} 更多功能`} aria-expanded={menuOpen} onClick={() => setIterationMenuId(menuOpen ? null : iteration.id)}>···</button>{menuOpen && <div className="iteration-menu"><button className="iteration-menu-action danger" type="button" onClick={() => { setIterationMenuId(null); setToast("删除产品迭代将在后续阶段开放。"); }}>删除产品迭代</button></div>}</div></article>; })}</div>}
+            {iterations.length === 0 ? <div className="iteration-empty"><p>这个项目还没有产品迭代。</p><button className="iteration-button iteration-button-primary" type="button" onClick={openCreate}>创建产品迭代</button></div> : <div className="iteration-table" role="list">{iterations.map((iteration) => { const menuOpen = iterationMenuId === iteration.id; return <article className="iteration-row" role="listitem" key={iteration.id}><span className="iteration-number">{formatIterationNumber(iteration.iteration_number)}</span><div className="iteration-name"><strong title={iteration.display_name}>{iteration.display_name}</strong></div><p className={`iteration-goal${iteration.goal ? "" : " empty"}`}>{iteration.goal || "尚未填写本轮目标"}</p><span className="iteration-status">未开始</span><span className="iteration-updated">更新 · {formatUpdated(iteration.updated_at)}</span><div className="iteration-row-actions"><button className="iteration-button iteration-button-quiet" type="button" onClick={() => router.push(`/projects/${projectId}/iterations/${iteration.id}`)}>进入工作区</button><button className="iteration-button iteration-button-quiet" type="button" onClick={() => openEdit(iteration)}>编辑迭代</button><button className="iteration-more" type="button" aria-label={`${iteration.display_name} 更多功能`} aria-expanded={menuOpen} onClick={() => setIterationMenuId(menuOpen ? null : iteration.id)}>···</button>{menuOpen && <div className="iteration-menu"><button className="iteration-menu-action danger" type="button" onClick={() => { setIterationMenuId(null); setDeleteError(""); setDeletingIteration(iteration); }}>删除产品迭代</button></div>}</div></article>; })}</div>}
           </section>
         )}
       </main>
@@ -209,6 +230,7 @@ export default function ProductIterationList({ projectId }: ProductIterationList
         </aside></div>}
 
       {riskOpen && <div className="iteration-risk-overlay" role="presentation"><section className="iteration-risk-dialog" role="dialog" aria-modal="true" aria-labelledby="iteration-risk-title"><p className="iteration-eyebrow">DECISION CHECK / TARGET</p><h2 id="iteration-risk-title">暂不填写本轮目标？</h2><p>你可以继续，但请确认你了解这会给本轮工作带来的边界。</p><div className="iteration-risk-items"><div><strong>Agent 已知</strong><p>Agent 只会知道项目、迭代编号、你手动加载的文件，以及你在对话中提供的内容。</p></div><div><strong>Agent 未知</strong><p>它不会知道本轮要改变什么，也不会根据迭代名称或文件目录替你猜测。</p></div></div><p className="iteration-risk-footnote">确认后，本次创建不再重复警告。创建后回到迭代列表，你仍然可以补充或修改本轮目标。</p><div className="iteration-risk-actions"><button className="iteration-button iteration-button-quiet" type="button" onClick={() => setRiskOpen(false)}>返回重新选择</button><button className="iteration-button iteration-button-primary" type="button" onClick={() => { setRiskConfirmed(true); setRiskOpen(false); setToast("已记录选择。创建前仍可返回填写目标。"); }}>确认暂不填写</button></div></section></div>}
+      {deletingIteration && <div className="iteration-risk-overlay" role="presentation"><section className="iteration-risk-dialog iteration-delete-dialog" role="alertdialog" aria-modal="true" aria-labelledby="iteration-delete-title" aria-describedby="iteration-delete-copy"><p className="iteration-eyebrow">ITERATION / DELETE · {formatIterationNumber(deletingIteration.iteration_number)}</p><h2 id="iteration-delete-title">删除产品迭代？</h2><p id="iteration-delete-copy">删除后，这一轮的聊天记录和还没确认保存的内容会被删除，但已确认保存的内容及其变更记录会保留。你可以在文件树内把这些内容彻底删除。</p>{deleteError && <p className="iteration-form-error" role="alert">{deleteError}</p>}<div className="iteration-risk-actions"><button className="iteration-button iteration-button-quiet" type="button" disabled={deleting} onClick={() => setDeletingIteration(null)}>取消</button><button className="iteration-button iteration-button-danger" type="button" disabled={deleting} onClick={() => void confirmDeleteIteration()}>{deleting ? "删除中..." : "确认删除迭代"}</button></div></section></div>}
       {toast && <div className="iteration-toast" role="status" aria-live="polite">{toast}</div>}
     </section>
   );
