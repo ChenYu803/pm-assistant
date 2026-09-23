@@ -17,8 +17,8 @@ export default async function ProductIterationWorkspacePage({
 
   return (
     <main className="iteration-placeholder-page">
-      <div className="iteration-placeholder-topline"><Link href={`/projects/${projectId}`}>← 返回产品迭代</Link><span>ITERATION / {String(iteration.iteration_number).padStart(2, "0")}</span></div>
-      <section className="iteration-placeholder-content"><p className="iteration-eyebrow">PRODUCT ITERATION WORKSPACE</p><h1>工作区已打开。</h1><p>这里的工作台界面由后续原型定义。</p><Link className="iteration-button iteration-button-primary" href={`/projects/${projectId}`}>回到迭代列表</Link></section>
+      <div className="iteration-placeholder-topline"><Link href="/projects">← 返回产品迭代</Link><span>ITERATION / {String(iteration.iteration_number).padStart(2, "0")}</span></div>
+      <section className="iteration-placeholder-content"><p className="iteration-eyebrow">PRODUCT ITERATION WORKSPACE</p><h1>工作区已打开。</h1><p>这里的工作台界面由后续原型定义。</p><Link className="iteration-button iteration-button-primary" href="/projects">回到迭代列表</Link></section>
     </main>
   );
 }

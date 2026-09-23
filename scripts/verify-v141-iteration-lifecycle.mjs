@@ -70,6 +70,7 @@ try {
   check("创建验证项目", projectCreate.status === 201 && typeof projectId === "string");
 
   await page.goto(`${BASE}/projects/${projectId}`);
+  check("旧项目详情地址回到唯一项目入口", new URL(page.url()).pathname === "/projects");
   await page.getByRole("button", { name: "创建产品迭代" }).first().click();
   check("创建抽屉打开且两个目标选项默认未选", await page.locator('input[name="target-mode"]:checked').count() === 0);
   await page.getByLabel("展示名称").fill("第一轮验证");
@@ -106,7 +107,7 @@ try {
 
   await page.goto(`${BASE}/projects/${projectId}`);
   await page.locator(".iteration-row").nth(1).waitFor();
-  const rows = page.locator('[role="listitem"]');
+  const rows = page.locator('.iteration-table [role="listitem"]');
   await rows.first().getByRole("button", { name: "编辑迭代" }).click();
   check("编辑抽屉中的稳定编号不可编辑", await page.getByLabel("稳定编号").isDisabled());
   await page.getByLabel("展示名称").fill("第二轮验证（已命名）");

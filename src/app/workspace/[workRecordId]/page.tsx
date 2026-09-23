@@ -561,7 +561,7 @@ export default function WorkspacePage() {
             <>
               <span>/</span>
               <Link
-                href={`/projects/${project.id}`}
+                href="/projects"
                 className="hover:text-gray-900 underline underline-offset-2 transition-colors"
               >
                 {project.name}

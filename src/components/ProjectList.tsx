@@ -155,7 +155,7 @@ export default function ProjectList() {
           </div>
         </aside>
         <main className="project-workspace-main" id="top">
-          {loading ? <section className="project-workspace-empty"><p>正在加载项目...</p></section> : selectedProject ? <ProductIterationList projectId={selectedProject.id} embedded /> : <section className="project-workspace-empty"><h2>让我们<span className="project-workspace-mobile-break"><br /></span>开始工作</h2><p>先创建一个项目，或从左侧选择已有项目。</p><button className="project-workspace-create project-workspace-create-main" type="button" onClick={openCreate}>新建一个项目</button></section>}
+          {loading ? <section className="project-workspace-empty"><p>正在加载项目...</p></section> : selectedProject ? <ProductIterationList projectId={selectedProject.id} /> : <section className="project-workspace-empty"><h2>让我们<span className="project-workspace-mobile-break"><br /></span>开始工作</h2><p>先创建一个项目，或从左侧选择已有项目。</p><button className="project-workspace-create project-workspace-create-main" type="button" onClick={openCreate}>新建一个项目</button></section>}
         </main>
       </div>
 

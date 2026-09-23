@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 interface ProductIteration {
@@ -22,7 +21,6 @@ interface Project {
 
 interface ProductIterationListProps {
   projectId: string;
-  embedded?: boolean;
 }
 
 type DrawerMode = "create" | "edit";
@@ -44,7 +42,7 @@ function formatUpdated(value: string) {
     : date.toLocaleDateString("zh-CN", { month: "numeric", day: "numeric" });
 }
 
-export default function ProductIterationList({ projectId, embedded = false }: ProductIterationListProps) {
+export default function ProductIterationList({ projectId }: ProductIterationListProps) {
   const router = useRouter();
   const [project, setProject] = useState<Project | null>(null);
   const [iterations, setIterations] = useState<ProductIteration[]>([]);
@@ -187,13 +185,7 @@ export default function ProductIterationList({ projectId, embedded = false }: Pr
   }, [toast]);
 
   return (
-    <div className={`iteration-page${embedded ? " iteration-embedded" : ""}`}>
-      <aside className="iteration-rail" aria-label="项目导航">
-        <Link className="iteration-brand" href="/projects"><span className="iteration-brand-mark">A</span><span>AI 产品现场</span></Link>
-        <div className="iteration-rail-heading"><p className="iteration-eyebrow">PROJECT / ITERATIONS</p><h1>产品迭代</h1><p>在同一个项目里，组织每一轮要改变的事情。</p></div>
-        <Link className="iteration-back" href="/projects">← 返回我的项目</Link>
-      </aside>
-
+    <section className="iteration-list-panel">
       <main className="iteration-main">
         <header className="iteration-project-head">
           <div>
@@ -218,6 +210,6 @@ export default function ProductIterationList({ projectId, embedded = false }: Pr
 
       {riskOpen && <div className="iteration-risk-overlay" role="presentation"><section className="iteration-risk-dialog" role="dialog" aria-modal="true" aria-labelledby="iteration-risk-title"><p className="iteration-eyebrow">DECISION CHECK / TARGET</p><h2 id="iteration-risk-title">暂不填写本轮目标？</h2><p>你可以继续，但请确认你了解这会给本轮工作带来的边界。</p><div className="iteration-risk-items"><div><strong>Agent 已知</strong><p>Agent 只会知道项目、迭代编号、你手动加载的文件，以及你在对话中提供的内容。</p></div><div><strong>Agent 未知</strong><p>它不会知道本轮要改变什么，也不会根据迭代名称或文件目录替你猜测。</p></div></div><p className="iteration-risk-footnote">确认后，本次创建不再重复警告。创建后回到迭代列表，你仍然可以补充或修改本轮目标。</p><div className="iteration-risk-actions"><button className="iteration-button iteration-button-quiet" type="button" onClick={() => setRiskOpen(false)}>返回重新选择</button><button className="iteration-button iteration-button-primary" type="button" onClick={() => { setRiskConfirmed(true); setRiskOpen(false); setToast("已记录选择。创建前仍可返回填写目标。"); }}>确认暂不填写</button></div></section></div>}
       {toast && <div className="iteration-toast" role="status" aria-live="polite">{toast}</div>}
-    </div>
+    </section>
   );
 }

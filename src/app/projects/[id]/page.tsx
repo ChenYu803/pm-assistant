@@ -1,13 +1,5 @@
-import ProductIterationList from "@/components/ProductIterationList";
+import { redirect } from "next/navigation";
 
-interface WorkRecordsPageProps {
-  params: Promise<{ id: string }>;
-}
-
-export default async function WorkRecordsPage({
-  params,
-}: WorkRecordsPageProps) {
-  const { id } = await params;
-
-  return <ProductIterationList projectId={id} />;
+export default function LegacyProjectRoute() {
+  redirect("/projects");
 }
