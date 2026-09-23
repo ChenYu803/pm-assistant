@@ -11,10 +11,6 @@ interface Project {
 
 type DialogMode = "create" | "description" | "rename" | "delete";
 
-function projectCode(project: Project) {
-  return `PRODUCT-${project.id.replace(/[^a-z0-9]/gi, "").slice(0, 3).toUpperCase() || "001"}`;
-}
-
 function projectDate(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "刚刚";
@@ -147,7 +143,7 @@ export default function ProjectList() {
             {projects.map((project) => {
               const menuOpen = menuProjectId === project.id;
               return <div className={`project-workspace-item${selectedId === project.id ? " selected" : ""}`} role="listitem" key={project.id}>
-                <button className="project-workspace-select" type="button" onClick={() => { setSelectedId(project.id); setMenuProjectId(null); }}><strong title={project.name}>{project.name}</strong><span>{projectCode(project)}</span></button>
+                <button className="project-workspace-select" type="button" onClick={() => { setSelectedId(project.id); setMenuProjectId(null); }}><strong title={project.name}>{project.name}</strong></button>
                 <button className="project-workspace-more" type="button" aria-label={`${project.name} 更多功能`} aria-expanded={menuOpen} onClick={() => setMenuProjectId(menuOpen ? null : project.id)}>···</button>
                 {menuOpen && <div className="project-workspace-menu"><div className="project-workspace-menu-meta">最近更新时间 · {projectDate(project.created_at)}<br />产品迭代数量 · {iterationCounts[project.id] ?? 0} 个</div><button className="project-workspace-menu-action" type="button" onClick={() => openProjectDialog("description", project)}>查看项目描述</button><button className="project-workspace-menu-action" type="button" onClick={() => openProjectDialog("rename", project)}>重命名</button><button className="project-workspace-menu-action danger" type="button" onClick={() => openProjectDialog("delete", project)}>删除项目</button></div>}
               </div>;

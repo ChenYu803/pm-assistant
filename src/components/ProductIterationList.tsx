@@ -29,10 +29,6 @@ function formatIterationNumber(value: number) {
   return `迭代 ${String(value).padStart(2, "0")}`;
 }
 
-function formatProjectCode(id: string) {
-  return `PRODUCT-${id.replace(/[^a-z0-9]/gi, "").slice(0, 3).toUpperCase() || "001"}`;
-}
-
 function formatUpdated(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "刚刚";
@@ -210,9 +206,9 @@ export default function ProductIterationList({ projectId }: ProductIterationList
       <main className="iteration-main">
         <header className="iteration-project-head">
           <div>
-            <p className="iteration-eyebrow">SELECTED PROJECT / {project ? formatProjectCode(project.id) : "PRODUCT-001"}</p>
+            <p className="iteration-eyebrow">SELECTED PROJECT</p>
             <h2>{project?.name || "项目"}</h2>
-            <div className="iteration-project-meta"><span>{project ? formatProjectCode(project.id) : "PRODUCT-001"}</span><span>最近更新 {project?.created_at ? formatUpdated(project.created_at) : "刚刚"}</span></div>
+            <div className="iteration-project-meta"><span>最近更新 {project?.created_at ? formatUpdated(project.created_at) : "刚刚"}</span></div>
           </div>
         </header>
 

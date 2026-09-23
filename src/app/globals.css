@@ -223,7 +223,6 @@
 .project-workspace-select { min-width: 0; border: 0; padding: 13px 11px; color: #15140f; background: transparent; text-align: left; cursor: pointer; }
 .project-workspace-select:hover { background: rgba(247,241,222,.42); }
 .project-workspace-select strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
-.project-workspace-select span { display: block; margin-top: 4px; color: #484236; font: 11px ui-monospace, SFMono-Regular, Menlo, monospace; }
 .project-workspace-more { align-self: center; width: 32px; height: 36px; margin-right: 2px; border: 1px solid transparent; color: #15140f; background: transparent; cursor: pointer; font-size: 19px; letter-spacing: 2px; }
 .project-workspace-more:hover { border-color: rgba(21,20,15,.18); background: #efe7d2; }
 .project-workspace-main { min-width: 0; overflow: hidden; background: #efe7d2; }
