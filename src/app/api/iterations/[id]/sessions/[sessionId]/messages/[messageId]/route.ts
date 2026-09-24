@@ -18,6 +18,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (result.kind === "not-configured") return NextResponse.json({ error: "AI 服务未配置" }, { status: 500 });
     if (result.kind === "generating") return NextResponse.json({ error: "当前会话已有消息生成中，请稍后重试" }, { status: 409 });
     if (result.kind === "invalid-edit") return NextResponse.json({ error: "只能编辑最后一条用户消息" }, { status: 409 });
+    if (result.kind === "conflict") return NextResponse.json({ error: "当前会话已被其他请求更新，请刷新后重试" }, { status: 409 });
     if (result.kind === "generation-failed") return NextResponse.json({ error: result.error, userMessage: result.userMessage, assistantMessageId: result.assistantMessageId }, { status: 502 });
     return NextResponse.json({ userMessage: result.userMessage, assistantMessage: result.assistantMessage }, { status: 200 });
   } catch (error) {

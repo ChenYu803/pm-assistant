@@ -37,6 +37,7 @@ export async function POST(request: Request, { params }: Context) {
     if (result.kind === "not-configured") return NextResponse.json({ error: "AI 服务未配置" }, { status: 500 });
     if (result.kind === "empty") return NextResponse.json({ error: "消息内容不能为空" }, { status: 400 });
     if (result.kind === "invalid-regenerate") return NextResponse.json({ error: "只能重新生成最后一条已完成的 Agent 消息" }, { status: 409 });
+    if (result.kind === "conflict") return NextResponse.json({ error: "当前会话已被其他请求更新，请刷新后重试" }, { status: 409 });
     if (result.kind === "generation-failed") return NextResponse.json({ error: result.error, userMessage: result.userMessage, assistantMessageId: result.assistantMessageId }, { status: 502 });
     return NextResponse.json({ userMessage: result.userMessage, assistantMessage: result.assistantMessage }, { status: 201 });
   } catch (error) {

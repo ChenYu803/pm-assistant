@@ -6,6 +6,7 @@ import { createAIStream, isAIConfigured, type AIMessage } from "@/lib/ai";
 import type { AgentType } from "@/lib/agent-constants";
 import { isConceptDocFile, isWorkingDocFile, stripChangelogHeader } from "@/lib/file-helpers";
 import { getMysqlPool } from "@/lib/mysql";
+import { getWorkbenchFileStage } from "@/lib/workbench-file-branch";
 
 export const WORKBENCH_STAGES = ["analysis", "prototype", "prd", "tickets"] as const;
 export type WorkbenchStage = (typeof WORKBENCH_STAGES)[number];
@@ -132,6 +133,13 @@ export async function listMysqlIterationMessages(sessionId: string) {
   return rows.map((row) => ({ id: row.id, role: row.role, content: row.content, status: row.status, errorMessage: row.error_message, createdAt: row.created_at }));
 }
 
+function sameMessageSnapshot(left: Awaited<ReturnType<typeof listMysqlIterationMessages>>, right: Awaited<ReturnType<typeof listMysqlIterationMessages>>) {
+  return left.length === right.length && left.every((message, index) => {
+    const other = right[index];
+    return other && message.id === other.id && message.role === other.role && message.status === other.status && message.content === other.content && message.createdAt.valueOf() === other.createdAt.valueOf();
+  });
+}
+
 async function contextFiles(sessionId: string, projectId: string) {
   const [rows] = await getMysqlPool().query<Array<RowDataPacket & { id: string; filename: string; content: string; version: number; updated_at: Date; loaded_at: Date }>>(
     `SELECT f.id, f.filename, f.content, f.version, f.updated_at, c.loaded_at
@@ -172,7 +180,7 @@ async function buildPrompt(iterationId: string, sessionId: string, userId: strin
   const [directory] = await getMysqlPool().query<Array<RowDataPacket & { filename: string; version: number; updated_at: Date }>>(
     "SELECT filename, version, updated_at FROM project_files WHERE project_id = ? ORDER BY filename ASC", [iteration.project_id]);
   const files = await contextFiles(sessionId, iteration.project_id);
-  const prompt = `${AGENT_SYSTEM_PROMPTS[STAGE_AGENT[stage]]}\n\n## 当前工作范围\n\n项目：${iteration.project_name}\n产品迭代：${iteration.display_name}（迭代 ${String(iteration.iteration_number).padStart(2, "0")}）\n阶段：${WORKBENCH_STAGE_LABELS[stage]}\n${iteration.goal ? `本轮目标：${iteration.goal}` : "本轮目标：用户尚未填写；不得根据名称或文件目录猜测。"}\n\n项目文件目录（仅元数据）：\n${directory.map((file) => `- ${file.filename}（修订 ${Number(file.version)}）`).join("\n") || "（暂无项目文件）"}${files.length ? `\n\n## 用户加载的项目文件\n\n${files.map((file) => `### ${file.filename}\n当前修订：${Number(file.version)}\n\n${stripChangelogHeader(file.content)}`).join("\n\n")}` : "\n\n当前会话没有加载项目文件正文。"}`;
+  const prompt = `${AGENT_SYSTEM_PROMPTS[STAGE_AGENT[stage]]}\n\n## 当前工作范围\n\n项目：${iteration.project_name}\n产品迭代：${iteration.display_name}（迭代 ${String(iteration.iteration_number).padStart(2, "0")}）\n阶段：${WORKBENCH_STAGE_LABELS[stage]}\n${iteration.goal ? `本轮目标：${iteration.goal}` : "本轮目标：用户尚未填写；不得根据名称或文件目录猜测。"}\n\n项目文件目录（仅元数据）：\n${directory.map((file) => `- 路径：${file.filename}｜树枝：${WORKBENCH_STAGE_LABELS[getWorkbenchFileStage(file.filename)]}｜当前修订：${Number(file.version)}｜最近正文写入迭代：未记录（文件来源元数据由后续成果票接入）｜可撤回：未提供（当前模型尚无上一版正文）`).join("\n") || "（暂无项目文件）"}${files.length ? `\n\n## 用户加载的项目文件\n\n${files.map((file) => `### ${file.filename}\n路径：${file.filename}\n树枝：${WORKBENCH_STAGE_LABELS[getWorkbenchFileStage(file.filename)]}\n当前修订：${Number(file.version)}\n加载摘要：当前会话于 ${file.loaded_at.toISOString()} 读取该文件；最近正文写入迭代和可撤回状态尚未由当前模型记录。\n\n${stripChangelogHeader(file.content)}`).join("\n\n")}` : "\n\n当前会话没有加载项目文件正文。"}`;
   return { prompt, agentType: STAGE_AGENT[stage] };
 }
 
@@ -211,7 +219,7 @@ export async function generateMysqlIterationMessage(input: {
   }
   const prompt = await buildPrompt(input.iterationId, input.sessionId, input.userId, session.stage);
   if (!prompt) return { kind: "not-found" as const };
-  if (userMessage && !input.regenerateMessageId && !input.editMessageId) history.push({ role: "user", content: userMessage.content });
+  if (userMessage && !input.regenerateMessageId) history.push({ role: "user", content: userMessage.content });
   const assistantId = randomUUID();
   const createdAt = new Date();
   const reservation = await pool.getConnection();
@@ -223,6 +231,13 @@ export async function generateMysqlIterationMessage(input: {
     const [pending] = await reservation.query<Array<RowDataPacket & { id: string }>>(
       "SELECT id FROM iteration_session_messages WHERE session_id = ? AND status = 'generating' LIMIT 1", [input.sessionId]);
     if (pending.length) { await reservation.rollback(); return { kind: "generating" as const }; }
+    const [freshRows] = await reservation.query<Array<RowDataPacket & { id: string; role: "user" | "assistant"; content: string; status: string; error_message: string | null; created_at: Date }>>(
+      "SELECT id, role, content, status, error_message, created_at FROM iteration_session_messages WHERE session_id = ? ORDER BY created_at ASC, id ASC", [input.sessionId]);
+    const freshMessages = freshRows.map((row) => ({ id: row.id, role: row.role, content: row.content, status: row.status, errorMessage: row.error_message, createdAt: row.created_at }));
+    if (!sameMessageSnapshot(allMessages, freshMessages)) {
+      await reservation.rollback();
+      return { kind: "conflict" as const };
+    }
     if (userMessage && !input.regenerateMessageId && !input.editMessageId) {
       await reservation.execute<ResultSetHeader>("INSERT INTO iteration_session_messages (id, session_id, role, content, status, created_at) VALUES (?, ?, 'user', ?, 'completed', ?)", [userMessage.id, input.sessionId, userMessage.content, userMessage.createdAt]);
     }

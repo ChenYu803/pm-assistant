@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { getWorkbenchFileStage } from "@/lib/workbench-file-branch";
 
 type StageKey = "analysis" | "prototype" | "prd" | "tickets";
 type StageStatus = "not_started" | "in_progress" | "completed";
@@ -67,6 +68,7 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
   const [demoId, setDemoId] = useState<string | null>(null);
   const [toast, setToast] = useState("");
   const messageList = useRef<HTMLDivElement>(null);
+  const loadSequence = useRef(0);
 
   const currentInfo = stageInfo.find((stage) => stage.key === currentStage) ?? stageInfo[0];
   const activeSession = sessions.find((session) => session.id === activeSessionId) ?? null;
@@ -109,6 +111,7 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
   }, [loadWorkbench]);
 
   const loadMessages = useCallback(async (sessionId: string | null) => {
+    const requestSequence = ++loadSequence.current;
     setMessages([]);
     setContextIds([]);
     setEditingId(null);
@@ -118,6 +121,7 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
         request(`${base}/stages/${currentStage}/sessions/${sessionId}/messages`),
         request(`${base}/stages/${currentStage}/sessions/${sessionId}/context`),
       ]);
+      if (requestSequence !== loadSequence.current) return;
       setMessages(history.messages);
       setContextIds(context.fileIds);
     } catch (caught) {
@@ -143,9 +147,13 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
     setNotice(null);
     if (!bypass) {
       const index = stageOrder.indexOf(key);
-      const missing = stageOrder.slice(0, index).find((prior) => stages.find((stage) => stage.key === prior)?.status !== "completed");
+      const missing = stageOrder.slice(0, index).find((prior) => {
+        const state = stages.find((stage) => stage.key === prior);
+        return state?.status !== "completed" && !files.some((file) => getWorkbenchFileStage(file.filename) === prior);
+      });
       if (missing) { setNotice({ target: key, missing }); return; }
     }
+    loadSequence.current += 1;
     setCurrentStage(key);
     setDemoId(null);
     const stage = stages.find((entry) => entry.key === key);
@@ -170,6 +178,7 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
   }
 
   async function chooseSession(session: Session) {
+    loadSequence.current += 1;
     setDemoId(null);
     setActiveSessionId(session.id);
   }
@@ -210,6 +219,7 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
   }
 
   function selectDemo(id: string) {
+    loadSequence.current += 1;
     setActiveSessionId(null);
     setDemoId(id);
     setMessages([]);
@@ -219,7 +229,7 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
   const groupedFiles = useMemo(() => {
     const groups = new Map<string, FileRecord[]>();
     files.forEach((file) => {
-      const branch = file.filename.startsWith("issues/") ? "任务拆分" : file.filename.startsWith("原型") ? "原型" : file.filename.toLowerCase().startsWith("prd") ? "PRD" : "需求分析";
+      const branch = stageInfo.find((stage) => stage.key === getWorkbenchFileStage(file.filename))?.label ?? "需求分析";
       groups.set(branch, [...(groups.get(branch) ?? []), file]);
     });
     return [...groups.entries()];

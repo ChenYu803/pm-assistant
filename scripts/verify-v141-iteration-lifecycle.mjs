@@ -172,6 +172,10 @@ try {
     body: JSON.stringify({ filename: "需求分析.md", content: "## 1. 已确认项目内容", agent_type: "requirement_analyst" }),
   });
   check("写入删除保护用的项目文件", projectFile.status === 201);
+  await page.goto(`${BASE}/projects/${projectId}/iterations/${firstIteration.id}`);
+  await page.locator(".workbench-grid").waitFor();
+  await page.locator(".workbench-stage-nav").getByRole("button", { name: /原型设计/ }).click();
+  check("已有需求分析项目文件时进入原型不再误报缺少前置成果", await page.locator(".workbench-notice").count() === 0 && await page.locator(".workbench-stage-nav").getByRole("button", { name: /原型设计/ }).getAttribute("aria-current") === "step");
   const addedContext = await api(page, `/api/iterations/${firstIteration?.id}/stages/analysis/sessions/${analysisSession?.id}/context`, {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fileId: projectFile.body?.id }),
   });
