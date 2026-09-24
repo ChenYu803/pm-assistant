@@ -261,6 +261,51 @@ export const MYSQL_MIGRATIONS = [
       "ALTER TABLE work_records DROP COLUMN updated_at",
     ],
   },
+  {
+    id: "0011_v141_iteration_workbench",
+    checksum: "b21beac559c48c309ce5ed7c0b6cfc03e5c8b0084f5c687c813b9e771a25d769",
+    statements: [
+      "ALTER TABLE product_iterations ADD COLUMN current_stage ENUM('requirements', 'prototype', 'prd', 'tasks') NOT NULL DEFAULT 'requirements'",
+      `CREATE TABLE IF NOT EXISTS iteration_stage_states (
+        iteration_id CHAR(36) NOT NULL,
+        stage ENUM('requirements', 'prototype', 'prd', 'tasks') NOT NULL,
+        status ENUM('not_started', 'in_progress', 'completed') NOT NULL DEFAULT 'not_started',
+        updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+        PRIMARY KEY (iteration_id, stage),
+        CONSTRAINT iteration_stage_states_iteration_fk FOREIGN KEY (iteration_id) REFERENCES product_iterations(id) ON DELETE CASCADE
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
+      `CREATE TABLE IF NOT EXISTS iteration_sessions (
+        id CHAR(36) NOT NULL PRIMARY KEY,
+        iteration_id CHAR(36) NOT NULL,
+        stage ENUM('requirements', 'prototype', 'prd', 'tasks') NOT NULL,
+        title VARCHAR(255) NOT NULL DEFAULT '新会话',
+        created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+        updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+        CONSTRAINT iteration_sessions_iteration_fk FOREIGN KEY (iteration_id) REFERENCES product_iterations(id) ON DELETE CASCADE,
+        KEY iteration_sessions_iteration_stage_updated (iteration_id, stage, updated_at, id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
+      `CREATE TABLE IF NOT EXISTS iteration_session_messages (
+        id CHAR(36) NOT NULL PRIMARY KEY,
+        session_id CHAR(36) NOT NULL,
+        role ENUM('user', 'assistant') NOT NULL,
+        content MEDIUMTEXT NOT NULL,
+        status ENUM('generating', 'completed', 'failed') NOT NULL DEFAULT 'completed',
+        error_message TEXT NULL,
+        created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+        CONSTRAINT iteration_session_messages_session_fk FOREIGN KEY (session_id) REFERENCES iteration_sessions(id) ON DELETE CASCADE,
+        KEY iteration_session_messages_session_created (session_id, created_at, id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
+      `CREATE TABLE IF NOT EXISTS iteration_session_context_files (
+        session_id CHAR(36) NOT NULL,
+        file_id CHAR(36) NOT NULL,
+        loaded_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+        PRIMARY KEY (session_id, file_id),
+        CONSTRAINT iteration_session_context_session_fk FOREIGN KEY (session_id) REFERENCES iteration_sessions(id) ON DELETE CASCADE,
+        CONSTRAINT iteration_session_context_file_fk FOREIGN KEY (file_id) REFERENCES project_files(id) ON DELETE CASCADE,
+        KEY iteration_session_context_file (file_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
+    ],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {

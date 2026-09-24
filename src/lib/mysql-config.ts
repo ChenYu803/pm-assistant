@@ -15,6 +15,45 @@ export interface MysqlAdminConfig {
   requiredVersion: string;
 }
 
+export type MysqlMigrationConfig = MysqlAppConfig;
+
+export function getMysqlRequiredVersion(env: Env = process.env): string {
+  return env.MYSQL_REQUIRED_VERSION?.trim() || VERIFIED_MYSQL_VERSION;
+}
+
+/** 迁移脚本使用已有数据库和一次性迁移账号，不创建或轮换运行时应用账号。 */
+export function getMysqlMigrationConfig(env: Env = process.env): MysqlMigrationConfig {
+  const database = identifier(required(env, "MYSQL_DATABASE"), "MYSQL_DATABASE");
+  const user = identifier(required(env, "MYSQL_MIGRATION_USER"), "MYSQL_MIGRATION_USER");
+  return {
+    host: env.MYSQL_MIGRATION_HOST?.trim() || required(env, "MYSQL_HOST"),
+    port: env.MYSQL_MIGRATION_PORT?.trim() ? port(env, "MYSQL_MIGRATION_PORT") : port(env, "MYSQL_PORT"),
+    database,
+    user,
+    password: required(env, "MYSQL_MIGRATION_PASSWORD"),
+    appHost: env.MYSQL_APP_HOST?.trim() || "localhost",
+  };
+}
+
+export function getMysqlConnectionOptions(config: MysqlAppConfig | MysqlAdminConfig | MysqlMigrationConfig) {
+  const options: Record<string, unknown> = {
+    host: config.host,
+    port: config.port,
+    user: config.user,
+    password: config.password,
+  };
+  if ("database" in config) options.database = config.database;
+  const ca = process.env.MYSQL_TLS_CA?.trim();
+  if (ca) {
+    options.ssl = {
+      ca,
+      rejectUnauthorized: process.env.MYSQL_TLS_REJECT_UNAUTHORIZED !== "false",
+      ...(process.env.MYSQL_TLS_SERVERNAME?.trim() ? { servername: process.env.MYSQL_TLS_SERVERNAME.trim() } : {}),
+    };
+  }
+  return options;
+}
+
 export class MysqlConfigurationError extends Error {
   constructor(message: string) {
     super(message);

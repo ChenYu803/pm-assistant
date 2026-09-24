@@ -79,11 +79,47 @@ try {
   const firstCreate = page.getByRole("button", { name: "创建并进入工作区" });
   await firstCreate.click();
   await page.waitForURL((url) => url.pathname.includes("/iterations/"));
-  check("填写目标后进入占位工作区", (await page.locator(".iteration-placeholder-content").count()) === 1 && (await page.locator("h1").textContent())?.includes("工作区已打开"));
+  await page.locator(".workbench-grid").waitFor();
+  await page.getByText("本阶段还没有会话").waitFor();
+  check("填写目标后进入独立工作台", (await page.locator(".workbench-grid").count()) === 1 && (await page.locator(".workbench-stage-nav").getByRole("button").count()) === 4);
+  check("工作台展示项目、迭代编号和返回入口", (await page.locator(".workbench-project").innerText()).includes("第一轮验证") && (await page.locator(".workbench-project").innerText()).includes("迭代 01") && await page.locator(".workbench-back").count() === 1);
+  check("首次进入默认需求分析且空阶段不自动建会话", await page.locator(".workbench-stage-nav").getByRole("button", { name: /需求分析/ }).getAttribute("aria-current") === "step" && await page.getByText("本阶段还没有会话").count() === 1 && await page.getByRole("button", { name: "开始本阶段工作" }).count() === 1);
+  check("原型演示数据为只读且包含 10/3/3 条示例消息", await page.locator(".demo-session").count() === 3 && await page.locator(".demo-session").nth(0).innerText().then((text) => text.includes("10 条示例消息")) && await page.locator(".demo-session").nth(1).innerText().then((text) => text.includes("3 条示例消息")) && await page.locator(".demo-session").nth(2).innerText().then((text) => text.includes("3 条示例消息")));
 
   const firstList = await api(page, `/api/projects/${projectId}/iterations`);
   const firstIteration = firstList.body?.[0];
   check("第一条迭代返回稳定编号和目标", firstList.status === 200 && firstIteration?.iteration_number === 1 && firstIteration.goal === "让第一次使用的人理解工作方式。");
+
+  const firstWorkbench = await api(page, `/api/iterations/${firstIteration?.id}/workbench`);
+  check("首次空工作台没有持久化会话", firstWorkbench.status === 200 && firstWorkbench.body?.currentStage === "analysis" && firstWorkbench.body?.stages?.find((stage) => stage.key === "analysis")?.sessions?.length === 0);
+  await page.locator(".workbench-stage-nav").getByRole("button", { name: /PRD/ }).click();
+  check("跳过前置成果时出现可继续的软提示", await page.locator(".workbench-notice").getByText(/还没有确认的需求分析成果/).count() === 1 && await page.getByRole("button", { name: /继续进入\s*PRD/ }).count() === 1);
+  const continueResponse = page.waitForResponse((response) => response.url().endsWith(`/api/iterations/${firstIteration?.id}/workbench`) && response.request().method() === "PATCH");
+  await page.getByRole("button", { name: /继续进入\s*PRD/ }).click();
+  await continueResponse;
+  check("继续进入后阶段位置保存到当前迭代", (await api(page, `/api/iterations/${firstIteration?.id}/workbench`)).body?.currentStage === "prd");
+  const returnResponse = page.waitForResponse((response) => response.url().endsWith(`/api/iterations/${firstIteration?.id}/workbench`) && response.request().method() === "PATCH");
+  await page.locator(".workbench-stage-nav").getByRole("button", { name: /需求分析/ }).click();
+  await returnResponse;
+  await page.getByRole("button", { name: "开始本阶段工作" }).click();
+  await page.locator(".session-row").first().waitFor();
+  const analysisSession = (await api(page, `/api/iterations/${firstIteration?.id}/workbench`)).body?.stages?.find((stage) => stage.key === "analysis")?.sessions?.[0];
+  check("仅显式开始后才创建阶段会话", typeof analysisSession?.id === "string");
+  const sent = await api(page, `/api/iterations/${firstIteration?.id}/stages/analysis/sessions/${analysisSession?.id}/messages`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: "请确认当前需求分析阶段的验证目标。" }),
+  });
+  check("发送消息经 replay Agent 流程返回用户与 Agent 消息", sent.status === 200 && sent.body?.messages?.length === 2 && sent.body.messages[0]?.role === "user" && sent.body.messages[1]?.role === "assistant");
+  const userMessage = sent.body?.messages?.[0];
+  const assistantMessage = sent.body?.messages?.[1];
+  const edited = await api(page, `/api/iterations/${firstIteration?.id}/sessions/${analysisSession?.id}/messages/${userMessage?.id}`, {
+    method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: "已修订：请提出一个可观察的验证目标。" }),
+  });
+  const afterEdit = await api(page, `/api/iterations/${firstIteration?.id}/stages/analysis/sessions/${analysisSession?.id}/messages`);
+  check("编辑消息成功后替换原文并截断旧回复", edited.status === 200 && afterEdit.body?.messages?.length === 2 && afterEdit.body.messages[0]?.content === "已修订：请提出一个可观察的验证目标。" && afterEdit.body.messages[1]?.role === "assistant");
+  const regenerated = await api(page, `/api/iterations/${firstIteration?.id}/stages/analysis/sessions/${analysisSession?.id}/messages`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ regenerateMessageId: afterEdit.body?.messages?.[1]?.id ?? assistantMessage?.id }),
+  });
+  check("最后一条 Agent 回复可通过 replay 重新生成", regenerated.status === 200 && regenerated.body?.messages?.length === 2 && regenerated.body.messages[1]?.role === "assistant");
 
   await page.goto(`${BASE}/projects/${projectId}`);
   await page.getByRole("button", { name: "创建产品迭代" }).first().click();
@@ -103,6 +139,8 @@ try {
   const listAfterSkip = await api(page, `/api/projects/${projectId}/iterations`);
   const secondIteration = listAfterSkip.body?.find((item) => item.iteration_number === 2);
   check("暂不填写创建第二条迭代且目标为空", listAfterSkip.status === 200 && secondIteration?.goal === null);
+  const secondWorkbench = await api(page, `/api/iterations/${secondIteration?.id}/workbench`);
+  check("不同迭代的阶段位置和会话相互隔离", secondWorkbench.body?.currentStage === "analysis" && secondWorkbench.body?.stages?.every((stage) => stage.sessions.length === 0) && (await api(page, `/api/iterations/${firstIteration?.id}/workbench`)).body?.currentStage === "analysis");
   check("刷新后稳定编号和目标保持", (await api(page, `/api/iterations/${secondIteration?.id}`)).body?.iteration_number === 2);
   const deleteRouteProbe = await api(page, "/api/iterations/00000000-0000-4000-8000-000000000000", { method: "DELETE" });
   check("DELETE 路由对不存在的迭代返回 404", deleteRouteProbe.status === 404, `HTTP ${deleteRouteProbe.status} ${JSON.stringify(deleteRouteProbe.body)}`);
@@ -134,6 +172,15 @@ try {
     body: JSON.stringify({ filename: "需求分析.md", content: "## 1. 已确认项目内容", agent_type: "requirement_analyst" }),
   });
   check("写入删除保护用的项目文件", projectFile.status === 201);
+  const addedContext = await api(page, `/api/iterations/${firstIteration?.id}/stages/analysis/sessions/${analysisSession?.id}/context`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fileId: projectFile.body?.id }),
+  });
+  const isolatedSessionCreate = await api(page, `/api/iterations/${firstIteration?.id}/stages/analysis/sessions`, { method: "POST" });
+  const isolatedContext = await api(page, `/api/iterations/${firstIteration?.id}/stages/analysis/sessions/${isolatedSessionCreate.body?.session?.id}/context`);
+  check("上下文仅属于单个会话", addedContext.status === 200 && addedContext.body?.fileIds?.includes(projectFile.body?.id) && isolatedContext.status === 200 && isolatedContext.body?.fileIds?.length === 0);
+  const ticketSession = await api(page, `/api/iterations/${firstIteration?.id}/stages/tickets/sessions`, { method: "POST" });
+  const ticketsWorkbench = await api(page, `/api/iterations/${firstIteration?.id}/workbench`);
+  check("任务拆分阶段映射与迭代阶段恢复正确", ticketSession.status === 201 && ticketsWorkbench.body?.currentStage === "tickets" && ticketsWorkbench.body?.stages?.find((stage) => stage.key === "tickets")?.sessions?.length === 1);
 
   connection = await mysql.createConnection({ host: process.env.MYSQL_HOST, port: Number(process.env.MYSQL_PORT || "3306"), database: process.env.MYSQL_DATABASE, user: process.env.MYSQL_USER, password: process.env.MYSQL_PASSWORD });
   const [projectDataBefore] = await connection.query(
@@ -189,6 +236,37 @@ try {
     [projectId],
   );
   check("MySQL 最终事实保留相邻迭代且编号不复用", rowsInMysql.length === 3 && rowsInMysql[0].iteration_number === 1 && rowsInMysql[1].iteration_number === 2 && rowsInMysql[2].iteration_number === 4);
+
+  await page.goto(`${BASE}/projects/${projectId}/iterations/${firstIteration.id}`);
+  await page.locator(".workbench-grid").waitFor();
+  if (await page.locator(".workbench-stage-nav").getByRole("button", { name: /任务拆分/ }).getAttribute("aria-current") === "step") {
+    const stageResponse = page.waitForResponse((response) => response.url().endsWith(`/api/iterations/${firstIteration.id}/workbench`) && response.request().method() === "PATCH");
+    await page.locator(".workbench-stage-nav").getByRole("button", { name: /需求分析/ }).click();
+    await stageResponse;
+  }
+  await page.locator(".session-row").filter({ hasText: "请确认当前需求分析阶段的验证目标" }).click();
+  await page.getByText("已修订：请提出一个可观察的验证目标。", { exact: true }).waitFor();
+  await page.getByRole("button", { name: "修改并重新发送" }).click();
+  await page.getByRole("textbox", { name: "修改这条消息" }).fill("界面编辑后即将发送的新目标。");
+  await page.getByRole("button", { name: "取消", exact: true }).click();
+  check("原位编辑取消恢复原消息", await page.getByText("已修订：请提出一个可观察的验证目标。", { exact: true }).count() === 1);
+  await page.getByRole("button", { name: "修改并重新发送" }).click();
+  await page.getByRole("textbox", { name: "修改这条消息" }).fill("界面编辑后即将发送的新目标。");
+  const editResponse = page.waitForResponse((response) => response.url().includes(`/sessions/${analysisSession.id}/messages/`) && response.request().method() === "PATCH");
+  await page.locator(".inline-message-edit").getByRole("button", { name: "发送" }).click();
+  await editResponse;
+  await page.getByText("界面编辑后即将发送的新目标。", { exact: true }).waitFor();
+  check("原位编辑发送替换原文", await page.getByText("已修订：请提出一个可观察的验证目标。", { exact: true }).count() === 0);
+  const regenerateResponse = page.waitForResponse((response) => response.url().endsWith(`/stages/analysis/sessions/${analysisSession.id}/messages`) && response.request().method() === "POST");
+  await page.getByRole("button", { name: "重新生成" }).click();
+  check("聊天区重生成图标操作连接 replay 服务", (await regenerateResponse).ok());
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  check("390px 移动端工作台没有横向溢出", await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
+  await page.getByRole("button", { name: "关闭文件区" }).first().click();
+  check("移动端可关闭并重新展开文件区", await page.locator(".workbench-context").count() === 0 && await page.getByRole("button", { name: "展开文件区" }).count() === 1);
+  await page.getByRole("button", { name: "展开文件区" }).click();
+  check("重新展开后文件区恢复", await page.locator(".workbench-context").count() === 1);
 } finally {
   await connection?.end();
   await context.close();

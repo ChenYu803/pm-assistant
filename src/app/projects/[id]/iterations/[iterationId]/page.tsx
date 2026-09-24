@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { auth } from "@/lib/auth";
-import { findOwnedMysqlProductIteration } from "@/lib/mysql-account-workspace";
+import { findOwnedMysqlProductIteration, findOwnedMysqlProject } from "@/lib/mysql-account-workspace";
+import ProductIterationWorkbench from "@/components/ProductIterationWorkbench";
 
 export default async function ProductIterationWorkspacePage({
   params,
@@ -12,13 +12,13 @@ export default async function ProductIterationWorkspacePage({
   const { id: projectId, iterationId } = await params;
   const session = await auth();
   const userId = session?.user?.id;
-  const iteration = userId ? await findOwnedMysqlProductIteration(iterationId, userId) : null;
-  if (!iteration || iteration.project_id !== projectId) notFound();
+  const [iteration, project] = userId
+    ? await Promise.all([
+        findOwnedMysqlProductIteration(iterationId, userId),
+        findOwnedMysqlProject(projectId, userId),
+      ])
+    : [null, null];
+  if (!iteration || iteration.project_id !== projectId || !project) notFound();
 
-  return (
-    <main className="iteration-placeholder-page">
-      <div className="iteration-placeholder-topline"><Link href="/projects">← 返回产品迭代</Link><span>ITERATION / {String(iteration.iteration_number).padStart(2, "0")}</span></div>
-      <section className="iteration-placeholder-content"><p className="iteration-eyebrow">PRODUCT ITERATION WORKSPACE</p><h1>工作区已打开。</h1><p>这里的工作台界面由后续原型定义。</p><Link className="iteration-button iteration-button-primary" href="/projects">回到迭代列表</Link></section>
-    </main>
-  );
+  return <ProductIterationWorkbench project={project} iteration={iteration} />;
 }

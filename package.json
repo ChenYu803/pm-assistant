@@ -10,6 +10,7 @@
     "db:init": "tsx scripts/mysql-init.ts",
     "verify:mysql-init": "tsx scripts/verify-mysql-init.mjs",
     "verify:account-project-workspace": "tsx scripts/verify-account-project-workspace.mjs",
+    "verify:v141-iteration-lifecycle": "tsx scripts/verify-v141-iteration-lifecycle.mjs",
     "verify:mysql-conversation": "tsx scripts/verify-mysql-conversation.mjs",
     "verify:mysql-project-artifacts": "tsx scripts/verify-mysql-project-artifacts.mjs",
     "verify:mysql-explicit-freeze": "tsx scripts/verify-mysql-explicit-freeze.mjs",
