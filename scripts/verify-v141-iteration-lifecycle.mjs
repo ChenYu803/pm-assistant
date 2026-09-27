@@ -3,6 +3,7 @@
 import { chromium } from "playwright-core";
 import mysql from "mysql2/promise";
 import nextEnv from "@next/env";
+import { mkdir } from "node:fs/promises";
 import { assertPlaywrightAvailable } from "./verify-mysql-fixtures.mjs";
 
 const { loadEnvConfig } = nextEnv;
@@ -108,18 +109,18 @@ try {
   const sent = await api(page, `/api/iterations/${firstIteration?.id}/stages/analysis/sessions/${analysisSession?.id}/messages`, {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: "请确认当前需求分析阶段的验证目标。" }),
   });
-  check("发送消息经 replay Agent 流程返回用户与 Agent 消息", sent.status === 200 && sent.body?.messages?.length === 2 && sent.body.messages[0]?.role === "user" && sent.body.messages[1]?.role === "assistant");
+  check("发送消息经 replay Agent 流程返回用户与 Agent 消息", sent.status === 200 && sent.body?.messages?.length === 2 && sent.body.messages[0]?.role === "user" && sent.body.messages[1]?.role === "assistant", `HTTP ${sent.status} ${JSON.stringify(sent.body).slice(0, 300)}`);
   const userMessage = sent.body?.messages?.[0];
   const assistantMessage = sent.body?.messages?.[1];
   const edited = await api(page, `/api/iterations/${firstIteration?.id}/sessions/${analysisSession?.id}/messages/${userMessage?.id}`, {
     method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: "已修订：请提出一个可观察的验证目标。" }),
   });
   const afterEdit = await api(page, `/api/iterations/${firstIteration?.id}/stages/analysis/sessions/${analysisSession?.id}/messages`);
-  check("编辑消息成功后替换原文并截断旧回复", edited.status === 200 && afterEdit.body?.messages?.length === 2 && afterEdit.body.messages[0]?.content === "已修订：请提出一个可观察的验证目标。" && afterEdit.body.messages[1]?.role === "assistant");
+  check("编辑消息成功后替换原文并截断旧回复", edited.status === 200 && afterEdit.body?.messages?.length === 2 && afterEdit.body.messages[0]?.content === "已修订：请提出一个可观察的验证目标。" && afterEdit.body.messages[1]?.role === "assistant", `HTTP ${edited.status} ${JSON.stringify(edited.body).slice(0, 300)}`);
   const regenerated = await api(page, `/api/iterations/${firstIteration?.id}/stages/analysis/sessions/${analysisSession?.id}/messages`, {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ regenerateMessageId: afterEdit.body?.messages?.[1]?.id ?? assistantMessage?.id }),
   });
-  check("最后一条 Agent 回复可通过 replay 重新生成", regenerated.status === 200 && regenerated.body?.messages?.length === 2 && regenerated.body.messages[1]?.role === "assistant");
+  check("最后一条 Agent 回复可通过 replay 重新生成", regenerated.status === 200 && regenerated.body?.messages?.length === 2 && regenerated.body.messages[1]?.role === "assistant", `HTTP ${regenerated.status} ${JSON.stringify(regenerated.body).slice(0, 300)}`);
 
   await page.goto(`${BASE}/projects/${projectId}`);
   await page.getByRole("button", { name: "创建产品迭代" }).first().click();
@@ -182,6 +183,65 @@ try {
   const isolatedSessionCreate = await api(page, `/api/iterations/${firstIteration?.id}/stages/analysis/sessions`, { method: "POST" });
   const isolatedContext = await api(page, `/api/iterations/${firstIteration?.id}/stages/analysis/sessions/${isolatedSessionCreate.body?.session?.id}/context`);
   check("上下文仅属于单个会话", addedContext.status === 200 && addedContext.body?.fileIds?.includes(projectFile.body?.id) && isolatedContext.status === 200 && isolatedContext.body?.fileIds?.length === 0);
+  const otherStageStatuses = (await api(page, `/api/iterations/${firstIteration.id}/workbench`)).body?.stages
+    ?.filter((stage) => stage.key !== "analysis").map((stage) => `${stage.key}:${stage.status}`);
+  await page.goto(`${BASE}/projects/${projectId}/iterations/${firstIteration.id}`);
+  await page.locator(".workbench-grid").waitFor();
+  check("同阶段两个会话都出现在工作区", await page.locator(".real-session-list .session-row").count() === 2);
+  await page.locator(".session-row").filter({ hasText: "新会话" }).click();
+  await page.getByText("这个会话还没有消息").waitFor();
+  check("新会话显示独立空状态", await page.locator(".workbench-message").count() === 0);
+  if (process.env.CAPTURE_STAGE_SESSIONS === "1") {
+    await mkdir(".impeccable/review", { recursive: true });
+    await page.screenshot({ path: ".impeccable/review/stage-sessions-desktop.png", animations: "disabled" });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.screenshot({ path: ".impeccable/review/stage-sessions-mobile.png", animations: "disabled" });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+  }
+  await page.getByRole("tab", { name: /当前上下文/ }).click();
+  await page.getByText("当前会话没有加载文件。").waitFor();
+  const secondMessage = page.locator(".workbench-message.user .message-content").filter({ hasText: "第二会话独立讨论" });
+  await page.getByRole("textbox", { name: "输入消息" }).fill("第二会话独立讨论");
+  await page.getByRole("button", { name: "发送消息" }).click();
+  await secondMessage.waitFor();
+  await page.locator(".session-row").filter({ hasText: "第二会话独立讨论" }).waitFor();
+  check("第二会话消息未混入第一会话", await page.getByText("已修订：请提出一个可观察的验证目标。", { exact: true }).count() === 0);
+  await page.reload();
+  await page.locator(".workbench-grid").waitFor();
+  await secondMessage.waitFor();
+  check("刷新后回到刚才选中的会话", (await page.locator('.session-row[aria-current="page"]').innerText()).includes("第二会话独立讨论"));
+  await page.getByRole("textbox", { name: "输入消息" }).fill("第二会话未发送内容");
+  await page.locator(".session-row").filter({ hasText: "请确认当前需求分析阶段的验证目标" }).click();
+  await page.getByText("已修订：请提出一个可观察的验证目标。", { exact: true }).waitFor();
+  check("切回第一会话只显示自己的消息和上下文", await secondMessage.count() === 0 && (await page.getByRole("tab", { name: /当前上下文/ }).innerText()).includes("1"));
+  await page.getByRole("textbox", { name: "输入消息" }).fill("第一会话未发送内容");
+  await page.locator(".session-row").filter({ hasText: "第二会话独立讨论" }).click();
+  await secondMessage.waitFor();
+  check("未发送的输入也按会话分开", await page.getByRole("textbox", { name: "输入消息" }).inputValue() === "第二会话未发送内容");
+  const createPath = `/api/iterations/${firstIteration.id}/stages/analysis/sessions`;
+  let releaseCreation;
+  let signalCreationReady;
+  const creationReady = new Promise((resolve) => { signalCreationReady = resolve; });
+  const creationRelease = new Promise((resolve) => { releaseCreation = resolve; });
+  await page.route(`**${createPath}`, async (route) => {
+    if (route.request().method() !== "POST") { await route.continue(); return; }
+    const response = await route.fetch();
+    signalCreationReady();
+    await creationRelease;
+    await route.fulfill({ response });
+  });
+  await page.getByRole("button", { name: "新建会话" }).click();
+  await creationReady;
+  await page.locator(".session-row").filter({ hasText: "请确认当前需求分析阶段的验证目标" }).click();
+  await page.getByText("已修订：请提出一个可观察的验证目标。", { exact: true }).waitFor();
+  releaseCreation();
+  await page.locator(".session-row").nth(2).waitFor();
+  check("新建完成不会覆盖用户后来选择的会话", await page.locator(".session-row").count() === 3 && (await page.locator('.session-row[aria-current="page"]').innerText()).includes("请确认当前需求分析阶段的验证目标"));
+  await page.unroute(`**${createPath}`);
+  const afterSessionWork = (await api(page, `/api/iterations/${firstIteration.id}/workbench`)).body;
+  const afterStatuses = afterSessionWork?.stages?.filter((stage) => stage.key !== "analysis").map((stage) => `${stage.key}:${stage.status}`);
+  const afterSessionFiles = await api(page, `/api/projects/${projectId}/files`);
+  check("会话操作不改变其他阶段或项目文件", JSON.stringify(afterStatuses) === JSON.stringify(otherStageStatuses) && afterSessionFiles.body?.length === 1);
   const ticketSession = await api(page, `/api/iterations/${firstIteration?.id}/stages/tickets/sessions`, { method: "POST" });
   const ticketsWorkbench = await api(page, `/api/iterations/${firstIteration?.id}/workbench`);
   check("任务拆分阶段映射与迭代阶段恢复正确", ticketSession.status === 201 && ticketsWorkbench.body?.currentStage === "tickets" && ticketsWorkbench.body?.stages?.find((stage) => stage.key === "tickets")?.sessions?.length === 1);
@@ -264,6 +324,37 @@ try {
   const regenerateResponse = page.waitForResponse((response) => response.url().endsWith(`/stages/analysis/sessions/${analysisSession.id}/messages`) && response.request().method() === "POST");
   await page.getByRole("button", { name: "重新生成" }).click();
   check("聊天区重生成图标操作连接 replay 服务", (await regenerateResponse).ok());
+
+  await page.locator(".session-row").filter({ hasText: "第二会话独立讨论" }).click();
+  await secondMessage.waitFor();
+  await page.getByRole("textbox", { name: "输入消息" }).fill("第二会话可继续输入");
+  await page.locator(".session-row").filter({ hasText: "请确认当前需求分析阶段的验证目标" }).click();
+  await page.getByText("界面编辑后即将发送的新目标。", { exact: true }).waitFor();
+  const delayedPath = `/api/iterations/${firstIteration.id}/stages/analysis/sessions/${analysisSession.id}/messages`;
+  let releaseDelayedResponse;
+  let signalResponseReady;
+  const responseReady = new Promise((resolve) => { signalResponseReady = resolve; });
+  const responseRelease = new Promise((resolve) => { releaseDelayedResponse = resolve; });
+  await page.route(`**${delayedPath}`, async (route) => {
+    if (route.request().method() !== "POST") { await route.continue(); return; }
+    const response = await route.fetch();
+    signalResponseReady();
+    await responseRelease;
+    await route.fulfill({ response });
+  });
+  await page.getByRole("textbox", { name: "输入消息" }).fill("第一会话延迟回复");
+  await page.getByRole("button", { name: "发送消息" }).click();
+  await responseReady;
+  await page.locator(".session-row").filter({ hasText: "第二会话独立讨论" }).click();
+  await secondMessage.waitFor();
+  check("旧会话等待回复时新会话仍可输入", await page.getByRole("textbox", { name: "输入消息" }).inputValue() === "第二会话可继续输入" && await page.getByRole("button", { name: "发送消息" }).isEnabled());
+  const delayedBrowserResponse = page.waitForResponse((response) => response.url().endsWith(delayedPath) && response.request().method() === "POST");
+  const delayedCompletion = page.waitForResponse((response) => response.url().endsWith(`/api/iterations/${firstIteration.id}/sessions/${analysisSession.id}`) && response.request().method() === "GET");
+  releaseDelayedResponse();
+  await delayedBrowserResponse;
+  await delayedCompletion;
+  check("旧会话迟到的回复不覆盖当前会话", await secondMessage.count() === 1 && await page.locator(".workbench-message.user .message-content").filter({ hasText: "第一会话延迟回复" }).count() === 0);
+  await page.unroute(`**${delayedPath}`);
 
   await page.setViewportSize({ width: 390, height: 844 });
   check("390px 移动端工作台没有横向溢出", await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));

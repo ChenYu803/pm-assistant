@@ -230,9 +230,11 @@
 .sessions-heading h2 { margin:0; font:500 21px/1 Georgia,"Times New Roman",serif; }
 .new-session-button { display:grid; width:38px; height:38px; place-items:center; border:1px solid rgba(247,241,222,.34); color:var(--work-bone); background:transparent; cursor:pointer; }
 .new-session-button:hover { color:var(--work-ink); border-color:var(--work-coral); background:var(--work-coral); }
+.new-session-button:disabled { opacity:.5; cursor:wait; }
 .real-session-list,.demo-session-list { display:grid; align-content:start; gap:4px; min-height:0; margin-top:9px; overflow:auto; scrollbar-color:#756d5d #292720; scrollbar-width:thin; }
 .session-row,.demo-session { min-height:54px; padding:9px; border:1px solid transparent; color:rgba(247,241,222,.82); background:transparent; text-align:left; cursor:pointer; }
 .session-row:hover,.demo-session:hover { color:var(--work-bone); background:rgba(247,241,222,.07); }
+.session-row:disabled,.demo-session:disabled { cursor:wait; }
 .session-row[aria-current="page"],.demo-session[aria-current="page"] { color:var(--work-bone); border-color:rgba(247,241,222,.4); background:rgba(247,241,222,.1); }
 .session-row strong,.demo-session strong { display:block; overflow:hidden; font-size:13px; text-overflow:ellipsis; white-space:nowrap; }
 .session-row small,.demo-session small { display:block; margin-top:4px; color:rgba(247,241,222,.68); font:11px var(--font-app-sans); }
@@ -262,6 +264,9 @@
 .stage-empty p { margin:8px 0 15px; color:var(--work-muted); font-size:14px; line-height:1.6; }
 .stage-empty button { min-height:40px; border:1px solid var(--work-ink); padding:0 12px; color:var(--work-bone); background:var(--work-ink); cursor:pointer; font:600 13px var(--font-app-sans); }
 .stage-empty button:hover { color:var(--work-ink); border-color:var(--work-coral); background:var(--work-coral); }
+.stage-empty button:disabled { opacity:.5; cursor:wait; }
+.session-start h3 { font-size:20px; }
+.session-loading { margin:auto; color:var(--work-muted); font-size:14px; }
 .demo-warning { align-self:center; padding:6px 10px; border:1px solid rgba(121,55,47,.38); color:#79372f; background:#f3d9ce; font-size:12px; }
 .inline-message-edit { padding:9px 11px; color:var(--work-bone); border:1px solid var(--work-ink); background:#292720; }
 .inline-message-edit textarea { display:block; width:100%; min-height:76px; resize:vertical; border:0; color:var(--work-bone); background:transparent; font:14px/1.6 var(--font-app-sans); }

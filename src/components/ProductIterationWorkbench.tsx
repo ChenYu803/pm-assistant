@@ -13,6 +13,19 @@ type Project = { id: string; name: string };
 type Iteration = { id: string; project_id: string; iteration_number: number; display_name: string; goal: string | null };
 type FileRecord = { id: string; filename: string; version?: number; updated_at?: string };
 
+function preferredSession(iterationId: string, stage: StageKey, entries: Session[]) {
+  try {
+    const rememberedId = window.sessionStorage.getItem(`stage-session:${iterationId}:${stage}`);
+    return entries.find((session) => session.id === rememberedId) ?? entries[0] ?? null;
+  } catch {
+    return entries[0] ?? null;
+  }
+}
+
+function rememberSession(iterationId: string, stage: StageKey, sessionId: string) {
+  try { window.sessionStorage.setItem(`stage-session:${iterationId}:${stage}`, sessionId); } catch { /* 浏览器禁用会话存储时仍可正常切换。 */ }
+}
+
 const stageInfo: { key: StageKey; label: string; agent: string; hint: string }[] = [
   { key: "analysis", label: "需求分析", agent: "需求分析 Agent", hint: "从你想解决的问题开始，逐步确认用户、场景与验证依据。" },
   { key: "prototype", label: "原型设计", agent: "原型设计 Agent", hint: "把已确认的问题转成页面结构、用户流程与交互方案。" },
@@ -55,14 +68,17 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [files, setFiles] = useState<FileRecord[]>([]);
-  const [contextIds, setContextIds] = useState<string[]>([]);
+  const [contextBySession, setContextBySession] = useState<Record<string, string[]>>({});
   const [contextTab, setContextTab] = useState<"tree" | "context">("tree");
   const [contextOpen, setContextOpen] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [messagesLoading, setMessagesLoading] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState<{ target: StageKey; missing: StageKey } | null>(null);
-  const [input, setInput] = useState("");
-  const [sending, setSending] = useState(false);
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [sendingSessionIds, setSendingSessionIds] = useState<string[]>([]);
+  const [creatingSession, setCreatingSession] = useState(false);
+  const [contextUpdating, setContextUpdating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [demoId, setDemoId] = useState<string | null>(null);
@@ -71,10 +87,17 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
   const messageList = useRef<HTMLDivElement>(null);
   const contextPanel = useRef<HTMLElement>(null);
   const loadSequence = useRef(0);
+  const messageVersion = useRef(0);
+  const activeView = useRef<{ stage: StageKey; sessionId: string | null }>({ stage: "analysis", sessionId: null });
+  const sendingIds = useRef(new Set<string>());
+  const creatingSessionRef = useRef(false);
 
   const currentInfo = stageInfo.find((stage) => stage.key === currentStage) ?? stageInfo[0];
   const activeSession = sessions.find((session) => session.id === activeSessionId) ?? null;
   const selectedDemo = demoSessions.find((session) => session.id === demoId) ?? null;
+  const input = activeSessionId ? drafts[activeSessionId] ?? "" : "";
+  const sending = activeSessionId ? sendingSessionIds.includes(activeSessionId) : false;
+  const contextIds = activeSessionId ? contextBySession[activeSessionId] ?? [] : [];
 
   const request = useCallback(async (url: string, init?: RequestInit) => {
     const response = await fetch(url, init);
@@ -100,16 +123,19 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
       setSessions(state.stages.find((stage: Stage) => stage.key === state.currentStage)?.sessions ?? []);
       setFiles(fileList);
       const activeState = state.stages.find((stage: Stage) => stage.key === state.currentStage);
-      setActiveSessionId(activeState?.sessions?.[0]?.id ?? null);
+      const restoredSession = preferredSession(iteration.id, state.currentStage, activeState?.sessions ?? []);
+      activeView.current = { stage: state.currentStage, sessionId: restoredSession?.id ?? null };
+      setActiveSessionId(restoredSession?.id ?? null);
+      setMessagesLoading(Boolean(restoredSession));
       setDemoId(null);
       setMessages([]);
-      setContextIds([]);
+      setContextBySession({});
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "工作台加载失败。");
     } finally {
       setLoading(false);
     }
-  }, [base, project.id, request]);
+  }, [base, iteration.id, project.id, request]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => { void loadWorkbench(); }, 0);
@@ -118,20 +144,23 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
 
   const loadMessages = useCallback(async (sessionId: string | null) => {
     const requestSequence = ++loadSequence.current;
+    const startedAtMessageVersion = messageVersion.current;
     setMessages([]);
-    setContextIds([]);
     setEditingId(null);
+    setMessagesLoading(Boolean(sessionId));
     if (!sessionId) return;
     try {
       const [history, context] = await Promise.all([
         request(`${base}/stages/${currentStage}/sessions/${sessionId}/messages`),
         request(`${base}/stages/${currentStage}/sessions/${sessionId}/context`),
       ]);
-      if (requestSequence !== loadSequence.current) return;
-      setMessages(history.messages);
-      setContextIds(context.fileIds);
+      if (requestSequence !== loadSequence.current || activeView.current.sessionId !== sessionId || activeView.current.stage !== currentStage) return;
+      if (startedAtMessageVersion === messageVersion.current) setMessages(history.messages);
+      setContextBySession((previous) => ({ ...previous, [sessionId]: context.fileIds }));
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "会话内容加载失败。");
+      if (requestSequence === loadSequence.current) setError(caught instanceof Error ? caught.message : "会话内容加载失败。");
+    } finally {
+      if (requestSequence === loadSequence.current) setMessagesLoading(false);
     }
   }, [base, currentStage, request]);
 
@@ -167,75 +196,135 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
       if (missing) { setNotice({ target: key, missing }); return; }
     }
     loadSequence.current += 1;
+    setMessages([]);
+    setEditingId(null);
     setCurrentStage(key);
     setDemoId(null);
     const stage = stages.find((entry) => entry.key === key);
     const nextSessions = stage?.sessions ?? [];
+    const nextSession = preferredSession(iteration.id, key, nextSessions);
+    activeView.current = { stage: key, sessionId: nextSession?.id ?? null };
     setSessions(nextSessions);
-    setActiveSessionId(nextSessions[0]?.id ?? null);
+    setActiveSessionId(nextSession?.id ?? null);
+    setMessagesLoading(Boolean(nextSession));
     try {
       await request(`${base}/workbench`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ stage: key }) });
     } catch (caught) { setError(caught instanceof Error ? caught.message : "阶段位置保存失败。"); }
   }
 
   async function createSession() {
+    if (creatingSessionRef.current) return;
+    creatingSessionRef.current = true;
+    setCreatingSession(true);
+    const stage = currentStage;
+    const startingSelection = loadSequence.current;
     try {
-      const result = await request(`${base}/stages/${currentStage}/sessions`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
+      const result = await request(`${base}/stages/${stage}/sessions`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
       const session = result.session as Session;
-      const next = [...sessions, session];
-      setSessions(next);
-      setStages((previous) => previous.map((stage) => stage.key === currentStage ? { ...stage, status: "in_progress", sessions: next } : stage));
+      setStages((previous) => previous.map((entry) => entry.key === stage ? { ...entry, status: entry.status === "completed" ? "completed" : "in_progress", sessions: [session, ...entry.sessions] } : entry));
+      if (activeView.current.stage === stage) setSessions((previous) => [session, ...previous]);
+      if (activeView.current.stage !== stage || loadSequence.current !== startingSelection) return;
+      activeView.current = { stage, sessionId: session.id };
+      rememberSession(iteration.id, stage, session.id);
+      loadSequence.current += 1;
+      setMessages([]);
+      setEditingId(null);
       setActiveSessionId(session.id);
+      setMessagesLoading(true);
       setDemoId(null);
-    } catch (caught) { setError(caught instanceof Error ? caught.message : "创建会话失败。"); }
+    } catch (caught) {
+      if (activeView.current.stage === stage) setError(caught instanceof Error ? caught.message : "创建会话失败。");
+    } finally {
+      creatingSessionRef.current = false;
+      setCreatingSession(false);
+    }
   }
 
   async function chooseSession(session: Session) {
+    if (activeView.current.stage === currentStage && activeView.current.sessionId === session.id && !demoId) return;
     loadSequence.current += 1;
+    activeView.current = { stage: currentStage, sessionId: session.id };
+    rememberSession(iteration.id, currentStage, session.id);
+    setMessages([]);
+    setEditingId(null);
     setDemoId(null);
     setActiveSessionId(session.id);
+    setMessagesLoading(true);
   }
 
   async function sendMessage(content: string, editMessageId?: string, regenerateMessageId?: string) {
-    if (!activeSessionId || (!content.trim() && !regenerateMessageId) || sending) return;
-    setSending(true);
+    if (!activeSessionId || (!content.trim() && !regenerateMessageId) || sendingIds.current.has(activeSessionId)) return;
+    const sessionId = activeSessionId;
+    const stage = currentStage;
+    sendingIds.current.add(sessionId);
+    setSendingSessionIds([...sendingIds.current]);
     setError("");
     try {
       if (editMessageId) {
-        await request(`${base}/sessions/${activeSessionId}/messages/${editMessageId}`, {
+        await request(`${base}/sessions/${sessionId}/messages/${editMessageId}`, {
           method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: content.trim() }),
         });
-        const history = await request(`${base}/stages/${currentStage}/sessions/${activeSessionId}/messages`);
-        setMessages(history.messages);
+        const history = await request(`${base}/stages/${stage}/sessions/${sessionId}/messages`);
+        if (activeView.current.stage === stage && activeView.current.sessionId === sessionId) {
+          messageVersion.current += 1;
+          setMessages(history.messages);
+        }
       } else {
-        const result = await request(`${base}/stages/${currentStage}/sessions/${activeSessionId}/messages`, {
+        const result = await request(`${base}/stages/${stage}/sessions/${sessionId}/messages`, {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...(content.trim() ? { content: content.trim() } : {}), ...(regenerateMessageId ? { regenerateMessageId } : {}) }),
         });
-        setMessages(result.messages);
+        if (activeView.current.stage === stage && activeView.current.sessionId === sessionId) {
+          messageVersion.current += 1;
+          setMessages(result.messages);
+        }
       }
-      setInput(""); setEditingId(null); setEditValue("");
-      const now = new Date().toISOString();
-      setSessions((previous) => previous.map((session) => session.id === activeSessionId ? { ...session, updatedAt: now } : session));
-    } catch (caught) { setError(caught instanceof Error ? caught.message : "消息发送失败。"); }
-    finally { setSending(false); }
+      if (!editMessageId && !regenerateMessageId) setDrafts((previous) => ({ ...previous, [sessionId]: "" }));
+      if (activeView.current.stage === stage && activeView.current.sessionId === sessionId) { setEditingId(null); setEditValue(""); }
+      const updated = await request(`${base}/sessions/${sessionId}`).catch(() => null);
+      if (updated) {
+        const updateSession = (session: Session) => session.id === sessionId ? { ...session, title: updated.title, updatedAt: updated.updated_at } : session;
+        setStages((previous) => previous.map((entry) => entry.key === stage ? { ...entry, sessions: entry.sessions.map(updateSession) } : entry));
+        if (activeView.current.stage === stage) setSessions((previous) => previous.map(updateSession));
+      }
+    } catch (caught) {
+      if (activeView.current.stage === stage && activeView.current.sessionId === sessionId) setError(caught instanceof Error ? caught.message : "消息发送失败。");
+    } finally {
+      sendingIds.current.delete(sessionId);
+      setSendingSessionIds([...sendingIds.current]);
+    }
   }
 
-  async function toggleContext(fileId: string, add: boolean) {
-    if (!activeSessionId) { showToast("请先开始本阶段工作。"); return; }
+  const toggleContext = useCallback(async (fileId: string, add: boolean) => {
+    if (contextUpdating) return;
+    if (!activeSessionId) {
+      setToast("请先开始本阶段工作。");
+      window.setTimeout(() => setToast(""), 2200);
+      return;
+    }
+    const sessionId = activeSessionId;
+    const stage = currentStage;
+    setContextUpdating(true);
     try {
-      const result = await request(`${base}/stages/${currentStage}/sessions/${activeSessionId}/context`, {
+      const result = await request(`${base}/stages/${stage}/sessions/${sessionId}/context`, {
         method: add ? "POST" : "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ fileId }),
       });
-      setContextIds(result.fileIds);
-    } catch (caught) { setError(caught instanceof Error ? caught.message : "上下文更新失败。"); }
-  }
+      setContextBySession((previous) => ({ ...previous, [sessionId]: result.fileIds }));
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "上下文更新失败。");
+    } finally {
+      setContextUpdating(false);
+    }
+  }, [activeSessionId, base, contextUpdating, currentStage, request]);
 
   function selectDemo(id: string) {
     loadSequence.current += 1;
+    activeView.current = { stage: currentStage, sessionId: null };
     setActiveSessionId(null);
     setDemoId(id);
     setMessages([]);
+    setEditingId(null);
+    setMessagesLoading(false);
   }
 
   const currentDemoMessages = useMemo(() => selectedDemo?.messages ?? [], [selectedDemo]);
@@ -264,7 +353,7 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
 
       <section className="workbench-stage-area" aria-label="四环阶段导航">
         <nav className="workbench-stage-nav">
-          {stageInfo.map((stage, index) => <button key={stage.key} className="workbench-stage" type="button" aria-current={currentStage === stage.key ? "step" : undefined} onClick={() => void enterStage(stage.key)}>
+          {stageInfo.map((stage, index) => <button key={stage.key} className="workbench-stage" type="button" disabled={creatingSession || contextUpdating} aria-current={currentStage === stage.key ? "step" : undefined} onClick={() => void enterStage(stage.key)}>
             <span className="stage-index">{String(index + 1).padStart(2, "0")}</span><span className="stage-title">{stage.label}</span><span className="stage-status">{statusLabel(stages.find((item) => item.key === stage.key)?.status)}</span>
           </button>)}
         </nav>
@@ -274,32 +363,34 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
       {error && <div className="workbench-error" role="alert"><span>{error}</span><button type="button" onClick={() => setError("")}>关闭</button></div>}
       {loading ? <div className="workbench-loading" aria-label="正在加载工作台"><span/><span/><span/></div> : <div className={`workbench-grid ${contextOpen ? "" : "context-collapsed"}`}>
         <aside className="workbench-sessions" aria-label="阶段会话">
-          <div className="sessions-heading"><h2>阶段会话</h2><button className="new-session-button" type="button" onClick={() => void createSession()} aria-label="新建会话" title="新建会话"><Icon name="plus"/></button></div>
-          {sessions.length ? <div className="real-session-list">{sessions.map((session) => <button key={session.id} className="session-row" type="button" aria-current={activeSessionId === session.id ? "page" : undefined} onClick={() => void chooseSession(session)}><strong>{session.title}</strong><small>{session.updatedAt ? new Date(session.updatedAt).toLocaleDateString("zh-CN") : "尚无消息"}</small></button>)}</div> : <p className="session-empty">本阶段还没有会话</p>}
+          <div className="sessions-heading"><h2>阶段会话</h2><button className="new-session-button" type="button" disabled={creatingSession || contextUpdating} onClick={() => void createSession()} aria-label="新建会话" title="新建会话"><Icon name="plus"/></button></div>
+          {sessions.length ? <div className="real-session-list">{sessions.map((session) => <button key={session.id} className="session-row" type="button" disabled={contextUpdating} aria-current={activeSessionId === session.id ? "page" : undefined} onClick={() => void chooseSession(session)}><strong>{session.title}</strong><small>{session.title === "新会话" ? "尚无消息 · " : ""}{session.updatedAt ? new Date(session.updatedAt).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }) : ""}</small></button>)}</div> : <p className="session-empty">本阶段还没有会话</p>}
           {currentStage === "analysis" ? <details className="demo-section" open={demoExpanded} onToggle={(event) => setDemoExpanded(event.currentTarget.open)}><summary className="demo-divider"><span>演示会话</span><small>不属于你的项目</small></summary>
-          <div className="demo-session-list">{demoSessions.map((session) => <button key={session.id} type="button" className="demo-session" aria-current={demoId === session.id ? "page" : undefined} onClick={() => selectDemo(session.id)}><strong>{session.title}</strong><small>{session.messages.length} 条示例消息</small></button>)}</div></details> : null}
+          <div className="demo-session-list">{demoSessions.map((session) => <button key={session.id} type="button" className="demo-session" disabled={contextUpdating} aria-current={demoId === session.id ? "page" : undefined} onClick={() => selectDemo(session.id)}><strong>{session.title}</strong><small>{session.messages.length} 条示例消息</small></button>)}</div></details> : null}
         </aside>
 
         <section className="workbench-conversation" aria-labelledby="conversation-title">
           <div className="conversation-heading"><h2 id="conversation-title">{activeSession?.title ?? selectedDemo?.title ?? currentInfo.label}</h2></div>
           <div className="workbench-message-list" ref={messageList} aria-live="polite">
             {selectedDemo ? <div className="demo-warning">这是原型演示数据，不会保存到项目或迭代。</div> : null}
-            {!activeSession && !selectedDemo ? <div className="stage-empty"><div><h3>从你想解决的问题开始。</h3><p>{currentInfo.hint}</p><button type="button" onClick={() => void createSession()}>开始本阶段工作</button></div></div> : null}
+            {!activeSession && !selectedDemo ? <div className="stage-empty"><div><h3>从你想解决的问题开始。</h3><p>{currentInfo.hint}</p><button type="button" disabled={creatingSession || contextUpdating} onClick={() => void createSession()}>开始本阶段工作</button></div></div> : null}
+            {activeSession && messagesLoading ? <p className="session-loading" role="status">正在打开会话…</p> : null}
+            {activeSession && !messagesLoading && messages.length === 0 ? <div className="stage-empty session-start"><h3>这个会话还没有消息</h3><p>{currentInfo.hint}</p></div> : null}
             {(selectedDemo ? currentDemoMessages.map(([role, content], index): Message => ({ id: `demo-${index}`, role, content })) : messages).map((message) => <article className={`workbench-message ${message.role}`} key={message.id}>
               <div className="message-label">{message.role === "user" ? "你" : currentInfo.agent}{message.status && message.status !== "completed" ? <span> · {message.status}</span> : null}</div>
               {editingId === message.id ? <div className="inline-message-edit"><textarea aria-label="修改这条消息" value={editValue} onChange={(event) => setEditValue(event.target.value)}/><div><button type="button" onClick={() => { setEditingId(null); setEditValue(""); }}>取消</button><button type="button" disabled={!editValue.trim() || sending} onClick={() => void sendMessage(editValue, message.id)}>发送</button></div></div> : <><div className="message-content">{message.content}</div>{!selectedDemo && <div className="message-actions"><button type="button" title="复制消息" aria-label="复制消息" onClick={() => { void navigator.clipboard.writeText(message.content).then(() => showToast("已复制消息")).catch(() => showToast("复制失败，请手动选择文本")); }}><Icon name="copy"/></button>{message.role === "user" && message.id === lastUserId && <button type="button" title="修改并重新发送" aria-label="修改并重新发送" onClick={() => { setEditingId(message.id); setEditValue(message.content); }}><Icon name="edit"/></button>}{message.role === "assistant" && message.id === lastAssistantId && <button type="button" title="重新生成" aria-label="重新生成" disabled={sending || message.status !== "completed"} onClick={() => void sendMessage("", undefined, message.id)}><Icon name="refresh"/></button>}</div>}</>}
             </article>)}
           </div>
           <form className="workbench-composer" onSubmit={(event) => { event.preventDefault(); void sendMessage(input); }}>
-            <textarea value={input} onChange={(event) => setInput(event.target.value)} disabled={!activeSession || sending || Boolean(selectedDemo)} placeholder={selectedDemo ? "演示会话为只读" : activeSession ? "写下你现在想讨论的问题或判断……" : "开始本阶段工作后即可发送消息"} aria-label="输入消息"/>
-            <div><button type="submit" disabled={!activeSession || !input.trim() || sending}>{sending ? "发送中…" : "发送消息"}</button></div>
+            <textarea value={input} onChange={(event) => { if (activeSessionId) setDrafts((previous) => ({ ...previous, [activeSessionId]: event.target.value })); }} disabled={!activeSession || sending || Boolean(selectedDemo) || messagesLoading} placeholder={selectedDemo ? "演示会话为只读" : activeSession ? "写下你现在想讨论的问题或判断……" : "开始本阶段工作后即可发送消息"} aria-label="输入消息"/>
+            <div><button type="submit" disabled={!activeSession || !input.trim() || sending || messagesLoading}>{sending ? "发送中…" : "发送消息"}</button></div>
           </form>
         </section>
 
         {contextOpen && <aside className="workbench-context" aria-label="项目文件与上下文" ref={contextPanel}>
           <div className="context-heading"><h2>文件与上下文</h2><button type="button" className="context-close" aria-label="关闭文件区" title="关闭文件区" onClick={() => setContextOpen(false)}><Icon name="close"/></button></div>
           <div className="context-switch" role="tablist" aria-label="文件视图"><button type="button" role="tab" aria-selected={contextTab === "tree"} onClick={() => setContextTab("tree")}>项目文件树 <span>{files.length}</span></button><button type="button" role="tab" aria-selected={contextTab === "context"} onClick={() => setContextTab("context")}>当前上下文 <span>{contextIds.length}</span></button></div>
-          {contextTab === "tree" ? <div className="context-scroll">{groupedFiles.length ? groupedFiles.map(([branch, branchFiles]) => <details className="file-branch" key={branch} open><summary>{branch}<span>{branchFiles.length}</span></summary>{branchFiles.map((file) => <div className="project-file-row" key={file.id}><span title={file.filename}><Icon name="file"/>{file.filename}</span><button type="button" aria-label={`${contextIds.includes(file.id) ? "从" : "加入"}上下文：${file.filename}`} disabled={contextIds.includes(file.id)} onClick={() => void toggleContext(file.id, true)}>{contextIds.includes(file.id) ? "已加入" : "加入"}</button></div>)}</details>) : <p className="context-empty">项目文件树还是空的。</p>}</div> : <div className="context-scroll">{contextIds.length ? files.filter((file) => contextIds.includes(file.id)).map((file) => <div className="project-file-row loaded" key={file.id}><span title={file.filename}><Icon name="file"/>{file.filename}</span><button type="button" onClick={() => void toggleContext(file.id, false)} aria-label={`从当前上下文移除 ${file.filename}`}>移除</button></div>) : <p className="context-empty">当前会话没有加载文件。</p>}</div>}
+          {contextTab === "tree" ? <div className="context-scroll">{groupedFiles.length ? groupedFiles.map(([branch, branchFiles]) => <details className="file-branch" key={branch} open><summary>{branch}<span>{branchFiles.length}</span></summary>{branchFiles.map((file) => <div className="project-file-row" key={file.id}><span title={file.filename}><Icon name="file"/>{file.filename}</span><button type="button" aria-label={`${contextIds.includes(file.id) ? "从" : "加入"}上下文：${file.filename}`} disabled={contextIds.includes(file.id) || messagesLoading || contextUpdating} onClick={() => void toggleContext(file.id, true)}>{contextIds.includes(file.id) ? "已加入" : "加入"}</button></div>)}</details>) : <p className="context-empty">项目文件树还是空的。</p>}</div> : <div className="context-scroll">{contextIds.length ? files.filter((file) => contextIds.includes(file.id)).map((file) => <div className="project-file-row loaded" key={file.id}><span title={file.filename}><Icon name="file"/>{file.filename}</span><button type="button" disabled={messagesLoading || contextUpdating} onClick={() => void toggleContext(file.id, false)} aria-label={`从当前上下文移除 ${file.filename}`}>移除</button></div>) : <p className="context-empty">当前会话没有加载文件。</p>}</div>}
         </aside>}
       </div>}
     </div>
