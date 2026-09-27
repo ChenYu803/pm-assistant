@@ -132,7 +132,6 @@ export default function ProjectList() {
 
   return (
     <div className="project-workspace-app">
-      <div className="project-workspace-topline"><div><span>AI 产品现场 / V1.41 原型</span><span><strong>01</strong> · 创建与管理产品迭代</span></div></div>
       <div className="project-workspace-shell">
         <aside className="project-workspace-rail" aria-label="我的项目">
           <a className="project-workspace-brand" href="#top"><span className="project-workspace-mark">A</span><span>AI 产品现场</span></a>

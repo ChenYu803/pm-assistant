@@ -461,10 +461,7 @@
 
 /* v1.41 #01 原型对齐：项目壳层、摘要、列表和菜单使用同一套纸张布局。 */
 .project-workspace-app { min-height: 100%; color: #15140f; background: #efe7d2; }
-.project-workspace-topline { min-height: 36px; box-sizing: border-box; padding: 9px 24px; color: rgba(247,241,222,.72); background: #15140f; font: 11px/18px ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; }
-.project-workspace-topline > div { display: flex; justify-content: space-between; gap: 20px; max-width: 1600px; margin: 0 auto; }
-.project-workspace-topline strong { color: #f7f1de; font-weight: 500; }
-.project-workspace-shell { min-height: calc(100vh - 36px); }
+.project-workspace-shell { min-height: 100vh; }
 .project-workspace-brand { font: 600 14px var(--font-app-sans); }
 .project-workspace-heading h1 { font-size: 34px; }
 .project-workspace-create { min-height: 48px; font-size: 14px; }
@@ -518,8 +515,6 @@
 .iteration-risk-items > div { padding: 15px 16px; border: 1px solid rgba(21,20,15,.18); background: rgba(247,241,222,.5); }
 
 @media (max-width: 640px) {
-  .project-workspace-topline { padding-inline: 16px; }
-  .project-workspace-topline > div span:last-child { display: none; }
   .project-workspace-shell { display: block; }
   .project-workspace-rail { padding: 22px 16px 24px; border-right: 0; border-bottom: 1px solid rgba(21,20,15,.18); }
   .project-workspace-heading { margin-top: 33px; }
