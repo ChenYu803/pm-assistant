@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getWorkbenchFileStage } from "@/lib/workbench-file-branch";
 import ProjectFileTree, { type ProjectFileEntry } from "@/components/ProjectFileTree";
 import AnalysisCandidateReview, { type AnalysisCandidate } from "@/components/AnalysisCandidateReview";
+import DisclosureIcon from "@/components/DisclosureIcon";
 
 type StageKey = "analysis" | "prototype" | "prd" | "tickets";
 type StageStatus = "not_started" | "in_progress" | "completed";
@@ -455,7 +456,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
         <aside className="workbench-sessions" aria-label="阶段会话">
           <div className="sessions-heading"><h2>阶段会话</h2><button className="new-session-button" type="button" disabled={creatingSession || contextUpdating} onClick={() => void createSession()} aria-label="新建会话" title="新建会话"><Icon name="plus"/></button></div>
           {sessions.length ? <div className="real-session-list">{sessions.map((session) => <button key={session.id} className="session-row" type="button" disabled={contextUpdating} aria-current={activeSessionId === session.id ? "page" : undefined} onClick={() => void chooseSession(session)}><strong>{session.title}</strong><small>{generatingSessionIds.includes(session.id) || sendingSessionIds.includes(session.id) ? "生成中 · " : session.title === "新会话" ? "尚无消息 · " : ""}{session.updatedAt ? new Date(session.updatedAt).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }) : ""}</small></button>)}</div> : <p className="session-empty">本阶段还没有会话</p>}
-          {demoSessions.length > 0 && currentStage === "analysis" ? <details className="demo-section" open={demoExpanded} onToggle={(event) => setDemoExpanded(event.currentTarget.open)}><summary className="demo-divider"><span>演示会话</span><small>只读样例</small></summary>
+          {demoSessions.length > 0 && currentStage === "analysis" ? <details className="demo-section" open={demoExpanded} onToggle={(event) => setDemoExpanded(event.currentTarget.open)}><summary className="demo-divider disclosure-summary"><span>演示会话</span><small>只读样例</small><DisclosureIcon /></summary>
           <div className="demo-session-list">{demoSessions.map((session) => <button key={session.id} type="button" className="demo-session" disabled={contextUpdating} aria-current={demoId === session.id ? "page" : undefined} onClick={() => selectDemo(session.id)}><strong>{session.title}</strong><small>{session.messages.length} 条示例消息</small></button>)}</div></details> : null}
         </aside>
 

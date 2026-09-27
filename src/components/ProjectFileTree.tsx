@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
+import DisclosureIcon from "@/components/DisclosureIcon";
 import { getWorkbenchFileStage } from "@/lib/workbench-file-branch";
 
 export type ProjectFileEntry = { id: string; filename: string; version?: number; updated_at?: string; lastContentIteration?: string | null; canUndo?: boolean };
@@ -94,8 +95,8 @@ export default function ProjectFileTree({ projectId, files, onAddToContext, load
         const entries = files.filter((file) => getWorkbenchFileStage(file.filename) === branch.key).sort((a, b) => a.filename.localeCompare(b.filename, "zh-CN", { numeric: true }));
         const folders = branch.key === "tickets" ? [...new Set(entries.map((file) => taskFolder(file.filename)))] : [];
         return <details className="project-tree-branch" key={branch.key} open>
-          <summary><span>{branch.label}</span><small>{entries.length}</small></summary>
-          {branch.key === "tickets" ? folders.map((folder) => <details className="project-tree-folder" key={folder} open><summary><span>{folder}</span><small>{entries.filter((file) => taskFolder(file.filename) === folder).length}</small></summary>{entries.filter((file) => taskFolder(file.filename) === folder).map(renderFile)}</details>) : entries.map(renderFile)}
+          <summary className="disclosure-summary"><span>{branch.label}</span><small>{entries.length}</small><DisclosureIcon /></summary>
+          {branch.key === "tickets" ? folders.map((folder) => <details className="project-tree-folder" key={folder} open><summary className="disclosure-summary"><span>{folder}</span><small>{entries.filter((file) => taskFolder(file.filename) === folder).length}</small><DisclosureIcon /></summary>{entries.filter((file) => taskFolder(file.filename) === folder).map(renderFile)}</details>) : entries.map(renderFile)}
           {!entries.length && <p className="project-tree-empty">暂无文件</p>}
         </details>;
       })}
