@@ -173,7 +173,7 @@ export async function deleteMysqlIterationSession(iterationId: string, sessionId
 
 export async function listMysqlIterationMessages(sessionId: string) {
   const [rows] = await getMysqlPool().query<Array<RowDataPacket & { id: string; role: "user" | "assistant"; content: string; status: string; error_message: string | null; created_at: Date }>>(
-    "SELECT id, role, content, status, error_message, created_at FROM iteration_session_messages WHERE session_id = ? ORDER BY created_at ASC, id ASC", [sessionId]);
+    "SELECT id, role, content, status, error_message, created_at FROM iteration_session_messages WHERE session_id = ? ORDER BY created_at ASC, role ASC, id ASC", [sessionId]);
   return rows.map((row) => ({ id: row.id, role: row.role, content: row.content, status: row.status, errorMessage: row.error_message, createdAt: row.created_at }));
 }
 
@@ -284,7 +284,7 @@ export async function generateMysqlIterationMessage(input: {
   if (!prompt) return { kind: "not-found" as const };
   if (userMessage && !input.regenerateMessageId) history.push({ role: "user", content: userMessage.content });
   const assistantId = randomUUID();
-  const createdAt = new Date();
+  let createdAt = new Date();
   const reservation = await pool.getConnection();
   try {
     await reservation.beginTransaction();
@@ -301,16 +301,20 @@ export async function generateMysqlIterationMessage(input: {
       "SELECT id FROM iteration_session_messages WHERE session_id = ? AND status = 'generating' LIMIT 1", [input.sessionId]);
     if (pending.length) { await reservation.rollback(); return { kind: "generating" as const }; }
     const [freshRows] = await reservation.query<Array<RowDataPacket & { id: string; role: "user" | "assistant"; content: string; status: string; error_message: string | null; created_at: Date }>>(
-      "SELECT id, role, content, status, error_message, created_at FROM iteration_session_messages WHERE session_id = ? ORDER BY created_at ASC, id ASC", [input.sessionId]);
+      "SELECT id, role, content, status, error_message, created_at FROM iteration_session_messages WHERE session_id = ? ORDER BY created_at ASC, role ASC, id ASC", [input.sessionId]);
     const freshMessages = freshRows.map((row) => ({ id: row.id, role: row.role, content: row.content, status: row.status, errorMessage: row.error_message, createdAt: row.created_at }));
     if (!sameMessageSnapshot(allMessages, freshMessages)) {
       await reservation.rollback();
       return { kind: "conflict" as const };
     }
+    // DATETIME(3) 同毫秒写入会按随机 UUID 乱序，因此在会话锁内顺延时间戳。
+    const latestCreatedAt = freshMessages.reduce((latest, message) => Math.max(latest, message.createdAt.valueOf()), 0);
     if (userMessage && !input.regenerateMessageId && !input.editMessageId) {
+      userMessage.createdAt = new Date(Math.max(userMessage.createdAt.valueOf(), latestCreatedAt + 1));
+      createdAt = new Date(Math.max(createdAt.valueOf(), userMessage.createdAt.valueOf() + 1));
       await reservation.execute<ResultSetHeader>("INSERT INTO iteration_session_messages (id, session_id, role, content, status, created_at) VALUES (?, ?, 'user', ?, 'completed', ?)", [userMessage.id, input.sessionId, userMessage.content, userMessage.createdAt]);
       await reservation.execute<ResultSetHeader>("UPDATE iteration_sessions SET title = IF(title = '新会话', ?, title), updated_at = ? WHERE id = ?", [userMessage.content.slice(0, 80), new Date(), input.sessionId]);
-    }
+    } else createdAt = new Date(Math.max(createdAt.valueOf(), latestCreatedAt + 1));
     await reservation.execute<ResultSetHeader>("INSERT INTO iteration_session_messages (id, session_id, role, content, status, created_at) VALUES (?, ?, 'assistant', '', 'generating', ?)", [assistantId, input.sessionId, createdAt]);
     await reservation.commit();
   } catch (error) { await reservation.rollback(); throw error; } finally { reservation.release(); }
@@ -345,9 +349,9 @@ export async function generateMysqlIterationMessage(input: {
       }
       if (editTarget) {
         await connection.execute<ResultSetHeader>("UPDATE iteration_session_messages SET content = ? WHERE id = ? AND session_id = ? AND role = 'user'", [userMessage!.content, editTarget.id, input.sessionId]);
-        await connection.execute<ResultSetHeader>("DELETE FROM iteration_session_messages WHERE session_id = ? AND id <> ? AND (created_at > ? OR (created_at = ? AND id > ?))", [input.sessionId, assistantId, new Date(editTarget.createdAt), new Date(editTarget.createdAt), editTarget.id]);
+        await connection.execute<ResultSetHeader>("DELETE FROM iteration_session_messages WHERE session_id = ? AND id <> ? AND (created_at > ? OR (created_at = ? AND (role = 'assistant' OR id > ?)))", [input.sessionId, assistantId, new Date(editTarget.createdAt), new Date(editTarget.createdAt), editTarget.id]);
       } else if (regenerateTarget) {
-        await connection.execute<ResultSetHeader>("DELETE FROM iteration_session_messages WHERE session_id = ? AND id <> ? AND (created_at > ? OR (created_at = ? AND id >= ?))", [input.sessionId, assistantId, new Date(regenerateTarget.createdAt), new Date(regenerateTarget.createdAt), regenerateTarget.id]);
+        await connection.execute<ResultSetHeader>("DELETE FROM iteration_session_messages WHERE session_id = ? AND id <> ? AND (created_at > ? OR (created_at = ? AND role = 'assistant' AND id >= ?))", [input.sessionId, assistantId, new Date(regenerateTarget.createdAt), new Date(regenerateTarget.createdAt), regenerateTarget.id]);
       }
       await connection.execute<ResultSetHeader>("UPDATE iteration_session_messages SET content = ?, status = 'completed', error_message = NULL WHERE id = ? AND session_id = ?", [answer, assistantId, input.sessionId]);
       const title = userMessage?.content.slice(0, 80) || "新会话";

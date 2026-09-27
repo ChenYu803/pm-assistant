@@ -83,7 +83,18 @@ try {
   const observer = await context.newPage();
   await observer.goto(`${base}/projects/${projectId}/iterations/${iterationId}`);
   await observer.locator(".workbench-grid").waitFor();
-  check("另一页面显示生成原因并禁用完成", await observer.getByText(/本阶段有 Agent 正在生成/).count() === 1 && await observer.getByRole("button", { name: "完成本阶段" }).isDisabled());
+  await observer.locator(".session-row").filter({ hasText: "新会话" }).click();
+  check("另一会话生成时显示原因并禁用完成", await observer.getByText(/「请给出回放回答」正在生成/).count() === 1 && await observer.getByRole("button", { name: "完成本阶段" }).isDisabled());
+  if (process.env.CAPTURE_STAGE_STATUS === "1") {
+    await mkdir(".impeccable/review", { recursive: true });
+    await observer.screenshot({ path: ".impeccable/review/stage-generating-desktop.png", animations: "disabled" });
+  }
+  await observer.setViewportSize({ width: 390, height: 844 });
+  check("移动端生成提示可见且无横向溢出", await observer.getByRole("button", { name: "查看会话" }).isVisible() && await observer.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
+  if (process.env.CAPTURE_STAGE_STATUS === "1") await observer.screenshot({ path: ".impeccable/review/stage-generating-mobile.png", animations: "disabled" });
+  await observer.getByRole("button", { name: "查看会话" }).click();
+  check("生成提示能跳到对应会话", await observer.locator('.session-row[aria-current="page"] strong').textContent() === "请给出回放回答" && await observer.getByRole("button", { name: "停止生成" }).isVisible() && await observer.getByRole("button", { name: "查看会话" }).count() === 0);
+  if (process.env.CAPTURE_STAGE_STATUS === "1") await observer.screenshot({ path: ".impeccable/review/stage-generating-selected-mobile.png", animations: "disabled" });
   await observer.getByRole("button", { name: "停止生成" }).click();
   const stopped = await page.evaluate(() => window.stagePendingRequest);
   await observer.waitForFunction(() => {
@@ -99,6 +110,8 @@ try {
   await api(page, messagePath, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: "保留这一版回复" }) });
   const beforeRegenerate = (await api(page, messagePath)).body?.messages ?? [];
   const previousReply = [...beforeRegenerate].reverse().find((message) => message.role === "assistant" && message.status === "completed");
+  const previousQuestion = beforeRegenerate.find((message) => message.role === "user" && message.content === "保留这一版回复");
+  check("同轮用户消息与回复保持严格时间顺序", Boolean(previousQuestion && previousReply) && new Date(previousQuestion.createdAt).valueOf() < new Date(previousReply.createdAt).valueOf() && beforeRegenerate.indexOf(previousQuestion) < beforeRegenerate.indexOf(previousReply));
   await page.evaluate(({ path, messageId }) => {
     window.stagePendingRequest = fetch(path, { method: "POST", headers: { "Content-Type": "application/json", "x-pm-verify-stream-delay": "1" }, body: JSON.stringify({ regenerateMessageId: messageId }) })
       .then(async (response) => ({ status: response.status, body: await response.json() }));
@@ -110,7 +123,7 @@ try {
   const stopRegenerate = await api(page, `/api/iterations/${iterationId}/sessions/${activeId}/stop`, { method: "POST" });
   const regenerateResult = await page.evaluate(() => window.stagePendingRequest);
   const afterRegenerate = (await api(page, messagePath)).body?.messages ?? [];
-  check("停止重新生成保留旧回复且无失败占位", stopRegenerate.status === 200 && regenerateResult.status === 409 && afterRegenerate.length === beforeRegenerate.length && afterRegenerate.some((message) => message.id === previousReply?.id));
+  check("停止重新生成保留旧回复且无失败占位", stopRegenerate.status === 200 && regenerateResult.status === 409 && afterRegenerate.length === beforeRegenerate.length && afterRegenerate.some((message) => message.id === previousReply?.id), JSON.stringify({ stopStatus: stopRegenerate.status, regenerateStatus: regenerateResult.status, regenerateError: regenerateResult.body?.error, before: beforeRegenerate.map((message) => ({ id: message.id, role: message.role, status: message.status })), after: afterRegenerate.map((message) => ({ id: message.id, role: message.role, status: message.status })), previousReplyId: previousReply?.id }));
 
   await observer.getByRole("button", { name: "完成本阶段" }).click();
   check("停止后可以完成", stage(await api(page, workbenchPath), "analysis")?.status === "completed");

@@ -87,6 +87,7 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
   const [demoExpanded, setDemoExpanded] = useState(true);
   const [toast, setToast] = useState("");
   const messageList = useRef<HTMLDivElement>(null);
+  const conversationPanel = useRef<HTMLElement>(null);
   const contextPanel = useRef<HTMLElement>(null);
   const loadSequence = useRef(0);
   const messageVersion = useRef(0);
@@ -104,7 +105,10 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
   const currentStageState = stages.find((stage) => stage.key === currentStage);
   const currentStatus = currentStageState?.status ?? "not_started";
   const generatingSessionIds = currentStageState?.generatingSessionIds ?? [];
-  const stageGenerating = currentStageState?.sessions.some((session) => sendingSessionIds.includes(session.id)) || generatingSessionIds.length > 0;
+  const busySessionIds = new Set([...generatingSessionIds, ...sessions.filter((session) => sendingSessionIds.includes(session.id)).map((session) => session.id)]);
+  const busySessions = sessions.filter((session) => busySessionIds.has(session.id));
+  const otherBusySessions = busySessions.filter((session) => session.id !== activeSessionId || Boolean(selectedDemo));
+  const stageGenerating = busySessionIds.size > 0;
   const sessionGenerating = Boolean(activeSessionId && (sending || generatingSessionIds.includes(activeSessionId)));
 
   const request = useCallback(async (url: string, init?: RequestInit) => {
@@ -282,6 +286,13 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
     } catch (caught) { setError(caught instanceof Error ? caught.message : "会话打开失败。"); }
   }
 
+  function viewGeneratingSession(session: Session) {
+    void chooseSession(session);
+    if (window.matchMedia("(max-width: 760px)").matches) {
+      window.setTimeout(() => conversationPanel.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
+    }
+  }
+
   async function completeStage() {
     if (stageUpdating || stageGenerating || currentStatus !== "in_progress") return;
     setStageUpdating(true);
@@ -449,12 +460,15 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
           <div className="demo-session-list">{demoSessions.map((session) => <button key={session.id} type="button" className="demo-session" disabled={contextUpdating} aria-current={demoId === session.id ? "page" : undefined} onClick={() => selectDemo(session.id)}><strong>{session.title}</strong><small>{session.messages.length} 条示例消息</small></button>)}</div></details> : null}
         </aside>
 
-        <section className="workbench-conversation" aria-labelledby="conversation-title">
+        <section className="workbench-conversation" aria-labelledby="conversation-title" ref={conversationPanel}>
           <div className="conversation-heading"><h2 id="conversation-title">{activeSession?.title ?? selectedDemo?.title ?? currentInfo.label}</h2>
             {!selectedDemo && currentStatus === "in_progress" && currentStageState?.sessions.length ? <button className="stage-complete-button" type="button" disabled={stageUpdating || Boolean(stageGenerating)} aria-describedby={stageGenerating ? "stage-generation-note" : undefined} onClick={() => void completeStage()}>完成本阶段</button> : null}
             {!selectedDemo && currentStatus === "completed" ? <button className="stage-reopen-button" type="button" disabled={stageUpdating} onClick={() => void reopenStage()}>重新打开阶段</button> : null}
           </div>
-          {currentStatus === "in_progress" && stageGenerating ? <p className="stage-generation-note" id="stage-generation-note" role="status">本阶段有 Agent 正在生成；结束或停止后可完成。</p> : null}
+          {currentStatus === "in_progress" && stageGenerating ? <div className="stage-generation-note" id="stage-generation-note" role="status">
+            <span>{busySessionIds.size === 1 && busySessions.length === 1 ? `「${busySessions[0].title}」正在生成，结束或停止后可完成本阶段。` : `本阶段有 ${busySessionIds.size} 个会话正在生成，结束或停止后可完成本阶段。`}</span>
+            {otherBusySessions.length ? <div className="stage-generation-links">{otherBusySessions.map((session) => <button key={session.id} type="button" disabled={contextUpdating} onClick={() => viewGeneratingSession(session)} title={`查看生成中的会话：${session.title}`}>{busySessions.length === 1 ? "查看会话" : session.title}</button>)}</div> : busySessions.length ? null : <span>刷新页面后可查看该会话。</span>}
+          </div> : null}
           <div className="workbench-message-list" ref={messageList} aria-live="polite">
             {selectedDemo ? <div className="demo-warning">这是原型演示数据，不会保存到项目或迭代。</div> : null}
             {!activeSession && !selectedDemo ? <div className="stage-empty"><div><h3>从你想解决的问题开始。</h3><p>{currentInfo.hint}</p><button type="button" disabled={creatingSession || contextUpdating} onClick={() => void createSession()}>开始本阶段工作</button></div></div> : null}
