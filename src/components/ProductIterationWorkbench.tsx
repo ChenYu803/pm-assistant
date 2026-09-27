@@ -252,7 +252,6 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
   const lastAssistantId = [...messages].reverse().find((message) => message.role === "assistant" && message.status === "completed")?.id;
 
   return <main className="iteration-workbench" aria-busy={loading}>
-    <div className="workbench-topline"><span>AI 产品现场 <i>/</i> 产品迭代工作区</span></div>
     <div className="workbench-shell">
       <header className="workbench-header">
         <div className="workbench-identity">
