@@ -1,15 +1,17 @@
 import { randomUUID } from "node:crypto";
-import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
+import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
 import { AGENT_SYSTEM_PROMPTS } from "@/lib/agent-prompts";
 import { createAIStream, isAIConfigured, type AIMessage } from "@/lib/ai";
 import type { AgentType } from "@/lib/agent-constants";
 import { isConceptDocFile, isWorkingDocFile, stripChangelogHeader } from "@/lib/file-helpers";
 import { getMysqlPool } from "@/lib/mysql";
+import { cancelGeneration, registerGeneration, releaseGeneration } from "@/lib/generation-control";
 import { getWorkbenchFileStage } from "@/lib/workbench-file-branch";
 
 export const WORKBENCH_STAGES = ["analysis", "prototype", "prd", "tickets"] as const;
 export type WorkbenchStage = (typeof WORKBENCH_STAGES)[number];
+export type WorkbenchStageStatus = "not_started" | "in_progress" | "completed";
 export const WORKBENCH_STAGE_LABELS: Record<WorkbenchStage, string> = {
   analysis: "需求分析",
   prototype: "原型设计",
@@ -44,6 +46,13 @@ export async function findOwnedWorkbenchIteration(iterationId: string, userId: s
   return rows[0] ?? null;
 }
 
+async function lockOwnedIteration(connection: PoolConnection, iterationId: string, userId: string) {
+  const [rows] = await connection.query<Array<RowDataPacket & { id: string }>>(
+    `SELECT i.id FROM product_iterations i JOIN projects p ON p.id = i.project_id
+     WHERE i.id = ? AND p.user_id = ? FOR UPDATE`, [iterationId, userId]);
+  return rows.length > 0;
+}
+
 export async function getMysqlIterationWorkbench(iterationId: string, userId: string) {
   const iteration = await findOwnedWorkbenchIteration(iterationId, userId);
   if (!iteration) return null;
@@ -51,6 +60,10 @@ export async function getMysqlIterationWorkbench(iterationId: string, userId: st
     "SELECT stage, status FROM iteration_stage_states WHERE iteration_id = ?", [iterationId]);
   const [sessions] = await getMysqlPool().query<SessionRow[]>(
     "SELECT id, iteration_id, stage, title, created_at, updated_at FROM iteration_sessions WHERE iteration_id = ? ORDER BY updated_at DESC, id DESC", [iterationId]);
+  const [generating] = await getMysqlPool().query<Array<RowDataPacket & { session_id: string; stage: WorkbenchStage }>>(
+    `SELECT DISTINCT m.session_id, s.stage FROM iteration_session_messages m
+     JOIN iteration_sessions s ON s.id = m.session_id
+     WHERE s.iteration_id = ? AND m.status = 'generating'`, [iterationId]);
   const statusMap = new Map(states.map((row) => [stageFromStorage(row.stage), row.status]));
   const sessionMap = new Map<WorkbenchStage, SessionRow[]>();
   for (const session of sessions) {
@@ -66,6 +79,7 @@ export async function getMysqlIterationWorkbench(iterationId: string, userId: st
     currentStage: stageFromStorage(iteration.current_stage),
     stages: WORKBENCH_STAGES.map((key) => ({
       key, label: WORKBENCH_STAGE_LABELS[key], status: statusMap.get(key) ?? "not_started",
+      generatingSessionIds: generating.filter((row) => stageFromStorage(row.stage) === key).map((row) => row.session_id),
       sessions: (sessionMap.get(key) ?? []).map((session) => ({
         id: session.id, title: session.title, updatedAt: session.updated_at,
       })),
@@ -73,26 +87,56 @@ export async function getMysqlIterationWorkbench(iterationId: string, userId: st
   };
 }
 
-export async function setMysqlIterationCurrentStage(iterationId: string, userId: string, stage: WorkbenchStage) {
-  const [result] = await getMysqlPool().execute<ResultSetHeader>(
-    `UPDATE product_iterations i JOIN projects p ON p.id = i.project_id
-     SET i.current_stage = ? WHERE i.id = ? AND p.user_id = ?`, [stageToStorage(stage), iterationId, userId]);
-  return result.affectedRows === 1;
+export async function setMysqlIterationCurrentStage(iterationId: string, userId: string, stage: WorkbenchStage, sessionId?: string) {
+  const connection = await getMysqlPool().getConnection();
+  try {
+    await connection.beginTransaction();
+    if (!(await lockOwnedIteration(connection, iterationId, userId))) { await connection.rollback(); return null; }
+    if (sessionId) {
+      const [sessions] = await connection.query<Array<RowDataPacket & { id: string }>>(
+        "SELECT id FROM iteration_sessions WHERE id = ? AND iteration_id = ? AND stage = ?", [sessionId, iterationId, stageToStorage(stage)]);
+      if (!sessions.length) { await connection.rollback(); return null; }
+      await connection.execute<ResultSetHeader>(
+        `INSERT INTO iteration_stage_states (iteration_id, stage, status) VALUES (?, ?, 'in_progress')
+         ON DUPLICATE KEY UPDATE status = 'in_progress'`, [iterationId, stageToStorage(stage)]);
+    }
+    await connection.execute<ResultSetHeader>("UPDATE product_iterations SET current_stage = ? WHERE id = ?", [stageToStorage(stage), iterationId]);
+    await connection.commit();
+    return { currentStage: stage, ...(sessionId ? { status: "in_progress" as const } : {}) };
+  } catch (error) { await connection.rollback(); throw error; } finally { connection.release(); }
+}
+
+export async function completeMysqlIterationStage(iterationId: string, userId: string, stage: WorkbenchStage) {
+  const connection = await getMysqlPool().getConnection();
+  try {
+    await connection.beginTransaction();
+    if (!(await lockOwnedIteration(connection, iterationId, userId))) { await connection.rollback(); return "not-found" as const; }
+    const [states] = await connection.query<Array<RowDataPacket & { status: WorkbenchStageStatus }>>(
+      "SELECT status FROM iteration_stage_states WHERE iteration_id = ? AND stage = ?", [iterationId, stageToStorage(stage)]);
+    if (states[0]?.status !== "in_progress") { await connection.rollback(); return "not-in-progress" as const; }
+    const [pending] = await connection.query<Array<RowDataPacket & { id: string }>>(
+      `SELECT m.id FROM iteration_session_messages m JOIN iteration_sessions s ON s.id = m.session_id
+       WHERE s.iteration_id = ? AND s.stage = ? AND m.status = 'generating' LIMIT 1`, [iterationId, stageToStorage(stage)]);
+    if (pending.length) { await connection.rollback(); return "generating" as const; }
+    await connection.execute<ResultSetHeader>(
+      "UPDATE iteration_stage_states SET status = 'completed' WHERE iteration_id = ? AND stage = ?", [iterationId, stageToStorage(stage)]);
+    await connection.commit();
+    return "completed" as const;
+  } catch (error) { await connection.rollback(); throw error; } finally { connection.release(); }
 }
 
 export async function createMysqlIterationSession(iterationId: string, userId: string, stage: WorkbenchStage) {
-  const iteration = await findOwnedWorkbenchIteration(iterationId, userId);
-  if (!iteration) return null;
   const id = randomUUID();
   const now = new Date();
   const connection = await getMysqlPool().getConnection();
   try {
     await connection.beginTransaction();
+    if (!(await lockOwnedIteration(connection, iterationId, userId))) { await connection.rollback(); return null; }
     await connection.execute<ResultSetHeader>(
       "INSERT INTO iteration_sessions (id, iteration_id, stage, title, created_at, updated_at) VALUES (?, ?, ?, '新会话', ?, ?)", [id, iterationId, stageToStorage(stage), now, now]);
     await connection.execute<ResultSetHeader>(
       `INSERT INTO iteration_stage_states (iteration_id, stage, status, updated_at) VALUES (?, ?, 'in_progress', ?)
-       ON DUPLICATE KEY UPDATE status = IF(status = 'completed', 'completed', 'in_progress'), updated_at = VALUES(updated_at)`, [iterationId, stageToStorage(stage), now]);
+       ON DUPLICATE KEY UPDATE status = 'in_progress', updated_at = VALUES(updated_at)`, [iterationId, stageToStorage(stage), now]);
     await connection.execute<ResultSetHeader>("UPDATE product_iterations SET current_stage = ? WHERE id = ?", [stageToStorage(stage), iterationId]);
     await connection.commit();
   } catch (error) { await connection.rollback(); throw error; } finally { connection.release(); }
@@ -131,6 +175,25 @@ export async function listMysqlIterationMessages(sessionId: string) {
   const [rows] = await getMysqlPool().query<Array<RowDataPacket & { id: string; role: "user" | "assistant"; content: string; status: string; error_message: string | null; created_at: Date }>>(
     "SELECT id, role, content, status, error_message, created_at FROM iteration_session_messages WHERE session_id = ? ORDER BY created_at ASC, id ASC", [sessionId]);
   return rows.map((row) => ({ id: row.id, role: row.role, content: row.content, status: row.status, errorMessage: row.error_message, createdAt: row.created_at }));
+}
+
+export async function stopMysqlIterationGeneration(iterationId: string, sessionId: string, userId: string) {
+  const connection = await getMysqlPool().getConnection();
+  try {
+    await connection.beginTransaction();
+    if (!(await lockOwnedIteration(connection, iterationId, userId))) { await connection.rollback(); return "not-found" as const; }
+    const [sessions] = await connection.query<Array<RowDataPacket & { id: string }>>(
+      "SELECT id FROM iteration_sessions WHERE id = ? AND iteration_id = ?", [sessionId, iterationId]);
+    if (!sessions.length) { await connection.rollback(); return "not-found" as const; }
+    const [pending] = await connection.query<Array<RowDataPacket & { id: string }>>(
+      "SELECT id FROM iteration_session_messages WHERE session_id = ? AND status = 'generating' LIMIT 1", [sessionId]);
+    if (!pending.length) { await connection.rollback(); return "not-generating" as const; }
+    await connection.execute<ResultSetHeader>(
+      "UPDATE iteration_session_messages SET status = 'failed', error_message = '生成已停止' WHERE id = ? AND status = 'generating'", [pending[0].id]);
+    await connection.commit();
+    cancelGeneration(pending[0].id);
+    return "stopped" as const;
+  } catch (error) { await connection.rollback(); throw error; } finally { connection.release(); }
 }
 
 function sameMessageSnapshot(left: Awaited<ReturnType<typeof listMysqlIterationMessages>>, right: Awaited<ReturnType<typeof listMysqlIterationMessages>>) {
@@ -185,7 +248,7 @@ async function buildPrompt(iterationId: string, sessionId: string, userId: strin
 }
 
 export async function generateMysqlIterationMessage(input: {
-  iterationId: string; sessionId: string; userId: string; content?: string; regenerateMessageId?: string; editMessageId?: string;
+  iterationId: string; sessionId: string; userId: string; content?: string; regenerateMessageId?: string; editMessageId?: string; replayDelayMs?: number;
 }) {
   const session = await findOwnedIterationSession(input.iterationId, input.sessionId, input.userId);
   if (!session) return { kind: "not-found" as const };
@@ -225,6 +288,12 @@ export async function generateMysqlIterationMessage(input: {
   const reservation = await pool.getConnection();
   try {
     await reservation.beginTransaction();
+    const [iterationRows] = await reservation.query<Array<RowDataPacket & { id: string }>>(
+      "SELECT id FROM product_iterations WHERE id = ? FOR UPDATE", [input.iterationId]);
+    if (!iterationRows.length) { await reservation.rollback(); return { kind: "not-found" as const }; }
+    const [stageRows] = await reservation.query<Array<RowDataPacket & { status: WorkbenchStageStatus }>>(
+      "SELECT status FROM iteration_stage_states WHERE iteration_id = ? AND stage = ?", [input.iterationId, stageToStorage(session.stage)]);
+    if (stageRows[0]?.status === "completed") { await reservation.rollback(); return { kind: "stage-completed" as const }; }
     const [locked] = await reservation.query<Array<RowDataPacket & { id: string }>>(
       "SELECT id FROM iteration_sessions WHERE id = ? AND iteration_id = ? FOR UPDATE", [input.sessionId, input.iterationId]);
     if (!locked.length) { await reservation.rollback(); return { kind: "not-found" as const }; }
@@ -240,17 +309,40 @@ export async function generateMysqlIterationMessage(input: {
     }
     if (userMessage && !input.regenerateMessageId && !input.editMessageId) {
       await reservation.execute<ResultSetHeader>("INSERT INTO iteration_session_messages (id, session_id, role, content, status, created_at) VALUES (?, ?, 'user', ?, 'completed', ?)", [userMessage.id, input.sessionId, userMessage.content, userMessage.createdAt]);
+      await reservation.execute<ResultSetHeader>("UPDATE iteration_sessions SET title = IF(title = '新会话', ?, title), updated_at = ? WHERE id = ?", [userMessage.content.slice(0, 80), new Date(), input.sessionId]);
     }
     await reservation.execute<ResultSetHeader>("INSERT INTO iteration_session_messages (id, session_id, role, content, status, created_at) VALUES (?, ?, 'assistant', '', 'generating', ?)", [assistantId, input.sessionId, createdAt]);
     await reservation.commit();
   } catch (error) { await reservation.rollback(); throw error; } finally { reservation.release(); }
+  const generation = registerGeneration(assistantId);
+  async function stoppedResult() {
+    if (editTarget || regenerateTarget) {
+      await pool.execute<ResultSetHeader>(
+        "DELETE FROM iteration_session_messages WHERE id = ? AND session_id = ? AND status = 'failed' AND error_message = '生成已停止'",
+        [assistantId, input.sessionId]);
+    }
+    return { kind: "generation-stopped" as const };
+  }
   try {
-    const stream = await createAIStream({ agentType: prompt.agentType, maxTokens: 32768, messages: [{ role: "system", content: prompt.prompt }, ...history], timeoutMs: 600_000 });
+    const [active] = await pool.query<Array<RowDataPacket & { id: string }>>(
+      "SELECT id FROM iteration_session_messages WHERE id = ? AND status = 'generating'", [assistantId]);
+    if (!active.length || generation.signal.aborted) return stoppedResult();
+    const stream = await createAIStream({ agentType: prompt.agentType, maxTokens: 32768, messages: [{ role: "system", content: prompt.prompt }, ...history], timeoutMs: 600_000, signal: generation.signal, replayDelayMs: input.replayDelayMs });
     let answer = "";
-    for await (const chunk of stream) answer += chunk.choices[0]?.delta?.content ?? "";
+    for await (const chunk of stream) {
+      if (generation.signal.aborted) throw new Error("生成已停止");
+      answer += chunk.choices[0]?.delta?.content ?? "";
+    }
     const connection = await pool.getConnection();
     try {
       await connection.beginTransaction();
+      await connection.query("SELECT id FROM product_iterations WHERE id = ? FOR UPDATE", [input.iterationId]);
+      const [activeRows] = await connection.query<Array<RowDataPacket & { id: string }>>(
+        "SELECT id FROM iteration_session_messages WHERE id = ? AND session_id = ? AND status = 'generating'", [assistantId, input.sessionId]);
+      if (!activeRows.length || generation.signal.aborted) {
+        await connection.rollback();
+        return stoppedResult();
+      }
       if (editTarget) {
         await connection.execute<ResultSetHeader>("UPDATE iteration_session_messages SET content = ? WHERE id = ? AND session_id = ? AND role = 'user'", [userMessage!.content, editTarget.id, input.sessionId]);
         await connection.execute<ResultSetHeader>("DELETE FROM iteration_session_messages WHERE session_id = ? AND id <> ? AND (created_at > ? OR (created_at = ? AND id > ?))", [input.sessionId, assistantId, new Date(editTarget.createdAt), new Date(editTarget.createdAt), editTarget.id]);
@@ -264,11 +356,14 @@ export async function generateMysqlIterationMessage(input: {
     } catch (error) { await connection.rollback(); throw error; } finally { connection.release(); }
     return { kind: "generated" as const, userMessage, assistantMessage: { id: assistantId, role: "assistant" as const, content: answer, status: "completed", errorMessage: null, createdAt } };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Agent 生成失败";
+    const stopped = generation.signal.aborted;
+    const message = stopped ? "生成已停止" : error instanceof Error ? error.message : "Agent 生成失败";
     if (!editTarget && !regenerateTarget) {
-      await pool.execute<ResultSetHeader>("UPDATE iteration_session_messages SET status = 'failed', error_message = ? WHERE id = ? AND session_id = ?", [message, assistantId, input.sessionId]);
+      await pool.execute<ResultSetHeader>("UPDATE iteration_session_messages SET status = 'failed', error_message = ? WHERE id = ? AND session_id = ? AND status = 'generating'", [message, assistantId, input.sessionId]);
       await pool.execute<ResultSetHeader>("UPDATE iteration_sessions SET updated_at = ? WHERE id = ?", [new Date(), input.sessionId]);
-    } else await pool.execute<ResultSetHeader>("DELETE FROM iteration_session_messages WHERE id = ? AND session_id = ? AND status = 'generating'", [assistantId, input.sessionId]);
-    return { kind: "generation-failed" as const, error: message, userMessage, assistantMessageId: assistantId };
+    } else if (!stopped) await pool.execute<ResultSetHeader>("DELETE FROM iteration_session_messages WHERE id = ? AND session_id = ? AND status = 'generating'", [assistantId, input.sessionId]);
+    return stopped ? stoppedResult() : { kind: "generation-failed" as const, error: message, userMessage, assistantMessageId: assistantId };
+  } finally {
+    releaseGeneration(assistantId, generation);
   }
 }
