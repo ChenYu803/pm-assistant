@@ -7,7 +7,7 @@ import type { AgentType } from "@/lib/agent-constants";
 import { isConceptDocFile, isWorkingDocFile, stripChangelogHeader } from "@/lib/file-helpers";
 import { getMysqlPool } from "@/lib/mysql";
 import { cancelGeneration, registerGeneration, releaseGeneration } from "@/lib/generation-control";
-import { getWorkbenchFileStage } from "@/lib/workbench-file-branch";
+import { formatWorkbenchContextPrompt, type WorkbenchDirectoryFile } from "@/lib/workbench-context-prompt";
 
 export const WORKBENCH_STAGES = ["analysis", "prototype", "prd", "tickets"] as const;
 export type WorkbenchStage = (typeof WORKBENCH_STAGES)[number];
@@ -237,14 +237,31 @@ export async function mutateMysqlIterationContext(iterationId: string, sessionId
   return { kind: action === "add" ? "added" as const : "removed" as const, file: { id: file.id, filename: file.filename, version: Number(file.version), updatedAt: file.updated_at } };
 }
 
-async function buildPrompt(iterationId: string, sessionId: string, userId: string, stage: WorkbenchStage) {
+export async function buildMysqlIterationPrompt(iterationId: string, sessionId: string, userId: string, stage: WorkbenchStage) {
   const iteration = await findOwnedWorkbenchIteration(iterationId, userId);
   if (!iteration) return null;
-  const [directory] = await getMysqlPool().query<Array<RowDataPacket & { filename: string; version: number; updated_at: Date }>>(
-    "SELECT filename, version, updated_at FROM project_files WHERE project_id = ? ORDER BY filename ASC", [iteration.project_id]);
-  const files = await contextFiles(sessionId, iteration.project_id);
-  const prompt = `${AGENT_SYSTEM_PROMPTS[STAGE_AGENT[stage]]}\n\n## 当前工作范围\n\n项目：${iteration.project_name}\n产品迭代：${iteration.display_name}（迭代 ${String(iteration.iteration_number).padStart(2, "0")}）\n阶段：${WORKBENCH_STAGE_LABELS[stage]}\n${iteration.goal ? `本轮目标：${iteration.goal}` : "本轮目标：用户尚未填写；不得根据名称或文件目录猜测。"}\n\n项目文件目录（仅元数据）：\n${directory.map((file) => `- 路径：${file.filename}｜树枝：${WORKBENCH_STAGE_LABELS[getWorkbenchFileStage(file.filename)]}｜当前修订：${Number(file.version)}｜最近正文写入迭代：未记录（文件来源元数据由后续成果票接入）｜可撤回：未提供（当前模型尚无上一版正文）`).join("\n") || "（暂无项目文件）"}${files.length ? `\n\n## 用户加载的项目文件\n\n${files.map((file) => `### ${file.filename}\n路径：${file.filename}\n树枝：${WORKBENCH_STAGE_LABELS[getWorkbenchFileStage(file.filename)]}\n当前修订：${Number(file.version)}\n加载摘要：当前会话于 ${file.loaded_at.toISOString()} 读取该文件；最近正文写入迭代和可撤回状态尚未由当前模型记录。\n\n${stripChangelogHeader(file.content)}`).join("\n\n")}` : "\n\n当前会话没有加载项目文件正文。"}`;
-  return { prompt, agentType: STAGE_AGENT[stage] };
+  // 单条 SQL 的快照同时决定目录元数据、已加载引用和正文，未加载文件不会返回正文。
+  const [rows] = await getMysqlPool().query<Array<RowDataPacket & { filename: string; version: number; content: string | null }>>(
+    `SELECT f.filename, f.version,
+            CASE WHEN c.file_id IS NOT NULL THEN f.content ELSE NULL END AS content
+     FROM project_files f
+     LEFT JOIN iteration_session_context_files c ON c.file_id = f.id AND c.session_id = ?
+     WHERE f.project_id = ? ORDER BY f.filename ASC`, [sessionId, iteration.project_id]);
+  const files: WorkbenchDirectoryFile[] = rows
+    .filter((file) => !isWorkingDocFile(file.filename) && !isConceptDocFile(file.filename))
+    .map((file) => ({
+      filename: file.filename, version: Number(file.version),
+      content: file.content === null ? null : stripChangelogHeader(file.content),
+      lastContentIteration: null, canUndo: false,
+    }));
+  return {
+    prompt: `${AGENT_SYSTEM_PROMPTS[STAGE_AGENT[stage]]}\n\n## v1.41 当前会话边界（与上文旧流程假设冲突时，以本节为准）\n${formatWorkbenchContextPrompt({
+      projectName: iteration.project_name, iterationName: iteration.display_name,
+      iterationNumber: Number(iteration.iteration_number), stage, stageLabels: WORKBENCH_STAGE_LABELS,
+      goal: iteration.goal, files,
+    })}`,
+    agentType: STAGE_AGENT[stage],
+  };
 }
 
 export async function generateMysqlIterationMessage(input: {
@@ -280,7 +297,7 @@ export async function generateMysqlIterationMessage(input: {
     const id = randomUUID();
     userMessage = { id, role: "user", content: input.content.trim(), createdAt: now };
   }
-  const prompt = await buildPrompt(input.iterationId, input.sessionId, input.userId, session.stage);
+  const prompt = await buildMysqlIterationPrompt(input.iterationId, input.sessionId, input.userId, session.stage);
   if (!prompt) return { kind: "not-found" as const };
   if (userMessage && !input.regenerateMessageId) history.push({ role: "user", content: userMessage.content });
   const assistantId = randomUUID();

@@ -199,7 +199,7 @@ try {
     await page.setViewportSize({ width: 1440, height: 1000 });
   }
   await page.getByRole("tab", { name: /当前上下文/ }).click();
-  await page.getByText("当前会话没有加载文件。").waitFor();
+  await page.getByText("当前上下文为空，Agent 看得到文件目录，但看不到文件正文。").waitFor();
   const secondMessage = page.locator(".workbench-message.user .message-content").filter({ hasText: "第二会话独立讨论" });
   await page.getByRole("textbox", { name: "输入消息" }).fill("第二会话独立讨论");
   await page.getByRole("button", { name: "发送消息" }).click();

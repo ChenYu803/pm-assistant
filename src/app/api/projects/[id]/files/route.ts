@@ -5,7 +5,7 @@ import type { AgentType } from "@/lib/agent-constants";
 import { countRequirements, FROZEN_DOCUMENT_LOCKED_MESSAGE, formatChangelogHeader, isConceptDocFile, isWorkingDocFile, parseChangelog, stripChangelogHeader, validateAgentFilename, validateFileSize, validateProductTicketContent } from "@/lib/file-helpers";
 import { isMysqlId } from "@/lib/identifiers";
 import { mysqlUnavailableMessage } from "@/lib/mysql";
-import { listMysqlProjectFiles, MysqlFileTooLargeError, MysqlFrozenDocumentError, serializeMysqlProjectFile, writeMysqlProjectFile } from "@/lib/mysql-project-artifacts";
+import { listMysqlProjectFileDirectory, MysqlFileTooLargeError, MysqlFrozenDocumentError, serializeMysqlProjectFile, writeMysqlProjectFile } from "@/lib/mysql-project-artifacts";
 
 const EXCLUSION = "\n# 排除清单";
 function normalizedRequirements(content: string) { let number = 0; return content.replace(/^##\s+(?:\d+[\.、]\s*)?(.+)$/gm, (_all, title: string) => `## ${++number}. ${title.trim()}`); }
@@ -20,8 +20,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   try {
     const userId = await requireAuth(); if (userId instanceof NextResponse) return userId;
     const { id: projectId } = await params; if (!isMysqlId(projectId)) return NextResponse.json({ error: "项目参数无效" }, { status: 400 });
-    const files = await listMysqlProjectFiles(projectId, userId); if (!files) return NextResponse.json({ error: "项目不存在或无权访问" }, { status: 404 });
-    return NextResponse.json(files.filter((file) => !isWorkingDocFile(file.filename) && !isConceptDocFile(file.filename)).map((file) => { const { id, filename, project_id, version, created_at, updated_at } = serializeMysqlProjectFile(file); return { id, filename, project_id, version, created_at, updated_at }; }));
+    const files = await listMysqlProjectFileDirectory(projectId, userId); if (!files) return NextResponse.json({ error: "项目不存在或无权访问" }, { status: 404 });
+    return NextResponse.json(files.filter((file) => !isWorkingDocFile(file.filename) && !isConceptDocFile(file.filename)).map((file) => ({
+      ...file, version: Number(file.version), lastContentIteration: null, canUndo: false,
+    })));
   } catch (error) { console.error("GET /api/projects/[id]/files error:", error); return NextResponse.json({ error: mysqlUnavailableMessage() }, { status: 500 }); }
 }
 

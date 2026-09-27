@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { getWorkbenchFileStage } from "@/lib/workbench-file-branch";
 
-export type ProjectFileEntry = { id: string; filename: string; version?: number; updated_at?: string };
+export type ProjectFileEntry = { id: string; filename: string; version?: number; updated_at?: string; lastContentIteration?: string | null; canUndo?: boolean };
 
 const branches = [
   { key: "analysis", label: "需求分析" },
@@ -71,7 +71,7 @@ export default function ProjectFileTree({ projectId, files }: {
   function renderFile(file: ProjectFileEntry) {
     const name = file.filename.split("/").at(-1) ?? file.filename;
     return <div className="project-tree-file" key={file.id}>
-      <button type="button" className="project-tree-name" title={file.filename} onClick={(event) => open(file, event.currentTarget)}><span aria-hidden="true">▤</span><span>{name}</span></button>
+      <button type="button" className="project-tree-name" title={file.filename} onClick={(event) => open(file, event.currentTarget)}><span aria-hidden="true">▤</span><span className="project-tree-label"><strong>{name}</strong><small>最近写入：{file.lastContentIteration ?? "未记录"} · {file.canUndo ? "可撤回" : "不可撤回"}</small></span></button>
       <span className="project-tree-version">{file.version ? `r${file.version}` : ""}</span>
     </div>;
   }

@@ -314,7 +314,11 @@
 .file-branch summary { display:flex; justify-content:space-between; cursor:pointer; font-size:13px; font-weight:650; }
 .file-branch summary span { color:var(--work-muted); font:11px var(--font-app-sans); }
 .project-file-row { display:flex; align-items:center; justify-content:space-between; gap:6px; min-height:40px; margin-left:6px; border-bottom:1px dotted rgba(21,20,15,.13); color:var(--work-muted); }
-.project-file-row > span { display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden; font-size:12px; text-overflow:ellipsis; white-space:nowrap; }
+.project-file-row > span { display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden; font-size:12px; }
+.context-file-info { display:flex; flex-direction:column; min-width:0; gap:2px; }
+.context-file-info strong { overflow:hidden; color:var(--work-ink); font-weight:550; text-overflow:ellipsis; white-space:nowrap; }
+.context-file-info small { overflow:hidden; color:var(--work-muted); font-size:11px; text-overflow:ellipsis; white-space:nowrap; }
+.project-file-row[data-loaded="true"] .context-file-info strong { color:#79372f; }
 .project-file-row svg { flex:0 0 13px; width:13px; height:13px; }
 .project-file-row button { flex:0 0 auto; min-height:36px; padding:0 5px; border:0; color:#79372f; background:transparent; cursor:pointer; font-size:12px; }
 .project-file-row button:hover:not(:disabled) { color:var(--work-ink); text-decoration:underline; }
@@ -328,8 +332,10 @@
 .project-tree-file { display:flex; align-items:center; gap:5px; min-height:40px; margin-left:12px; border-top:1px dotted rgba(21,20,15,.12); }
 .project-tree-folder .project-tree-file { margin-left:12px; }
 .project-tree-name { display:flex; flex:1; align-items:center; gap:7px; min-width:0; min-height:38px; padding:2px 3px; border:0; color:var(--work-ink); background:none; cursor:pointer; text-align:left; font-size:12px; }
-.project-tree-name span:last-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.project-tree-name:hover span:last-child { text-decoration:underline; }
+.project-tree-label { display:flex; flex-direction:column; min-width:0; gap:2px; }
+.project-tree-label strong { overflow:hidden; font-weight:550; text-overflow:ellipsis; white-space:nowrap; }
+.project-tree-label small { overflow:hidden; color:var(--work-muted); font-size:11px; text-overflow:ellipsis; white-space:nowrap; }
+.project-tree-name:hover .project-tree-label strong { text-decoration:underline; }
 .project-tree-version { flex:none; color:var(--work-muted); font:11px var(--font-app-mono); }
 .project-tree-empty { margin:5px 0 8px 12px; color:var(--work-muted); font-size:12px; }
 .project-file-preview-backdrop { position:fixed; inset:0; z-index:50; display:flex; justify-content:flex-end; background:rgba(21,20,15,.48); }
@@ -355,6 +361,7 @@
 .iteration-project-files-head button { min-height:36px; padding:0 10px; border:1px solid var(--work-line); background:transparent; cursor:pointer; }
 .iteration-project-files .project-tree { max-width:760px; }
 .context-empty { margin:16px 4px; color:var(--work-muted); font-size:13px; line-height:1.6; }
+.context-guidance { margin:8px 4px 12px; color:var(--work-muted); font-size:12px; line-height:1.55; }
 .workbench-loading { display:flex; flex:1; align-items:center; justify-content:center; gap:7px; min-height:220px; border:1px solid var(--work-ink); background:var(--work-bone); }
 .workbench-loading span { width:6px; height:6px; border-radius:50%; background:var(--work-coral); animation:workbench-pulse 850ms ease-in-out infinite alternate; }
 .workbench-loading span:nth-child(2) { animation-delay:120ms; }.workbench-loading span:nth-child(3) { animation-delay:240ms; }

@@ -77,6 +77,17 @@ export async function listMysqlProjectFiles(projectId: string, userId: string) {
   return rows;
 }
 
+export async function listMysqlProjectFileDirectory(projectId: string, userId: string) {
+  if (!(await findOwnedMysqlProject(projectId, userId))) return null;
+  const [rows] = await getMysqlPool().query<Array<RowDataPacket & {
+    id: string; project_id: string; filename: string; version: number; created_at: Date; updated_at: Date;
+  }>>(
+    "SELECT id, project_id, filename, version, created_at, updated_at FROM project_files WHERE project_id = ? ORDER BY updated_at DESC, id DESC",
+    [projectId],
+  );
+  return rows;
+}
+
 export async function findOwnedMysqlProjectFile(projectId: string, fileId: string, userId: string) {
   if (!(await findOwnedMysqlProject(projectId, userId))) return null;
   const [rows] = await getMysqlPool().query<MysqlProjectFile[]>(
