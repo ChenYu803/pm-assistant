@@ -96,6 +96,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
   const input = activeSessionId ? drafts[activeSessionId] ?? "" : "";
   const sending = activeSessionId ? sendingSessionIds.includes(activeSessionId) : false;
   const contextIds = activeSessionId ? contextBySession[activeSessionId] ?? [] : [];
+  const loadedFiles = files.filter((file) => contextIds.includes(file.id));
   const currentStageState = stages.find((stage) => stage.key === currentStage);
   const currentStatus = currentStageState?.status ?? "not_started";
   const generatingSessionIds = currentStageState?.generatingSessionIds ?? [];
@@ -473,7 +474,24 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
         {contextOpen && <aside className="workbench-context" aria-label="项目文件与上下文" ref={contextPanel}>
           <div className="context-heading"><h2>文件与上下文</h2><button type="button" className="context-close" aria-label="关闭文件区" title="关闭文件区" onClick={() => setContextOpen(false)}><Icon name="close"/></button></div>
           <div className="context-switch" role="tablist" aria-label="文件视图"><button type="button" role="tab" aria-selected={contextTab === "tree"} onClick={() => setContextTab("tree")}>项目文件树 <span>{files.length}</span></button><button type="button" role="tab" aria-selected={contextTab === "context"} onClick={() => setContextTab("context")}>当前上下文 <span>{contextIds.length}</span></button></div>
-          {contextTab === "tree" ? <div className="context-scroll"><p className="context-guidance">打开预览不会加载到 Agent；请在“当前上下文”选择文件。</p><ProjectFileTree projectId={project.id} files={files}/></div> : <div className="context-scroll"><p className="context-guidance">{activeSessionId ? "仅已加载文件的正文会在发送时读取，未加载文件只提供目录信息。" : "请先开始阶段会话，才能为 Agent 加载文件。"}</p>{!contextIds.length && activeSessionId && <p className="context-empty">当前上下文为空，Agent 看得到文件目录，但看不到文件正文。</p>}{files.length ? files.map((file) => { const loaded = contextIds.includes(file.id); return <div className="project-file-row loaded" data-loaded={loaded} key={file.id}><span title={file.filename}><Icon name="file"/><span className="context-file-info"><strong>{file.filename}</strong><small>r{file.version ?? "?"} · 最近写入：{file.lastContentIteration ?? "未记录"} · {file.canUndo ? "可撤回" : "不可撤回"}</small></span></span><button type="button" disabled={messagesLoading || contextUpdating || !activeSessionId || loaded} onClick={() => void toggleContext(file.id, true)} aria-label={`加入当前上下文：${file.filename}`} title={!activeSessionId ? "请先开始阶段会话" : undefined}>{loaded ? "已加载" : "加载"}</button>{loaded && <button type="button" disabled={messagesLoading || contextUpdating} onClick={() => void toggleContext(file.id, false)} aria-label={`从当前上下文移除 ${file.filename}`}>移除</button>}</div>; }) : <p className="context-empty">项目还没有文件。</p>}</div>}
+          {contextTab === "tree" ? <div className="context-scroll">
+            <p className="context-guidance">{activeSessionId ? "在文件树中加入上下文；打开预览不会自动加入。" : "请先开始阶段会话，才能加入文件。预览不会自动加入。"}</p>
+            <ProjectFileTree
+              projectId={project.id}
+              files={files}
+              onAddToContext={(fileId) => void toggleContext(fileId, true)}
+              loadedFileIds={contextIds}
+              addDisabled={!activeSessionId || messagesLoading || contextUpdating}
+              addDisabledReason={!activeSessionId ? "请先开始阶段会话" : messagesLoading ? "正在加载会话" : contextUpdating ? "正在更新上下文" : undefined}
+            />
+          </div> : <div className="context-scroll">
+            <p className="context-guidance">{activeSessionId ? "这里只显示已加入文件。移除后，Agent 下一轮不再读取其正文。" : "请先开始阶段会话，再从项目文件树加入文件。"}</p>
+            {!loadedFiles.length && <p className="context-empty">{activeSessionId ? "当前上下文为空，Agent 看得到文件目录，但看不到文件正文。" : "当前没有可管理的上下文文件。"}</p>}
+            {loadedFiles.map((file) => <div className="project-file-row loaded" key={file.id}>
+              <span title={file.filename}><Icon name="file"/><span className="context-file-info"><strong>{file.filename}</strong><small>最近写入：{file.lastContentIteration ?? "未记录"} · {file.canUndo ? "可撤回" : "不可撤回"}</small></span></span>
+              <button type="button" disabled={messagesLoading || contextUpdating} onClick={() => void toggleContext(file.id, false)} aria-label={`从当前上下文移除 ${file.filename}`}>移除</button>
+            </div>)}
+          </div>}
         </aside>}
       </div>}
     </div>

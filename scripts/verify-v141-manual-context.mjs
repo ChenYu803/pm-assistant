@@ -52,6 +52,8 @@ try {
   const file = await api(page, `/api/projects/${projectId}/files`, json({ filename: "原型.md", content: "# 旧版正文 UNIQUE_CONTEXT_OLD", agent_type: "prototype" }, { "x-pm-assistant-test-system-write": "1" }));
   const fileId = file.body?.id;
   check("创建共享项目文件", file.status === 201 && typeof fileId === "string");
+  const unselected = await api(page, `/api/projects/${projectId}/files`, json({ filename: "prd.md", content: "# 未加载正文 UNIQUE_CONTEXT_UNSELECTED", agent_type: "mvp_prd" }, { "x-pm-assistant-test-system-write": "1" }));
+  check("创建未加载的正式文件", unselected.status === 201);
   const working = await api(page, `/api/projects/${projectId}/files`, json({ filename: "需求分析-工作文档（回放）.md", content: "# 过程秘密 UNIQUE_CONTEXT_INTERNAL", agent_type: "requirement_analyst" }, { "x-pm-assistant-test-system-write": "1" }));
   check("创建阶段过程文件夹具", working.status === 201);
 
@@ -68,12 +70,27 @@ try {
   await page.getByRole("tab", { name: /项目文件树/ }).click();
   await page.locator(".workbench-context .project-tree-name").filter({ hasText: "原型.md" }).click();
   await page.getByRole("dialog", { name: "预览 原型.md" }).getByText("旧版正文 UNIQUE_CONTEXT_OLD").waitFor();
+  check("文件预览不展示内部修订号", !(await page.getByRole("dialog", { name: "预览 原型.md" }).innerText()).includes("r1"));
   await page.getByRole("button", { name: "关闭预览" }).click();
   check("预览没有创建上下文引用", (await api(page, path)).body?.fileIds?.length === 0);
   await page.getByRole("tab", { name: /当前上下文/ }).click();
   check("空上下文解释正文边界", await page.getByText("当前上下文为空，Agent 看得到文件目录，但看不到文件正文。").count() === 1);
+  check("当前上下文不提供加入按钮", await page.getByRole("button", { name: /加入当前上下文/ }).count() === 0);
+  await page.getByRole("tab", { name: /项目文件树/ }).click();
+  check("文件树不展示内部修订号", !(await page.locator(".workbench-context .project-tree").innerText()).includes("r1"));
   await page.getByRole("button", { name: "加入当前上下文：原型.md" }).click();
+  await page.getByRole("button", { name: "已加入当前上下文：原型.md" }).waitFor();
+  check("加入入口在项目文件树并显示已加入", (await api(page, path)).body?.fileIds?.includes(fileId));
+  if (process.env.CAPTURE_MANUAL_CONTEXT === "1") {
+    await page.screenshot({ path: join(tmpdir(), "v141-manual-context-tree-desktop.png"), animations: "disabled" });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.locator(".workbench-context").screenshot({ path: join(tmpdir(), "v141-manual-context-tree-mobile.png"), animations: "disabled" });
+    await page.setViewportSize({ width: 1440, height: 900 });
+  }
+  await page.getByRole("tab", { name: /当前上下文/ }).click();
   await page.getByRole("button", { name: "从当前上下文移除 原型.md" }).waitFor();
+  check("当前上下文只列已加入文件并提供移除", await page.locator(".workbench-context .project-file-row").count() === 1 && !(await page.locator(".workbench-context").innerText()).includes("prd.md") && await page.getByRole("button", { name: /加入当前上下文/ }).count() === 0);
+  check("当前上下文不展示内部修订号", !(await page.locator(".workbench-context").innerText()).includes("r1"));
   if (process.env.CAPTURE_MANUAL_CONTEXT === "1") {
     const desktop = join(tmpdir(), "v141-manual-context-desktop.png");
     const mobile = join(tmpdir(), "v141-manual-context-mobile.png");
@@ -84,7 +101,7 @@ try {
     await page.setViewportSize({ width: 1440, height: 900 });
     console.log(`截图: ${desktop} | ${mobile}`);
   }
-  check("只有上下文区域的加载创建引用", (await api(page, path)).body?.fileIds?.includes(fileId));
+  check("文件树加入后产生唯一引用", (await api(page, path)).body?.fileIds?.length === 1);
   const loaded = await buildMysqlIterationPrompt(iterationId, sessionId, userId, "analysis");
   check("已加载提示词包含当前正文与同版修订摘要", loaded?.prompt.includes("UNIQUE_CONTEXT_OLD") && loaded.prompt.includes("当前修订：r1"));
 
@@ -102,6 +119,8 @@ try {
   check("下一轮读取覆盖后的正文与修订", overwritten?.prompt.includes("UNIQUE_CONTEXT_NEW") && overwritten.prompt.includes("当前修订：r2") && !overwritten.prompt.includes("UNIQUE_CONTEXT_OLD"));
   await page.getByRole("button", { name: "从当前上下文移除 原型.md" }).click();
   check("移除后引用消失", (await api(page, path)).body?.fileIds?.length === 0);
+  await page.getByRole("tab", { name: /项目文件树/ }).click();
+  check("移除后文件树可重新加入", await page.getByRole("button", { name: "加入当前上下文：原型.md" }).isEnabled());
   const removed = await buildMysqlIterationPrompt(iterationId, sessionId, userId, "analysis");
   check("移除后下一轮不注入正文", !removed?.prompt.includes("UNIQUE_CONTEXT_NEW") && removed?.prompt.includes("路径：原型.md"));
 } finally {

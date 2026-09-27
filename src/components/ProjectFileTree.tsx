@@ -20,9 +20,13 @@ function taskFolder(path: string) {
   return number ? `迭代 ${number[1].padStart(2, "0")}` : `旧版 ${parts[1]}`;
 }
 
-export default function ProjectFileTree({ projectId, files }: {
+export default function ProjectFileTree({ projectId, files, onAddToContext, loadedFileIds = [], addDisabled = false, addDisabledReason }: {
   projectId: string;
   files: ProjectFileEntry[];
+  onAddToContext?: (fileId: string) => void;
+  loadedFileIds?: string[];
+  addDisabled?: boolean;
+  addDisabledReason?: string;
 }) {
   const [selected, setSelected] = useState<ProjectFileEntry | null>(null);
   const [content, setContent] = useState("");
@@ -70,9 +74,17 @@ export default function ProjectFileTree({ projectId, files }: {
 
   function renderFile(file: ProjectFileEntry) {
     const name = file.filename.split("/").at(-1) ?? file.filename;
+    const loaded = loadedFileIds.includes(file.id);
     return <div className="project-tree-file" key={file.id}>
       <button type="button" className="project-tree-name" title={file.filename} onClick={(event) => open(file, event.currentTarget)}><span aria-hidden="true">▤</span><span className="project-tree-label"><strong>{name}</strong><small>最近写入：{file.lastContentIteration ?? "未记录"} · {file.canUndo ? "可撤回" : "不可撤回"}</small></span></button>
-      <span className="project-tree-version">{file.version ? `r${file.version}` : ""}</span>
+      {onAddToContext && <button
+        type="button"
+        className="project-tree-add-context"
+        disabled={loaded || addDisabled}
+        title={loaded ? "已加入当前上下文" : addDisabledReason}
+        aria-label={loaded ? `已加入当前上下文：${file.filename}` : `加入当前上下文：${file.filename}`}
+        onClick={() => onAddToContext(file.id)}
+      >{loaded ? "已加入" : "加入上下文"}</button>}
     </div>;
   }
 
@@ -99,7 +111,7 @@ export default function ProjectFileTree({ projectId, files }: {
       }}>
         <header><div><span>项目文件 / {branches.find((branch) => branch.key === getWorkbenchFileStage(selected.filename))?.label}</span><h2>{selected.filename}</h2></div><button ref={closeButton} type="button" aria-label="关闭预览" title="关闭预览" onClick={close}>×</button></header>
         <div className="project-file-preview-body">{loading ? <p role="status">正在打开文件…</p> : error ? <p role="alert">{error} <button type="button" onClick={() => open(selected)}>重试</button></p> : <MarkdownRenderer content={content} />}</div>
-        <footer><span>{selected.version ? `当前修订 r${selected.version}` : ""}</span><a href={`/api/projects/${projectId}/files/${selected.id}/download`} aria-label={`下载 ${selected.filename}`}>↓ 下载 Markdown</a></footer>
+        <footer><span>Markdown 预览</span><a href={`/api/projects/${projectId}/files/${selected.id}/download`} aria-label={`下载 ${selected.filename}`}>↓ 下载 Markdown</a></footer>
       </section>
     </div>}
   </>;
