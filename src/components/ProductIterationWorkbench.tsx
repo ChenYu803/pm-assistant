@@ -451,8 +451,8 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
 
         <section className="workbench-conversation" aria-labelledby="conversation-title">
           <div className="conversation-heading"><h2 id="conversation-title">{activeSession?.title ?? selectedDemo?.title ?? currentInfo.label}</h2>
-            {currentStatus === "in_progress" && currentStageState?.sessions.length ? <button className="stage-complete-button" type="button" disabled={stageUpdating || Boolean(stageGenerating)} aria-describedby={stageGenerating ? "stage-generation-note" : undefined} onClick={() => void completeStage()}>完成本阶段</button> : null}
-            {currentStatus === "completed" ? <button className="stage-reopen-button" type="button" disabled={stageUpdating} onClick={() => void reopenStage()}>重新打开阶段</button> : null}
+            {!selectedDemo && currentStatus === "in_progress" && currentStageState?.sessions.length ? <button className="stage-complete-button" type="button" disabled={stageUpdating || Boolean(stageGenerating)} aria-describedby={stageGenerating ? "stage-generation-note" : undefined} onClick={() => void completeStage()}>完成本阶段</button> : null}
+            {!selectedDemo && currentStatus === "completed" ? <button className="stage-reopen-button" type="button" disabled={stageUpdating} onClick={() => void reopenStage()}>重新打开阶段</button> : null}
           </div>
           {currentStatus === "in_progress" && stageGenerating ? <p className="stage-generation-note" id="stage-generation-note" role="status">本阶段有 Agent 正在生成；结束或停止后可完成。</p> : null}
           <div className="workbench-message-list" ref={messageList} aria-live="polite">
