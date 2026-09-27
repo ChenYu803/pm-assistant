@@ -1,0 +1,79 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=Playfair+Display:wght@500&family=JetBrains+Mono:wght@400;500&display=swap");
+
+.shell {
+  --paper: #efe7d2;
+  --ink: #15140f;
+  --mute: #5a5448;
+  --coral: #ed6f5c;
+  --bone: #f7f1de;
+  --line: rgba(21, 20, 15, .18);
+  flex: 0 0 auto;
+  min-height: 100%;
+  width: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Inter, system-ui, sans-serif;
+}
+
+.header { border-bottom: 1px solid var(--line); }
+.headerInner { display: flex; align-items: center; justify-content: space-between; gap: 20px; width: min(calc(100% - 128px), 1200px); min-height: 72px; margin: auto; }
+.brand { display: inline-flex; align-items: center; gap: 12px; white-space: nowrap; font-family: "Inter Tight", Inter, sans-serif; font-size: 15px; font-weight: 800; }
+.brandMark { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid var(--ink); border-radius: 50%; font-family: "Playfair Display", Georgia, serif; font-size: 17px; font-weight: 500; }
+.backLink { flex: none; border-bottom: 1px solid var(--ink); font-family: "Inter Tight", Inter, sans-serif; font-size: 13px; }
+.backLink:hover, .exitRow button:hover { color: var(--coral); }
+
+.content { width: min(calc(100% - 128px), 1200px); margin: 0 auto; padding: 58px 0 100px; }
+.heading { padding-bottom: 36px; }
+.kicker { color: var(--coral); font-family: "JetBrains Mono", monospace; font-size: 12px; }
+.heading h1 { margin: 13px 0 0; font-family: "Playfair Display", Georgia, serif; font-size: 44px; font-weight: 500; line-height: 1.1; }
+
+.section { display: grid; grid-template-columns: minmax(175px, 28%) minmax(0, 1fr); gap: 28px; padding: 30px 0; border-top: 1px solid var(--ink); }
+.section + .section { border-color: var(--line); }
+.sectionLabel { display: flex; align-items: baseline; gap: 22px; }
+.sectionLabel span { color: var(--coral); font-family: "JetBrains Mono", monospace; font-size: 12px; }
+.sectionLabel h2 { margin: 0; font-family: "Inter Tight", Inter, sans-serif; font-size: 18px; font-weight: 700; }
+.sectionBody { min-width: 0; max-width: 570px; }
+.fieldLabel { display: block; margin-bottom: 8px; color: var(--mute); font-family: "Inter Tight", Inter, sans-serif; font-size: 13px; font-weight: 600; }
+.inlineField { display: flex; gap: 10px; align-items: stretch; }
+.section input { width: 100%; min-width: 0; height: 46px; padding: 0 13px; border: 1px solid var(--line); border-radius: 0; outline: none; background: var(--bone); color: var(--ink); font: 15px Inter, system-ui, sans-serif; }
+.section input:focus-visible { border-color: var(--ink); box-shadow: 0 0 0 2px var(--coral); }
+.section input::placeholder { color: var(--mute); opacity: .8; }
+.section button { min-height: 46px; padding: 0 20px; border: 1px solid var(--ink); background: var(--ink); color: var(--bone); white-space: nowrap; cursor: pointer; font-family: "Inter Tight", Inter, sans-serif; font-size: 13px; font-weight: 700; transition: background 180ms ease, color 180ms ease, transform 180ms ease; }
+.section button:hover:not(:disabled) { transform: translateY(-3px); background: var(--coral); border-color: var(--coral); color: var(--ink); }
+.section button:disabled { cursor: default; opacity: .48; }
+.section button:focus-visible, .exitRow button:focus-visible, .header a:focus-visible { outline: 2px solid var(--coral); outline-offset: 4px; }
+.email { margin: 0; overflow-wrap: anywhere; font-size: 16px; line-height: 1.5; }
+.hint { margin: 8px 0 0; color: var(--mute); font-size: 12px; line-height: 1.5; }
+.passwordFields { display: grid; grid-template-columns: minmax(0, 1fr); }
+.passwordFields input { margin-bottom: 16px; }
+.formActions { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+.formActions .hint { margin: 0; }
+.error, .success { margin: 12px 0 0; font-size: 13px; line-height: 1.5; }
+.error { color: #9b3025; }
+.success { color: var(--ink); }
+.exitRow { display: flex; justify-content: flex-end; padding-top: 25px; border-top: 1px solid var(--line); }
+.exitRow button { padding: 7px 0; border: 0; border-bottom: 1px solid var(--ink); background: none; cursor: pointer; font-family: "Inter Tight", Inter, sans-serif; font-size: 13px; font-weight: 700; }
+.exitRow button:disabled { cursor: default; opacity: .5; }
+
+@media (max-width: 900px) {
+  .headerInner, .content { width: min(calc(100% - 64px), 760px); }
+}
+
+@media (max-width: 600px) {
+  .headerInner, .content { width: calc(100% - 32px); }
+  .headerInner { min-height: 60px; }
+  .content { padding: 36px 0 64px; }
+  .heading { padding-bottom: 28px; }
+  .heading h1 { font-size: 36px; }
+  .section { grid-template-columns: minmax(0, 1fr); gap: 17px; padding: 25px 0; }
+  .inlineField { flex-wrap: wrap; }
+  .inlineField input { flex: 1 1 100%; }
+  .inlineField button { margin-left: auto; }
+  .formActions { align-items: flex-start; flex-direction: column; }
+  .formActions button { align-self: flex-end; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section button { transition: none; }
+  .section button:hover:not(:disabled) { transform: none; }
+}

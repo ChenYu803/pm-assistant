@@ -9,6 +9,7 @@ import { getMysqlPool } from "@/lib/mysql";
 export interface MysqlUser extends RowDataPacket {
   id: string;
   email: string;
+  nickname: string | null;
   password_hash: string;
   created_at: Date;
 }
@@ -75,16 +76,42 @@ function mapTab(row: MysqlTab): MysqlTab {
 
 export async function findMysqlUserByEmail(email: string): Promise<MysqlUser | null> {
   const [rows] = await getMysqlPool().query<MysqlUser[]>(
-    "SELECT id, email, password_hash, created_at FROM users WHERE email = ? LIMIT 1",
+    "SELECT id, email, nickname, password_hash, created_at FROM users WHERE email = ? LIMIT 1",
     [normalizeEmail(email)]
   );
   return rows[0] ?? null;
+}
+
+export async function findMysqlUserById(id: string): Promise<MysqlUser | null> {
+  if (!isMysqlId(id)) return null;
+  const [rows] = await getMysqlPool().query<MysqlUser[]>(
+    "SELECT id, email, nickname, password_hash, created_at FROM users WHERE id = ? LIMIT 1",
+    [id]
+  );
+  return rows[0] ?? null;
+}
+
+export async function updateMysqlNickname(id: string, nickname: string): Promise<boolean> {
+  const [result] = await getMysqlPool().execute<ResultSetHeader>(
+    "UPDATE users SET nickname = ? WHERE id = ?",
+    [nickname, id]
+  );
+  return result.affectedRows > 0;
+}
+
+export async function updateMysqlPassword(id: string, previousHash: string, nextHash: string): Promise<boolean> {
+  const [result] = await getMysqlPool().execute<ResultSetHeader>(
+    "UPDATE users SET password_hash = ? WHERE id = ? AND password_hash = ?",
+    [nextHash, id, previousHash]
+  );
+  return result.affectedRows > 0;
 }
 
 export async function createMysqlUser(email: string, passwordHash: string): Promise<MysqlUser> {
   const user = {
     id: newMysqlId(),
     email: normalizeEmail(email),
+    nickname: null,
     password_hash: passwordHash,
     created_at: new Date(),
   } as MysqlUser;

@@ -10,6 +10,7 @@
     "db:init": "tsx scripts/mysql-init.ts",
     "verify:mysql-init": "tsx scripts/verify-mysql-init.mjs",
     "verify:account-project-workspace": "tsx scripts/verify-account-project-workspace.mjs",
+    "verify:account-profile": "node scripts/verify-account-profile.mjs",
     "verify:v141-iteration-lifecycle": "tsx scripts/verify-v141-iteration-lifecycle.mjs",
     "verify:v141-stage-status": "tsx scripts/verify-v141-stage-status.mjs",
     "verify:v141-project-file-tree": "tsx scripts/verify-v141-project-file-tree.mjs",

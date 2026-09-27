@@ -306,6 +306,11 @@ export const MYSQL_MIGRATIONS = [
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
     ],
   },
+  {
+    id: "0012_account_nickname",
+    checksum: "655ce2ca09145eca65b79cb9dcceb3197866712a3fbf3b58e6d47b9a98e0540d",
+    statements: ["ALTER TABLE users ADD COLUMN nickname VARCHAR(40) NULL AFTER email"],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {

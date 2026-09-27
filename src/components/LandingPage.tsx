@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import styles from "./LandingPage.module.css";
 
 const concerns = [
@@ -20,6 +21,7 @@ const experienceSteps = [
 const workflowSteps = ["需求分析", "原型", "PRD", "任务拆分"] as const;
 
 export default function LandingPage() {
+  const { data: session, status } = useSession();
   const [headerHidden, setHeaderHidden] = useState(false);
 
   useEffect(() => {
@@ -61,7 +63,7 @@ export default function LandingPage() {
         <div className={`${styles.container} ${styles.nav}`}>
           <a className={styles.brand} href="#top" aria-label="回到顶部"><span className={styles.brandMark}>A</span><span>AI 产品现场</span></a>
           <nav className={styles.navLinks} aria-label="主导航"><a href="#about">职业困惑</a><a href="#how">认识路径</a><a href="#practice">产品实践</a></nav>
-          <Link className={styles.authLink} href="/login">注册 / 登录</Link>
+          {status === "loading" ? <span className={styles.authLink} aria-hidden="true">　</span> : <Link className={styles.authLink} href={session?.user ? "/profile" : "/login"}>{session?.user ? "个人主页" : "注册 / 登录"}</Link>}
         </div>
       </header>
       <main id="top">
@@ -89,7 +91,7 @@ export default function LandingPage() {
         <section data-landing-id="testimonial-section"><div className={`${styles.container} ${styles.quoteLayout}`}><span className={styles.sectionNumber}>IV / 04</span><div><div className={`${styles.quote} ${styles.reveal}`} data-landing-reveal><div className={styles.quoteMark}>“</div><p>我终于知道，AI 产品经理不是一个“懂很多 AI 工具”的岗位，而是一个要不断做取舍的人。</p><small>来自一位正在寻找第一份产品实习的大学生 · 体验反馈示意</small></div></div></div></section>
         <section id="closing" className={styles.cta} data-landing-id="cta-section"><div className={`${styles.container} ${styles.ctaInner}`}><div className={styles.reveal} data-landing-reveal><h2>你的第一个产品现场，<br /><em>现在就开始</em><span className={styles.dot} /></h2><p className={styles.ctaCopy}>不知道从哪里开始，就先走职业认知；已经有想法，就直接开始做产品。</p></div><Link className={styles.ctaButton} href="/onboarding/brief">进入职业认知体验&nbsp; ↗</Link></div></section>
       </main>
-      <footer data-landing-id="site-footer"><div className={`${styles.container} ${styles.footerInner}`}><span>© 2026 AI 产品现场</span><div className={styles.footerLinks}><a href="#about">关于现场</a><a href="#practice">产品实践</a><Link href="/login">注册 / 登录</Link></div></div></footer>
+      <footer data-landing-id="site-footer"><div className={`${styles.container} ${styles.footerInner}`}><span>© 2026 AI 产品现场</span><div className={styles.footerLinks}><a href="#about">关于现场</a><a href="#practice">产品实践</a>{status !== "loading" && <Link href={session?.user ? "/profile" : "/login"}>{session?.user ? "个人主页" : "注册 / 登录"}</Link>}</div></div></footer>
     </div>
   );
 }
