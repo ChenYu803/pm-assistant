@@ -311,6 +311,53 @@ export const MYSQL_MIGRATIONS = [
     checksum: "655ce2ca09145eca65b79cb9dcceb3197866712a3fbf3b58e6d47b9a98e0540d",
     statements: ["ALTER TABLE users ADD COLUMN nickname VARCHAR(40) NULL AFTER email"],
   },
+  {
+    id: "0013_v141_first_file_candidate",
+    checksum: "c2ae3a6b4a31f1c4b91b6b827268c5d4cf12bf309d318c69f87e05d57d739a80",
+    statements: [
+      "ALTER TABLE project_files ADD COLUMN previous_content MEDIUMTEXT NULL AFTER content",
+      `CREATE TABLE IF NOT EXISTS iteration_file_candidates (
+        id CHAR(36) NOT NULL PRIMARY KEY,
+        message_id CHAR(36) NOT NULL,
+        session_id CHAR(36) NOT NULL,
+        suggested_filename VARCHAR(700) NOT NULL,
+        content MEDIUMTEXT NOT NULL,
+        status ENUM('pending', 'discarded', 'written') NOT NULL DEFAULT 'pending',
+        final_filename VARCHAR(700) NULL,
+        created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+        decided_at DATETIME(3) NULL,
+        CONSTRAINT iteration_file_candidates_message_fk FOREIGN KEY (message_id) REFERENCES iteration_session_messages(id) ON DELETE CASCADE,
+        CONSTRAINT iteration_file_candidates_session_fk FOREIGN KEY (session_id) REFERENCES iteration_sessions(id) ON DELETE CASCADE,
+        UNIQUE KEY iteration_file_candidates_message_unique (message_id),
+        KEY iteration_file_candidates_session_status (session_id, status)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
+      `CREATE TABLE IF NOT EXISTS project_file_changes (
+        id CHAR(36) NOT NULL PRIMARY KEY,
+        project_id CHAR(36) NOT NULL,
+        file_id CHAR(36) NOT NULL,
+        operation ENUM('create', 'overwrite') NOT NULL,
+        filename VARCHAR(700) NOT NULL,
+        content_revision INT UNSIGNED NOT NULL,
+        actor ENUM('agent', 'user') NOT NULL,
+        iteration_id CHAR(36) NULL,
+        iteration_number INT UNSIGNED NOT NULL,
+        iteration_name VARCHAR(255) NOT NULL,
+        stage ENUM('analysis', 'prototype', 'prd', 'tickets') NULL,
+        session_id CHAR(36) NULL,
+        session_name VARCHAR(255) NULL,
+        message_id CHAR(36) NULL,
+        occurred_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+        CONSTRAINT project_file_changes_project_fk FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+        KEY project_file_changes_file_time (file_id, occurred_at, id),
+        KEY project_file_changes_project_iteration (project_id, iteration_id, occurred_at)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
+    ],
+  },
+  {
+    id: "0014_v141_exact_file_paths",
+    checksum: "b4d4f282e80bc5c283ce73ac66f6464766f34cfd3d91ad3be207ad9743cad442",
+    statements: ["ALTER TABLE project_files MODIFY filename VARCHAR(700) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL"],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {

@@ -22,7 +22,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     const { id: projectId } = await params; if (!isMysqlId(projectId)) return NextResponse.json({ error: "项目参数无效" }, { status: 400 });
     const files = await listMysqlProjectFileDirectory(projectId, userId); if (!files) return NextResponse.json({ error: "项目不存在或无权访问" }, { status: 404 });
     return NextResponse.json(files.filter((file) => !isWorkingDocFile(file.filename) && !isConceptDocFile(file.filename)).map((file) => ({
-      ...file, version: Number(file.version), lastContentIteration: null, canUndo: false,
+      ...file, version: Number(file.version), canUndo: Boolean(file.canUndo),
     })));
   } catch (error) { console.error("GET /api/projects/[id]/files error:", error); return NextResponse.json({ error: mysqlUnavailableMessage() }, { status: 500 }); }
 }

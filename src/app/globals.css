@@ -266,6 +266,7 @@
 .workbench-message-list { display:flex; flex:1; flex-direction:column; gap:14px; min-height:0; padding:15px 3px 18px; overflow:auto; overscroll-behavior:contain; scrollbar-color:#928873 #e8e0ce; scrollbar-width:thin; }
 .workbench-message { max-width:min(82%,680px); flex:0 0 auto; }
 .workbench-message.user { align-self:flex-end; }
+.workbench-message.has-candidate { width:min(100%,760px); max-width:100%; }
 .message-label { margin-bottom:5px; color:#79372f; font:11px var(--font-app-sans); }
 .workbench-message.user .message-label { color:var(--work-muted); text-align:right; }
 .message-content { padding:10px 12px; border:1px solid rgba(21,20,15,.12); background:#f0eadb; font-size:14px; line-height:1.6; white-space:pre-wrap; overflow-wrap:anywhere; }
@@ -275,6 +276,31 @@
 .message-actions button { display:grid; width:36px; height:36px; place-items:center; border:1px solid transparent; color:var(--work-muted); background:transparent; cursor:pointer; }
 .message-actions button:hover { border-color:var(--work-line); color:var(--work-ink); background:rgba(21,20,15,.05); }
 .message-actions button:disabled { opacity:.45; cursor:wait; }
+.analysis-candidate { margin-top:9px; padding:15px; border:1px solid var(--work-ink); background:#fffaf0; font:13px/1.5 var(--font-app-sans); }
+.analysis-candidate-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:13px; }
+.analysis-candidate-heading strong { font-size:16px; }
+.analysis-candidate-heading span { color:#79372f; font-weight:650; }
+.analysis-candidate-heading span[data-status="written"] { color:#306342; }
+.analysis-candidate-heading span[data-status="discarded"] { color:var(--work-muted); }
+.analysis-candidate-label { display:block; margin-bottom:5px; font-weight:650; }
+.analysis-candidate input { width:100%; min-height:40px; padding:8px 10px; border:1px solid #8b806a; border-radius:0; color:var(--work-ink); background:#fffdf8; font:14px var(--font-app-sans); }
+.analysis-candidate input:focus-visible,.analysis-candidate button:focus-visible { outline:2px solid var(--work-coral); outline-offset:2px; }
+.analysis-candidate-target { display:grid; grid-template-columns:auto minmax(0,1fr); align-items:center; gap:3px 10px; margin-top:12px; padding:10px 12px; border:1px solid var(--work-line); background:#f0eadb; }
+.analysis-candidate-target span { grid-row:1/3; padding:3px 6px; color:var(--work-bone); background:var(--work-ink); font-size:12px; font-weight:650; white-space:nowrap; }
+.analysis-candidate-target strong,.analysis-candidate-target small { min-width:0; overflow-wrap:anywhere; }
+.analysis-candidate-target strong { font-size:14px; }
+.analysis-candidate-target small { color:var(--work-muted); font-size:12px; }
+.analysis-candidate-explain,.analysis-candidate-outcome { margin:10px 0; color:var(--work-muted); }
+.analysis-candidate-preview-toggle { min-height:36px; margin-top:5px; padding:0; border:0; color:#79372f; background:transparent; cursor:pointer; font:650 13px var(--font-app-sans); text-decoration:underline; text-underline-offset:3px; }
+.analysis-candidate-preview { max-height:360px; margin:6px 0 12px; padding:12px 14px; overflow:auto; border:1px solid var(--work-line); background:#fffdf8; scrollbar-color:#928873 #f0eadb; }
+.analysis-candidate-preview :first-child { margin-top:0; }
+.analysis-candidate-error { margin:7px 0; color:#79372f; font-size:12px; }
+.analysis-candidate-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:8px; margin-top:12px; padding-top:12px; border-top:1px solid var(--work-line); }
+.analysis-candidate-actions button { min-height:38px; padding:0 12px; border:1px solid var(--work-ink); color:var(--work-ink); background:transparent; cursor:pointer; font:650 13px var(--font-app-sans); }
+.analysis-candidate-actions button:last-child { color:var(--work-bone); background:var(--work-ink); }
+.analysis-candidate-actions button:hover:not(:disabled) { border-color:#79372f; color:#79372f; }
+.analysis-candidate-actions button:last-child:hover:not(:disabled) { color:#fffaf0; background:#79372f; }
+.analysis-candidate-actions button:disabled { opacity:.48; cursor:not-allowed; }
 .stage-empty { width:min(530px,90%); margin:auto; padding:24px 0; }
 .stage-empty h3 { margin:0; font:500 24px/1.18 Georgia,"Times New Roman",serif; }
 .stage-empty p { margin:8px 0 15px; color:var(--work-muted); font-size:14px; line-height:1.6; }

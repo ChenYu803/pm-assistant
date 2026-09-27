@@ -8,6 +8,7 @@ import { isConceptDocFile, isWorkingDocFile, stripChangelogHeader } from "@/lib/
 import { getMysqlPool } from "@/lib/mysql";
 import { cancelGeneration, registerGeneration, releaseGeneration } from "@/lib/generation-control";
 import { formatWorkbenchContextPrompt, type WorkbenchDirectoryFile } from "@/lib/workbench-context-prompt";
+import { createAnalysisCandidate, listAnalysisCandidates, withoutFileBlocks } from "@/lib/mysql-iteration-candidates";
 
 export const WORKBENCH_STAGES = ["analysis", "prototype", "prd", "tickets"] as const;
 export type WorkbenchStage = (typeof WORKBENCH_STAGES)[number];
@@ -174,7 +175,12 @@ export async function deleteMysqlIterationSession(iterationId: string, sessionId
 export async function listMysqlIterationMessages(sessionId: string) {
   const [rows] = await getMysqlPool().query<Array<RowDataPacket & { id: string; role: "user" | "assistant"; content: string; status: string; error_message: string | null; created_at: Date }>>(
     "SELECT id, role, content, status, error_message, created_at FROM iteration_session_messages WHERE session_id = ? ORDER BY created_at ASC, role ASC, id ASC", [sessionId]);
-  return rows.map((row) => ({ id: row.id, role: row.role, content: row.content, status: row.status, errorMessage: row.error_message, createdAt: row.created_at }));
+  const candidates = await listAnalysisCandidates(sessionId);
+  return rows.map((row) => ({ id: row.id, role: row.role, content: row.content,
+    ...(row.role === "assistant" && candidates.has(row.id) ? { displayContent: withoutFileBlocks(row.content) } : {}),
+    status: row.status, errorMessage: row.error_message, createdAt: row.created_at,
+    ...(candidates.has(row.id) ? { candidate: candidates.get(row.id) } : {}),
+  }));
 }
 
 export async function stopMysqlIterationGeneration(iterationId: string, sessionId: string, userId: string) {
@@ -241,10 +247,16 @@ export async function buildMysqlIterationPrompt(iterationId: string, sessionId: 
   const iteration = await findOwnedWorkbenchIteration(iterationId, userId);
   if (!iteration) return null;
   // 单条 SQL 的快照同时决定目录元数据、已加载引用和正文，未加载文件不会返回正文。
-  const [rows] = await getMysqlPool().query<Array<RowDataPacket & { filename: string; version: number; content: string | null }>>(
+  const [rows] = await getMysqlPool().query<Array<RowDataPacket & { filename: string; version: number; content: string | null; lastContentIteration: string | null; canUndo: number }>>(
     `SELECT f.filename, f.version,
+            IF(ch.id IS NULL, NULL, CONCAT('迭代 ', LPAD(ch.iteration_number, 2, '0'))) AS lastContentIteration,
+            (f.previous_content IS NOT NULL) AS canUndo,
             CASE WHEN c.file_id IS NOT NULL THEN f.content ELSE NULL END AS content
      FROM project_files f
+     LEFT JOIN project_file_changes ch ON ch.id = (
+       SELECT latest.id FROM project_file_changes latest WHERE latest.file_id = f.id
+       ORDER BY latest.occurred_at DESC, latest.id DESC LIMIT 1
+     )
      LEFT JOIN iteration_session_context_files c ON c.file_id = f.id AND c.session_id = ?
      WHERE f.project_id = ? ORDER BY f.filename ASC`, [sessionId, iteration.project_id]);
   const files: WorkbenchDirectoryFile[] = rows
@@ -252,14 +264,14 @@ export async function buildMysqlIterationPrompt(iterationId: string, sessionId: 
     .map((file) => ({
       filename: file.filename, version: Number(file.version),
       content: file.content === null ? null : stripChangelogHeader(file.content),
-      lastContentIteration: null, canUndo: false,
+      lastContentIteration: file.lastContentIteration, canUndo: Boolean(file.canUndo),
     }));
   return {
     prompt: `${AGENT_SYSTEM_PROMPTS[STAGE_AGENT[stage]]}\n\n## v1.41 当前会话边界（与上文旧流程假设冲突时，以本节为准）\n${formatWorkbenchContextPrompt({
       projectName: iteration.project_name, iterationName: iteration.display_name,
       iterationNumber: Number(iteration.iteration_number), stage, stageLabels: WORKBENCH_STAGE_LABELS,
       goal: iteration.goal, files,
-    })}`,
+    })}${stage === "analysis" ? `\n\n## 本阶段正式候选格式\n当需要交付需求分析成果时，输出且只输出一份正式 Markdown 文件块：%%%FILE_BEGIN%%% 需求分析-<简短描述>.md，下一行起为完整纯 Markdown 正文，最后独占一行 %%%FILE_END%%%。描述由当前项目内容决定，不使用固定文件名“需求分析.md”。这是一份待用户审阅的完整候选，不是追加段落；用户确认前不得声称文件已保存。工作文档可以继续用于内部过程，但不会进入项目文件树。` : ""}`,
     agentType: STAGE_AGENT[stage],
   };
 }
@@ -371,6 +383,7 @@ export async function generateMysqlIterationMessage(input: {
         await connection.execute<ResultSetHeader>("DELETE FROM iteration_session_messages WHERE session_id = ? AND id <> ? AND (created_at > ? OR (created_at = ? AND role = 'assistant' AND id >= ?))", [input.sessionId, assistantId, new Date(regenerateTarget.createdAt), new Date(regenerateTarget.createdAt), regenerateTarget.id]);
       }
       await connection.execute<ResultSetHeader>("UPDATE iteration_session_messages SET content = ?, status = 'completed', error_message = NULL WHERE id = ? AND session_id = ?", [answer, assistantId, input.sessionId]);
+      if (session.stage === "analysis") await createAnalysisCandidate(connection, { messageId: assistantId, sessionId: input.sessionId, answer });
       const title = userMessage?.content.slice(0, 80) || "新会话";
       await connection.execute<ResultSetHeader>("UPDATE iteration_sessions SET title = IF(title = '新会话', ?, title), updated_at = ? WHERE id = ?", [title, new Date(), input.sessionId]);
       await connection.commit();

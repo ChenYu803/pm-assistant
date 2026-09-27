@@ -81,8 +81,17 @@ export async function listMysqlProjectFileDirectory(projectId: string, userId: s
   if (!(await findOwnedMysqlProject(projectId, userId))) return null;
   const [rows] = await getMysqlPool().query<Array<RowDataPacket & {
     id: string; project_id: string; filename: string; version: number; created_at: Date; updated_at: Date;
+    lastContentIteration: string | null; canUndo: number;
   }>>(
-    "SELECT id, project_id, filename, version, created_at, updated_at FROM project_files WHERE project_id = ? ORDER BY updated_at DESC, id DESC",
+    `SELECT f.id, f.project_id, f.filename, f.version, f.created_at, f.updated_at,
+            IF(c.id IS NULL, NULL, CONCAT('迭代 ', LPAD(c.iteration_number, 2, '0'))) AS lastContentIteration,
+            (f.previous_content IS NOT NULL) AS canUndo
+     FROM project_files f
+     LEFT JOIN project_file_changes c ON c.id = (
+       SELECT latest.id FROM project_file_changes latest WHERE latest.file_id = f.id
+       ORDER BY latest.occurred_at DESC, latest.id DESC LIMIT 1
+     )
+     WHERE f.project_id = ? ORDER BY f.updated_at DESC, f.id DESC`,
     [projectId],
   );
   return rows;

@@ -4,12 +4,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { getWorkbenchFileStage } from "@/lib/workbench-file-branch";
 import ProjectFileTree, { type ProjectFileEntry } from "@/components/ProjectFileTree";
+import AnalysisCandidateReview, { type AnalysisCandidate } from "@/components/AnalysisCandidateReview";
 
 type StageKey = "analysis" | "prototype" | "prd" | "tickets";
 type StageStatus = "not_started" | "in_progress" | "completed";
 type Stage = { key: StageKey; status: StageStatus; sessions: Session[]; generatingSessionIds: string[] };
 type Session = { id: string; title: string; updatedAt?: string };
-type Message = { id: string; role: "user" | "assistant"; content: string; status?: string; errorMessage?: string | null; timestamp?: string };
+type Message = { id: string; role: "user" | "assistant"; content: string; displayContent?: string; status?: string; errorMessage?: string | null; timestamp?: string; candidate?: AnalysisCandidate };
 type Project = { id: string; name: string };
 type Iteration = { id: string; project_id: string; iteration_number: number; display_name: string; goal: string | null };
 type FileRecord = ProjectFileEntry;
@@ -112,6 +113,18 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
     if (!response.ok) throw new Error(body.error || "请求未完成，请重试。");
     return body;
   }, []);
+
+  const refreshCandidateState = useCallback(async (sessionId: string, stage: StageKey) => {
+    const [history, fileList] = await Promise.all([
+      request(`${base}/stages/${stage}/sessions/${sessionId}/messages`),
+      request(`/api/projects/${project.id}/files`),
+    ]);
+    setFiles(fileList);
+    if (activeView.current.stage === stage && activeView.current.sessionId === sessionId) {
+      messageVersion.current += 1;
+      setMessages(history.messages);
+    }
+  }, [base, project.id, request]);
 
   const loadWorkbench = useCallback(async () => {
     setLoading(true);
@@ -460,9 +473,9 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
             {!activeSession && !selectedDemo ? <div className="stage-empty"><div><h3>从你想解决的问题开始。</h3><p>{currentInfo.hint}</p><button type="button" disabled={creatingSession || contextUpdating} onClick={() => void createSession()}>开始本阶段工作</button></div></div> : null}
             {activeSession && messagesLoading ? <p className="session-loading" role="status">正在打开会话…</p> : null}
             {activeSession && !messagesLoading && messages.length === 0 ? <div className="stage-empty session-start"><h3>这个会话还没有消息</h3><p>{currentInfo.hint}</p></div> : null}
-            {(selectedDemo ? currentDemoMessages.map(([role, content], index): Message => ({ id: `demo-${index}`, role, content })) : messages).map((message) => <article className={`workbench-message ${message.role}`} key={message.id}>
+            {(selectedDemo ? currentDemoMessages.map(([role, content], index): Message => ({ id: `demo-${index}`, role, content })) : messages).map((message) => <article className={`workbench-message ${message.role}${message.candidate ? " has-candidate" : ""}`} key={message.id}>
               <div className="message-label">{message.role === "user" ? "你" : currentInfo.agent}{message.status === "generating" ? <span> · 生成中</span> : message.status === "failed" ? <span> · {message.errorMessage === "生成已停止" ? "已停止" : "生成失败"}</span> : null}</div>
-              {editingId === message.id ? <div className="inline-message-edit"><textarea aria-label="修改这条消息" value={editValue} onChange={(event) => setEditValue(event.target.value)}/><div><button type="button" onClick={() => { setEditingId(null); setEditValue(""); }}>取消</button><button type="button" disabled={!editValue.trim() || sending || currentStatus === "completed"} onClick={() => void sendMessage(editValue, message.id)}>发送</button></div></div> : <><div className="message-content">{message.status === "failed" && !message.content ? message.errorMessage ?? "生成失败" : message.content}</div>{!selectedDemo && <div className="message-actions"><button type="button" title="复制消息" aria-label="复制消息" onClick={() => { void navigator.clipboard.writeText(message.content).then(() => showToast("已复制消息")).catch(() => showToast("复制失败，请手动选择文本")); }}><Icon name="copy"/></button>{message.role === "user" && message.id === lastUserId && <button type="button" title="修改并重新发送" aria-label="修改并重新发送" disabled={currentStatus === "completed" || sending} onClick={() => { setEditingId(message.id); setEditValue(message.content); }}><Icon name="edit"/></button>}{message.role === "assistant" && message.id === lastAssistantId && <button type="button" title="重新生成" aria-label="重新生成" disabled={sending || currentStatus === "completed" || message.status !== "completed"} onClick={() => void sendMessage("", undefined, message.id)}><Icon name="refresh"/></button>}</div>}</>}
+              {editingId === message.id ? <div className="inline-message-edit"><textarea aria-label="修改这条消息" value={editValue} onChange={(event) => setEditValue(event.target.value)}/><div><button type="button" onClick={() => { setEditingId(null); setEditValue(""); }}>取消</button><button type="button" disabled={!editValue.trim() || sending || currentStatus === "completed"} onClick={() => void sendMessage(editValue, message.id)}>发送</button></div></div> : <><div className="message-content">{message.status === "failed" && !message.content ? message.errorMessage ?? "生成失败" : message.displayContent ?? message.content}</div>{message.candidate && activeSessionId ? <AnalysisCandidateReview candidate={message.candidate} iterationId={iteration.id} sessionId={activeSessionId} files={files} onDecided={() => refreshCandidateState(activeSessionId, currentStage)} /> : null}{!selectedDemo && <div className="message-actions"><button type="button" title="复制消息" aria-label="复制消息" onClick={() => { void navigator.clipboard.writeText(message.displayContent ?? message.content).then(() => showToast("已复制消息")).catch(() => showToast("复制失败，请手动选择文本")); }}><Icon name="copy"/></button>{message.role === "user" && message.id === lastUserId && <button type="button" title="修改并重新发送" aria-label="修改并重新发送" disabled={currentStatus === "completed" || sending} onClick={() => { setEditingId(message.id); setEditValue(message.content); }}><Icon name="edit"/></button>}{message.role === "assistant" && message.id === lastAssistantId && <button type="button" title="重新生成" aria-label="重新生成" disabled={sending || currentStatus === "completed" || message.status !== "completed"} onClick={() => void sendMessage("", undefined, message.id)}><Icon name="refresh"/></button>}</div>}</>}
             </article>)}
           </div>
           <form className="workbench-composer" onSubmit={(event) => { event.preventDefault(); void sendMessage(input); }}>

@@ -15,6 +15,7 @@
     "verify:v141-stage-status": "tsx scripts/verify-v141-stage-status.mjs",
     "verify:v141-project-file-tree": "tsx scripts/verify-v141-project-file-tree.mjs",
     "verify:v141-manual-context": "tsx scripts/verify-v141-manual-context.mjs",
+    "verify:v141-first-file-candidate": "tsx scripts/verify-v141-first-file-candidate.mjs",
     "verify:mysql-conversation": "tsx scripts/verify-mysql-conversation.mjs",
     "verify:mysql-project-artifacts": "tsx scripts/verify-mysql-project-artifacts.mjs",
     "verify:mysql-explicit-freeze": "tsx scripts/verify-mysql-explicit-freeze.mjs",

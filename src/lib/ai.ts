@@ -56,6 +56,7 @@ function lastUserMessage(messages: AIMessage[]): string {
 
 function replayResponse(agentType: AgentType | undefined, messages: AIMessage[]): string {
   const user = lastUserMessage(messages);
+  const iterationWorkbench = messages.some((message) => message.role === "system" && typeof message.content === "string" && message.content.includes("## v1.41 当前会话边界"));
   const userCount = messages.filter((message) => message.role === "user").length;
   const freezeInstruction = messages
     .map((message) =>
@@ -97,7 +98,7 @@ function replayResponse(agentType: AgentType | undefined, messages: AIMessage[])
       "- 已确认 MVP 范围：发布、搜索、私聊、评价",
       "%%%FILE_END%%%",
       "",
-      "%%%FILE_BEGIN%%% 需求分析.md",
+      iterationWorkbench ? "%%%FILE_BEGIN%%% 需求分析-校内闲置交易.md" : "%%%FILE_BEGIN%%% 需求分析.md",
       "# 需求分析",
       "",
       "### 用户与场景",
