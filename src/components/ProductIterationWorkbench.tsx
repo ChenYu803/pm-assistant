@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { getWorkbenchFileStage } from "@/lib/workbench-file-branch";
+import ProjectFileTree, { type ProjectFileEntry } from "@/components/ProjectFileTree";
 
 type StageKey = "analysis" | "prototype" | "prd" | "tickets";
 type StageStatus = "not_started" | "in_progress" | "completed";
@@ -11,7 +12,7 @@ type Session = { id: string; title: string; updatedAt?: string };
 type Message = { id: string; role: "user" | "assistant"; content: string; status?: string; errorMessage?: string | null; timestamp?: string };
 type Project = { id: string; name: string };
 type Iteration = { id: string; project_id: string; iteration_number: number; display_name: string; goal: string | null };
-type FileRecord = { id: string; filename: string; version?: number; updated_at?: string };
+type FileRecord = ProjectFileEntry;
 
 function preferredSession(iterationId: string, stage: StageKey, entries: Session[]) {
   try {
@@ -419,15 +420,6 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
   }
 
   const currentDemoMessages = useMemo(() => selectedDemo?.messages ?? [], [selectedDemo]);
-  const groupedFiles = useMemo(() => {
-    const groups = new Map<string, FileRecord[]>();
-    files.forEach((file) => {
-      const branch = stageInfo.find((stage) => stage.key === getWorkbenchFileStage(file.filename))?.label ?? "需求分析";
-      groups.set(branch, [...(groups.get(branch) ?? []), file]);
-    });
-    return [...groups.entries()];
-  }, [files]);
-
   const lastUserId = [...messages].reverse().find((message) => message.role === "user")?.id;
   const lastAssistantId = [...messages].reverse().find((message) => message.role === "assistant" && message.status === "completed")?.id;
 
@@ -488,7 +480,7 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
         {contextOpen && <aside className="workbench-context" aria-label="项目文件与上下文" ref={contextPanel}>
           <div className="context-heading"><h2>文件与上下文</h2><button type="button" className="context-close" aria-label="关闭文件区" title="关闭文件区" onClick={() => setContextOpen(false)}><Icon name="close"/></button></div>
           <div className="context-switch" role="tablist" aria-label="文件视图"><button type="button" role="tab" aria-selected={contextTab === "tree"} onClick={() => setContextTab("tree")}>项目文件树 <span>{files.length}</span></button><button type="button" role="tab" aria-selected={contextTab === "context"} onClick={() => setContextTab("context")}>当前上下文 <span>{contextIds.length}</span></button></div>
-          {contextTab === "tree" ? <div className="context-scroll">{groupedFiles.length ? groupedFiles.map(([branch, branchFiles]) => <details className="file-branch" key={branch} open><summary>{branch}<span>{branchFiles.length}</span></summary>{branchFiles.map((file) => <div className="project-file-row" key={file.id}><span title={file.filename}><Icon name="file"/>{file.filename}</span><button type="button" aria-label={`${contextIds.includes(file.id) ? "从" : "加入"}上下文：${file.filename}`} disabled={contextIds.includes(file.id) || messagesLoading || contextUpdating} onClick={() => void toggleContext(file.id, true)}>{contextIds.includes(file.id) ? "已加入" : "加入"}</button></div>)}</details>) : <p className="context-empty">项目文件树还是空的。</p>}</div> : <div className="context-scroll">{contextIds.length ? files.filter((file) => contextIds.includes(file.id)).map((file) => <div className="project-file-row loaded" key={file.id}><span title={file.filename}><Icon name="file"/>{file.filename}</span><button type="button" disabled={messagesLoading || contextUpdating} onClick={() => void toggleContext(file.id, false)} aria-label={`从当前上下文移除 ${file.filename}`}>移除</button></div>) : <p className="context-empty">当前会话没有加载文件。</p>}</div>}
+          {contextTab === "tree" ? <div className="context-scroll"><ProjectFileTree projectId={project.id} files={files}/></div> : <div className="context-scroll">{!contextIds.length && <p className="context-empty">当前会话没有加载文件。</p>}{files.length ? files.map((file) => <div className="project-file-row loaded" key={file.id}><span title={file.filename}><Icon name="file"/>{file.filename}</span><button type="button" disabled={messagesLoading || contextUpdating || !activeSessionId || contextIds.includes(file.id)} onClick={() => void toggleContext(file.id, true)} aria-label={`加入当前上下文：${file.filename}`}>{contextIds.includes(file.id) ? "已加载" : "加载"}</button>{contextIds.includes(file.id) && <button type="button" disabled={messagesLoading || contextUpdating} onClick={() => void toggleContext(file.id, false)} aria-label={`从当前上下文移除 ${file.filename}`}>移除</button>}</div>) : <p className="context-empty">项目还没有文件。</p>}{!activeSessionId && <p className="context-empty">开始阶段会话后可以加载文件。</p>}</div>}
         </aside>}
       </div>}
     </div>

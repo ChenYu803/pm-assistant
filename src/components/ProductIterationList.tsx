@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import ProjectFileTree, { type ProjectFileEntry } from "@/components/ProjectFileTree";
 
 interface ProductIteration {
   id: string;
@@ -58,6 +59,24 @@ export default function ProductIterationList({ projectId }: ProductIterationList
   const [deletingIteration, setDeletingIteration] = useState<ProductIteration | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [projectFiles, setProjectFiles] = useState<ProjectFileEntry[]>([]);
+  const [filesLoading, setFilesLoading] = useState(true);
+  const [filesError, setFilesError] = useState("");
+
+  const fetchProjectFiles = useCallback(async () => {
+    setFilesLoading(true);
+    setFilesError("");
+    try {
+      const response = await fetch(`/api/projects/${projectId}/files`);
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.error || "项目文件加载失败");
+      setProjectFiles(body);
+    } catch (caught) {
+      setFilesError(caught instanceof Error ? caught.message : "项目文件加载失败");
+    } finally {
+      setFilesLoading(false);
+    }
+  }, [projectId]);
 
   const fetchIterations = useCallback(async () => {
     try {
@@ -81,6 +100,11 @@ export default function ProductIterationList({ projectId }: ProductIterationList
     }).catch(() => undefined);
     return () => { cancelled = true; };
   }, [fetchIterations, projectId]);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- standard fetch-on-mount pattern
+    void fetchProjectFiles();
+  }, [fetchProjectFiles]);
 
   function openCreate() {
     setDrawerMode("create");
@@ -203,7 +227,7 @@ export default function ProductIterationList({ projectId }: ProductIterationList
 
   return (
     <section className="iteration-list-panel">
-      <main className="iteration-main">
+      <main className={`iteration-main${!loading && iterations.length === 0 ? " files-first" : ""}`}>
         <header className="iteration-project-head">
           <div>
             <p className="iteration-eyebrow">SELECTED PROJECT</p>
@@ -219,6 +243,10 @@ export default function ProductIterationList({ projectId }: ProductIterationList
             {iterations.length === 0 ? <div className="iteration-empty"><p>这个项目还没有产品迭代。</p><button className="iteration-button iteration-button-primary" type="button" onClick={openCreate}>创建产品迭代</button></div> : <div className="iteration-table" role="list">{iterations.map((iteration) => { const menuOpen = iterationMenuId === iteration.id; return <article className="iteration-row" role="listitem" key={iteration.id}><span className="iteration-number">{formatIterationNumber(iteration.iteration_number)}</span><div className="iteration-name"><strong title={iteration.display_name}>{iteration.display_name}</strong></div><p className={`iteration-goal${iteration.goal ? "" : " empty"}`}>{iteration.goal || "尚未填写本轮目标"}</p><span className="iteration-updated">更新 · {formatUpdated(iteration.updated_at)}</span><div className="iteration-row-actions"><button className="iteration-button iteration-button-quiet" type="button" onClick={() => router.push(`/projects/${projectId}/iterations/${iteration.id}`)}>进入工作区</button><button className="iteration-button iteration-button-quiet" type="button" onClick={() => openEdit(iteration)}>编辑迭代</button><button className="iteration-more" type="button" aria-label={`${iteration.display_name} 更多功能`} aria-expanded={menuOpen} onClick={() => setIterationMenuId(menuOpen ? null : iteration.id)}>···</button>{menuOpen && <div className="iteration-menu"><button className="iteration-menu-action danger" type="button" onClick={() => { setIterationMenuId(null); setDeleteError(""); setDeletingIteration(iteration); }}>删除产品迭代</button></div>}</div></article>; })}</div>}
           </section>
         )}
+        <section className="iteration-project-files" aria-labelledby="project-files-title">
+          <div className="iteration-project-files-head"><div><h3 id="project-files-title">项目文件树</h3><p>项目共享文件 · {projectFiles.length} 个</p></div><button type="button" onClick={() => void fetchProjectFiles()} disabled={filesLoading}>刷新</button></div>
+          {filesLoading ? <p role="status">正在加载项目文件…</p> : filesError ? <p role="alert">{filesError} <button type="button" onClick={() => void fetchProjectFiles()}>重试</button></p> : <ProjectFileTree projectId={projectId} files={projectFiles} />}
+        </section>
       </main>
 
       {drawerMode && <div className="iteration-overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) closeDrawer(); }}><aside className="iteration-drawer" role="dialog" aria-modal="true" aria-labelledby="iteration-drawer-title"><div className="iteration-drawer-head"><div><p className="iteration-eyebrow">ITERATION / {drawerMode === "create" ? "CREATE" : "EDIT"}</p><h2 id="iteration-drawer-title">{drawerMode === "create" ? "创建产品迭代" : "编辑产品迭代"}</h2></div><button className="iteration-close" type="button" aria-label="关闭面板" onClick={closeDrawer}>×</button></div>{drawerMode === "create" ? <p className="iteration-drawer-intro">给这一轮一个可读的名字，再明确你是否要提供本轮目标。两个选项都不会替你默认选择。</p> : <p className="iteration-drawer-intro">展示名称和本轮目标可以随时更新。稳定编号是这次迭代的长期身份，创建后不可修改。</p>}

@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 
 import { requireAuth } from "@/lib/auth-helper";
-import { FROZEN_DOCUMENT_LOCKED_MESSAGE, validateFileSize } from "@/lib/file-helpers";
+import { FROZEN_DOCUMENT_LOCKED_MESSAGE, stripChangelogHeader, validateFileSize } from "@/lib/file-helpers";
 import { isMysqlId } from "@/lib/identifiers";
+import { findOwnedMysqlProductIteration, listMysqlProductIterations, listMysqlWorkRecords } from "@/lib/mysql-account-workspace";
 import { deleteMysqlProjectFile, findOwnedMysqlProjectFile, MysqlFrozenDocumentError, serializeMysqlProjectFile, updateMysqlProjectFile } from "@/lib/mysql-project-artifacts";
 
 function invalidFileResponse() {
@@ -13,6 +14,18 @@ function invalidProjectResponse() {
   return NextResponse.json({ error: "项目参数无效" }, { status: 400 });
 }
 
+async function mutationContextError(request: Request, projectId: string, userId: string) {
+  const iterations = await listMysqlProductIterations(projectId, userId);
+  if (!iterations) return NextResponse.json({ error: "项目不存在或无权访问" }, { status: 404 });
+  if (iterations.length) {
+    const iterationId = request.headers.get("x-current-iteration-id");
+    const iteration = iterationId ? await findOwnedMysqlProductIteration(iterationId, userId) : null;
+    return iteration?.project_id === projectId ? null : NextResponse.json({ error: "请先进入当前产品迭代，再修改项目文件" }, { status: 409 });
+  }
+  const legacyRecords = await listMysqlWorkRecords(projectId, userId);
+  return legacyRecords?.length ? null : NextResponse.json({ error: "当前没有产品迭代，项目文件仅可浏览和下载" }, { status: 409 });
+}
+
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string; fileId: string }> }) {
   try {
     const userId = await requireAuth(); if (userId instanceof NextResponse) return userId;
@@ -20,7 +33,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     if (!isMysqlId(projectId)) return invalidProjectResponse();
     if (!isMysqlId(fileId)) return invalidFileResponse();
     const file = await findOwnedMysqlProjectFile(projectId, fileId, userId);
-    return file ? NextResponse.json(serializeMysqlProjectFile(file)) : NextResponse.json({ error: "文件不存在或无权访问" }, { status: 404 });
+    return file ? NextResponse.json({ ...serializeMysqlProjectFile(file), content: stripChangelogHeader(file.content) }) : NextResponse.json({ error: "文件不存在或无权访问" }, { status: 404 });
   } catch (error) { console.error("GET /api/projects/[id]/files/[fileId] error:", error); return NextResponse.json({ error: "获取文件失败" }, { status: 500 }); }
 }
 
@@ -30,6 +43,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const { id: projectId, fileId } = await params; const { content } = await request.json();
     if (!isMysqlId(projectId)) return invalidProjectResponse();
     if (!isMysqlId(fileId)) return invalidFileResponse();
+    const contextError = await mutationContextError(request, projectId, userId); if (contextError) return contextError;
     if (typeof content !== "string") return NextResponse.json({ error: "文件内容不能为空" }, { status: 400 });
     const validation = validateFileSize(content); if (!validation.ok) return NextResponse.json({ error: validation.error }, { status: 413 });
     const file = await updateMysqlProjectFile({ projectId, fileId, userId, content });
@@ -37,12 +51,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   } catch (error) { if (error instanceof MysqlFrozenDocumentError) return NextResponse.json({ error: FROZEN_DOCUMENT_LOCKED_MESSAGE }, { status: 409 }); console.error("PATCH /api/projects/[id]/files/[fileId] error:", error); return NextResponse.json({ error: "更新文件失败" }, { status: 500 }); }
 }
 
-export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string; fileId: string }> }) {
+export async function DELETE(request: Request, { params }: { params: Promise<{ id: string; fileId: string }> }) {
   try {
     const userId = await requireAuth(); if (userId instanceof NextResponse) return userId;
     const { id: projectId, fileId } = await params;
     if (!isMysqlId(projectId)) return invalidProjectResponse();
     if (!isMysqlId(fileId)) return invalidFileResponse();
+    const contextError = await mutationContextError(request, projectId, userId); if (contextError) return contextError;
     const deleted = await deleteMysqlProjectFile(projectId, fileId, userId);
     return deleted ? NextResponse.json({ ok: true }) : NextResponse.json({ error: "文件不存在或无权访问" }, { status: 404 });
   } catch (error) { if (error instanceof MysqlFrozenDocumentError) return NextResponse.json({ error: FROZEN_DOCUMENT_LOCKED_MESSAGE }, { status: 409 }); console.error("DELETE /api/projects/[id]/files/[fileId] error:", error); return NextResponse.json({ error: "删除文件失败" }, { status: 500 }); }
