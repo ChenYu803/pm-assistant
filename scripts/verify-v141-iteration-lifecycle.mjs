@@ -85,7 +85,7 @@ try {
   check("填写目标后进入独立工作台", (await page.locator(".workbench-grid").count()) === 1 && (await page.locator(".workbench-stage-nav").getByRole("button").count()) === 4);
   check("工作台展示项目、迭代编号和返回入口", (await page.locator(".workbench-project").innerText()).includes("第一轮验证") && (await page.locator(".workbench-project").innerText()).includes("迭代 01") && await page.locator(".workbench-back").count() === 1);
   check("首次进入默认需求分析且空阶段不自动建会话", await page.locator(".workbench-stage-nav").getByRole("button", { name: /需求分析/ }).getAttribute("aria-current") === "step" && await page.getByText("本阶段还没有会话").count() === 1 && await page.getByRole("button", { name: "开始本阶段工作" }).count() === 1);
-  check("原型演示数据为只读且包含 10/3/3 条示例消息", await page.locator(".demo-session").count() === 3 && await page.locator(".demo-session").nth(0).innerText().then((text) => text.includes("10 条示例消息")) && await page.locator(".demo-session").nth(1).innerText().then((text) => text.includes("3 条示例消息")) && await page.locator(".demo-session").nth(2).innerText().then((text) => text.includes("3 条示例消息")));
+  check("普通账号的项目不显示演示会话", await page.locator(".demo-session").count() === 0);
 
   const firstList = await api(page, `/api/projects/${projectId}/iterations`);
   const firstIteration = firstList.body?.[0];

@@ -13,6 +13,7 @@ type Message = { id: string; role: "user" | "assistant"; content: string; status
 type Project = { id: string; name: string };
 type Iteration = { id: string; project_id: string; iteration_number: number; display_name: string; goal: string | null };
 type FileRecord = ProjectFileEntry;
+type DemoSession = { id: string; title: string; messages: ["user" | "assistant", string][] };
 
 function preferredSession(iterationId: string, stage: StageKey, entries: Session[]) {
   try {
@@ -34,14 +35,6 @@ const stageInfo: { key: StageKey; label: string; agent: string; hint: string }[]
   { key: "tickets", label: "任务拆分", agent: "任务拆分 Agent", hint: "把已确认的产品方案拆成有依赖关系、可逐项验收的任务。" },
 ];
 
-const demoSessions = [
-  { id: "demo-goal", title: "目标与验证依据", messages: [
-    ["user", "我们现在只有访谈笔记，没有量化数据。"], ["assistant", "先把访谈中的重复信号标出来，再区分事实、推测和待验证假设。"], ["user", "最常出现的是“不知道从哪里开始”。"], ["assistant", "这可以成为首个问题假设。你知道用户通常在什么时刻遇到这个问题吗？"], ["user", "大多是第一次创建项目时，面对空白页面不知道先做什么。"], ["assistant", "那问题可能不只是缺少说明，也可能是起步任务和下一步不够明确。"], ["user", "我们希望用户能完成一轮完整的产品思考。"], ["assistant", "这是产品目标。可以再拆成首次进入、需求澄清、形成方案等可观察步骤。"], ["user", "初步成功标准是十分钟内能说清四个阶段分别做什么。"], ["assistant", "已记录为待验证标准。还需要通过新手测试确认用户能独立复述并完成一次阶段选择。"],
-  ] as ["user" | "assistant", string][] },
-  { id: "demo-first-use", title: "用户首次进入产品", messages: [["assistant", "先把目标从“让用户理解产品”拆成可观察的行为结果。"], ["user", "我希望第一次打开产品的人，十分钟内理解 AI 产品经理的工作方式。"], ["assistant", "可以先验证：用户能否说出 AI PM 与传统 PM 的差异，并完成一次从需求到交付的判断。"]] as ["user" | "assistant", string][] },
-  { id: "demo-scope", title: "范围取舍记录", messages: [["assistant", "当前阶段先确认用户与成功标准，再讨论具体方案。"], ["user", "那是否先不讨论技术实现？"], ["assistant", "是。先记录约束和判断依据，技术方案留到后续阶段。"]] as ["user" | "assistant", string][] },
-];
-
 const stageOrder: StageKey[] = stageInfo.map((stage) => stage.key);
 
 function statusLabel(status: StageStatus | undefined) {
@@ -61,7 +54,7 @@ function Icon({ name }: { name: "copy" | "edit" | "refresh" | "close" | "file" |
   return <svg viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>;
 }
 
-export default function ProductIterationWorkbench({ project, iteration }: { project: Project; iteration: Iteration }) {
+export default function ProductIterationWorkbench({ project, iteration, demoSessions = [] }: { project: Project; iteration: Iteration; demoSessions?: DemoSession[] }) {
   const base = `/api/iterations/${iteration.id}`;
   const [currentStage, setCurrentStage] = useState<StageKey>("analysis");
   const [stages, setStages] = useState<Stage[]>(stageInfo.map(({ key }) => ({ key, status: "not_started", sessions: [], generatingSessionIds: [] })));
@@ -448,7 +441,7 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
         <aside className="workbench-sessions" aria-label="阶段会话">
           <div className="sessions-heading"><h2>阶段会话</h2><button className="new-session-button" type="button" disabled={creatingSession || contextUpdating} onClick={() => void createSession()} aria-label="新建会话" title="新建会话"><Icon name="plus"/></button></div>
           {sessions.length ? <div className="real-session-list">{sessions.map((session) => <button key={session.id} className="session-row" type="button" disabled={contextUpdating} aria-current={activeSessionId === session.id ? "page" : undefined} onClick={() => void chooseSession(session)}><strong>{session.title}</strong><small>{generatingSessionIds.includes(session.id) || sendingSessionIds.includes(session.id) ? "生成中 · " : session.title === "新会话" ? "尚无消息 · " : ""}{session.updatedAt ? new Date(session.updatedAt).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }) : ""}</small></button>)}</div> : <p className="session-empty">本阶段还没有会话</p>}
-          {currentStage === "analysis" ? <details className="demo-section" open={demoExpanded} onToggle={(event) => setDemoExpanded(event.currentTarget.open)}><summary className="demo-divider"><span>演示会话</span><small>不属于你的项目</small></summary>
+          {demoSessions.length > 0 && currentStage === "analysis" ? <details className="demo-section" open={demoExpanded} onToggle={(event) => setDemoExpanded(event.currentTarget.open)}><summary className="demo-divider"><span>演示会话</span><small>只读样例</small></summary>
           <div className="demo-session-list">{demoSessions.map((session) => <button key={session.id} type="button" className="demo-session" disabled={contextUpdating} aria-current={demoId === session.id ? "page" : undefined} onClick={() => selectDemo(session.id)}><strong>{session.title}</strong><small>{session.messages.length} 条示例消息</small></button>)}</div></details> : null}
         </aside>
 
@@ -462,7 +455,7 @@ export default function ProductIterationWorkbench({ project, iteration }: { proj
             {otherBusySessions.length ? <div className="stage-generation-links">{otherBusySessions.map((session) => <button key={session.id} type="button" disabled={contextUpdating} onClick={() => viewGeneratingSession(session)} title={`查看生成中的会话：${session.title}`}>{busySessions.length === 1 ? "查看会话" : session.title}</button>)}</div> : busySessions.length ? null : <span>刷新页面后可查看该会话。</span>}
           </div> : null}
           <div className="workbench-message-list" ref={messageList} aria-live="polite">
-            {selectedDemo ? <div className="demo-warning">这是原型演示数据，不会保存到项目或迭代。</div> : null}
+            {selectedDemo ? <div className="demo-warning">这是只读样例会话，不会写入你的工作记录。</div> : null}
             {!activeSession && !selectedDemo ? <div className="stage-empty"><div><h3>从你想解决的问题开始。</h3><p>{currentInfo.hint}</p><button type="button" disabled={creatingSession || contextUpdating} onClick={() => void createSession()}>开始本阶段工作</button></div></div> : null}
             {activeSession && messagesLoading ? <p className="session-loading" role="status">正在打开会话…</p> : null}
             {activeSession && !messagesLoading && messages.length === 0 ? <div className="stage-empty session-start"><h3>这个会话还没有消息</h3><p>{currentInfo.hint}</p></div> : null}

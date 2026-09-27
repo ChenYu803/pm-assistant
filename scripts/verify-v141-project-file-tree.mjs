@@ -46,6 +46,12 @@ try {
   const projectId = project.body.id;
   await page.goto(`${base}/projects`);
   await page.getByRole("button", { name: "文件树验证项目", exact: true }).click();
+  check("进入项目默认展示产品迭代", await page.getByRole("tab", { name: "产品迭代" }).getAttribute("aria-selected") === "true");
+  await page.getByRole("tab", { name: "产品迭代" }).press("ArrowRight");
+  check("方向键可切换到项目文件树", await page.getByRole("tab", { name: "项目文件树 0" }).getAttribute("aria-selected") === "true");
+  await page.getByRole("tab", { name: "项目文件树 0" }).press("ArrowLeft");
+  check("方向键可返回产品迭代", await page.getByRole("tab", { name: "产品迭代" }).getAttribute("aria-selected") === "true");
+  await page.getByRole("tab", { name: "项目文件树 0" }).click();
   await page.getByRole("heading", { name: "项目文件树" }).waitFor();
   await page.locator(".iteration-project-files .project-tree-branch").first().waitFor();
   check("没有产品迭代时仍显示四个固定树枝", await page.locator(".iteration-project-files .project-tree-branch").count() === 4);
