@@ -91,8 +91,15 @@ try {
   await page.locator(".workbench-grid").waitFor();
   await page.getByRole("button", { name: /原型设计/ }).first().click();
   await page.getByRole("tab", { name: "HTML 快照" }).click();
+  const firstViewUrl = `**/api/projects/${projectId}/snapshots/${firstSnapshot.id}?mode=view`;
+  await page.route(firstViewUrl, (route) => route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ error: "预览暂时不可用" }) }));
   await page.getByRole("button", { name: /HTML 快照 · 第 1 版/ }).click();
+  await page.getByRole("alert").getByText("预览暂时不可用").waitFor();
+  check("快照预览请求失败时明确显示错误", await page.locator(".snapshot-detail iframe").count() === 0);
+  await page.unroute(firstViewUrl);
+  await page.getByRole("button", { name: "重试", exact: true }).click();
   await page.locator('.snapshot-detail iframe').waitFor();
+  check("重试重新读取选中快照并恢复预览", await page.locator(".snapshot-error").count() === 0 && (await page.locator(".snapshot-detail").textContent()).includes("第 1 版"));
   check("正式界面可选择并预览旧快照", await page.locator('.snapshot-detail iframe').getAttribute("sandbox") === "allow-scripts" && (await page.locator(".snapshot-detail").textContent()).includes("第 1 版"));
   const downloadEvent = page.waitForEvent("download");
   await page.getByRole("link", { name: "下载 HTML" }).click();

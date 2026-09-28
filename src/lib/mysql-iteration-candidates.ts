@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
 import { validateFileSize } from "@/lib/file-helpers";
-import { validCandidateFilename, type MarkdownCandidateStage } from "@/lib/analysis-candidate-filename";
+import { validCandidateFilename, type MarkdownCandidateStage } from "@/lib/markdown-candidate-filename";
 import { getMysqlPool } from "@/lib/mysql";
 
 const FILE_BLOCK = /^%%%FILE_BEGIN%%%[ \t]*([^\r\n]+)\r?\n([\s\S]*?)^%%%FILE_END%%%[ \t]*$/gm;

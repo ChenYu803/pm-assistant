@@ -3,9 +3,9 @@
 import { useState } from "react";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import type { ProjectFileEntry } from "@/components/ProjectFileTree";
-import { validCandidateFilename, type MarkdownCandidateStage } from "@/lib/analysis-candidate-filename";
+import { validCandidateFilename, type MarkdownCandidateStage } from "@/lib/markdown-candidate-filename";
 
-export type AnalysisCandidate = {
+export type MarkdownCandidate = {
   id: string;
   suggestedFilename: string;
   content: string;
@@ -13,8 +13,8 @@ export type AnalysisCandidate = {
   finalFilename: string | null;
 };
 
-export default function AnalysisCandidateReview({ candidate, stage, iterationId, sessionId, files, onDecided }: {
-  candidate: AnalysisCandidate;
+export default function MarkdownCandidateReview({ candidate, stage, iterationId, sessionId, files, onDecided }: {
+  candidate: MarkdownCandidate;
   stage: MarkdownCandidateStage;
   iterationId: string;
   sessionId: string;
