@@ -6,6 +6,7 @@ import { getWorkbenchFileStage } from "@/lib/workbench-file-branch";
 import ProjectFileTree, { type ProjectFileEntry } from "@/components/ProjectFileTree";
 import AnalysisCandidateReview, { type AnalysisCandidate } from "@/components/AnalysisCandidateReview";
 import DisclosureIcon from "@/components/DisclosureIcon";
+import PrototypeSnapshotPanel from "@/components/PrototypeSnapshotPanel";
 
 type StageKey = "analysis" | "prototype" | "prd" | "tickets";
 type StageStatus = "not_started" | "in_progress" | "completed";
@@ -65,7 +66,9 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
   const [messages, setMessages] = useState<Message[]>([]);
   const [files, setFiles] = useState<FileRecord[]>([]);
   const [contextBySession, setContextBySession] = useState<Record<string, string[]>>({});
-  const [contextTab, setContextTab] = useState<"tree" | "context">("tree");
+  const [contextTab, setContextTab] = useState<"tree" | "context" | "snapshots">("tree");
+  const [snapshotRevision, setSnapshotRevision] = useState(0);
+  const [focusSnapshotMessageId, setFocusSnapshotMessageId] = useState<string | null>(null);
   const [contextOpen, setContextOpen] = useState(true);
   const [loading, setLoading] = useState(true);
   const [messagesLoading, setMessagesLoading] = useState(false);
@@ -235,6 +238,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
     setMessages([]);
     setEditingId(null);
     setCurrentStage(key);
+    if (key !== "prototype") setContextTab((previous) => previous === "snapshots" ? "tree" : previous);
     setDemoId(null);
     const stage = stages.find((entry) => entry.key === key);
     const nextSessions = stage?.sessions ?? [];
@@ -359,11 +363,13 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
     setSendingSessionIds([...sendingIds.current]);
     setError("");
     try {
+      let latestMessages: Message[] = [];
       if (editMessageId) {
         await request(`${base}/sessions/${sessionId}/messages/${editMessageId}`, {
           method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: content.trim() }),
         });
         const history = await request(`${base}/stages/${stage}/sessions/${sessionId}/messages`);
+        latestMessages = history.messages;
         if (activeView.current.stage === stage && activeView.current.sessionId === sessionId) {
           messageVersion.current += 1;
           setMessages(history.messages);
@@ -373,12 +379,22 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...(content.trim() ? { content: content.trim() } : {}), ...(regenerateMessageId ? { regenerateMessageId } : {}) }),
         });
+        latestMessages = result.messages;
         if (activeView.current.stage === stage && activeView.current.sessionId === sessionId) {
           messageVersion.current += 1;
           setMessages(result.messages);
         }
       }
       if (!editMessageId && !regenerateMessageId) setDrafts((previous) => ({ ...previous, [sessionId]: "" }));
+      if (stage === "prototype") {
+        const latest = [...latestMessages].reverse().find((message) => message.role === "assistant" && message.status === "completed");
+        if (latest?.content.includes("%%%HTML_BEGIN%%%") && activeView.current.stage === stage && activeView.current.sessionId === sessionId) {
+          setSnapshotRevision((previous) => previous + 1);
+          setFocusSnapshotMessageId(latest.id);
+          setContextTab("snapshots");
+          openContextPanel();
+        }
+      }
       if (activeView.current.stage === stage && activeView.current.sessionId === sessionId) { setEditingId(null); setEditValue(""); }
       const updated = await request(`${base}/sessions/${sessionId}`).catch(() => null);
       if (updated) {
@@ -387,7 +403,10 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
         if (activeView.current.stage === stage) setSessions((previous) => previous.map(updateSession));
       }
     } catch (caught) {
-      if (!stoppedIds.current.has(sessionId) && activeView.current.stage === stage && activeView.current.sessionId === sessionId) setError(caught instanceof Error ? caught.message : "消息发送失败。");
+      if (!stoppedIds.current.has(sessionId) && activeView.current.stage === stage && activeView.current.sessionId === sessionId) {
+        setError(caught instanceof Error ? caught.message : "消息发送失败。");
+        await loadMessages(sessionId).catch(() => undefined);
+      }
     } finally {
       sendingIds.current.delete(sessionId);
       setSendingSessionIds([...sendingIds.current]);
@@ -429,7 +448,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
 
   const currentDemoMessages = useMemo(() => selectedDemo?.messages ?? [], [selectedDemo]);
   const lastUserId = [...messages].reverse().find((message) => message.role === "user")?.id;
-  const lastAssistantId = [...messages].reverse().find((message) => message.role === "assistant" && message.status === "completed")?.id;
+  const lastAssistantId = [...messages].reverse().find((message) => message.role === "assistant")?.id;
 
   return <main className="iteration-workbench" aria-busy={loading}>
     <div className="workbench-shell">
@@ -476,7 +495,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
             {activeSession && !messagesLoading && messages.length === 0 ? <div className="stage-empty session-start"><h3>这个会话还没有消息</h3><p>{currentInfo.hint}</p></div> : null}
             {(selectedDemo ? currentDemoMessages.map(([role, content], index): Message => ({ id: `demo-${index}`, role, content })) : messages).map((message) => <article className={`workbench-message ${message.role}${message.candidate ? " has-candidate" : ""}`} key={message.id}>
               <div className="message-label">{message.role === "user" ? "你" : currentInfo.agent}{message.status === "generating" ? <span> · 生成中</span> : message.status === "failed" ? <span> · {message.errorMessage === "生成已停止" ? "已停止" : "生成失败"}</span> : null}</div>
-              {editingId === message.id ? <div className="inline-message-edit"><textarea aria-label="修改这条消息" value={editValue} onChange={(event) => setEditValue(event.target.value)}/><div><button type="button" onClick={() => { setEditingId(null); setEditValue(""); }}>取消</button><button type="button" disabled={!editValue.trim() || sending || currentStatus === "completed"} onClick={() => void sendMessage(editValue, message.id)}>发送</button></div></div> : <><div className="message-content">{message.status === "failed" && !message.content ? message.errorMessage ?? "生成失败" : message.displayContent ?? message.content}</div>{message.candidate && activeSessionId ? <AnalysisCandidateReview candidate={message.candidate} iterationId={iteration.id} sessionId={activeSessionId} files={files} onDecided={() => refreshCandidateState(activeSessionId, currentStage)} /> : null}{!selectedDemo && <div className="message-actions"><button type="button" title="复制消息" aria-label="复制消息" onClick={() => { void navigator.clipboard.writeText(message.displayContent ?? message.content).then(() => showToast("已复制消息")).catch(() => showToast("复制失败，请手动选择文本")); }}><Icon name="copy"/></button>{message.role === "user" && message.id === lastUserId && <button type="button" title="修改并重新发送" aria-label="修改并重新发送" disabled={currentStatus === "completed" || sending} onClick={() => { setEditingId(message.id); setEditValue(message.content); }}><Icon name="edit"/></button>}{message.role === "assistant" && message.id === lastAssistantId && <button type="button" title="重新生成" aria-label="重新生成" disabled={sending || currentStatus === "completed" || message.status !== "completed"} onClick={() => void sendMessage("", undefined, message.id)}><Icon name="refresh"/></button>}</div>}</>}
+              {editingId === message.id ? <div className="inline-message-edit"><textarea aria-label="修改这条消息" value={editValue} onChange={(event) => setEditValue(event.target.value)}/><div><button type="button" onClick={() => { setEditingId(null); setEditValue(""); }}>取消</button><button type="button" disabled={!editValue.trim() || sending || currentStatus === "completed"} onClick={() => void sendMessage(editValue, message.id)}>发送</button></div></div> : <><div className="message-content">{message.status === "failed" && !message.content ? message.errorMessage ?? "生成失败" : message.displayContent ?? message.content}</div>{message.candidate && activeSessionId ? <AnalysisCandidateReview candidate={message.candidate} stage={currentStage === "prototype" ? "prototype" : "analysis"} iterationId={iteration.id} sessionId={activeSessionId} files={files} onDecided={() => refreshCandidateState(activeSessionId, currentStage)} /> : null}{currentStage === "prototype" && message.role === "assistant" && message.status === "completed" && message.content.includes("%%%HTML_BEGIN%%%") ? <button className="message-snapshot-link" type="button" onClick={() => { setFocusSnapshotMessageId(message.id); setContextTab("snapshots"); openContextPanel(); }}>打开本轮 HTML 快照</button> : null}{!selectedDemo && <div className="message-actions"><button type="button" title="复制消息" aria-label="复制消息" onClick={() => { void navigator.clipboard.writeText(message.displayContent ?? message.content).then(() => showToast("已复制消息")).catch(() => showToast("复制失败，请手动选择文本")); }}><Icon name="copy"/></button>{message.role === "user" && message.id === lastUserId && <button type="button" title="修改并重新发送" aria-label="修改并重新发送" disabled={currentStatus === "completed" || sending} onClick={() => { setEditingId(message.id); setEditValue(message.content); }}><Icon name="edit"/></button>}{message.role === "assistant" && message.id === lastAssistantId && <button type="button" title={message.status === "failed" ? "重试生成" : "重新生成"} aria-label={message.status === "failed" ? "重试生成" : "重新生成"} disabled={sending || currentStatus === "completed" || !["completed", "failed"].includes(message.status ?? "")} onClick={() => void sendMessage("", undefined, message.id)}><Icon name="refresh"/></button>}</div>}</>}
             </article>)}
           </div>
           <form className="workbench-composer" onSubmit={(event) => { event.preventDefault(); void sendMessage(input); }}>
@@ -487,8 +506,8 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
 
         {contextOpen && <aside className="workbench-context" aria-label="项目文件与上下文" ref={contextPanel}>
           <div className="context-heading"><h2>文件与上下文</h2><button type="button" className="context-close" aria-label="关闭文件区" title="关闭文件区" onClick={() => setContextOpen(false)}><Icon name="close"/></button></div>
-          <div className="context-switch" role="tablist" aria-label="文件视图"><button type="button" role="tab" aria-selected={contextTab === "tree"} onClick={() => setContextTab("tree")}>项目文件树 <span>{files.length}</span></button><button type="button" role="tab" aria-selected={contextTab === "context"} onClick={() => setContextTab("context")}>当前上下文 <span>{contextIds.length}</span></button></div>
-          {contextTab === "tree" ? <div className="context-scroll">
+          <div className={`context-switch ${currentStage === "prototype" ? "with-snapshots" : ""}`} role="tablist" aria-label="文件视图"><button type="button" role="tab" aria-selected={contextTab === "tree"} onClick={() => setContextTab("tree")}>项目文件树 <span>{files.length}</span></button><button type="button" role="tab" aria-selected={contextTab === "context"} onClick={() => setContextTab("context")}>当前上下文 <span>{contextIds.length}</span></button>{currentStage === "prototype" ? <button type="button" role="tab" aria-selected={contextTab === "snapshots"} onClick={() => setContextTab("snapshots")}>HTML 快照</button> : null}</div>
+          {contextTab === "snapshots" && currentStage === "prototype" ? <PrototypeSnapshotPanel projectId={project.id} iterationId={iteration.id} revision={snapshotRevision} focusMessageId={focusSnapshotMessageId} /> : contextTab === "tree" ? <div className="context-scroll">
             <p className="context-guidance">{activeSessionId ? "在文件树中加入上下文；打开预览不会自动加入。" : "请先开始阶段会话，才能加入文件。预览不会自动加入。"}</p>
             <ProjectFileTree
               projectId={project.id}

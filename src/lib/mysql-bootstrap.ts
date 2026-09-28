@@ -358,6 +358,17 @@ export const MYSQL_MIGRATIONS = [
     checksum: "b4d4f282e80bc5c283ce73ac66f6464766f34cfd3d91ad3be207ad9743cad442",
     statements: ["ALTER TABLE project_files MODIFY filename VARCHAR(700) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL"],
   },
+  {
+    id: "0015_v141_iteration_prototype_snapshots",
+    checksum: "6ec6e5bfd3502efbbf39cbf45b99476446bf956ea2c43e819de37ae206829653",
+    statements: [
+      "ALTER TABLE prototype_snapshots ADD COLUMN iteration_id CHAR(36) NULL AFTER tab_id",
+      "ALTER TABLE prototype_snapshots ADD COLUMN session_id CHAR(36) NULL AFTER iteration_id",
+      "ALTER TABLE prototype_snapshots ADD COLUMN message_id CHAR(36) NULL AFTER session_id",
+      "CREATE UNIQUE INDEX prototype_snapshots_message_unique ON prototype_snapshots (message_id)",
+      "CREATE INDEX prototype_snapshots_iteration_version ON prototype_snapshots (project_id, iteration_id, version)",
+    ],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {

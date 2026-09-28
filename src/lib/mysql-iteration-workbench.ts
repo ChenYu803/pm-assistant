@@ -8,7 +8,8 @@ import { isConceptDocFile, isWorkingDocFile, stripChangelogHeader } from "@/lib/
 import { getMysqlPool } from "@/lib/mysql";
 import { cancelGeneration, registerGeneration, releaseGeneration } from "@/lib/generation-control";
 import { formatWorkbenchContextPrompt, type WorkbenchDirectoryFile } from "@/lib/workbench-context-prompt";
-import { createAnalysisCandidate, listAnalysisCandidates, withoutFileBlocks } from "@/lib/mysql-iteration-candidates";
+import { createMarkdownCandidate, listMarkdownCandidates, withoutFileBlocks } from "@/lib/mysql-iteration-candidates";
+import { createIterationPrototypeSnapshot, extractPrototypeHtml, withoutPrototypeHtml } from "@/lib/iteration-prototype-snapshots";
 
 export const WORKBENCH_STAGES = ["analysis", "prototype", "prd", "tickets"] as const;
 export type WorkbenchStage = (typeof WORKBENCH_STAGES)[number];
@@ -175,9 +176,10 @@ export async function deleteMysqlIterationSession(iterationId: string, sessionId
 export async function listMysqlIterationMessages(sessionId: string) {
   const [rows] = await getMysqlPool().query<Array<RowDataPacket & { id: string; role: "user" | "assistant"; content: string; status: string; error_message: string | null; created_at: Date }>>(
     "SELECT id, role, content, status, error_message, created_at FROM iteration_session_messages WHERE session_id = ? ORDER BY created_at ASC, role ASC, id ASC", [sessionId]);
-  const candidates = await listAnalysisCandidates(sessionId);
+  const candidates = await listMarkdownCandidates(sessionId);
   return rows.map((row) => ({ id: row.id, role: row.role, content: row.content,
-    ...(row.role === "assistant" && candidates.has(row.id) ? { displayContent: withoutFileBlocks(row.content) } : {}),
+    ...(row.role === "assistant" && (candidates.has(row.id) || row.content.includes("%%%HTML_BEGIN%%%"))
+      ? { displayContent: withoutFileBlocks(withoutPrototypeHtml(row.content)).replaceAll("%%%SCOPE_FREEZE_PROPOSAL%%%", "").trim() } : {}),
     status: row.status, errorMessage: row.error_message, createdAt: row.created_at,
     ...(candidates.has(row.id) ? { candidate: candidates.get(row.id) } : {}),
   }));
@@ -271,13 +273,13 @@ export async function buildMysqlIterationPrompt(iterationId: string, sessionId: 
       projectName: iteration.project_name, iterationName: iteration.display_name,
       iterationNumber: Number(iteration.iteration_number), stage, stageLabels: WORKBENCH_STAGE_LABELS,
       goal: iteration.goal, files,
-    })}${stage === "analysis" ? `\n\n## 本阶段正式候选格式\n当需要交付需求分析成果时，输出且只输出一份正式 Markdown 文件块：%%%FILE_BEGIN%%% 需求分析-<简短描述>.md，下一行起为完整纯 Markdown 正文，最后独占一行 %%%FILE_END%%%。描述由当前项目内容决定，不使用固定文件名“需求分析.md”。这是一份待用户审阅的完整候选，不是追加段落；用户确认前不得声称文件已保存。工作文档可以继续用于内部过程，但不会进入项目文件树。` : ""}`,
+    })}${stage === "analysis" ? `\n\n## 本阶段正式候选格式\n当需要交付需求分析成果时，输出且只输出一份正式 Markdown 文件块：%%%FILE_BEGIN%%% 需求分析-<简短描述>.md，下一行起为完整纯 Markdown 正文，最后独占一行 %%%FILE_END%%%。描述由当前项目内容决定，不使用固定文件名“需求分析.md”。这是一份待用户审阅的完整候选，不是追加段落；用户确认前不得声称文件已保存。工作文档可以继续用于内部过程，但不会进入项目文件树。` : ""}${stage === "prototype" ? `\n\n## 本阶段 HTML 快照与 Markdown 候选格式\n在 v1.41 正式工作区不使用上文旧版显式冻结控件或冻结标记。每次提出可视化页面方案或修订时，只输出一个完整的单文件 HTML 块：单独一行 %%%HTML_BEGIN%%% ，下一行开始写完整的 <!doctype html><html>…</html> 页面，最后单独一行 %%%HTML_END%%% 。CSS 和 JS 必须内联，不引用外部资源；完整 HTML 不超过 3 MiB。快照由服务端保存为项目独立资产，不是项目文件。需要交付结构化原型时，再输出且只输出一份正式 Markdown 文件块：%%%FILE_BEGIN%%% 原型-<简短描述>.md，下一行起为完整纯 Markdown 正文，最后独占一行 %%%FILE_END%%%。描述由当前方案决定；Markdown 是待用户审阅的候选，确认前不得声称已保存。HTML 快照和 Markdown 候选可在同轮分别输出，二者互不触发写入、完成阶段或冻结。生成失败时如实说明。` : ""}`,
     agentType: STAGE_AGENT[stage],
   };
 }
 
 export async function generateMysqlIterationMessage(input: {
-  iterationId: string; sessionId: string; userId: string; content?: string; regenerateMessageId?: string; editMessageId?: string; replayDelayMs?: number;
+  iterationId: string; sessionId: string; userId: string; content?: string; regenerateMessageId?: string; editMessageId?: string; replayDelayMs?: number; forceSnapshotFailure?: boolean;
 }) {
   const session = await findOwnedIterationSession(input.iterationId, input.sessionId, input.userId);
   if (!session) return { kind: "not-found" as const };
@@ -292,7 +294,7 @@ export async function generateMysqlIterationMessage(input: {
   if (input.regenerateMessageId) {
     const index = allMessages.findIndex((message) => message.id === input.regenerateMessageId);
     const target = allMessages[index];
-    if (!target || target.role !== "assistant" || target.status !== "completed" || allMessages.slice(index + 1).some((message) => message.status === "completed")) return { kind: "invalid-regenerate" as const };
+    if (!target || target.role !== "assistant" || !["completed", "failed"].includes(target.status) || allMessages.slice(index + 1).some((message) => message.status === "completed")) return { kind: "invalid-regenerate" as const };
     regenerateTarget = target;
     history = allMessages.slice(0, index).filter((message) => message.status === "completed").map((message) => ({ role: message.role, content: message.content } as AIMessage));
   } else if (input.editMessageId) {
@@ -366,9 +368,13 @@ export async function generateMysqlIterationMessage(input: {
       if (generation.signal.aborted) throw new Error("生成已停止");
       answer += chunk.choices[0]?.delta?.content ?? "";
     }
+    const prototypeHtml = session.stage === "prototype" ? extractPrototypeHtml(answer) : { kind: "none" as const };
+    if (prototypeHtml.kind === "invalid") throw new Error(prototypeHtml.error);
     const connection = await pool.getConnection();
     try {
       await connection.beginTransaction();
+      // 快照版本与项目删除共用项目 → 迭代锁序；任何失败都回滚回复和快照。
+      await connection.query("SELECT id FROM projects WHERE id = ? FOR UPDATE", [session.project_id]);
       await connection.query("SELECT id FROM product_iterations WHERE id = ? FOR UPDATE", [input.iterationId]);
       const [activeRows] = await connection.query<Array<RowDataPacket & { id: string }>>(
         "SELECT id FROM iteration_session_messages WHERE id = ? AND session_id = ? AND status = 'generating'", [assistantId, input.sessionId]);
@@ -383,7 +389,12 @@ export async function generateMysqlIterationMessage(input: {
         await connection.execute<ResultSetHeader>("DELETE FROM iteration_session_messages WHERE session_id = ? AND id <> ? AND (created_at > ? OR (created_at = ? AND role = 'assistant' AND id >= ?))", [input.sessionId, assistantId, new Date(regenerateTarget.createdAt), new Date(regenerateTarget.createdAt), regenerateTarget.id]);
       }
       await connection.execute<ResultSetHeader>("UPDATE iteration_session_messages SET content = ?, status = 'completed', error_message = NULL WHERE id = ? AND session_id = ?", [answer, assistantId, input.sessionId]);
-      if (session.stage === "analysis") await createAnalysisCandidate(connection, { messageId: assistantId, sessionId: input.sessionId, answer });
+      if (session.stage === "analysis" || session.stage === "prototype") await createMarkdownCandidate(connection, { messageId: assistantId, sessionId: input.sessionId, answer, stage: session.stage });
+      if (prototypeHtml.kind === "valid") await createIterationPrototypeSnapshot(connection, {
+        projectId: session.project_id, iterationId: input.iterationId, sessionId: input.sessionId,
+        messageId: assistantId, content: prototypeHtml.content,
+      });
+      if (prototypeHtml.kind === "valid" && input.forceSnapshotFailure) throw new Error("回放强制 HTML 快照写入失败");
       const title = userMessage?.content.slice(0, 80) || "新会话";
       await connection.execute<ResultSetHeader>("UPDATE iteration_sessions SET title = IF(title = '新会话', ?, title), updated_at = ? WHERE id = ?", [title, new Date(), input.sessionId]);
       await connection.commit();

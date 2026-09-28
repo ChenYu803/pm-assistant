@@ -137,12 +137,44 @@ function replayResponse(agentType: AgentType | undefined, messages: AIMessage[])
         "%%%FILE_END%%%"
       );
     }
+    if (iterationWorkbench && /结构化原型|原型 Markdown/i.test(user)) {
+      return lines(
+        "这里是一份结构化原型 Markdown 候选，请审阅后决定是否写入项目文件。",
+        "",
+        "%%%FILE_BEGIN%%% 原型-校园二手交易.md",
+        "# 原型：校园二手交易",
+        "",
+        "## 商品浏览页",
+        "- **目的**：浏览与搜索校内闲置商品。",
+        "- **元素**：搜索框、分类筛选和商品列表。",
+        "- **操作**：输入关键词后筛选商品，点击商品进入详情。",
+        "- **入口·出口**：从首页进入，可进入商品详情页。",
+        "- **依赖**：商品目录。",
+        "",
+        "## 用户流程：查找商品",
+        "- **触发**：学生需要购买闲置商品。",
+        "- **主路径**：打开浏览页 → 搜索商品 → 查看详情。",
+        "- **异常分支**：没有结果时显示空状态。",
+        "%%%FILE_END%%%",
+        ...(user.includes("同时") ? [
+          "", "%%%HTML_BEGIN%%%",
+          "<!doctype html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><title>校园二手</title></head><body><main><h1>校园二手</h1></main></body></html>",
+          "%%%HTML_END%%%",
+        ] : []),
+      );
+    }
     if (userCount >= 2) {
       return lines(
-        "已完成自检：页面清单覆盖需求范围，页面五要素齐全，用户流程包含主路径和异常分支，元素包含显示文案。",
+        iterationWorkbench ? "我已按反馈修订页面方案，并生成新版 HTML 快照。你可以打开预览检查。" : "已完成自检：页面清单覆盖需求范围，页面五要素齐全，用户流程包含主路径和异常分支，元素包含显示文案。",
         "",
-        "请使用界面中的冻结控件决定是否生成原型文档。",
-        "%%%SCOPE_FREEZE_PROPOSAL%%%"
+        ...(iterationWorkbench ? [
+          "%%%HTML_BEGIN%%%",
+          "<!doctype html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><title>校园二手 · 修订版</title></head><body><main><h1>校园二手 · 修订版</h1><p>增加分类筛选与商品详情入口。</p><button>查看商品</button></main></body></html>",
+          "%%%HTML_END%%%",
+          "",
+        ] : []),
+        iterationWorkbench ? "还有哪个细节需要调整？" : "请使用界面中的冻结控件决定是否生成原型文档。",
+        ...(iterationWorkbench ? [] : ["%%%SCOPE_FREEZE_PROPOSAL%%%"])
       );
     }
     return lines(

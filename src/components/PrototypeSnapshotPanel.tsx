@@ -1,0 +1,72 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+
+type Snapshot = { id: string; version: number; sessionId: string; messageId: string; createdAt: string };
+
+export default function PrototypeSnapshotPanel({ projectId, iterationId, revision, focusMessageId }: {
+  projectId: string; iterationId: string; revision: number; focusMessageId: string | null;
+}) {
+  const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [readyId, setReadyId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [opening, setOpening] = useState(false);
+  const [error, setError] = useState("");
+  const base = `/api/projects/${projectId}/snapshots`;
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(`${base}?iterationId=${iterationId}`);
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.error || "读取 HTML 快照失败。");
+      const items = body as Snapshot[];
+      setSnapshots(items);
+      const focused = items.find((item) => item.messageId === focusMessageId);
+      setSelectedId((previous) => focused?.id ?? (items.some((item) => item.id === previous) ? previous : items[0]?.id ?? null));
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "读取 HTML 快照失败。");
+    } finally { setLoading(false); }
+  }, [base, iterationId, focusMessageId]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => { void load(); }, 0);
+    return () => window.clearTimeout(timer);
+  }, [load, revision]);
+
+  useEffect(() => {
+    if (!selectedId) return;
+    let current = true;
+    const timer = window.setTimeout(() => {
+      setOpening(true);
+      setReadyId(null);
+      setError("");
+      fetch(`${base}/${selectedId}?mode=check`).then(async (response) => {
+        const body = await response.json();
+        if (!response.ok) throw new Error(body.error || "打开 HTML 快照失败。");
+        if (current) setReadyId(selectedId);
+      }).catch((caught) => {
+        if (current) setError(caught instanceof Error ? caught.message : "打开 HTML 快照失败。");
+      }).finally(() => { if (current) setOpening(false); });
+    }, 0);
+    return () => { current = false; window.clearTimeout(timer); };
+  }, [base, selectedId, revision]);
+
+  const selected = snapshots.find((item) => item.id === selectedId);
+  return <div className="prototype-snapshot-panel">
+    <p className="context-guidance">HTML 快照是独立的项目资产，不会加入项目文件树或 Agent 上下文。</p>
+    {loading ? <p className="snapshot-status" role="status">正在读取快照…</p> : null}
+    {!loading && !snapshots.length && !error ? <p className="snapshot-status">还没有 HTML 快照。与原型设计 Agent 讨论页面方案后，可在这里预览和下载。</p> : null}
+    {error ? <div className="snapshot-error" role="alert"><span>{error}</span><button type="button" onClick={() => void load()}>重试</button></div> : null}
+    {snapshots.length ? <div className="snapshot-list" aria-label="HTML 快照列表">{snapshots.map((item) => <button key={item.id} type="button" aria-current={selectedId === item.id ? "true" : undefined} onClick={() => setSelectedId(item.id)}>
+      <strong>HTML 快照 · 第 {item.version} 版</strong><small>{new Date(item.createdAt).toLocaleString("zh-CN")}</small>
+    </button>)}</div> : null}
+    {selected ? <section className="snapshot-detail" aria-label={`HTML 快照第 ${selected.version} 版`}>
+      <div className="snapshot-detail-heading"><div><strong>第 {selected.version} 版预览</strong><small>生成于 {new Date(selected.createdAt).toLocaleString("zh-CN")}</small></div><div className="snapshot-detail-actions"><a href={`${base}/${selected.id}?mode=view`} target="_blank" rel="noopener noreferrer">新窗口打开</a><a href={`${base}/${selected.id}?mode=download`} download={`prototype-${selected.version}.html`}>下载 HTML</a></div></div>
+      {opening ? <p className="snapshot-status" role="status">正在打开预览…</p> : null}
+      {readyId === selected.id ? <iframe title={`HTML 快照第 ${selected.version} 版预览`} sandbox="allow-scripts" src={`${base}/${selected.id}?mode=view`} /> : null}
+    </section> : null}
+  </div>;
+}

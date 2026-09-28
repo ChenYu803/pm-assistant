@@ -4,13 +4,25 @@ import { requireAuth } from "@/lib/auth-helper";
 import { isMysqlId } from "@/lib/identifiers";
 import { MAX_FILE_BYTES } from "@/lib/file-helpers";
 import { createMysqlSnapshot, listMysqlSnapshots } from "@/lib/mysql-project-artifacts";
+import { listIterationPrototypeSnapshots } from "@/lib/iteration-prototype-snapshots";
+import { findOwnedWorkbenchIteration } from "@/lib/mysql-iteration-workbench";
 
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const userId = await requireAuth();
     if (userId instanceof NextResponse) return userId;
     const { id: projectId } = await params;
     if (!isMysqlId(projectId)) return NextResponse.json({ error: "项目参数无效" }, { status: 400 });
+    const iterationId = new URL(request.url).searchParams.get("iterationId");
+    if (iterationId) {
+      if (!isMysqlId(iterationId)) return NextResponse.json({ error: "迭代参数无效" }, { status: 400 });
+      const iteration = await findOwnedWorkbenchIteration(iterationId, userId);
+      if (!iteration || iteration.project_id !== projectId) return NextResponse.json({ error: "产品迭代不存在或无权访问" }, { status: 404 });
+      const snapshots = await listIterationPrototypeSnapshots(projectId, iterationId);
+      return NextResponse.json(snapshots.map(({ id, version, iteration_id, session_id, message_id, created_at }) => ({
+        id, version: Number(version), iterationId: iteration_id, sessionId: session_id, messageId: message_id, createdAt: created_at,
+      })));
+    }
     const snapshots = await listMysqlSnapshots(projectId, userId);
     if (!snapshots) return NextResponse.json({ error: "项目不存在或无权访问" }, { status: 404 });
     return NextResponse.json(

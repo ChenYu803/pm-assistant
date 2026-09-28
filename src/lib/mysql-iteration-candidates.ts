@@ -2,14 +2,14 @@ import { randomUUID } from "node:crypto";
 import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
 import { validateFileSize } from "@/lib/file-helpers";
-import { validAnalysisFilename } from "@/lib/analysis-candidate-filename";
+import { validCandidateFilename, type MarkdownCandidateStage } from "@/lib/analysis-candidate-filename";
 import { getMysqlPool } from "@/lib/mysql";
 
 const FILE_BLOCK = /^%%%FILE_BEGIN%%%[ \t]*([^\r\n]+)\r?\n([\s\S]*?)^%%%FILE_END%%%[ \t]*$/gm;
 
-export function extractAnalysisCandidate(answer: string) {
+export function extractMarkdownCandidate(answer: string, stage: MarkdownCandidateStage) {
   const matches = [...answer.matchAll(FILE_BLOCK)];
-  const formal = matches.filter((match) => validAnalysisFilename(match[1]?.trim()));
+  const formal = matches.filter((match) => validCandidateFilename(match[1]?.trim(), stage));
   if (formal.length !== 1) return null;
   const match = formal[0];
   const content = match[2].replace(/^\r?\n/, "").replace(/\r?\n$/, "");
@@ -21,8 +21,8 @@ export function withoutFileBlocks(answer: string) {
   return answer.replace(FILE_BLOCK, "").replace(/\n{3,}/g, "\n\n").trim();
 }
 
-export async function createAnalysisCandidate(connection: PoolConnection, input: { messageId: string; sessionId: string; answer: string }) {
-  const candidate = extractAnalysisCandidate(input.answer);
+export async function createMarkdownCandidate(connection: PoolConnection, input: { messageId: string; sessionId: string; answer: string; stage: MarkdownCandidateStage }) {
+  const candidate = extractMarkdownCandidate(input.answer, input.stage);
   if (!candidate) return;
   await connection.execute<ResultSetHeader>(
     `INSERT INTO iteration_file_candidates (id, message_id, session_id, suggested_filename, content)
@@ -36,7 +36,7 @@ type CandidateRow = RowDataPacket & {
   status: "pending" | "discarded" | "written"; final_filename: string | null;
 };
 
-export async function listAnalysisCandidates(sessionId: string) {
+export async function listMarkdownCandidates(sessionId: string) {
   const [rows] = await getMysqlPool().query<CandidateRow[]>(
     "SELECT id, message_id, suggested_filename, content, status, final_filename FROM iteration_file_candidates WHERE session_id = ?",
     [sessionId],
@@ -47,7 +47,7 @@ export async function listAnalysisCandidates(sessionId: string) {
   }]));
 }
 
-export async function decideAnalysisCandidate(input: {
+export async function decideMarkdownCandidate(input: {
   iterationId: string; sessionId: string; candidateId: string; userId: string;
   action: "discard" | "write"; filename?: string; expectedOperation?: "create" | "overwrite";
   forceFailure?: boolean;
@@ -81,7 +81,8 @@ export async function decideAnalysisCandidate(input: {
       [input.candidateId, input.sessionId, input.iterationId],
     );
     const candidate = rows[0];
-    if (!candidate || candidate.stage !== "requirements") { await connection.rollback(); return { kind: "not-found" as const }; }
+    const stage: MarkdownCandidateStage | null = candidate?.stage === "requirements" ? "analysis" : candidate?.stage === "prototype" ? "prototype" : null;
+    if (!candidate || !stage) { await connection.rollback(); return { kind: "not-found" as const }; }
     if (candidate.status !== "pending") { await connection.rollback(); return { kind: "decided" as const }; }
     if (input.action === "discard") {
       await connection.execute<ResultSetHeader>(
@@ -91,7 +92,7 @@ export async function decideAnalysisCandidate(input: {
       await connection.commit();
       return { kind: "discarded" as const };
     }
-    if (!validAnalysisFilename(input.filename)) { await connection.rollback(); return { kind: "invalid-filename" as const }; }
+    if (!validCandidateFilename(input.filename, stage)) { await connection.rollback(); return { kind: "invalid-filename" as const, stage }; }
     const size = validateFileSize(candidate.content);
     if (!size.ok) { await connection.rollback(); return { kind: "too-large" as const }; }
     const [existingRows] = await connection.query<Array<RowDataPacket & {
@@ -123,9 +124,9 @@ export async function decideAnalysisCandidate(input: {
       `INSERT INTO project_file_changes
        (id, project_id, file_id, operation, filename, content_revision, actor, iteration_id,
         iteration_number, iteration_name, stage, session_id, session_name, message_id, occurred_at)
-       VALUES (?, ?, ?, ?, ?, ?, 'agent', ?, ?, ?, 'analysis', ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, 'agent', ?, ?, ?, ?, ?, ?, ?, ?)`,
       [randomUUID(), iteration.project_id, fileId, operation, input.filename, revision,
-        input.iterationId, iteration.iteration_number, iteration.display_name,
+        input.iterationId, iteration.iteration_number, iteration.display_name, stage,
         input.sessionId, candidate.session_name, candidate.message_id, now],
     );
     await connection.execute<ResultSetHeader>(
