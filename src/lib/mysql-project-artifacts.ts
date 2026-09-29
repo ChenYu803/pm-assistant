@@ -85,13 +85,14 @@ export async function listMysqlProjectFileDirectory(projectId: string, userId: s
     lastContentIteration: string | null; canUndo: number;
   }>>(
     `SELECT f.id, f.project_id, f.filename, f.version, f.created_at, f.updated_at,
-            IF(c.id IS NULL, NULL, CONCAT('迭代 ', LPAD(c.iteration_number, 2, '0'))) AS lastContentIteration,
+            IF(c.id IS NULL, NULL, CONCAT('迭代 ', LPAD(c.iteration_number, 2, '0'), IF(i.id IS NULL, '（已删除）', ''))) AS lastContentIteration,
             (f.previous_content IS NOT NULL) AS canUndo
      FROM project_files f
      LEFT JOIN project_file_changes c ON c.id = (
        SELECT latest.id FROM project_file_changes latest WHERE latest.file_id = f.id AND latest.content_revision IS NOT NULL
        ORDER BY latest.occurred_at DESC, latest.change_sequence DESC LIMIT 1
      )
+     LEFT JOIN product_iterations i ON i.id = c.iteration_id
      WHERE f.project_id = ? ORDER BY f.updated_at DESC, f.id DESC`,
     [projectId],
   );

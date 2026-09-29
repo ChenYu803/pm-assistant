@@ -251,7 +251,7 @@ export async function buildMysqlIterationPrompt(iterationId: string, sessionId: 
   // 单条 SQL 的快照同时决定目录元数据、已加载引用和正文，未加载文件不会返回正文。
   const [rows] = await getMysqlPool().query<Array<RowDataPacket & { filename: string; version: number; content: string | null; lastContentIteration: string | null; canUndo: number }>>(
     `SELECT f.filename, f.version,
-            IF(ch.id IS NULL, NULL, CONCAT('迭代 ', LPAD(ch.iteration_number, 2, '0'))) AS lastContentIteration,
+            IF(ch.id IS NULL, NULL, CONCAT('迭代 ', LPAD(ch.iteration_number, 2, '0'), IF(source_iteration.id IS NULL, '（已删除）', ''))) AS lastContentIteration,
             (f.previous_content IS NOT NULL) AS canUndo,
             CASE WHEN c.file_id IS NOT NULL THEN f.content ELSE NULL END AS content
      FROM project_files f
@@ -259,6 +259,7 @@ export async function buildMysqlIterationPrompt(iterationId: string, sessionId: 
        SELECT latest.id FROM project_file_changes latest WHERE latest.file_id = f.id AND latest.content_revision IS NOT NULL
        ORDER BY latest.occurred_at DESC, latest.change_sequence DESC LIMIT 1
      )
+     LEFT JOIN product_iterations source_iteration ON source_iteration.id = ch.iteration_id
      LEFT JOIN iteration_session_context_files c ON c.file_id = f.id AND c.session_id = ?
      WHERE f.project_id = ? ORDER BY f.filename ASC`, [sessionId, iteration.project_id]);
   const files: WorkbenchDirectoryFile[] = rows

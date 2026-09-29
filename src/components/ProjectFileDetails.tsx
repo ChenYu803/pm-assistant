@@ -90,8 +90,8 @@ export default function ProjectFileDetails({ projectId, iterationId, file, onCha
     <div className="file-detail-state"><strong>{history.deleted ? "已删除" : "当前内容"}</strong><span>{history.deleted ? "正文和上一版备份已永久删除，仅保留路径与来源记录。" : history.canUndo ? "可撤回到上次正文修改前" : "没有可撤回的上一版"}</span></div>
     <dl className="file-detail-facts">
       <div><dt>当前路径</dt><dd>{history.filename}</dd></div>
-      <div><dt>创建来源</dt><dd>{source(history.createdBy, projectId)}</dd></div>
-      <div><dt>最近正文来源</dt><dd>{source(history.lastContentChange, projectId)}{history.lastContentChange && <time dateTime={history.lastContentChange.occurredAt}>{time(history.lastContentChange.occurredAt)}</time>}</dd></div>
+      <div><dt>创建来源</dt><dd>{source(history.createdBy, projectId)}{history.createdBy && <time dateTime={history.createdBy.occurredAt}>{time(history.createdBy.occurredAt)}</time>}</dd></div>
+      <div><dt>最近正文来源</dt><dd>{source(history.lastContentChange, projectId)}{history.lastContentChange && <time dateTime={history.lastContentChange.occurredAt}>{operationName[history.lastContentChange.operation] ?? history.lastContentChange.operation} · {time(history.lastContentChange.occurredAt)}</time>}</dd></div>
       <div><dt>撤回目标</dt><dd>{history.deleted ? "文件已删除，无法撤回" : history.canUndo ? "上次正文修改前的内容；撤回后不能重做" : "暂无可撤回内容"}</dd></div>
     </dl>
     {canModify && <div className="file-detail-actions"><button type="button" onClick={() => { setMode("rename"); setFilename(history.filename); setError(""); }}>改名</button><button type="button" className="danger" onClick={() => { setMode("delete"); setError(""); }}>删除文件</button></div>}

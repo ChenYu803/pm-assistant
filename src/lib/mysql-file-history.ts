@@ -41,12 +41,13 @@ export async function getMysqlFileHistory(projectId: string, fileId: string, use
      WHERE c.project_id = ? AND c.file_id = ? ORDER BY c.occurred_at ASC, c.change_sequence ASC`, [projectId, fileId]);
   const file = files[0];
   if (!file && (!rows.length || rows.at(-1)?.operation !== "delete")) return null;
+  const creation = rows.find((row) => row.operation === "create") ?? null;
   const contentChanges = rows.filter((row) => row.content_revision !== null);
   return {
     id: fileId, filename: file?.filename ?? rows.at(-1)!.filename, deleted: !file,
-    canUndo: Boolean(file?.previous_content),
-    createdAt: rows[0]?.occurred_at ?? null,
-    createdBy: rows.length ? serializeChange(rows[0]) : null,
+    canUndo: file ? file.previous_content !== null : false,
+    createdAt: creation?.occurred_at ?? null,
+    createdBy: creation ? serializeChange(creation) : null,
     lastContentChange: contentChanges.length ? serializeChange(contentChanges.at(-1)!) : null,
     changes: rows.map(serializeChange),
   };

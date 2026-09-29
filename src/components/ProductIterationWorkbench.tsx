@@ -233,7 +233,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
       const index = stageOrder.indexOf(key);
       const missing = stageOrder.slice(0, index).find((prior) => {
         const state = stages.find((stage) => stage.key === prior);
-        return state?.status !== "completed" && !files.some((file) => getWorkbenchFileStage(file.filename) === prior);
+        return state?.status !== "completed" && !files.some((file) => !file.deleted && getWorkbenchFileStage(file.filename) === prior);
       });
       if (missing) { setNotice({ target: key, missing }); return; }
     }

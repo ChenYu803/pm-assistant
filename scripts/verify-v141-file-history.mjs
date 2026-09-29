@@ -2,6 +2,7 @@
 import { chromium } from "playwright-core";
 import nextEnv from "@next/env";
 import { mkdir } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 import { getMysqlPool, closeMysqlPoolForTests } from "../src/lib/mysql.ts";
 import { assertPlaywrightAvailable } from "./verify-mysql-fixtures.mjs";
 
@@ -119,9 +120,26 @@ try {
   check("删除占位保留完整来源时间线", deletedHistory.status === 200 && deletedHistory.body.deleted && deletedHistory.body.changes.at(-1).operation === "delete" && deletedHistory.body.changes.length === 4);
   const deletedWrites = await api(page, `/api/iterations/${iterationId}/writes`);
   check("本轮写入保留已删除文件", deletedWrites.body.some((entry) => entry.fileId === fileId && entry.deleted));
+  const retainedId = randomUUID();
+  await pool.execute("INSERT INTO project_files (id, project_id, filename, content, version) VALUES (?, ?, ?, ?, 1)",
+    [retainedId, projectId, "需求分析-保留来源.md", "# 保留正文"]);
+  await pool.execute(`INSERT INTO project_file_changes
+    (id, project_id, file_id, operation, filename, content_revision, actor, iteration_id, iteration_number, iteration_name)
+    VALUES (?, ?, ?, 'create', ?, 1, 'user', ?, 1, '首轮命名')`,
+    [randomUUID(), projectId, retainedId, "需求分析-保留来源.md", iterationId]);
+  const legacyId = randomUUID();
+  await pool.execute("INSERT INTO project_files (id, project_id, filename, content, version) VALUES (?, ?, ?, ?, 1)",
+    [legacyId, projectId, "需求分析-早期文件.md", ""]);
+  const legacyHistory = await api(page, `/api/projects/${projectId}/files/${legacyId}/history`);
+  check("没有创建记录的早期文件不伪造创建来源", legacyHistory.status === 200 && legacyHistory.body.createdBy === null);
+  await api(page, `/api/iterations/${iterationId}/files/${legacyId}`, json({ projectId, action: "edit", content: "# 新正文" }));
+  const emptyBackupHistory = await api(page, `/api/projects/${projectId}/files/${legacyId}/history`);
+  check("空字符串上一版仍是可撤回目标", emptyBackupHistory.body.canUndo === true);
   const removed = await api(page, `/api/iterations/${iterationId}`, { method: "DELETE" });
   const orphanHistory = await api(page, historyPath);
   check("来源迭代删除后保留编号和名称快照", removed.status === 200 && orphanHistory.body.changes.every((entry) => entry.iterationDeleted && entry.iterationId === null && entry.iterationName === "首轮命名"));
+  const directory = await api(page, `/api/projects/${projectId}/files`);
+  check("存活文件的最近正文来源标记已删除迭代", directory.body.find((entry) => entry.id === retainedId)?.lastContentIteration === "迭代 01（已删除）");
 } finally {
   await context.close();
   await browser.close();
