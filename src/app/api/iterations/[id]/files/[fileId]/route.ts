@@ -4,6 +4,19 @@ import { requireAuth } from "@/lib/auth-helper";
 import { isMysqlId } from "@/lib/identifiers";
 import { changeMysqlFileRevision } from "@/lib/mysql-file-revisions";
 import { changeMysqlFileIdentity } from "@/lib/mysql-file-history";
+import { changeMysqlTaskIssue, findTaskFolderForFile } from "@/lib/mysql-task-folders";
+
+function taskError(kind: string, detail?: string) {
+  const errors: Record<string, [string, number]> = {
+    "not-found": ["任务文件不存在或无权访问", 404], "folder-not-found": ["任务文件夹不存在", 404],
+    "iteration-not-found": ["当前产品迭代不存在或不属于此项目", 409], "read-only": ["此任务文件夹属于其他迭代，只能查看、下载和加载", 403],
+    "invalid-filename": ["只能修改系统序号后的描述，且文件名须以 .md 结尾", 400],
+    duplicate: ["项目中已有同名文件", 409], unchanged: ["内容没有变化", 409],
+    "invalid-content": [detail || "文件正文无效", 413],
+  };
+  const [error, status] = errors[kind] ?? ["任务文件操作失败", 409];
+  return NextResponse.json({ error }, { status });
+}
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string; fileId: string }> }) {
   try {
@@ -19,6 +32,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     }
     const forceFailure = process.env.NODE_ENV !== "production" && process.env.AI_MODE === "replay"
       && request.headers.get("x-pm-assistant-test-file-revision-failure") === "1";
+    const folderId = await findTaskFolderForFile(body.projectId, fileId);
+    if (folderId) {
+      if (body.action === "restore") return NextResponse.json({ error: "请从任务文件夹撤回整套任务" }, { status: 409 });
+      const task = await changeMysqlTaskIssue({ projectId: body.projectId, iterationId, fileId, folderId, userId,
+        action: "edit", content: body.content, forceFailure });
+      return task.kind === "changed" ? NextResponse.json(task) : taskError(task.kind, "error" in task ? task.error : undefined);
+    }
     const result = await changeMysqlFileRevision({
       projectId: body.projectId, iterationId, fileId, userId, action: body.action,
       content: body.content, forceFailure,
@@ -53,6 +73,12 @@ async function handleIdentityChange(request: Request, params: Promise<{ id: stri
     }
     const forceFailure = process.env.NODE_ENV !== "production" && process.env.AI_MODE === "replay"
       && request.headers.get("x-pm-assistant-test-file-identity-failure") === "1";
+    const folderId = await findTaskFolderForFile(body.projectId, fileId);
+    if (folderId) {
+      const task = await changeMysqlTaskIssue({ projectId: body.projectId, iterationId, fileId, folderId, userId,
+        action, filename: action === "rename" ? body.filename : undefined, forceFailure });
+      return task.kind === "changed" ? NextResponse.json(task) : taskError(task.kind);
+    }
     const result = await changeMysqlFileIdentity({ projectId: body.projectId, iterationId, fileId, userId,
       action, filename: action === "rename" ? body.filename : undefined, forceFailure });
     if (result.kind === "changed") return NextResponse.json(result);

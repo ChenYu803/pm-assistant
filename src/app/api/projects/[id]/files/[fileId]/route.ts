@@ -46,6 +46,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (!isMysqlId(projectId)) return invalidProjectResponse();
     if (!isMysqlId(fileId)) return invalidFileResponse();
     const contextError = await mutationContextError(request, projectId, userId); if (contextError) return contextError;
+    const target = await findOwnedMysqlProjectFile(projectId, fileId, userId);
+    if (target?.filename.startsWith("issues/")) return NextResponse.json({ error: "任务文件只能由所属迭代在项目文件树中修改" }, { status: 403 });
     if (typeof content !== "string") return NextResponse.json({ error: "文件内容不能为空" }, { status: 400 });
     const validation = validateFileSize(content); if (!validation.ok) return NextResponse.json({ error: validation.error }, { status: 413 });
     const iterationId = request.headers.get("x-current-iteration-id");
@@ -70,6 +72,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     if (!isMysqlId(projectId)) return invalidProjectResponse();
     if (!isMysqlId(fileId)) return invalidFileResponse();
     const contextError = await mutationContextError(request, projectId, userId); if (contextError) return contextError;
+    const target = await findOwnedMysqlProjectFile(projectId, fileId, userId);
+    if (target?.filename.startsWith("issues/")) return NextResponse.json({ error: "任务文件只能由所属迭代在项目文件树中修改" }, { status: 403 });
     const iterationId = request.headers.get("x-current-iteration-id");
     if (iterationId) {
       const result = await changeMysqlFileIdentity({ projectId, fileId, iterationId, userId, action: "delete" });

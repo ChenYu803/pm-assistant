@@ -392,6 +392,15 @@ details[open] > .disclosure-summary .disclosure-icon svg { transform:rotate(90de
 .project-tree-branch > summary small,.project-tree-folder > summary small { color:var(--work-muted); font-size:11px; font-weight:400; }
 .project-tree-folder { margin-left:12px; padding:3px 0; }
 .project-tree-folder > summary { color:var(--work-muted); font-weight:550; }
+.task-folder-heading { display:flex; flex-wrap:wrap; align-items:center; gap:3px 9px; min-width:0; }
+.task-folder-heading strong { color:var(--work-ink); font-weight:650; overflow-wrap:anywhere; }
+.task-folder-heading em { color:#79372f; font-size:11px; font-style:normal; font-weight:500; }
+.task-folder-create { min-height:36px; margin:8px 0 9px 12px; padding:0 10px; border:1px solid #79372f; color:#79372f; background:transparent; cursor:pointer; font:600 12px var(--font-app-sans); }
+.task-folder-create:hover:not(:disabled),.task-folder-actions button:hover:not(:disabled) { background:#e9e0c9; }
+.task-folder-actions { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:2px 0 7px 12px; color:var(--work-muted); font-size:12px; }
+.task-folder-actions button { min-height:34px; padding:0 8px; border:1px solid var(--work-line); color:#79372f; background:transparent; cursor:pointer; font:inherit; }
+.task-folder-create:disabled,.task-folder-actions button:disabled { opacity:.55; cursor:not-allowed; }
+.task-folder-create:focus-visible,.task-folder-actions button:focus-visible { outline:2px solid #79372f; outline-offset:2px; }
 .project-tree-file { display:flex; align-items:center; gap:5px; min-height:40px; margin-left:12px; border-top:1px dotted rgba(21,20,15,.12); }
 .project-tree-folder .project-tree-file { margin-left:12px; }
 .project-tree-name { display:flex; flex:1; align-items:center; gap:7px; min-width:0; min-height:38px; padding:2px 3px; border:0; color:var(--work-ink); background:none; cursor:pointer; text-align:left; font-size:12px; }

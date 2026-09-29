@@ -33,8 +33,11 @@ export async function getMysqlFileHistory(projectId: string, fileId: string, use
   const [projects] = await getMysqlPool().query<RowDataPacket[]>(
     "SELECT id FROM projects WHERE id = ? AND user_id = ?", [projectId, userId]);
   if (!projects.length) return null;
-  const [files] = await getMysqlPool().query<Array<RowDataPacket & { id: string; filename: string; previous_content: string | null }>>(
-    "SELECT id, filename, previous_content FROM project_files WHERE id = ? AND project_id = ?", [fileId, projectId]);
+  const [files] = await getMysqlPool().query<Array<RowDataPacket & { id: string; filename: string; previous_content: string | null; task_folder_id: string | null; task_can_undo: number }>>(
+    `SELECT f.id, f.filename, f.previous_content, f.task_folder_id,
+      (tf.previous_snapshot IS NOT NULL) AS task_can_undo
+     FROM project_files f LEFT JOIN task_folders tf ON tf.id = f.task_folder_id
+     WHERE f.id = ? AND f.project_id = ?`, [fileId, projectId]);
   const [rows] = await getMysqlPool().query<ChangeRow[]>(
     `SELECT ${CHANGE_COLUMNS} FROM project_file_changes c
      LEFT JOIN product_iterations i ON i.id = c.iteration_id
@@ -45,7 +48,7 @@ export async function getMysqlFileHistory(projectId: string, fileId: string, use
   const contentChanges = rows.filter((row) => row.content_revision !== null);
   return {
     id: fileId, filename: file?.filename ?? rows.at(-1)!.filename, deleted: !file,
-    canUndo: file ? file.previous_content !== null : false,
+    canUndo: file ? file.task_folder_id ? Boolean(file.task_can_undo) : file.previous_content !== null : false,
     createdAt: creation?.occurred_at ?? null,
     createdBy: creation ? serializeChange(creation) : null,
     lastContentChange: contentChanges.length ? serializeChange(contentChanges.at(-1)!) : null,

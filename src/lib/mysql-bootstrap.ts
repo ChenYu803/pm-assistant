@@ -386,6 +386,46 @@ export const MYSQL_MIGRATIONS = [
       "ALTER TABLE project_file_changes ADD COLUMN change_sequence BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, ADD UNIQUE KEY project_file_changes_sequence (change_sequence)",
     ],
   },
+  {
+    id: "0018_v141_task_folder_ownership",
+    checksum: "a71d73e02bc1a26d41ec6cb00ce48b005ef137ff041aba04798a1e1f73b8e7ea",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS task_folders (
+        id CHAR(36) NOT NULL PRIMARY KEY,
+        project_id CHAR(36) NOT NULL,
+        owner_iteration_id CHAR(36) NOT NULL,
+        owner_iteration_number INT UNSIGNED NOT NULL,
+        owner_iteration_name VARCHAR(255) NOT NULL,
+        next_issue_number INT UNSIGNED NOT NULL DEFAULT 1,
+        previous_snapshot JSON NULL,
+        created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+        CONSTRAINT task_folders_project_fk FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+        UNIQUE KEY task_folders_project_owner (project_id, owner_iteration_id),
+        UNIQUE KEY task_folders_project_number (project_id, owner_iteration_number)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
+      "ALTER TABLE project_files ADD COLUMN task_folder_id CHAR(36) NULL, ADD COLUMN issue_number INT UNSIGNED NULL",
+      "ALTER TABLE project_files ADD CONSTRAINT project_files_task_folder_fk FOREIGN KEY (task_folder_id) REFERENCES task_folders(id)",
+      "CREATE UNIQUE INDEX project_files_task_issue_unique ON project_files (task_folder_id, issue_number)",
+      "ALTER TABLE project_file_changes ADD COLUMN task_change_group_id CHAR(36) NULL AFTER file_id",
+    ],
+  },
+  {
+    id: "0019_v141_task_deleted_ownership",
+    checksum: "5cdd37862ab4110e8ab82a431170087bea222c9649b694e9e3e6e53759338a88",
+    statements: [
+      "ALTER TABLE project_file_changes ADD COLUMN task_folder_id CHAR(36) NULL AFTER task_change_group_id",
+    ],
+  },
+  {
+    id: "0020_v141_backfill_task_ownership",
+    checksum: "e857706138561f93b1b46d3732075722296a9b7d0b6ecf56129447481f4e0d7d",
+    statements: [
+      `UPDATE project_file_changes c
+       JOIN task_folders tf ON tf.project_id = c.project_id AND tf.owner_iteration_id = c.iteration_id
+       SET c.task_folder_id = tf.id
+       WHERE c.task_change_group_id IS NOT NULL AND c.task_folder_id IS NULL`,
+    ],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {

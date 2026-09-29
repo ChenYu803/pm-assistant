@@ -85,18 +85,23 @@ export default function ProjectFileDetails({ projectId, iterationId, file, onCha
 
   if (loading) return <p role="status">正在加载文件详情…</p>;
   if (!history) return <p role="alert">{error} <button type="button" onClick={() => { setError(""); setLoading(true); setRefresh((value) => value + 1); }}>重试</button></p>;
-  const canModify = iterationId && !history.deleted && getWorkbenchFileStage(history.filename) !== "tickets";
+  const isTask = Boolean(file.taskFolderId);
+  const canModify = iterationId && !history.deleted && (isTask
+    ? file.taskOwnerIterationId === iterationId && !file.taskArchived
+    : getWorkbenchFileStage(history.filename) !== "tickets");
+  const issuePrefix = isTask && file.issueNumber
+    ? `${history.filename.slice(0, history.filename.lastIndexOf("/") + 1)}${String(file.issueNumber).padStart(2, "0")}-` : "";
   return <div className="project-file-details">
-    <div className="file-detail-state"><strong>{history.deleted ? "已删除" : "当前内容"}</strong><span>{history.deleted ? "正文和上一版备份已永久删除，仅保留路径与来源记录。" : history.canUndo ? "可撤回到上次正文修改前" : "没有可撤回的上一版"}</span></div>
+    <div className="file-detail-state"><strong>{history.deleted ? "已删除" : "当前内容"}</strong><span>{history.deleted ? "正文和上一版备份已永久删除，仅保留路径与来源记录。" : isTask ? file.taskArchived ? "所属迭代已删除，只读归档" : canModify ? "所属迭代可修改；撤回按整个任务文件夹执行" : "其他迭代仅可查看、下载和加载" : history.canUndo ? "可撤回到上次正文修改前" : "没有可撤回的上一版"}</span></div>
     <dl className="file-detail-facts">
       <div><dt>当前路径</dt><dd>{history.filename}</dd></div>
       <div><dt>创建来源</dt><dd>{source(history.createdBy, projectId)}{history.createdBy && <time dateTime={history.createdBy.occurredAt}>{time(history.createdBy.occurredAt)}</time>}</dd></div>
       <div><dt>最近正文来源</dt><dd>{source(history.lastContentChange, projectId)}{history.lastContentChange && <time dateTime={history.lastContentChange.occurredAt}>{operationName[history.lastContentChange.operation] ?? history.lastContentChange.operation} · {time(history.lastContentChange.occurredAt)}</time>}</dd></div>
-      <div><dt>撤回目标</dt><dd>{history.deleted ? "文件已删除，无法撤回" : history.canUndo ? "上次正文修改前的内容；撤回后不能重做" : "暂无可撤回内容"}</dd></div>
+      <div><dt>撤回目标</dt><dd>{history.deleted ? "文件已删除，无法从此处撤回" : isTask ? history.canUndo ? "上次修改前的整套任务；请在文件夹操作中撤回" : "暂无可撤回的任务集合" : history.canUndo ? "上次正文修改前的内容；撤回后不能重做" : "暂无可撤回内容"}</dd></div>
     </dl>
     {canModify && <div className="file-detail-actions"><button type="button" onClick={() => { setMode("rename"); setFilename(history.filename); setError(""); }}>改名</button><button type="button" className="danger" onClick={() => { setMode("delete"); setError(""); }}>删除文件</button></div>}
-    {mode === "rename" && <form className="file-detail-confirm" onSubmit={(event) => { event.preventDefault(); void changeIdentity("rename"); }}><label>新文件名<input value={filename} onChange={(event) => setFilename(event.target.value)} disabled={working} maxLength={190} /></label><p>保留当前树枝前缀和 .md 后缀。改名不会修改正文或增加正文修订。</p><div><button type="button" disabled={working} onClick={() => setMode("read")}>取消</button><button type="submit" disabled={working || filename === history.filename}>{working ? "改名中…" : "确认改名"}</button></div></form>}
-    {mode === "delete" && <div className="file-detail-confirm danger" role="alertdialog" aria-label="确认删除文件"><strong>永久删除「{history.filename}」？</strong><p>当前正文、唯一上一版备份和会话中的文件引用都会删除，无法恢复。文件树会保留已删除占位与来源时间线。</p><div><button type="button" disabled={working} onClick={() => setMode("read")}>取消</button><button type="button" disabled={working} onClick={() => void changeIdentity("delete")}>{working ? "删除中…" : "确认永久删除"}</button></div></div>}
+    {mode === "rename" && <form className="file-detail-confirm" onSubmit={(event) => { event.preventDefault(); void changeIdentity("rename"); }}><label>{isTask ? "新描述" : "新文件名"}<input value={isTask ? filename.slice(issuePrefix.length, -3) : filename} onChange={(event) => setFilename(isTask ? `${issuePrefix}${event.target.value}.md` : event.target.value)} disabled={working} maxLength={isTask ? 180 : 190} /></label><p>{isTask ? `系统序号 ${String(file.issueNumber).padStart(2, "0")}- 不可修改。改名会纳入整套任务的撤回。` : "保留当前树枝前缀和 .md 后缀。改名不会修改正文或增加正文修订。"}</p><div><button type="button" disabled={working} onClick={() => setMode("read")}>取消</button><button type="submit" disabled={working || filename === history.filename}>{working ? "改名中…" : "确认改名"}</button></div></form>}
+    {mode === "delete" && <div className="file-detail-confirm danger" role="alertdialog" aria-label="确认删除文件"><strong>{isTask ? "删除" : "永久删除"}「{history.filename}」？</strong><p>{isTask ? "这次删除会纳入任务文件夹的整套撤回；下一次任务修改会替换该撤回机会。" : "当前正文、唯一上一版备份和会话中的文件引用都会删除，无法恢复。文件树会保留已删除占位与来源时间线。"}</p><div><button type="button" disabled={working} onClick={() => setMode("read")}>取消</button><button type="button" disabled={working} onClick={() => void changeIdentity("delete")}>{working ? "删除中…" : isTask ? "确认删除" : "确认永久删除"}</button></div></div>}
     {error && <p className="project-file-revision-error" role="alert">{error}</p>}
     <section className="file-detail-timeline" aria-label="变更时间线"><h3>变更时间线</h3>{history.changes.length ? <ol>{[...history.changes].reverse().map((change) => <li key={change.id}><div><strong>{operationName[change.operation] ?? change.operation}</strong><time dateTime={change.occurredAt}>{time(change.occurredAt)}</time></div><p>{change.operation === "rename" ? `${change.previousFilename} → ${change.filename}` : change.filename}</p><small>{source(change, projectId)}</small></li>)}</ol> : <p>此文件创建于来源记录启用前，暂无变更记录。</p>}</section>
   </div>;

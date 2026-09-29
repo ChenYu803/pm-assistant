@@ -82,23 +82,34 @@ export async function listMysqlProjectFileDirectory(projectId: string, userId: s
   if (!(await findOwnedMysqlProject(projectId, userId))) return null;
   const [rows] = await getMysqlPool().query<Array<RowDataPacket & {
     id: string; project_id: string; filename: string; version: number; created_at: Date; updated_at: Date;
-    lastContentIteration: string | null; canUndo: number;
+    lastContentIteration: string | null; canUndo: number; taskFolderId: string | null;
+    issueNumber: number | null; taskOwnerIterationId: string | null; taskArchived: number;
   }>>(
     `SELECT f.id, f.project_id, f.filename, f.version, f.created_at, f.updated_at,
+            f.task_folder_id AS taskFolderId, f.issue_number AS issueNumber,
+            IF(owner.id IS NULL, NULL, tf.owner_iteration_id) AS taskOwnerIterationId,
+            (tf.id IS NOT NULL AND owner.id IS NULL) AS taskArchived,
             IF(c.id IS NULL, NULL, CONCAT('迭代 ', LPAD(c.iteration_number, 2, '0'), IF(i.id IS NULL, '（已删除）', ''))) AS lastContentIteration,
-            (f.previous_content IS NOT NULL) AS canUndo
+            IF(tf.id IS NULL, f.previous_content IS NOT NULL, tf.previous_snapshot IS NOT NULL) AS canUndo
      FROM project_files f
      LEFT JOIN project_file_changes c ON c.id = (
        SELECT latest.id FROM project_file_changes latest WHERE latest.file_id = f.id AND latest.content_revision IS NOT NULL
        ORDER BY latest.occurred_at DESC, latest.change_sequence DESC LIMIT 1
      )
      LEFT JOIN product_iterations i ON i.id = c.iteration_id
+     LEFT JOIN task_folders tf ON tf.id = f.task_folder_id
+     LEFT JOIN product_iterations owner ON owner.id = tf.owner_iteration_id AND owner.project_id = f.project_id
      WHERE f.project_id = ? ORDER BY f.updated_at DESC, f.id DESC`,
     [projectId],
   );
-  const [deleted] = await getMysqlPool().query<Array<RowDataPacket & { id: string; filename: string; updated_at: Date }>>(
-    `SELECT c.file_id AS id, c.filename, c.occurred_at AS updated_at
+  const [deleted] = await getMysqlPool().query<Array<RowDataPacket & { id: string; filename: string; updated_at: Date; taskFolderId: string | null; taskOwnerIterationId: string | null; taskArchived: number }>>(
+    `SELECT c.file_id AS id, c.filename, c.occurred_at AS updated_at,
+            c.task_folder_id AS taskFolderId,
+            IF(owner.id IS NULL, NULL, tf.owner_iteration_id) AS taskOwnerIterationId,
+            (tf.id IS NOT NULL AND owner.id IS NULL) AS taskArchived
      FROM project_file_changes c
+     LEFT JOIN task_folders tf ON tf.id = c.task_folder_id
+     LEFT JOIN product_iterations owner ON owner.id = tf.owner_iteration_id AND owner.project_id = c.project_id
      WHERE c.project_id = ? AND c.operation = 'delete'
        AND NOT EXISTS (SELECT 1 FROM project_files f WHERE f.id = c.file_id)
        AND c.id = (SELECT latest.id FROM project_file_changes latest WHERE latest.file_id = c.file_id
@@ -106,7 +117,9 @@ export async function listMysqlProjectFileDirectory(projectId: string, userId: s
      ORDER BY c.occurred_at DESC, c.change_sequence DESC`, [projectId]);
   return [...rows.map((row) => ({ ...row, deleted: false })),
     ...deleted.map((row) => ({ ...row, project_id: projectId, version: 0, created_at: row.updated_at,
-      lastContentIteration: null, canUndo: 0, deleted: true }))];
+      lastContentIteration: null, canUndo: 0, taskFolderId: row.taskFolderId,
+      issueNumber: row.taskFolderId ? Number(row.filename.match(/\/(\d+)-[^/]+\.md$/u)?.[1] ?? 0) : null,
+      taskOwnerIterationId: row.taskOwnerIterationId, taskArchived: row.taskArchived, deleted: true }))];
 }
 
 export async function findOwnedMysqlProjectFile(projectId: string, fileId: string, userId: string) {

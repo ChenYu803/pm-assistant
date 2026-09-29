@@ -5,6 +5,8 @@ import { PRODUCT_TICKET_RE, validateFileSize, validateProductTicketContent } fro
 import { isMysqlId } from "@/lib/identifiers";
 import { mysqlUnavailableMessage } from "@/lib/mysql";
 import { deliverMysqlTicketSet, listMysqlTicketSets, MysqlFileTooLargeError, serializeMysqlProjectFile } from "@/lib/mysql-project-artifacts";
+import { listMysqlProductIterations } from "@/lib/mysql-account-workspace";
+import { listMysqlTaskFolders } from "@/lib/mysql-task-folders";
 
 type Ticket = { filename: string; content: string };
 function validate(candidates: unknown): { ok: true; candidates: Ticket[] } | { ok: false; error: string } {
@@ -43,6 +45,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const { id } = await params; const body = await request.json().catch(() => null);
     if (!isMysqlId(id)) return NextResponse.json({ error: "项目参数无效" }, { status: 400 });
     if (!body || (body.mode !== "replace" && body.mode !== "save")) return NextResponse.json({ error: "ticket 交付操作无效" }, { status: 400 });
+    if ((await listMysqlProductIterations(id, userId))?.length || (await listMysqlTaskFolders(id, userId))?.length) {
+      return NextResponse.json({ error: "请在所属产品迭代中提交整套任务" }, { status: 409 });
+    }
     const candidates = validate(body.candidates);
     if (!candidates.ok) return NextResponse.json({ error: candidates.error }, { status: 400 });
     if (!isMysqlId(body.source_message_id ?? "")) return NextResponse.json({ error: "来源消息参数无效" }, { status: 400 });
