@@ -21,9 +21,11 @@ function taskFolder(path: string) {
   return number ? `迭代 ${number[1].padStart(2, "0")}` : `旧版 ${parts[1]}`;
 }
 
-export default function ProjectFileTree({ projectId, files, onAddToContext, loadedFileIds = [], addDisabled = false, addDisabledReason }: {
+export default function ProjectFileTree({ projectId, iterationId, files, onChanged, onAddToContext, loadedFileIds = [], addDisabled = false, addDisabledReason }: {
   projectId: string;
+  iterationId?: string;
   files: ProjectFileEntry[];
+  onChanged?: () => void;
   onAddToContext?: (fileId: string) => void;
   loadedFileIds?: string[];
   addDisabled?: boolean;
@@ -33,10 +35,18 @@ export default function ProjectFileTree({ projectId, files, onAddToContext, load
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [confirmUndo, setConfirmUndo] = useState(false);
+  const [working, setWorking] = useState(false);
+  const [notice, setNotice] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
   const opener = useRef<HTMLButtonElement | null>(null);
   const closeButton = useRef<HTMLButtonElement | null>(null);
+  const selectedFileId = selected?.id;
 
   function close() {
+    if (working) return;
     setSelected(null);
     opener.current?.focus();
   }
@@ -44,33 +54,62 @@ export default function ProjectFileTree({ projectId, files, onAddToContext, load
   useEffect(() => {
     if (!selected) return;
     function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") { setSelected(null); opener.current?.focus(); }
+      if (event.key === "Escape" && !working) { setSelected(null); opener.current?.focus(); }
     }
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [selected]);
+  }, [selected, working]);
 
   useEffect(() => {
-    if (!selected) return;
+    if (!selectedFileId) return;
     const controller = new AbortController();
-    void fetch(`/api/projects/${projectId}/files/${selected.id}`, { signal: controller.signal })
+    void fetch(`/api/projects/${projectId}/files/${selectedFileId}`, { signal: controller.signal })
       .then(async (response) => {
         const body = await response.json();
         if (!response.ok) throw new Error(body.error || "文件打开失败");
         setContent(body.content);
+        setSelected((current) => current?.id === selectedFileId && current.canUndo !== Boolean(body.canUndo)
+          ? { ...current, canUndo: Boolean(body.canUndo) } : current);
       })
       .catch((caught) => { if (!controller.signal.aborted) setError(caught instanceof Error ? caught.message : "文件打开失败"); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [projectId, selected]);
+  }, [projectId, selectedFileId, reloadKey]);
 
   function open(file: ProjectFileEntry, button?: HTMLButtonElement) {
     if (button) opener.current = button;
     setContent("");
     setError("");
     setLoading(true);
+    setEditing(false);
+    setConfirmUndo(false);
+    setNotice("");
     setSelected({ ...file });
+    setReloadKey((key) => key + 1);
     window.setTimeout(() => closeButton.current?.focus(), 0);
+  }
+
+  async function changeRevision(action: "edit" | "restore") {
+    if (!selected || !iterationId || working) return;
+    setWorking(true);
+    setError("");
+    setNotice("");
+    try {
+      const response = await fetch(`/api/iterations/${iterationId}/files/${selected.id}`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId, action, ...(action === "edit" ? { content: draft } : {}) }),
+      });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.error || "文件操作失败，请重试");
+      setContent(body.content);
+      setSelected((current) => current ? { ...current, canUndo: body.canUndo } : current);
+      setEditing(false);
+      setConfirmUndo(false);
+      setNotice(action === "restore" ? "已撤回到上一版；本次撤回不能重做。" : "修改已保存，可撤回到修改前的正文。");
+      onChanged?.();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "文件操作失败，请重试");
+    } finally { setWorking(false); }
   }
 
   function renderFile(file: ProjectFileEntry) {
@@ -104,15 +143,22 @@ export default function ProjectFileTree({ projectId, files, onAddToContext, load
     {selected && <div className="project-file-preview-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
       <section className="project-file-preview" role="dialog" aria-modal="true" aria-label={`预览 ${selected.filename}`} onKeyDown={(event) => {
         if (event.key !== "Tab") return;
-        const focusables = [...event.currentTarget.querySelectorAll<HTMLElement>("button:not(:disabled), a[href]")];
+        const focusables = [...event.currentTarget.querySelectorAll<HTMLElement>("button:not(:disabled), a[href], textarea:not(:disabled)")];
         const first = focusables[0];
         const last = focusables.at(-1);
         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
         if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
       }}>
         <header><div><span>项目文件 / {branches.find((branch) => branch.key === getWorkbenchFileStage(selected.filename))?.label}</span><h2>{selected.filename}</h2></div><button ref={closeButton} type="button" aria-label="关闭预览" title="关闭预览" onClick={close}>×</button></header>
-        <div className="project-file-preview-body">{loading ? <p role="status">正在打开文件…</p> : error ? <p role="alert">{error} <button type="button" onClick={() => open(selected)}>重试</button></p> : <MarkdownRenderer content={content} />}</div>
-        <footer><span>Markdown 预览</span><a href={`/api/projects/${projectId}/files/${selected.id}/download`} aria-label={`下载 ${selected.filename}`}>↓ 下载 Markdown</a></footer>
+        <div className="project-file-preview-body">
+          {loading ? <p role="status">正在打开文件…</p> : <>
+            {notice && <p className="project-file-revision-notice" role="status">{notice}</p>}
+            {error && <p className="project-file-revision-error" role="alert">{error}{!editing && !confirmUndo && !content ? <> <button type="button" onClick={() => open(selected)}>重试</button></> : null}</p>}
+            {editing ? <div className="project-file-edit"><label htmlFor="project-file-content">Markdown 正文</label><textarea id="project-file-content" value={draft} disabled={working} onChange={(event) => setDraft(event.target.value)} /><div className="project-file-edit-actions"><button type="button" disabled={working} onClick={() => { setEditing(false); setError(""); }}>取消</button><button type="button" disabled={working || draft === content} onClick={() => void changeRevision("edit")}>{working ? "保存中…" : "保存修改"}</button></div></div> : content || !error ? <MarkdownRenderer content={content} /> : null}
+            {confirmUndo && !editing && <div className="project-file-undo-confirm"><p>撤回后，上一版会成为当前正文，这次撤回不能重做。</p><div><button type="button" disabled={working} onClick={() => { setConfirmUndo(false); setError(""); }}>取消</button><button type="button" disabled={working} onClick={() => void changeRevision("restore")}>{working ? "撤回中…" : "确认撤回"}</button></div></div>}
+          </>}
+        </div>
+        <footer><span>{iterationId && getWorkbenchFileStage(selected.filename) !== "tickets" ? selected.canUndo ? "可撤回到上一版" : "没有可撤回的上一版" : "Markdown 预览"}</span><div className="project-file-preview-actions">{iterationId && getWorkbenchFileStage(selected.filename) !== "tickets" && !loading && !editing && !confirmUndo && <><button type="button" disabled={working || Boolean(error)} onClick={() => { setDraft(content); setEditing(true); setNotice(""); }}>编辑正文</button><button type="button" disabled={working || !selected.canUndo || Boolean(error)} onClick={() => { setConfirmUndo(true); setNotice(""); }}>撤回上次修改</button></>}<a href={`/api/projects/${projectId}/files/${selected.id}/download`} aria-label={`下载 ${selected.filename}`}>↓ 下载 Markdown</a></div></footer>
       </section>
     </div>}
   </>;

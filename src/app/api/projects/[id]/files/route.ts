@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/auth-helper";
 import type { AgentType } from "@/lib/agent-constants";
 import { countRequirements, FROZEN_DOCUMENT_LOCKED_MESSAGE, formatChangelogHeader, isConceptDocFile, isWorkingDocFile, parseChangelog, stripChangelogHeader, validateAgentFilename, validateFileSize, validateProductTicketContent } from "@/lib/file-helpers";
 import { isMysqlId } from "@/lib/identifiers";
+import { listMysqlProductIterations } from "@/lib/mysql-account-workspace";
 import { mysqlUnavailableMessage } from "@/lib/mysql";
 import { listMysqlProjectFileDirectory, MysqlFileTooLargeError, MysqlFrozenDocumentError, serializeMysqlProjectFile, writeMysqlProjectFile } from "@/lib/mysql-project-artifacts";
 
@@ -36,6 +37,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const contentValidation = validateFileSize(content); if (!contentValidation.ok) return NextResponse.json({ error: contentValidation.error }, { status: 413 });
     if (agentType === "ticket_splitter" && filename.startsWith("issues/")) { const ticket = validateProductTicketContent(content); if (!ticket.ok) return NextResponse.json({ error: ticket.error }, { status: 400 }); }
     const replayFixture = process.env.NODE_ENV !== "production" && process.env.AI_MODE === "replay" && request.headers.get("x-pm-assistant-test-system-write") === "1";
+    // 新工作台的正式文件只能由阶段候选事务写入；旧 API 不得绕过唯一备份和来源记录。
+    if (!replayFixture && (await listMysqlProductIterations(projectId, userId))?.length) {
+      return NextResponse.json({ error: "请在当前产品迭代中确认文件候选" }, { status: 409 });
+    }
     if ((typeof sourceMessageId !== "string" || !isMysqlId(sourceMessageId)) && !replayFixture) return NextResponse.json({ error: "Agent 文件写入必须提供已完成的来源消息" }, { status: 400 });
     const trimmedFilename = filename.trim();
     const working = isWorkingDocFile(trimmedFilename);

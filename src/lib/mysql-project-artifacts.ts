@@ -12,6 +12,7 @@ export interface MysqlProjectFile extends RowDataPacket {
   project_id: string;
   filename: string;
   content: string;
+  previous_content?: string | null;
   version: number;
   created_at: Date;
   updated_at: Date;
@@ -100,7 +101,7 @@ export async function listMysqlProjectFileDirectory(projectId: string, userId: s
 export async function findOwnedMysqlProjectFile(projectId: string, fileId: string, userId: string) {
   if (!(await findOwnedMysqlProject(projectId, userId))) return null;
   const [rows] = await getMysqlPool().query<MysqlProjectFile[]>(
-    `SELECT ${PROJECT_FILE_COLUMNS} FROM project_files WHERE id = ? AND project_id = ? LIMIT 1`,
+    `SELECT ${PROJECT_FILE_COLUMNS}, previous_content FROM project_files WHERE id = ? AND project_id = ? LIMIT 1`,
     [fileId, projectId]
   );
   return rows[0] ?? null;

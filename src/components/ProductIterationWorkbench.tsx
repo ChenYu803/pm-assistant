@@ -511,7 +511,9 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
             <p className="context-guidance">{activeSessionId ? "在文件树中加入上下文；打开预览不会自动加入。" : "请先开始阶段会话，才能加入文件。预览不会自动加入。"}</p>
             <ProjectFileTree
               projectId={project.id}
+              iterationId={iteration.id}
               files={files}
+              onChanged={() => { void request(`/api/projects/${project.id}/files`).then(setFiles).catch(() => showToast("文件已保存，目录刷新失败，请重新打开工作台")); }}
               onAddToContext={(fileId) => void toggleContext(fileId, true)}
               loadedFileIds={contextIds}
               addDisabled={!activeSessionId || messagesLoading || contextUpdating}

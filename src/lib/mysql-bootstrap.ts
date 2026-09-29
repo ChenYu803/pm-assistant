@@ -369,6 +369,13 @@ export const MYSQL_MIGRATIONS = [
       "CREATE INDEX prototype_snapshots_iteration_version ON prototype_snapshots (project_id, iteration_id, version)",
     ],
   },
+  {
+    id: "0016_v141_file_edit_restore",
+    checksum: "9acdb8b2d441b875ef97fcc0e38fbe810768684b4f121111559bf0e4d2b9fd2f",
+    statements: [
+      "ALTER TABLE project_file_changes MODIFY operation ENUM('create', 'overwrite', 'edit', 'restore') NOT NULL",
+    ],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {
