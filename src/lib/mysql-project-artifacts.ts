@@ -89,13 +89,23 @@ export async function listMysqlProjectFileDirectory(projectId: string, userId: s
             (f.previous_content IS NOT NULL) AS canUndo
      FROM project_files f
      LEFT JOIN project_file_changes c ON c.id = (
-       SELECT latest.id FROM project_file_changes latest WHERE latest.file_id = f.id
-       ORDER BY latest.occurred_at DESC, latest.id DESC LIMIT 1
+       SELECT latest.id FROM project_file_changes latest WHERE latest.file_id = f.id AND latest.content_revision IS NOT NULL
+       ORDER BY latest.occurred_at DESC, latest.change_sequence DESC LIMIT 1
      )
      WHERE f.project_id = ? ORDER BY f.updated_at DESC, f.id DESC`,
     [projectId],
   );
-  return rows;
+  const [deleted] = await getMysqlPool().query<Array<RowDataPacket & { id: string; filename: string; updated_at: Date }>>(
+    `SELECT c.file_id AS id, c.filename, c.occurred_at AS updated_at
+     FROM project_file_changes c
+     WHERE c.project_id = ? AND c.operation = 'delete'
+       AND NOT EXISTS (SELECT 1 FROM project_files f WHERE f.id = c.file_id)
+       AND c.id = (SELECT latest.id FROM project_file_changes latest WHERE latest.file_id = c.file_id
+                   ORDER BY latest.occurred_at DESC, latest.change_sequence DESC LIMIT 1)
+     ORDER BY c.occurred_at DESC, c.change_sequence DESC`, [projectId]);
+  return [...rows.map((row) => ({ ...row, deleted: false })),
+    ...deleted.map((row) => ({ ...row, project_id: projectId, version: 0, created_at: row.updated_at,
+      lastContentIteration: null, canUndo: 0, deleted: true }))];
 }
 
 export async function findOwnedMysqlProjectFile(projectId: string, fileId: string, userId: string) {

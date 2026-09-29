@@ -256,8 +256,8 @@ export async function buildMysqlIterationPrompt(iterationId: string, sessionId: 
             CASE WHEN c.file_id IS NOT NULL THEN f.content ELSE NULL END AS content
      FROM project_files f
      LEFT JOIN project_file_changes ch ON ch.id = (
-       SELECT latest.id FROM project_file_changes latest WHERE latest.file_id = f.id
-       ORDER BY latest.occurred_at DESC, latest.id DESC LIMIT 1
+       SELECT latest.id FROM project_file_changes latest WHERE latest.file_id = f.id AND latest.content_revision IS NOT NULL
+       ORDER BY latest.occurred_at DESC, latest.change_sequence DESC LIMIT 1
      )
      LEFT JOIN iteration_session_context_files c ON c.file_id = f.id AND c.session_id = ?
      WHERE f.project_id = ? ORDER BY f.filename ASC`, [sessionId, iteration.project_id]);

@@ -376,6 +376,16 @@ export const MYSQL_MIGRATIONS = [
       "ALTER TABLE project_file_changes MODIFY operation ENUM('create', 'overwrite', 'edit', 'restore') NOT NULL",
     ],
   },
+  {
+    id: "0017_v141_file_history",
+    checksum: "4eff9775f9fdc3a757a48c98c8de77e0a669991591f8f5eec398175889af8706",
+    statements: [
+      "ALTER TABLE project_file_changes MODIFY operation ENUM('create', 'overwrite', 'edit', 'restore', 'rename', 'delete') NOT NULL",
+      "ALTER TABLE project_file_changes MODIFY content_revision INT UNSIGNED NULL",
+      "ALTER TABLE project_file_changes ADD COLUMN previous_filename VARCHAR(700) NULL AFTER filename",
+      "ALTER TABLE project_file_changes ADD COLUMN change_sequence BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, ADD UNIQUE KEY project_file_changes_sequence (change_sequence)",
+    ],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {
