@@ -29,7 +29,8 @@ export async function DELETE(_request: Request, { params }: Context) {
     if (!isMysqlId(id) || !isMysqlId(sessionId)) return NextResponse.json({ error: "会话参数无效" }, { status: 400 });
     const result = await deleteMysqlIterationSession(id, sessionId, userId);
     if (result === "not-found") return NextResponse.json({ error: "会话不存在或无权访问" }, { status: 404 });
-    if (result === "generating") return NextResponse.json({ error: "会话仍有消息生成中，暂不能删除" }, { status: 409 });
+    if (result === "generating") return NextResponse.json({ error: "会话正在生成，请等待完成或先停止生成，再删除。", reason: "generating" }, { status: 409 });
+    if (result === "writing") return NextResponse.json({ error: "会话或项目正在保存，请等待写入完成后重试删除。", reason: "writing" }, { status: 409 });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("DELETE /api/iterations/[id]/sessions/[sessionId] error:", error);

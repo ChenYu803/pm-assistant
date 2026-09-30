@@ -159,19 +159,29 @@ export async function deleteMysqlIterationSession(iterationId: string, sessionId
   const connection = await getMysqlPool().getConnection();
   try {
     await connection.beginTransaction();
+    const [lookup] = await connection.query<Array<RowDataPacket & { project_id: string }>>(
+      `SELECT i.project_id FROM product_iterations i JOIN projects p ON p.id = i.project_id
+       JOIN iteration_sessions s ON s.iteration_id = i.id
+       WHERE i.id = ? AND s.id = ? AND p.user_id = ?`, [iterationId, sessionId, userId]);
+    if (!lookup.length) { await connection.rollback(); return "not-found" as const; }
+    // 与成果确认采用项目 → 迭代 → 会话的锁顺序；写入期间立即返回冲突，不能排队后删除。
+    await connection.query("SELECT id FROM projects WHERE id = ? AND user_id = ? FOR UPDATE NOWAIT", [lookup[0].project_id, userId]);
+    await connection.query("SELECT id FROM product_iterations WHERE id = ? FOR UPDATE NOWAIT", [iterationId]);
     const [sessions] = await connection.query<Array<SessionRow & RowDataPacket>>(
-      `SELECT s.id, s.iteration_id, s.stage, s.title, s.created_at, s.updated_at
-       FROM iteration_sessions s JOIN product_iterations i ON i.id = s.iteration_id
-       JOIN projects p ON p.id = i.project_id
-       WHERE s.id = ? AND i.id = ? AND p.user_id = ? FOR UPDATE`, [sessionId, iterationId, userId]);
+      "SELECT id FROM iteration_sessions WHERE id = ? AND iteration_id = ? FOR UPDATE NOWAIT", [sessionId, iterationId]);
     if (!sessions.length) { await connection.rollback(); return "not-found" as const; }
     const [pending] = await connection.query<Array<RowDataPacket & { id: string }>>(
-      "SELECT id FROM iteration_session_messages WHERE session_id = ? AND status = 'generating' LIMIT 1", [sessionId]);
+      // 必须使用当前读，避免查归属时建立的 RR 快照漏掉刚提交的生成预留。
+      "SELECT id FROM iteration_session_messages WHERE session_id = ? AND status = 'generating' LIMIT 1 FOR UPDATE NOWAIT", [sessionId]);
     if (pending.length) { await connection.rollback(); return "generating" as const; }
     await connection.execute<ResultSetHeader>("DELETE FROM iteration_sessions WHERE id = ? AND iteration_id = ?", [sessionId, iterationId]);
     await connection.commit();
     return "deleted" as const;
-  } catch (error) { await connection.rollback(); throw error; } finally { connection.release(); }
+  } catch (error) {
+    await connection.rollback();
+    if ((error as { code?: string }).code === "ER_LOCK_NOWAIT") return "writing" as const;
+    throw error;
+  } finally { connection.release(); }
 }
 
 export async function listMysqlIterationMessages(sessionId: string) {

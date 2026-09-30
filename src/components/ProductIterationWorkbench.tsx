@@ -10,6 +10,7 @@ import TaskSetManualProposal from "@/components/TaskSetManualProposal";
 import DisclosureIcon from "@/components/DisclosureIcon";
 import PrototypeSnapshotPanel from "@/components/PrototypeSnapshotPanel";
 import IterationWriteSummary from "@/components/IterationWriteSummary";
+import SessionDeleteDialog from "@/components/SessionDeleteDialog";
 
 type StageKey = "analysis" | "prototype" | "prd" | "tickets";
 type StageStatus = "not_started" | "in_progress" | "completed";
@@ -47,7 +48,7 @@ function statusLabel(status: StageStatus | undefined) {
   return status === "completed" ? "已完成" : status === "in_progress" ? "进行中" : "未开始";
 }
 
-function Icon({ name }: { name: "copy" | "edit" | "refresh" | "close" | "file" | "plus" | "panel" }) {
+function Icon({ name }: { name: "copy" | "edit" | "refresh" | "close" | "file" | "plus" | "panel" | "trash" }) {
   const paths: Record<string, React.ReactNode> = {
     copy: <><rect x="8" y="8" width="12" height="12" rx="1"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></>,
     edit: <><path d="M12 20h9"/><path d="m16.5 3.5 4 4L8 20H4v-4Z"/></>,
@@ -56,6 +57,7 @@ function Icon({ name }: { name: "copy" | "edit" | "refresh" | "close" | "file" |
     file: <><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></>,
     plus: <><path d="M12 5v14M5 12h14"/></>,
     panel: <><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M15 4v16"/></>,
+    trash: <><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/></>,
   };
   return <svg viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>;
 }
@@ -81,6 +83,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [sendingSessionIds, setSendingSessionIds] = useState<string[]>([]);
   const [creatingSession, setCreatingSession] = useState(false);
+  const [deletingSession, setDeletingSession] = useState<{ session: Session; stage: StageKey } | null>(null);
   const [stageUpdating, setStageUpdating] = useState(false);
   const [stoppingGeneration, setStoppingGeneration] = useState(false);
   const [contextUpdating, setContextUpdating] = useState(false);
@@ -451,6 +454,32 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
     setMessagesLoading(false);
   }
 
+  function finishSessionDeletion(session: Session, stage: StageKey) {
+    setStages((previous) => previous.map((entry) => entry.key === stage ? {
+      ...entry, sessions: entry.sessions.filter((item) => item.id !== session.id), generatingSessionIds: entry.generatingSessionIds.filter((id) => id !== session.id),
+    } : entry));
+    setDrafts((previous) => { const next = { ...previous }; delete next[session.id]; return next; });
+    setContextBySession((previous) => { const next = { ...previous }; delete next[session.id]; return next; });
+    try {
+      const key = `stage-session:${iteration.id}:${stage}`;
+      if (window.sessionStorage.getItem(key) === session.id) window.sessionStorage.removeItem(key);
+    } catch { /* 禁用会话存储时仍清理界面内的选择。 */ }
+    if (activeView.current.stage === stage) {
+      const remaining = sessions.filter((item) => item.id !== session.id);
+      setSessions(remaining);
+      if (activeView.current.sessionId === session.id) {
+        const nextSession = preferredSession(iteration.id, stage, remaining);
+        loadSequence.current += 1;
+        activeView.current = { stage, sessionId: nextSession?.id ?? null };
+        if (nextSession) rememberSession(iteration.id, stage, nextSession.id);
+        setActiveSessionId(nextSession?.id ?? null);
+        setMessages([]); setEditingId(null); setEditValue(""); setMessagesLoading(Boolean(nextSession));
+      }
+    }
+    setDeletingSession(null);
+    showToast("会话已删除，已保存的项目成果与变更记录仍保留。");
+  }
+
   const currentDemoMessages = useMemo(() => selectedDemo?.messages ?? [], [selectedDemo]);
   const lastUserId = [...messages].reverse().find((message) => message.role === "user")?.id;
   const lastAssistantId = [...messages].reverse().find((message) => message.role === "assistant")?.id;
@@ -479,7 +508,10 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
       {loading ? <div className="workbench-loading" aria-label="正在加载工作台"><span/><span/><span/></div> : <div className={`workbench-grid ${contextOpen ? "" : "context-collapsed"}`}>
         <aside className="workbench-sessions" aria-label="阶段会话">
           <div className="sessions-heading"><h2>阶段会话</h2><button className="new-session-button" type="button" disabled={creatingSession || contextUpdating} onClick={() => void createSession()} aria-label="新建会话" title="新建会话"><Icon name="plus"/></button></div>
-          {sessions.length ? <div className="real-session-list">{sessions.map((session) => <button key={session.id} className="session-row" type="button" disabled={contextUpdating} aria-current={activeSessionId === session.id ? "page" : undefined} onClick={() => void chooseSession(session)}><strong>{session.title}</strong><small>{generatingSessionIds.includes(session.id) || sendingSessionIds.includes(session.id) ? "生成中 · " : session.title === "新会话" ? "尚无消息 · " : ""}{session.updatedAt ? new Date(session.updatedAt).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }) : ""}</small></button>)}</div> : <p className="session-empty">本阶段还没有会话</p>}
+          {sessions.length ? <div className="real-session-list">{sessions.map((session) => <div className="session-list-item" key={session.id}>
+            <button className="session-row" data-session-id={session.id} type="button" disabled={contextUpdating} aria-current={activeSessionId === session.id ? "page" : undefined} onClick={() => void chooseSession(session)}><strong>{session.title}</strong><small>{generatingSessionIds.includes(session.id) || sendingSessionIds.includes(session.id) ? "生成中 · " : session.title === "新会话" ? "尚无消息 · " : ""}{session.updatedAt ? new Date(session.updatedAt).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }) : ""}</small></button>
+            <button className="session-delete-button" type="button" disabled={contextUpdating || creatingSession || stageUpdating} aria-label={`删除会话：${session.title}`} title={`删除会话：${session.title}`} onClick={() => setDeletingSession({ session, stage: currentStage })}><Icon name="trash" /></button>
+          </div>)}</div> : <p className="session-empty">本阶段还没有会话，可新建会话开始。</p>}
           {demoSessions.length > 0 && currentStage === "analysis" ? <details className="demo-section" open={demoExpanded} onToggle={(event) => setDemoExpanded(event.currentTarget.open)}><summary className="demo-divider disclosure-summary"><span>演示会话</span><small>只读样例</small><DisclosureIcon /></summary>
           <div className="demo-session-list">{demoSessions.map((session) => <button key={session.id} type="button" className="demo-session" disabled={contextUpdating} aria-current={demoId === session.id ? "page" : undefined} onClick={() => selectDemo(session.id)}><strong>{session.title}</strong><small>{session.messages.length} 条示例消息</small></button>)}</div></details> : null}
         </aside>
@@ -540,6 +572,10 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
         </aside>}
       </div>}
     </div>
+    {deletingSession ? <SessionDeleteDialog key={deletingSession.session.id} iterationId={iteration.id} session={deletingSession.session}
+      generating={sendingSessionIds.includes(deletingSession.session.id) || stages.some((stage) => stage.generatingSessionIds.includes(deletingSession.session.id))}
+      onClose={() => setDeletingSession(null)} onDeleted={() => finishSessionDeletion(deletingSession.session, deletingSession.stage)}
+      onViewGeneration={() => { const session = deletingSession.session; setDeletingSession(null); viewGeneratingSession(session); void refreshStageFacts().catch(() => undefined); }} /> : null}
     {toast && <div className="workbench-toast" role="status">{toast}</div>}
   </main>;
 }

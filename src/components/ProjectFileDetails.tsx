@@ -8,7 +8,7 @@ type Change = {
   id: string; operation: string; filename: string; previousFilename: string | null;
   actor: "agent" | "user"; iterationId: string | null; iterationNumber: number;
   iterationName: string; iterationDeleted: boolean; stage: string | null;
-  sessionName: string | null; occurredAt: string;
+  sessionName: string | null; sessionDeleted: boolean; occurredAt: string;
 };
 type History = {
   filename: string; deleted: boolean; canUndo: boolean;
@@ -28,7 +28,7 @@ function source(change: Change | null, projectId: string) {
   const label = `迭代 ${String(change.iterationNumber).padStart(2, "0")}${change.iterationDeleted ? "（已删除）" : ""} · ${change.iterationName}`;
   return <span className="file-source">
     {change.iterationId ? <a href={`/projects/${projectId}/iterations/${change.iterationId}`}>{label}</a> : label}
-    <span>{change.actor === "user" ? "用户操作" : `Agent 写入${change.stage ? ` · ${stageName[change.stage] ?? change.stage}` : ""}${change.sessionName ? ` · ${change.sessionName}` : ""}`}</span>
+    <span>{change.actor === "user" ? "用户操作" : `Agent 写入${change.stage ? ` · ${stageName[change.stage] ?? change.stage}` : ""}${change.sessionName ? ` · ${change.sessionName}${change.sessionDeleted ? "（会话已删除）" : ""}` : ""}`}</span>
   </span>;
 }
 

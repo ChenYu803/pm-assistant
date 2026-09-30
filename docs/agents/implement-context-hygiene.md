@@ -53,6 +53,8 @@
 
 ## 协议三处耦合点现状快照
 
+- **v1.41 #16 阶段会话删除**：`deleteMysqlIterationSession` 按项目 → 迭代 → 会话顺序使用 `FOR UPDATE NOWAIT`，与成果确认/生成事务互斥；锁占用返回 `writing`，生成消息返回 `generating`，删除 API 对应 409 与等待/停止动作。外键只级联清理会话消息、上下文和 Markdown/任务集合候选，保留 `project_files`、`previous_content`、任务文件夹 `previous_snapshot`、HTML 快照和 `project_file_changes`。`mysql-file-history.ts` 用保留的 `session_id` 计算 `sessionDeleted`，来源名称仍取写入时快照；`ProductIterationWorkbench.tsx` 清理被删会话草稿/选择，`SessionDeleteDialog.tsx` 负责危险确认。更改删除或保留边界须回归 `verify-v141-session-deletion.mjs`、迭代生命周期、阶段状态、文件历史与候选/整套交付脚本。
+
 **日期**：2026-08-23（#07 tab 并发与 #09 显式冻结完成后校准）。行号只作定位起点，动手前仍须 grep 验证。
 
 - `%%%FILE_BEGIN%%%` / `%%%FILE_END%%%`：prompt 定义处 `agent-prompts.ts:50,52,60,62,174,176`（requirement_analyst 含两对：工作文档 + 需求分析.md；mvp_prd 一对：prd.md；prototype/ticket_splitter 占位 prompt 不含）；前端解析处 `ChatArea.tsx:85-86,546`（route 不处理 FILE markers）

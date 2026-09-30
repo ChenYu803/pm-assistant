@@ -96,7 +96,8 @@
 /* v1.41 #01: 产品迭代入口沿用 AI 产品现场的纸色、墨黑与珊瑚色视觉基线。 */
 .iteration-list-panel,
 .iteration-placeholder-page,
-.iteration-workbench {
+.iteration-workbench,
+.session-delete-dialog {
   --iteration-paper: #efe7d2;
   --iteration-paper-light: #f7f1de;
   --iteration-paper-dark: #d7c9a8;
@@ -245,6 +246,21 @@
 .session-row[aria-current="page"],.demo-session[aria-current="page"] { color:var(--work-bone); border-color:rgba(247,241,222,.4); background:rgba(247,241,222,.1); }
 .session-row strong,.demo-session strong { display:block; overflow:hidden; font-size:13px; text-overflow:ellipsis; white-space:nowrap; }
 .session-row small,.demo-session small { display:block; margin-top:4px; color:rgba(247,241,222,.68); font:11px var(--font-app-sans); }
+.session-list-item { display:flex; min-width:0; align-items:center; }
+.session-list-item .session-row { flex:1; min-width:0; }
+.session-delete-button { display:grid; place-items:center; flex:0 0 44px; min-height:44px; padding:10px; border:0; color:#efb2a4; background:transparent; cursor:pointer; }
+.session-delete-button svg { width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:1.5; }
+.session-delete-button:hover { color:var(--work-bone); background:rgba(247,241,222,.1); }
+.session-delete-button:focus-visible { outline:2px solid var(--work-coral); outline-offset:-2px; }
+.session-delete-button:disabled { opacity:.5; cursor:wait; }
+.session-delete-overlay { position:fixed; inset:0; z-index:60; background:rgba(21,20,15,.46); }
+.session-delete-dialog { position:fixed; left:50%; top:50%; z-index:61; transform:translate(-50%,-50%); width:min(610px,calc(100% - 32px)); max-height:calc(100dvh - 32px); overflow-y:auto; color:var(--iteration-ink); animation:none; }
+.session-delete-dialog h2 { margin-top:0; }
+.session-delete-dialog > p { overflow-wrap:anywhere; }
+.session-delete-next { min-height:44px; border:1px solid var(--iteration-line); padding:9px 13px; color:var(--iteration-ink); background:transparent; cursor:pointer; font-size:14px; }
+.session-delete-next:hover { background:var(--iteration-paper); }
+.session-delete-dialog button:focus-visible { outline:2px solid var(--iteration-coral); outline-offset:3px; }
+@media (max-width:760px) { .real-session-list .session-list-item { flex:0 0 210px; } .session-delete-dialog .iteration-risk-items { grid-template-columns:1fr; } .session-delete-dialog .iteration-risk-items p { font-size:14px; } }
 .session-empty { margin:12px 2px 0; color:rgba(247,241,222,.68); font-size:12px; }
 .demo-section { min-height:0; margin-top:16px; border-top:1px solid rgba(247,241,222,.2); }
 .demo-divider { display:flex; justify-content:space-between; gap:4px; padding:10px 0; color:#efb2a4; cursor:pointer; font-size:12px; }
