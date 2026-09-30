@@ -11,6 +11,12 @@ type Folder = RowDataPacket & {
 type TaskIssue = { id: string; filename: string; content: string; version: number; issue_number: number };
 type IssueRow = RowDataPacket & TaskIssue;
 
+export type TaskFolderRestoreEntry = {
+  id: string; filename: string;
+  change: "removed" | "restored" | "content" | "rename" | "unchanged";
+  renamed: boolean;
+};
+
 const folderPath = (number: number) => `issues/iteration-${number}/`;
 const issuePrefix = (number: number) => `${String(number).padStart(2, "0")}-`;
 
@@ -155,11 +161,13 @@ export async function restoreMysqlTaskFolder(input: { projectId: string; iterati
     const previousById = new Map(previous.map((issue) => [issue.id, issue]));
     const currentById = new Map(current.map((issue) => [issue.id, issue]));
     const groupId = randomUUID(); const now = new Date();
+    const entries: TaskFolderRestoreEntry[] = [];
     // 路径冲突先移除本轮新增的 issue，再恢复旧集合的路径和正文。
     for (const issue of current) if (!previousById.has(issue.id)) {
       await connection.execute("DELETE FROM project_files WHERE id = ? AND project_id = ?", [issue.id, input.projectId]);
       await recordChange(connection, { projectId: input.projectId, folderId: input.folderId, fileId: issue.id, groupId, action: "delete", filename: issue.filename,
         iterationId: input.iterationId, iterationNumber: owner.iteration.iteration_number, iterationName: owner.iteration.display_name, now });
+      entries.push({ id: issue.id, filename: issue.filename, change: "removed", renamed: false });
     }
     // 同一整套更新可能交换两个 issue 的描述；先让出旧路径，再按快照恢复。
     for (const target of previous) {
@@ -177,9 +185,12 @@ export async function restoreMysqlTaskFolder(input: { projectId: string; iterati
           [target.id, input.projectId, target.filename, target.content, target.version + 1, input.folderId, target.issue_number, now, now]);
         await recordChange(connection, { projectId: input.projectId, folderId: input.folderId, fileId: target.id, groupId, action: "restore", filename: target.filename,
           revision: target.version + 1, iterationId: input.iterationId, iterationNumber: owner.iteration.iteration_number, iterationName: owner.iteration.display_name, now });
+        entries.push({ id: target.id, filename: target.filename, change: "restored", renamed: false });
       } else {
         const contentChanged = existing.content !== target.content;
         const renamed = existing.filename !== target.filename;
+        entries.push({ id: target.id, filename: target.filename,
+          change: contentChanged ? "content" : renamed ? "rename" : "unchanged", renamed });
         if (!contentChanged && !renamed) continue;
         const revision = existing.version + (contentChanged ? 1 : 0);
         await connection.execute("UPDATE project_files SET filename = ?, content = ?, previous_content = NULL, version = ?, updated_at = ? WHERE id = ?", [target.filename, target.content, revision, now, target.id]);
@@ -192,6 +203,6 @@ export async function restoreMysqlTaskFolder(input: { projectId: string; iterati
     await connection.execute("UPDATE task_folders SET previous_snapshot = NULL WHERE id = ?", [input.folderId]);
     if (input.forceFailure) throw new Error("回放强制任务撤回失败");
     await connection.commit();
-    return { kind: "changed" as const };
+    return { kind: "changed" as const, folderId: input.folderId, groupId, canUndo: false, entries };
   } catch (error) { await connection.rollback(); throw error; } finally { connection.release(); }
 }

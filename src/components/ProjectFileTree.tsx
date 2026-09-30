@@ -5,6 +5,7 @@ import MarkdownRenderer from "@/components/MarkdownRenderer";
 import DisclosureIcon from "@/components/DisclosureIcon";
 import ProjectFileDetails from "@/components/ProjectFileDetails";
 import { getWorkbenchFileStage } from "@/lib/workbench-file-branch";
+import type { TaskFolderRestoreEntry } from "@/lib/mysql-task-folders";
 
 export type ProjectFileEntry = { id: string; filename: string; version?: number; updated_at?: string; lastContentIteration?: string | null; canUndo?: boolean; deleted?: boolean; taskFolderId?: string | null; issueNumber?: number | null; taskOwnerIterationId?: string | null; taskArchived?: boolean };
 type TaskFolderEntry = { id: string; iterationNumber: number; iterationName: string; ownerIterationId: string | null; archived: boolean; canUndo: boolean };
@@ -47,6 +48,8 @@ export default function ProjectFileTree({ projectId, iterationId, files, onChang
   const [taskFolders, setTaskFolders] = useState<TaskFolderEntry[]>([]);
   const [folderLoading, setFolderLoading] = useState(true);
   const [folderError, setFolderError] = useState("");
+  const [folderOperationError, setFolderOperationError] = useState("");
+  const [folderRestoreResult, setFolderRestoreResult] = useState<{ folderId: string; entries: TaskFolderRestoreEntry[] } | null>(null);
   const [folderWorking, setFolderWorking] = useState(false);
   const [confirmFolderRestore, setConfirmFolderRestore] = useState<string | null>(null);
   const [folderRevision, setFolderRevision] = useState(0);
@@ -60,28 +63,42 @@ export default function ProjectFileTree({ projectId, iterationId, files, onChang
   useEffect(() => {
     const controller = new AbortController();
     void fetch(`/api/projects/${projectId}/task-folders`, { signal: controller.signal })
-      .then(async (response) => { const body = await response.json(); if (!response.ok) throw new Error(body.error || "任务文件夹加载失败"); setTaskFolders(body); setFolderError(""); })
+      .then(async (response) => {
+        const body: TaskFolderEntry[] & { error?: string } = await response.json();
+        if (!response.ok) throw new Error(body.error || "任务文件夹加载失败");
+        if (!controller.signal.aborted) {
+          setTaskFolders(body); setFolderError("");
+          setFolderRestoreResult((result) => result && body.some((folder) => folder.id === result.folderId && folder.canUndo) ? null : result);
+        }
+      })
       .catch((caught) => { if (!controller.signal.aborted) setFolderError(caught instanceof Error ? caught.message : "任务文件夹加载失败"); })
       .finally(() => { if (!controller.signal.aborted) setFolderLoading(false); });
     return () => controller.abort();
-  }, [projectId, folderRevision]);
+  }, [projectId, folderRevision, files]);
 
   async function changeFolder(action: "create" | "restore", folderId?: string) {
     if (!iterationId || folderWorking) return;
-    setFolderWorking(true); setFolderError("");
+    setFolderWorking(true); setFolderOperationError(""); setFolderRestoreResult(null);
     try {
       const response = await fetch(`/api/iterations/${iterationId}/task-folder`, {
         method: action === "create" ? "POST" : "PATCH", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ projectId, ...(folderId ? { folderId, action: "restore" } : {}) }),
       });
       const body = await response.json();
-      if (!response.ok) throw new Error(body.error || "任务文件夹操作失败");
+      if (!response.ok) {
+        if (response.status === 409) setFolderRevision((value) => value + 1);
+        throw new Error(body.error || "任务文件夹操作失败");
+      }
+      if (action === "restore") {
+        setFolderRestoreResult({ folderId: body.folderId, entries: body.entries });
+        setTaskFolders((folders) => folders.map((folder) => folder.id === folderId ? { ...folder, canUndo: false } : folder));
+      }
       setConfirmFolderRestore(null);
       setFolderLoading(true);
       setFolderRevision((value) => value + 1);
       onChanged?.();
       if (selected?.taskFolderId === folderId) { setSelected(null); setContent(""); }
-    } catch (caught) { setFolderError(caught instanceof Error ? caught.message : "任务文件夹操作失败"); }
+    } catch (caught) { setFolderOperationError(caught instanceof Error ? caught.message : "任务文件夹操作失败"); }
     finally { setFolderWorking(false); }
   }
 
@@ -183,6 +200,7 @@ export default function ProjectFileTree({ projectId, iterationId, files, onChang
           <summary className="disclosure-summary"><span>{branch.label}</span><small>{entries.length}</small><DisclosureIcon /></summary>
           {branch.key === "tickets" ? <>
             {folderError && <p className="project-file-revision-error" role="alert">{folderError} <button type="button" onClick={() => { setFolderLoading(true); setFolderRevision((value) => value + 1); }}>重试</button></p>}
+            {folderOperationError && <p className="project-file-revision-error" role="alert">{folderOperationError} 请重试原操作。</p>}
             {iterationId && !ownFolder && !folderError && !folderLoading && <button type="button" className="task-folder-create" disabled={folderWorking} onClick={() => void changeFolder("create")}>{folderWorking ? "创建中…" : "为本迭代建立任务文件夹"}</button>}
             {folderLoading && <p className="project-tree-empty" role="status">正在加载任务文件夹…</p>}
             {[...new Set([...taskFolders.map((folder) => `迭代 ${String(folder.iterationNumber).padStart(2, "0")}`), ...folders])].map((label) => {
@@ -190,8 +208,23 @@ export default function ProjectFileTree({ projectId, iterationId, files, onChang
               const editableFolder = folder?.ownerIterationId === iterationId ? folder : null;
               const children = entries.filter((file) => taskFolder(file) === label && (!folder || file.taskFolderId === folder.id));
               const state = folder?.archived ? "已删除迭代 · 只读归档" : folder?.ownerIterationId === iterationId ? "本迭代 · 可修改" : "其他迭代 · 只读";
-              return <details className="project-tree-folder" key={label} open><summary className="disclosure-summary"><span className="task-folder-heading"><strong>{label}</strong><em>{folder ? state : folderLoading ? "归属加载中…" : "旧任务 · 只读"}</em></span><small>{children.length} 个 issue</small><DisclosureIcon /></summary>
-                {editableFolder?.canUndo && <div className="task-folder-actions">{confirmFolderRestore === editableFolder.id ? <><span>撤回会恢复整个任务集合，并消耗这次撤回机会。</span><button type="button" disabled={folderWorking} onClick={() => setConfirmFolderRestore(null)}>取消</button><button type="button" disabled={folderWorking} onClick={() => void changeFolder("restore", editableFolder.id)}>{folderWorking ? "撤回中…" : "确认撤回整套"}</button></> : <button type="button" onClick={() => setConfirmFolderRestore(editableFolder.id)}>撤回上次任务修改</button>}</div>}
+              const restoreResult = folderRestoreResult?.folderId === folder?.id ? folderRestoreResult : null;
+              return <details className="project-tree-folder" key={label} open><summary className="disclosure-summary"><span className="task-folder-heading"><strong>{label}</strong><em>{folder ? state : folderLoading ? "归属加载中…" : "旧任务 · 只读"}</em></span><small>{children.filter((file) => !file.deleted).length} 个 issue</small><DisclosureIcon /></summary>
+                {editableFolder && <div className="task-folder-actions">{editableFolder.canUndo && confirmFolderRestore === editableFolder.id ? <div className="project-file-undo-confirm task-folder-undo-confirm">
+                  <p>撤回迭代 {String(editableFolder.iterationNumber).padStart(2, "0")} 的上次任务修改，将整套恢复修改前的集合：移除新增 issue、恢复被删 issue、还原正文与文件名。</p>
+                  <p>撤回会消耗唯一旧集合，本次撤回不能重做。</p>
+                  <div><button type="button" disabled={folderWorking} onClick={() => { setConfirmFolderRestore(null); setFolderOperationError(""); }}>取消</button><button type="button" disabled={folderWorking || folderLoading || Boolean(folderError)} onClick={() => void changeFolder("restore", editableFolder.id)}>{folderWorking ? "撤回中…" : "确认撤回整套"}</button></div>
+                </div> : <><button type="button" disabled={!editableFolder.canUndo || folderWorking || folderLoading || Boolean(folderError)} onClick={() => { setConfirmFolderRestore(editableFolder.id); setFolderOperationError(""); setFolderRestoreResult(null); }}>撤回上次任务修改</button>{!editableFolder.canUndo && <span>没有可撤回的旧集合。</span>}</>}</div>}
+                {restoreResult && <div className="task-folder-restore-result" role="status">
+                  <p>整套任务已恢复。旧集合已消耗，本次撤回不能重做。</p>
+                  <div className="task-set-summary" aria-label="整套恢复汇总">
+                    <span>恢复被删 <strong>{restoreResult.entries.filter((entry) => entry.change === "restored").length}</strong></span>
+                    <span>还原正文 <strong>{restoreResult.entries.filter((entry) => entry.change === "content").length}</strong></span>
+                    <span>恢复文件名 <strong>{restoreResult.entries.filter((entry) => entry.renamed).length}</strong></span>
+                    <span>移除新增 <strong>{restoreResult.entries.filter((entry) => entry.change === "removed").length}</strong></span>
+                  </div>
+                  <details><summary className="disclosure-summary">查看恢复明细<DisclosureIcon /></summary><div className="task-set-list">{restoreResult.entries.map((entry) => <div className="task-set-row" key={entry.id}><div className="task-set-row-head"><span>{entry.change === "removed" ? "移除新增" : entry.change === "restored" ? "恢复被删" : entry.change === "content" ? entry.renamed ? "还原正文与文件名" : "还原正文" : entry.change === "rename" ? "恢复文件名" : "保持不变"}</span><strong title={entry.filename}>{entry.filename.split("/").at(-1)}</strong></div></div>)}</div></details>
+                </div>}
                 {children.map(renderFile)}{!children.length && <p className="project-tree-empty">暂无 issue</p>}
               </details>;
             })}

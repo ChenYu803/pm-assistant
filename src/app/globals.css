@@ -438,6 +438,12 @@ details[open] > .disclosure-summary .disclosure-icon svg { transform:rotate(90de
 .task-folder-actions button { min-height:34px; padding:0 8px; border:1px solid var(--work-line); color:#79372f; background:transparent; cursor:pointer; font:inherit; }
 .task-folder-create:disabled,.task-folder-actions button:disabled { opacity:.55; cursor:not-allowed; }
 .task-folder-create:focus-visible,.task-folder-actions button:focus-visible { outline:2px solid #79372f; outline-offset:2px; }
+.task-folder-undo-confirm { width:100%; margin-top:8px; }
+.task-folder-restore-result { margin:8px 0 14px 12px; padding:12px; border:1px solid var(--work-line); color:var(--work-ink); font-size:13px; }
+.task-folder-restore-result p { margin:0 0 12px; }
+.task-folder-restore-result summary { min-height:36px; cursor:pointer; }
+.task-folder-restore-result .task-set-row-head { flex-wrap:wrap; }
+.task-folder-restore-result .task-set-row-head strong { overflow-wrap:anywhere; }
 .project-tree-file { display:flex; align-items:center; gap:5px; min-height:40px; margin-left:12px; border-top:1px dotted rgba(21,20,15,.12); }
 .project-tree-folder .project-tree-file { margin-left:12px; }
 .project-tree-name { display:flex; flex:1; align-items:center; gap:7px; min-width:0; min-height:38px; padding:2px 3px; border:0; color:var(--work-ink); background:none; cursor:pointer; text-align:left; font-size:12px; }
