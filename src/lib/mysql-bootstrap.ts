@@ -426,6 +426,25 @@ export const MYSQL_MIGRATIONS = [
        WHERE c.task_change_group_id IS NOT NULL AND c.task_folder_id IS NULL`,
     ],
   },
+  {
+    id: "0021_v141_task_set_candidates",
+    checksum: "b9b4105bd3e47164c8605971236d572ad72faebbd59113803006e5371b73521",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS iteration_task_set_candidates (
+        id CHAR(36) NOT NULL PRIMARY KEY,
+        message_id CHAR(36) NOT NULL,
+        session_id CHAR(36) NOT NULL,
+        proposed_files MEDIUMTEXT NOT NULL,
+        status ENUM('pending', 'discarded', 'written') NOT NULL DEFAULT 'pending',
+        created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+        decided_at DATETIME(3) NULL,
+        CONSTRAINT task_set_candidates_message_fk FOREIGN KEY (message_id) REFERENCES iteration_session_messages(id) ON DELETE CASCADE,
+        CONSTRAINT task_set_candidates_session_fk FOREIGN KEY (session_id) REFERENCES iteration_sessions(id) ON DELETE CASCADE,
+        UNIQUE KEY task_set_candidates_message_unique (message_id),
+        KEY task_set_candidates_session_status (session_id, status)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
+    ],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {
