@@ -220,6 +220,16 @@ export async function deleteMysqlProjectCascade(
       await connection.rollback();
       return null;
     }
+    // 先锁定新工作台的迭代，阻止生成预留和新会话在清理期间插入。
+    // 显式删除消息，避免多级级联留下过程消息；与项目资产清理共用同一事务。
+    await connection.query<IdRow[]>(
+      "SELECT id FROM product_iterations WHERE project_id = ? ORDER BY iteration_number FOR UPDATE", [projectId]);
+    await connection.execute<ResultSetHeader>(
+      `DELETE FROM iteration_session_messages WHERE session_id IN (
+         SELECT s.id FROM iteration_sessions s JOIN product_iterations i ON i.id = s.iteration_id
+         WHERE i.project_id = ?
+       )`, [projectId]);
+    await connection.execute<ResultSetHeader>("DELETE FROM product_iterations WHERE project_id = ?", [projectId]);
     const [workRecordRows] = await connection.query<IdRow[]>(
       "SELECT id FROM work_records WHERE project_id = ? FOR UPDATE",
       [projectId]

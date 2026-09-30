@@ -32,6 +32,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (!isMysqlId(tabId)) return NextResponse.json({ error: "标签页参数无效" }, { status: 400 });
     if (!isMysqlId(fileId)) return NextResponse.json({ error: "fileId 参数无效" }, { status: 400 });
     const result = await addMysqlContextFile(tabId, fileId, userId);
+    if (result.kind === "iteration-required") return NextResponse.json({ error: "请在当前产品迭代的阶段会话中加入上下文" }, { status: 409 });
     if (result.kind === "tab-not-found") return NextResponse.json({ error: "标签页不存在或无权访问" }, { status: 404 });
     if (result.kind === "file-not-found") return NextResponse.json({ error: "文件不存在或无权访问" }, { status: 404 });
     if (result.kind === "not-loadable") return NextResponse.json({ error: "工作文档/概念版为中间过程产物，不可加载进 Agent 上下文" }, { status: 400 });

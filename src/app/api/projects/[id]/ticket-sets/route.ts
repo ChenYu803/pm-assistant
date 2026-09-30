@@ -4,8 +4,8 @@ import { requireAuth } from "@/lib/auth-helper";
 import { PRODUCT_TICKET_RE, validateFileSize, validateProductTicketContent } from "@/lib/file-helpers";
 import { isMysqlId } from "@/lib/identifiers";
 import { mysqlUnavailableMessage } from "@/lib/mysql";
-import { deliverMysqlTicketSet, listMysqlTicketSets, MysqlFileTooLargeError, serializeMysqlProjectFile } from "@/lib/mysql-project-artifacts";
-import { listMysqlProductIterations } from "@/lib/mysql-account-workspace";
+import { deliverMysqlTicketSet, listMysqlTicketSets, MysqlFileTooLargeError, MysqlIterationRequiredError, serializeMysqlProjectFile } from "@/lib/mysql-project-artifacts";
+import { hasMysqlProductIterationHistory } from "@/lib/mysql-account-workspace";
 import { listMysqlTaskFolders } from "@/lib/mysql-task-folders";
 
 type Ticket = { filename: string; content: string };
@@ -45,7 +45,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const { id } = await params; const body = await request.json().catch(() => null);
     if (!isMysqlId(id)) return NextResponse.json({ error: "项目参数无效" }, { status: 400 });
     if (!body || (body.mode !== "replace" && body.mode !== "save")) return NextResponse.json({ error: "ticket 交付操作无效" }, { status: 400 });
-    if ((await listMysqlProductIterations(id, userId))?.length || (await listMysqlTaskFolders(id, userId))?.length) {
+    if (await hasMysqlProductIterationHistory(id, userId) || (await listMysqlTaskFolders(id, userId))?.length) {
       return NextResponse.json({ error: "请在所属产品迭代中提交整套任务" }, { status: 409 });
     }
     const candidates = validate(body.candidates);
@@ -55,5 +55,5 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (result.kind === "project-not-found") return NextResponse.json({ error: "项目不存在或无权访问" }, { status: 404 });
     if (result.kind === "invalid-source") return NextResponse.json({ error: "来源消息不是当前项目已完成的任务拆分回复" }, { status: 409 });
     return NextResponse.json({ mode: body.mode, version: result.version, currentVersion: result.currentVersion, files: result.written.map(({ file }) => serializeMysqlProjectFile(file)), writes: result.written.map(({ write }) => ({ id: write.id, filename: write.filename, operation: write.operation, fileVersion: Number(write.file_version), messageStatus: write.message_status, writeStatus: write.write_status })) }, { status: 201 });
-  } catch (error) { if (error instanceof MysqlFileTooLargeError) return NextResponse.json({ error: error.message }, { status: 413 }); console.error("POST /api/projects/[id]/ticket-sets error:", error); return NextResponse.json({ error: "交付 ticket 版本失败" }, { status: 500 }); }
+  } catch (error) { if (error instanceof MysqlIterationRequiredError) return NextResponse.json({ error: error.message }, { status: 409 }); if (error instanceof MysqlFileTooLargeError) return NextResponse.json({ error: error.message }, { status: 413 }); console.error("POST /api/projects/[id]/ticket-sets error:", error); return NextResponse.json({ error: "交付 ticket 版本失败" }, { status: 500 }); }
 }

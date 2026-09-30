@@ -53,6 +53,10 @@
 
 ## 协议三处耦合点现状快照
 
+- **v1.41 #17 产品迭代删除**：`deleteMysqlProductIteration` 按项目 → 迭代 → 全部阶段会话使用 `FOR UPDATE NOWAIT`，生成检查必须使用当前读；`iterations/[id]` DELETE 的 `generating` / `writing` 对应 409，阻止和失败不得清理候选或显示成功。同事务先显式删除本轮消息及其候选，再删除迭代父行级联其他过程，避免本机多级级联实测的消息残留；保留项目文件/唯一旧版、任务文件夹/唯一旧集合、HTML 快照和项目级来源。任务归属和文件来源通过迭代是否存续显示只读归档/已删除占位。`projects.next_iteration_number > 1` 是不可回退的迭代使用事实，旧文件写入、整套任务、HTML 保存和旧上下文入口必须在项目锁内拒绝绕过，不能以当前迭代列表为空恢复旧权限。`IterationDeleteDialog.tsx` 只在提交成功后清理本轮会话选择并刷新文件目录，项目文件视图提供只读 Markdown 与全部 HTML 快照浏览。变更须回归 `verify-v141-iteration-deletion.mjs`、会话删除、生命周期、来源、任务归属/整套提交/撤回、手动上下文和快照专项。
+
+- **v1.41 项目删除清理**：`deleteMysqlProjectCascade` 在项目锁内先锁定全部产品迭代，显式清理新工作台消息并删除迭代，再清理旧 tabs、项目文件、HTML 和项目父行；避免多级级联的消息残留。全部步骤同事务，故障回滚须同时恢复新工作台过程和项目级资产；回归项目级联与迭代删除专项。
+
 - **v1.41 #16 阶段会话删除**：`deleteMysqlIterationSession` 按项目 → 迭代 → 会话顺序使用 `FOR UPDATE NOWAIT`，与成果确认/生成事务互斥；锁占用返回 `writing`，生成消息返回 `generating`，删除 API 对应 409 与等待/停止动作。外键只级联清理会话消息、上下文和 Markdown/任务集合候选，保留 `project_files`、`previous_content`、任务文件夹 `previous_snapshot`、HTML 快照和 `project_file_changes`。`mysql-file-history.ts` 用保留的 `session_id` 计算 `sessionDeleted`，来源名称仍取写入时快照；`ProductIterationWorkbench.tsx` 清理被删会话草稿/选择，`SessionDeleteDialog.tsx` 负责危险确认。更改删除或保留边界须回归 `verify-v141-session-deletion.mjs`、迭代生命周期、阶段状态、文件历史与候选/整套交付脚本。
 
 **日期**：2026-08-23（#07 tab 并发与 #09 显式冻结完成后校准）。行号只作定位起点，动手前仍须 grep 验证。

@@ -259,6 +259,7 @@
 .session-delete-dialog > p { overflow-wrap:anywhere; }
 .session-delete-next { min-height:44px; border:1px solid var(--iteration-line); padding:9px 13px; color:var(--iteration-ink); background:transparent; cursor:pointer; font-size:14px; }
 .session-delete-next:hover { background:var(--iteration-paper); }
+.session-delete-next[href] { display:inline-flex; align-items:center; text-decoration:underline; text-underline-offset:3px; }
 .session-delete-dialog button:focus-visible { outline:2px solid var(--iteration-coral); outline-offset:3px; }
 @media (max-width:760px) { .real-session-list .session-list-item { flex:0 0 210px; } .session-delete-dialog .iteration-risk-items { grid-template-columns:1fr; } .session-delete-dialog .iteration-risk-items p { font-size:14px; } }
 .session-empty { margin:12px 2px 0; color:rgba(247,241,222,.68); font-size:12px; }
@@ -530,6 +531,10 @@ details[open] > .disclosure-summary .disclosure-icon svg { transform:rotate(90de
 .iteration-project-files-head p { margin:5px 0 0; color:var(--work-muted); font-size:13px; }
 .iteration-project-files-head button { min-height:36px; padding:0 10px; border:1px solid var(--work-line); background:transparent; cursor:pointer; }
 .iteration-project-files .project-tree { max-width:760px; }
+.project-snapshot-browser { max-width:900px; margin-top:32px; border-top:1px solid var(--iteration-line); }
+.project-snapshot-browser > summary { min-height:48px; padding:14px 0; cursor:pointer; font-weight:600; }
+.project-snapshot-browser > summary:focus-visible { outline:2px solid var(--iteration-coral); outline-offset:3px; }
+.project-snapshot-browser .snapshot-detail iframe { min-height:420px; }
 .context-empty { margin:16px 4px; color:var(--work-muted); font-size:13px; line-height:1.6; }
 .context-guidance { margin:8px 4px 12px; color:var(--work-muted); font-size:12px; line-height:1.55; }
 .workbench-loading { display:flex; flex:1; align-items:center; justify-content:center; gap:7px; min-height:220px; border:1px solid var(--work-ink); background:var(--work-bone); }

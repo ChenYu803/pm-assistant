@@ -18,6 +18,7 @@
     "verify:v141-task-set-submit": "tsx scripts/verify-v141-task-set-submit.mjs",
     "verify:v141-task-set-undo": "tsx scripts/verify-v141-task-set-undo.mjs",
     "verify:v141-session-deletion": "tsx scripts/verify-v141-session-deletion.mjs",
+    "verify:v141-iteration-deletion": "tsx scripts/verify-v141-iteration-deletion.mjs",
     "verify:v141-manual-context": "tsx scripts/verify-v141-manual-context.mjs",
     "verify:v141-first-file-candidate": "tsx scripts/verify-v141-first-file-candidate.mjs",
     "verify:v141-prototype-snapshot": "tsx scripts/verify-v141-prototype-snapshot.mjs",

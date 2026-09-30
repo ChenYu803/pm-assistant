@@ -179,6 +179,13 @@ export async function listMysqlProductIterations(projectId: string, userId: stri
   return rows;
 }
 
+/** 稳定编号计数不会随迭代删除回退，避免最后一轮删除后重新启用旧写入入口。 */
+export async function hasMysqlProductIterationHistory(projectId: string, userId: string) {
+  const [rows] = await getMysqlPool().query<Array<RowDataPacket & { next_iteration_number: number }>>(
+    "SELECT next_iteration_number FROM projects WHERE id = ? AND user_id = ?", [projectId, userId]);
+  return rows.length ? Number(rows[0].next_iteration_number) > 1 : null;
+}
+
 export async function findOwnedMysqlWorkRecord(workRecordId: string, userId: string): Promise<MysqlWorkRecord | null> {
   if (!isMysqlId(workRecordId)) return null;
   const [rows] = await getMysqlPool().query<MysqlWorkRecord[]>(
@@ -270,46 +277,63 @@ export async function updateMysqlProductIteration(
 export async function deleteMysqlProductIteration(
   iterationId: string,
   userId: string,
-): Promise<boolean> {
-  if (!isMysqlId(iterationId)) return false;
+) {
+  if (!isMysqlId(iterationId)) return "not-found" as const;
   const connection = await getMysqlPool().getConnection();
   try {
     await connection.beginTransaction();
     const [iterationRows] = await connection.query<Array<RowDataPacket & { project_id: string }>>(
-      "SELECT project_id FROM product_iterations WHERE id = ? LIMIT 1",
-      [iterationId],
+      `SELECT i.project_id FROM product_iterations i JOIN projects p ON p.id = i.project_id
+       WHERE i.id = ? AND p.user_id = ? LIMIT 1`,
+      [iterationId, userId],
     );
     const projectId = iterationRows[0]?.project_id;
     if (!projectId) {
       await connection.rollback();
-      return false;
+      return "not-found" as const;
     }
     const [projectRows] = await connection.query<Array<RowDataPacket & { id: string }>>(
-      "SELECT id FROM projects WHERE id = ? AND user_id = ? LIMIT 1 FOR UPDATE",
+      // 与文件/任务确认共用锁顺序；正在写入时立即阻止，不能等写入结束后自动删除。
+      "SELECT id FROM projects WHERE id = ? AND user_id = ? LIMIT 1 FOR UPDATE NOWAIT",
       [projectId, userId],
     );
     if (!projectRows[0]) {
       await connection.rollback();
-      return false;
+      return "not-found" as const;
     }
     const [rows] = await connection.query<Array<RowDataPacket & { id: string }>>(
-      "SELECT id FROM product_iterations WHERE id = ? AND project_id = ? LIMIT 1 FOR UPDATE",
+      "SELECT id FROM product_iterations WHERE id = ? AND project_id = ? LIMIT 1 FOR UPDATE NOWAIT",
       [iterationId, projectId],
     );
     const iteration = rows[0];
     if (!iteration) {
       await connection.rollback();
-      return false;
+      return "not-found" as const;
     }
+    const [sessions] = await connection.query<Array<RowDataPacket & { id: string }>>(
+      "SELECT id FROM iteration_sessions WHERE iteration_id = ? ORDER BY id FOR UPDATE NOWAIT", [iterationId]);
+    if (sessions.length) {
+      // 当前读覆盖归属查询之后刚提交的生成预留，不能使用 RR 下的旧快照。
+      const [generating] = await connection.query<RowDataPacket[]>(
+        `SELECT m.id FROM iteration_session_messages m JOIN iteration_sessions s ON s.id = m.session_id
+         WHERE s.iteration_id = ? AND m.status = 'generating' LIMIT 1 FOR UPDATE NOWAIT`, [iterationId]);
+      if (generating.length) { await connection.rollback(); return "generating" as const; }
+    }
+    // 多级级联在本机验收中出现消息残留；先直接清理消息及其候选，再级联清理其他过程。
+    // 两步都在同一事务内，任何失败都恢复原消息与候选，不触碰项目级资产。
+    await connection.execute<ResultSetHeader>(
+      `DELETE FROM iteration_session_messages
+       WHERE session_id IN (SELECT id FROM iteration_sessions WHERE iteration_id = ?)`, [iterationId]);
     const [result] = await connection.execute<ResultSetHeader>(
       "DELETE FROM product_iterations WHERE id = ? AND project_id = ?",
       [iteration.id, projectId],
     );
     if (result.affectedRows !== 1) throw new Error("产品迭代删除未完成");
     await connection.commit();
-    return true;
+    return "deleted" as const;
   } catch (error) {
     await connection.rollback();
+    if ((error as { code?: string }).code === "ER_LOCK_NOWAIT") return "writing" as const;
     throw error;
   } finally {
     connection.release();

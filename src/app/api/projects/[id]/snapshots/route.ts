@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import { isMysqlId } from "@/lib/identifiers";
 import { MAX_FILE_BYTES } from "@/lib/file-helpers";
-import { createMysqlSnapshot, listMysqlSnapshots } from "@/lib/mysql-project-artifacts";
+import { createMysqlSnapshot, listMysqlSnapshots, MysqlIterationRequiredError } from "@/lib/mysql-project-artifacts";
 import { listIterationPrototypeSnapshots } from "@/lib/iteration-prototype-snapshots";
 import { findOwnedWorkbenchIteration } from "@/lib/mysql-iteration-workbench";
 
@@ -31,6 +31,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
         version: Number(version),
         tab_id,
         created_at,
+        createdAt: created_at,
       }))
     );
   } catch (error) {
@@ -55,6 +56,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     const snapshot = result.snapshot;
     return NextResponse.json({ id: snapshot.id, version: Number(snapshot.version), tab_id: snapshot.tab_id, content: snapshot.content, created_at: snapshot.created_at }, { status: 201 });
   } catch (error) {
+    if (error instanceof MysqlIterationRequiredError) return NextResponse.json({ error: error.message }, { status: 409 });
     console.error("POST /api/projects/[id]/snapshots error:", error);
     return NextResponse.json({ error: "保存 HTML 快照失败" }, { status: 500 });
   }

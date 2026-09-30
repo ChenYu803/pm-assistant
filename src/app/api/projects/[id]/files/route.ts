@@ -4,9 +4,9 @@ import { requireAuth } from "@/lib/auth-helper";
 import type { AgentType } from "@/lib/agent-constants";
 import { countRequirements, FROZEN_DOCUMENT_LOCKED_MESSAGE, formatChangelogHeader, isConceptDocFile, isWorkingDocFile, parseChangelog, stripChangelogHeader, validateAgentFilename, validateFileSize, validateProductTicketContent } from "@/lib/file-helpers";
 import { isMysqlId } from "@/lib/identifiers";
-import { listMysqlProductIterations } from "@/lib/mysql-account-workspace";
+import { hasMysqlProductIterationHistory } from "@/lib/mysql-account-workspace";
 import { mysqlUnavailableMessage } from "@/lib/mysql";
-import { listMysqlProjectFileDirectory, MysqlFileTooLargeError, MysqlFrozenDocumentError, serializeMysqlProjectFile, writeMysqlProjectFile } from "@/lib/mysql-project-artifacts";
+import { listMysqlProjectFileDirectory, MysqlFileTooLargeError, MysqlFrozenDocumentError, MysqlIterationRequiredError, serializeMysqlProjectFile, writeMysqlProjectFile } from "@/lib/mysql-project-artifacts";
 
 const EXCLUSION = "\n# 排除清单";
 function normalizedRequirements(content: string) { let number = 0; return content.replace(/^##\s+(?:\d+[\.、]\s*)?(.+)$/gm, (_all, title: string) => `## ${++number}. ${title.trim()}`); }
@@ -38,7 +38,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (agentType === "ticket_splitter" && filename.startsWith("issues/")) { const ticket = validateProductTicketContent(content); if (!ticket.ok) return NextResponse.json({ error: ticket.error }, { status: 400 }); }
     const replayFixture = process.env.NODE_ENV !== "production" && process.env.AI_MODE === "replay" && request.headers.get("x-pm-assistant-test-system-write") === "1";
     // 新工作台的正式文件只能由阶段候选事务写入；旧 API 不得绕过唯一备份和来源记录。
-    if (!replayFixture && (await listMysqlProductIterations(projectId, userId))?.length) {
+    if (!replayFixture && await hasMysqlProductIterationHistory(projectId, userId)) {
       return NextResponse.json({ error: "请在当前产品迭代中确认文件候选" }, { status: 409 });
     }
     if ((typeof sourceMessageId !== "string" || !isMysqlId(sourceMessageId)) && !replayFixture) return NextResponse.json({ error: "Agent 文件写入必须提供已完成的来源消息" }, { status: 400 });
@@ -69,5 +69,5 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (result.kind === "missing-source") return NextResponse.json({ error: "Agent 文件写入必须提供已完成的来源消息" }, { status: 400 });
     if (result.kind === "invalid-source") return NextResponse.json({ error: "来源消息不存在、尚未完成或与写入 Agent/项目不匹配" }, { status: 409 });
     return NextResponse.json({ ...serializeMysqlProjectFile(result.file), ...(result.write ? { messageFileWrite: { id: result.write.id, filename: result.write.filename, operation: result.write.operation, fileVersion: Number(result.write.file_version), messageStatus: result.write.message_status, writeStatus: result.write.write_status, writtenAt: result.write.written_at } } : {}) }, { status: 201 });
-  } catch (error) { if (error instanceof MysqlFrozenDocumentError) return NextResponse.json({ error: FROZEN_DOCUMENT_LOCKED_MESSAGE }, { status: 409 }); if (error instanceof MysqlFileTooLargeError) return NextResponse.json({ error: error.message }, { status: 413 }); console.error("POST /api/projects/[id]/files error:", error); return NextResponse.json({ error: "保存文件失败" }, { status: 500 }); }
+  } catch (error) { if (error instanceof MysqlIterationRequiredError) return NextResponse.json({ error: error.message }, { status: 409 }); if (error instanceof MysqlFrozenDocumentError) return NextResponse.json({ error: FROZEN_DOCUMENT_LOCKED_MESSAGE }, { status: 409 }); if (error instanceof MysqlFileTooLargeError) return NextResponse.json({ error: error.message }, { status: 413 }); console.error("POST /api/projects/[id]/files error:", error); return NextResponse.json({ error: "保存文件失败" }, { status: 500 }); }
 }

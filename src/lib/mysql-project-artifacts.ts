@@ -21,6 +21,14 @@ export interface MysqlProjectFile extends RowDataPacket {
   freeze_binding_locked_at?: Date | null;
 }
 
+export class MysqlIterationRequiredError extends Error {
+  constructor() { super("请进入当前产品迭代工作区，项目文件仅可在迭代中修改"); }
+}
+
+function assertLegacyProjectWrite(project: MysqlProject & { next_iteration_number: number }) {
+  if (Number(project.next_iteration_number) > 1) throw new MysqlIterationRequiredError();
+}
+
 export interface MysqlPrototypeSnapshot extends RowDataPacket {
   id: string;
   project_id: string;
@@ -180,6 +188,7 @@ export async function writeMysqlProjectFile(input: {
     await connection.beginTransaction();
     const project = await lockOwnedProject(connection, input.projectId, input.userId);
     if (!project) { await connection.rollback(); return { kind: "not-found" as const }; }
+    if (!input.allowReplayFixture) assertLegacyProjectWrite(project);
     const source = input.sourceMessageId
       ? await findSourceMessage(connection, { projectId: input.projectId, sourceMessageId: input.sourceMessageId, agentType: input.agentType })
       : null;
@@ -233,8 +242,8 @@ export async function writeMysqlProjectFile(input: {
 }
 
 async function lockOwnedProject(connection: PoolConnection, projectId: string, userId: string) {
-  const [rows] = await connection.query<MysqlProject[]>(
-    "SELECT id, user_id, name, created_at FROM projects WHERE id = ? AND user_id = ? LIMIT 1 FOR UPDATE",
+  const [rows] = await connection.query<Array<MysqlProject & { next_iteration_number: number }>>(
+    "SELECT id, user_id, name, created_at, next_iteration_number FROM projects WHERE id = ? AND user_id = ? LIMIT 1 FOR UPDATE",
     [projectId, userId]
   );
   return rows[0] ?? null;
@@ -244,7 +253,9 @@ export async function updateMysqlProjectFile(input: { projectId: string; fileId:
   const connection = await getMysqlPool().getConnection();
   try {
     await connection.beginTransaction();
-    if (!(await lockOwnedProject(connection, input.projectId, input.userId))) { await connection.rollback(); return null; }
+    const project = await lockOwnedProject(connection, input.projectId, input.userId);
+    if (!project) { await connection.rollback(); return null; }
+    assertLegacyProjectWrite(project);
     const [rows] = await connection.query<MysqlProjectFile[]>(
       `SELECT ${PROJECT_FILE_COLUMNS} FROM project_files WHERE id = ? AND project_id = ? LIMIT 1 FOR UPDATE`, [input.fileId, input.projectId]
     );
@@ -262,7 +273,9 @@ export async function deleteMysqlProjectFile(projectId: string, fileId: string, 
   const connection = await getMysqlPool().getConnection();
   try {
     await connection.beginTransaction();
-    if (!(await lockOwnedProject(connection, projectId, userId))) { await connection.rollback(); return false; }
+    const project = await lockOwnedProject(connection, projectId, userId);
+    if (!project) { await connection.rollback(); return false; }
+    assertLegacyProjectWrite(project);
     const [files] = await connection.query<MysqlProjectFile[]>(
       `SELECT ${PROJECT_FILE_COLUMNS} FROM project_files WHERE id = ? AND project_id = ? LIMIT 1 FOR UPDATE`,
       [fileId, projectId]
@@ -284,7 +297,7 @@ async function findOwnedMysqlTabProject(tabId: string, userId: string) {
 
 export async function listMysqlLoadedContextFiles(tabId: string, projectId: string): Promise<MysqlLoadedFile[]> {
   const [rows] = await getMysqlPool().query<Array<MysqlProjectFile & RowDataPacket>>(
-    `SELECT ${PROJECT_FILE_COLUMNS} FROM agent_file_contexts c JOIN project_files f ON f.id = c.file_id WHERE c.tab_id = ? AND f.project_id = ? ORDER BY c.loaded_at ASC, f.id ASC`, [tabId, projectId]
+    `SELECT ${PROJECT_FILE_COLUMNS.split(", ").map((column) => `f.${column}`).join(", ")} FROM agent_file_contexts c JOIN project_files f ON f.id = c.file_id WHERE c.tab_id = ? AND f.project_id = ? ORDER BY c.loaded_at ASC, f.id ASC`, [tabId, projectId]
   );
   return rows.filter((file) => !isWorkingDocFile(file.filename) && !isConceptDocFile(file.filename)).map((file) => ({ _id: file.id, filename: file.filename, content: file.content, project_id: file.project_id, created_at: file.created_at, updated_at: file.updated_at }));
 }
@@ -292,16 +305,25 @@ export async function listMysqlLoadedContextFiles(tabId: string, projectId: stri
 export async function addMysqlContextFile(tabId: string, fileId: string, userId: string) {
   const tab = await findOwnedMysqlTabProject(tabId, userId);
   if (!tab) return { kind: "tab-not-found" as const };
-  const file = await findOwnedMysqlProjectFile(tab.project_id, fileId, userId);
-  if (!file) return { kind: "file-not-found" as const };
-  if (isWorkingDocFile(file.filename) || isConceptDocFile(file.filename)) return { kind: "not-loadable" as const };
+  const connection = await getMysqlPool().getConnection();
   try {
-    await getMysqlPool().execute<ResultSetHeader>("INSERT INTO agent_file_contexts (id, tab_id, file_id, loaded_at) VALUES (?, ?, ?, ?)", [randomUUID(), tabId, fileId, new Date()]);
+    await connection.beginTransaction();
+    const project = await lockOwnedProject(connection, tab.project_id, userId);
+    if (!project) { await connection.rollback(); return { kind: "tab-not-found" as const }; }
+    if (Number(project.next_iteration_number) > 1) { await connection.rollback(); return { kind: "iteration-required" as const }; }
+    const [files] = await connection.query<MysqlProjectFile[]>(
+      `SELECT ${PROJECT_FILE_COLUMNS} FROM project_files WHERE id = ? AND project_id = ?`, [fileId, tab.project_id]);
+    const file = files[0];
+    if (!file) { await connection.rollback(); return { kind: "file-not-found" as const }; }
+    if (isWorkingDocFile(file.filename) || isConceptDocFile(file.filename)) { await connection.rollback(); return { kind: "not-loadable" as const }; }
+    await connection.execute<ResultSetHeader>("INSERT INTO agent_file_contexts (id, tab_id, file_id, loaded_at) VALUES (?, ?, ?, ?)", [randomUUID(), tabId, fileId, new Date()]);
+    await connection.commit();
     return { kind: "created" as const, file, projectId: tab.project_id };
   } catch (error) {
+    await connection.rollback();
     if ((error as { code?: string }).code === "ER_DUP_ENTRY") return { kind: "duplicate" as const };
     throw error;
-  }
+  } finally { connection.release(); }
 }
 
 export async function removeMysqlContextFile(tabId: string, fileId: string, userId: string) {
@@ -323,7 +345,9 @@ export async function createMysqlSnapshot(input: { projectId: string; userId: st
   const connection = await getMysqlPool().getConnection();
   try {
     await connection.beginTransaction();
-    if (!(await lockOwnedProject(connection, input.projectId, input.userId))) { await connection.rollback(); return { kind: "project-not-found" as const }; }
+    const project = await lockOwnedProject(connection, input.projectId, input.userId);
+    if (!project) { await connection.rollback(); return { kind: "project-not-found" as const }; }
+    assertLegacyProjectWrite(project);
     if (input.tabId) {
       const [tabs] = await connection.query<Array<RowDataPacket & { id: string }>>(
         `SELECT t.id FROM tabs t JOIN work_records w ON w.id = t.work_record_id WHERE t.id = ? AND w.project_id = ? LIMIT 1 FOR UPDATE`, [input.tabId, input.projectId]
@@ -389,7 +413,9 @@ export async function deliverMysqlTicketSet(input: { projectId: string; userId: 
   const connection = await getMysqlPool().getConnection();
   try {
     await connection.beginTransaction();
-    if (!(await lockOwnedProject(connection, input.projectId, input.userId))) { await connection.rollback(); return { kind: "project-not-found" as const }; }
+    const project = await lockOwnedProject(connection, input.projectId, input.userId);
+    if (!project) { await connection.rollback(); return { kind: "project-not-found" as const }; }
+    assertLegacyProjectWrite(project);
     const source = await findSourceMessage(connection, { projectId: input.projectId, sourceMessageId: input.sourceMessageId, agentType: "ticket_splitter" });
     if (!source) { await connection.rollback(); return { kind: "invalid-source" as const }; }
     const [allFiles] = await connection.query<MysqlProjectFile[]>(

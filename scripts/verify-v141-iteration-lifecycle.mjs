@@ -258,7 +258,8 @@ try {
   const thirdRow = page.locator(".iteration-row").filter({ hasText: "待删除迭代" });
   await thirdRow.getByRole("button", { name: "待删除迭代 更多功能" }).click();
   await thirdRow.getByRole("button", { name: "删除产品迭代" }).click();
-  check("删除前展示范围说明和二次确认", await page.getByRole("alertdialog").getByText(/已确认保存的内容及其变更记录会保留/).count() === 1);
+  const deleteScope = await page.getByRole("alertdialog").innerText();
+  check("删除前展示范围说明和二次确认", ["项目文件", "上一版备份", "变更记录", "已删除迭代", "只读归档", "无法撤销"].every((text) => deleteScope.includes(text)));
   await page.getByRole("button", { name: "取消", exact: true }).click();
   check("取消确认不删除迭代", (await api(page, `/api/iterations/${thirdIteration.id}`)).status === 200);
 

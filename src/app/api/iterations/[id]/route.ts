@@ -57,8 +57,10 @@ export async function DELETE(
     const userId = await requireAuth();
     if (userId instanceof NextResponse) return userId;
     const { id } = await params;
-    const deleted = await deleteMysqlProductIteration(id, userId);
-    if (!deleted) return NextResponse.json({ error: "产品迭代不存在或无权操作" }, { status: 404 });
+    const result = await deleteMysqlProductIteration(id, userId);
+    if (result === "not-found") return NextResponse.json({ error: "产品迭代不存在或无权操作" }, { status: 404 });
+    if (result === "generating") return NextResponse.json({ error: "迭代内有会话正在生成，请等待完成或先停止生成，再删除。", reason: "generating" }, { status: 409 });
+    if (result === "writing") return NextResponse.json({ error: "迭代或项目正在保存，请等待写入完成后重试删除。", reason: "writing" }, { status: 409 });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("DELETE /api/iterations/[id] error:", error);

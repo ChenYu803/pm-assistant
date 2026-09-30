@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-type Snapshot = { id: string; version: number; sessionId: string; messageId: string; createdAt: string };
+type Snapshot = { id: string; version: number; sessionId?: string; messageId?: string; createdAt: string };
 
-export default function PrototypeSnapshotPanel({ projectId, iterationId, revision, focusMessageId }: {
-  projectId: string; iterationId: string; revision: number; focusMessageId: string | null;
+export default function PrototypeSnapshotPanel({ projectId, iterationId, revision = 0, focusMessageId = null }: {
+  projectId: string; iterationId?: string; revision?: number; focusMessageId?: string | null;
 }) {
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -22,7 +22,7 @@ export default function PrototypeSnapshotPanel({ projectId, iterationId, revisio
     setError("");
     setErrorScope(null);
     try {
-      const response = await fetch(`${base}?iterationId=${iterationId}`);
+      const response = await fetch(iterationId ? `${base}?iterationId=${iterationId}` : base);
       const body = await response.json();
       if (!response.ok) throw new Error(body.error || "读取 HTML 快照失败。");
       const items = body as Snapshot[];
@@ -67,7 +67,7 @@ export default function PrototypeSnapshotPanel({ projectId, iterationId, revisio
   return <div className="prototype-snapshot-panel">
     <p className="context-guidance">HTML 快照是独立的项目资产，不会加入项目文件树或 Agent 上下文。</p>
     {loading ? <p className="snapshot-status" role="status">正在读取快照…</p> : null}
-    {!loading && !snapshots.length && !error ? <p className="snapshot-status">还没有 HTML 快照。与原型设计 Agent 讨论页面方案后，可在这里预览和下载。</p> : null}
+    {!loading && !snapshots.length && !error ? <p className="snapshot-status">{iterationId ? "还没有 HTML 快照。与原型设计 Agent 讨论页面方案后，可在这里预览和下载。" : "这个项目还没有保存的 HTML 快照。"}</p> : null}
     {error ? <div className="snapshot-error" role="alert"><span>{error}</span><button type="button" onClick={() => { if (errorScope === "preview") setPreviewRetry((value) => value + 1); else void load(); }}>重试</button></div> : null}
     {snapshots.length ? <div className="snapshot-list" aria-label="HTML 快照列表">{snapshots.map((item) => <button key={item.id} type="button" aria-current={selectedId === item.id ? "true" : undefined} onClick={() => setSelectedId(item.id)}>
       <strong>HTML 快照 · 第 {item.version} 版</strong><small>{new Date(item.createdAt).toLocaleString("zh-CN")}</small>
