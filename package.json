@@ -17,6 +17,7 @@
     "verify:v141-replay-foundation": "tsx scripts/verify-v141-replay-foundation.mjs",
     "verify:v141-file-context-replay": "tsx scripts/verify-v141-file-context-replay.mjs",
     "verify:v141-task-permission-replay": "tsx scripts/verify-v141-task-permission-replay.mjs",
+    "verify:v141-deletion-failure-replay": "tsx scripts/verify-v141-deletion-failure-replay.mjs",
     "verify:v141-project-file-tree": "tsx scripts/verify-v141-project-file-tree.mjs",
     "verify:v141-task-folder-ownership": "tsx scripts/verify-v141-task-folder-ownership.mjs",
     "verify:v141-task-set-submit": "tsx scripts/verify-v141-task-set-submit.mjs",
