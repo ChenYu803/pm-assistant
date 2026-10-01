@@ -35,6 +35,7 @@ export default function ProjectFileTree({ projectId, iterationId, files, onChang
   addDisabledReason?: string;
 }) {
   const [selected, setSelected] = useState<ProjectFileEntry | null>(null);
+  const [selectedDirectory, setSelectedDirectory] = useState(files);
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -59,6 +60,20 @@ export default function ProjectFileTree({ projectId, iterationId, files, onChang
   const canChangeSelected = Boolean(iterationId && selected && (selected.taskFolderId
     ? selected.taskOwnerIterationId === iterationId && !selected.taskArchived
     : getWorkbenchFileStage(selected.filename) !== "tickets"));
+
+  // 整套撤回后目录异步刷新：已打开的删除占位也必须恢复为当前文件，不能卡在旧详情。
+  if (selectedDirectory !== files) {
+    setSelectedDirectory(files);
+    if (selected) {
+      const refreshed = files.find((file) => file.id === selected.id);
+      if (refreshed) {
+        setSelected({ ...selected, ...refreshed });
+        if (Boolean(refreshed.deleted) !== Boolean(selected.deleted)) {
+          setView(refreshed.deleted ? "details" : "preview");
+        }
+      }
+    }
+  }
 
   useEffect(() => {
     const controller = new AbortController();
@@ -131,7 +146,7 @@ export default function ProjectFileTree({ projectId, iterationId, files, onChang
       .catch((caught) => { if (!controller.signal.aborted) setError(caught instanceof Error ? caught.message : "文件打开失败"); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [projectId, selectedFileId, selected?.deleted, reloadKey]);
+  }, [projectId, selectedFileId, selected?.deleted, selected?.version, reloadKey]);
 
   function open(file: ProjectFileEntry, button?: HTMLButtonElement) {
     if (button) opener.current = button;
