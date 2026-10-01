@@ -110,7 +110,8 @@ try {
   for (const iteration of [first.body, second.body]) {
     await page.goto(`${base}/projects/${projectId}/iterations/${iteration.id}`);
     await page.locator(".workbench-grid").waitFor();
-    if (await page.getByRole("button", { name: "展开文件区" }).count()) await page.getByRole("button", { name: "展开文件区" }).click();
+    if (await page.getByRole("navigation", { name: "工作台区域" }).isVisible()) await page.getByRole("navigation", { name: "工作台区域" }).getByRole("button", { name: /文件与上下文/ }).click();
+    else if (await page.getByRole("button", { name: "展开文件区" }).count()) await page.getByRole("button", { name: "展开文件区" }).click();
     check(`${iteration.display_name}看到同一项目文件`, await page.locator(".workbench-context .project-tree-name").filter({ hasText: "原型.md" }).count() === 1);
   }
 

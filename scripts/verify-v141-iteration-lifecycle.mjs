@@ -359,9 +359,11 @@ try {
 
   await page.setViewportSize({ width: 390, height: 844 });
   check("390px 移动端工作台没有横向溢出", await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
+  const mobileRegions = page.getByRole("navigation", { name: "工作台区域" });
+  await mobileRegions.getByRole("button", { name: /文件与上下文/ }).click();
   await page.getByRole("button", { name: "关闭文件区" }).first().click();
-  check("移动端可关闭并重新展开文件区", await page.locator(".workbench-context").count() === 0 && await page.getByRole("button", { name: "展开文件区" }).count() === 1);
-  await page.getByRole("button", { name: "展开文件区" }).click();
+  check("移动端可关闭并重新展开文件区", await page.locator(".workbench-context").count() === 0 && await mobileRegions.getByRole("button", { name: /文件与上下文/ }).isVisible());
+  await mobileRegions.getByRole("button", { name: /文件与上下文/ }).click();
   check("重新展开后文件区恢复", await page.locator(".workbench-context").count() === 1);
 } finally {
   await connection?.end();

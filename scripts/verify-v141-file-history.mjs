@@ -92,7 +92,7 @@ try {
     await mobile.waitForURL((url) => url.pathname === "/projects");
     await mobile.goto(`${base}/projects/${projectId}/iterations/${iterationId}`);
     await mobile.locator(".workbench-grid").waitFor();
-    await mobile.getByRole("button", { name: "展开文件区" }).click();
+    await mobile.getByRole("navigation", { name: "工作台区域" }).getByRole("button", { name: /文件与上下文/ }).click();
     await mobile.locator(".project-tree-name").filter({ hasText: renamedPath }).click();
     await mobile.getByRole("tab", { name: "文件详情与来源" }).click();
     await mobile.getByText("创建来源").waitFor();

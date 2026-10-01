@@ -151,6 +151,7 @@ try {
   check("390px 确认区没有横向溢出", await page.evaluate(() => document.documentElement.scrollWidth <= 390));
   await dialog.getByRole("button", { name: "取消", exact: true }).click();
   check("取消不删除会话", (await api(page, path)).status === 200);
+  await page.getByRole("navigation", { name: "工作台区域" }).getByRole("button", { name: /阶段会话/ }).click();
   await row.getByRole("button", { name: /^删除会话/ }).click();
   await page.route(`**${path}`, async (route) => route.request().method() === "DELETE" ? route.fulfill({ status: 500, contentType: "application/json", body: JSON.stringify({ error: "删除未完成，请重试。" }) }) : route.continue());
   await dialog.getByRole("button", { name: "确认删除会话" }).click();
@@ -170,6 +171,7 @@ try {
   const otherRow = page.locator(".session-list-item").filter({ has: page.locator(`[data-session-id="${otherId}"]`) });
   await otherRow.getByRole("button", { name: /^删除会话/ }).click();
   await dialog.getByRole("button", { name: "确认删除会话" }).click(); await dialog.waitFor({ state: "hidden" });
+  await page.getByRole("navigation", { name: "工作台区域" }).getByRole("button", { name: "对话", exact: true }).click();
   check("最后一个会话删除后可重新开始，无残留输入或上下文", await page.getByRole("button", { name: "开始本阶段工作" }).isVisible() && await page.getByRole("textbox", { name: "输入消息" }).inputValue() === "");
   check("删除所有会话不自动完成或重置阶段", (await api(page, `${root}/workbench`)).body.stages.find((stage) => stage.key === "analysis").status === "in_progress");
   await page.reload(); await page.getByRole("button", { name: "开始本阶段工作" }).waitFor();

@@ -540,7 +540,6 @@ details[open] > .disclosure-summary .disclosure-icon svg { transform:rotate(90de
 .workbench-loading { display:flex; flex:1; align-items:center; justify-content:center; gap:7px; min-height:220px; border:1px solid var(--work-ink); background:var(--work-bone); }
 .workbench-loading span { width:6px; height:6px; border-radius:50%; background:var(--work-coral); animation:workbench-pulse 850ms ease-in-out infinite alternate; }
 .workbench-loading span:nth-child(2) { animation-delay:120ms; }.workbench-loading span:nth-child(3) { animation-delay:240ms; }
-.workbench-toast { position:fixed; right:20px; bottom:18px; z-index:30; padding:10px 13px; color:var(--work-bone); background:var(--work-ink); font-size:13px; }
 .iteration-workbench :is(button, a, summary):focus-visible { outline:2px solid var(--work-coral); outline-offset:2px; }
 @keyframes workbench-pulse { to { opacity:.35; transform:translateY(-3px); } }
 @media(max-width:1100px) and (min-width:761px) { .workbench-shell { padding-inline:12px; }.workbench-grid { grid-template-columns:215px minmax(0,1fr) 285px; }.workbench-grid.context-collapsed { grid-template-columns:215px minmax(0,1fr); }.workbench-conversation { padding-inline:16px; }.workbench-stage { gap:6px; padding-inline:8px; }.stage-title { font-size:12px; } }
@@ -599,9 +598,103 @@ details[open] > .disclosure-summary .disclosure-icon svg { transform:rotate(90de
   .context-scroll { max-height:65dvh; }
   .project-file-row { min-height:44px; }
   .project-file-row button { min-height:40px; }
-  .workbench-toast { right:12px; bottom:12px; left:12px; text-align:center; }
 }
 @media(prefers-reduced-motion:reduce) { .workbench-loading span { animation:none; }.disclosure-icon svg { transition:none; } }
+/* v1.41 #18：工作区共用视觉；窄屏按任务切换，保持会话与草稿挂载。 */
+.workbench-shell { min-height:0; height:100dvh; }
+.workbench-header,.workbench-stage-area,.workbench-error { flex-shrink:0; }
+.workbench-project > span > span { display:block; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.workbench-project b { flex:none; }
+.workbench-back { display:inline-flex; align-items:center; min-height:44px; white-space:nowrap; }
+.workbench-view-nav { display:none; }
+.conversation-identity { min-width:0; padding-block:9px; }
+.conversation-identity > span { display:block; margin-bottom:4px; color:var(--work-muted); font-size:11px; }
+.conversation-heading h2 { min-width:0; }
+.workbench-composer .composer-context-button { min-height:32px; margin-bottom:6px; padding:0; border:0; color:#79372f; background:transparent; font-size:12px; font-weight:500; }
+.workbench-composer .composer-context-button:hover { border:0; color:var(--work-ink); background:transparent; text-decoration:underline; }
+.context-tab-panel { display:flex; flex:1; flex-direction:column; min-height:0; overflow:auto; }
+.task-manual-proposal { flex:0 1 auto; min-height:0; max-height:45%; overflow:auto; }
+.stage-generation-note { max-height:25%; overflow:auto; }
+.context-tab-panel:focus-visible { outline:2px solid var(--work-coral); outline-offset:-2px; }
+.workbench-error span,.workbench-notice > div:first-child { min-width:0; overflow-wrap:anywhere; }
+.workbench-error button { flex:none; min-height:36px; }
+.workbench-unavailable { display:grid; flex:1; align-content:center; justify-items:center; padding:24px; border:1px solid var(--work-line); text-align:center; }
+.workbench-unavailable h2 { margin:0 0 12px; font-size:20px; }
+.workbench-unavailable p { margin:0; color:var(--work-muted); font-size:14px; }
+.workbench-loading { display:grid; grid-template-columns:245px minmax(0,1fr) 330px; align-items:stretch; gap:0; min-height:0; }
+.workbench-loading > div { margin:16px; background:rgba(21,20,15,.06); }
+.workbench-loading > div:first-child { margin:0; background:var(--work-ink); }
+.workbench-loading > div:last-child { margin:0; border-left:1px solid var(--work-line); background:#e3d8bd; }
+.workbench-project > span { min-height:16px; }
+.workbench-project .workbench-feedback { color:#79372f; font-family:var(--font-app-sans); }
+.workbench-stage:disabled { cursor:wait; }
+.workbench-stage:disabled .stage-title { opacity:.65; }
+@media (max-width:1100px) {
+  .iteration-workbench { height:100dvh; min-height:0; overflow:hidden; }
+  .workbench-shell { min-height:0; max-height:100dvh; padding:0 12px max(12px,env(safe-area-inset-bottom)); }
+  .workbench-view-nav { display:grid; flex:none; grid-template-columns:1fr 1fr 1.4fr; margin-bottom:8px; border:1px solid var(--work-line); }
+  .workbench-view-nav button { display:flex; align-items:center; justify-content:center; gap:6px; min-height:44px; padding:6px; border:0; color:var(--work-muted); background:transparent; cursor:pointer; font:600 12px var(--font-app-sans); }
+  .workbench-view-nav button[aria-pressed="true"] { color:var(--work-bone); background:var(--work-ink); }
+  .workbench-view-nav span { font-size:11px; font-variant-numeric:tabular-nums; }
+  .workbench-view-nav button:hover:not([aria-pressed="true"]) { background:var(--work-bone); }
+  .workbench-view-nav button:disabled { opacity:.55; cursor:wait; }
+  .workbench-grid,.workbench-grid.context-collapsed { display:flex; min-height:0; overflow:hidden; }
+  .workbench-grid > :is(.workbench-sessions,.workbench-conversation,.workbench-context) { display:none; }
+  .workbench-grid[data-compact-view="conversation"] > .workbench-conversation,
+  .workbench-grid[data-compact-view="sessions"] > .workbench-sessions,
+  .workbench-grid[data-compact-view="files"] > .workbench-context { display:flex; flex:1; width:100%; min-height:0; max-height:none; }
+  .workbench-sessions { padding:12px; border:0; overflow:auto; }
+  .real-session-list,.demo-session-list { display:grid; max-height:none; overflow:visible; }
+  .real-session-list .session-list-item { flex:none; }
+  .session-list-item .session-row { flex:1; }
+  .demo-session { flex:none; }
+  .session-empty { display:block; line-height:1.6; }
+  .workbench-conversation { padding-inline:12px; }
+  .workbench-message-list { max-height:none; min-height:0; }
+  .workbench-context { border:0; }
+  .context-scroll { max-height:none; }
+  .context-switch button,.context-close,.new-session-button,.message-actions button { min-height:44px; }
+  .context-close,.new-session-button,.message-actions button { width:44px; }
+  .workbench-composer .composer-context-button { min-height:36px; }
+  .project-tree-add-context { min-height:44px; }
+  .workbench-header-actions .file-toggle { display:none; }
+  .workbench-loading { display:block; }
+  .workbench-loading > div { height:calc(100% - 32px); }
+  .workbench-loading > div:first-child,.workbench-loading > div:last-child { display:none; }
+}
+@media (max-width:760px) {
+  .workbench-header { flex-direction:row; align-items:center; gap:8px; min-height:65px; }
+  .workbench-identity { flex:1; width:auto; }
+  .workbench-project { min-width:0; }
+  .workbench-project strong { max-width:none; font-size:16px; }
+  .workbench-project > span { gap:6px; font:11px/1.4 var(--font-app-sans); }
+  .workbench-mark { flex:none; }
+  .workbench-header-actions { width:auto; font-size:11px; }
+  .conversation-heading button { min-height:44px; font-size:11px; }
+  .conversation-heading h2 { font-size:16px; }
+  .workbench-stage-area { padding:7px 0; }
+  .workbench-stage-nav { min-height:60px; }
+  .workbench-message { max-width:94%; }
+  .workbench-composer textarea { min-height:64px; max-height:22dvh; }
+  .workbench-composer button { min-height:44px; }
+  .notice-actions { flex-wrap:wrap; }
+  .workbench-notice { max-height:28dvh; overflow:auto; }
+}
+/* 横屏优先压缩导航与输入留白，消息仍在独立区域滚动。 */
+@media (max-width:1100px) and (max-height:500px) {
+  .workbench-header { min-height:44px; padding-block:4px; }
+  .workbench-stage-area { padding-block:4px; }
+  .workbench-stage-nav { min-height:44px; }
+  .workbench-stage { gap:2px; }
+  .workbench-view-nav { margin-bottom:4px; }
+  .conversation-heading { min-height:44px; }
+  .conversation-identity { padding-block:4px; }
+  .conversation-identity > span { display:none; }
+  .workbench-message-list { padding-block:4px; }
+  .workbench-composer { padding-block:4px; }
+  .workbench-composer textarea { min-height:40px; }
+  .workbench-composer .composer-context-button { min-height:32px; margin-bottom:2px; }
+}
 @keyframes iteration-drawer-in { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: translateX(0); } }
 @keyframes iteration-dialog-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @media (max-width: 760px) {

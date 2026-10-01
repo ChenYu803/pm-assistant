@@ -106,7 +106,7 @@ try {
       await mobile.waitForURL((url) => url.pathname === "/projects");
       await mobile.goto(`${base}/projects/${projectId}/iterations/${iterationId}`);
       await mobile.locator(".workbench-grid").waitFor();
-      await mobile.getByRole("button", { name: "展开文件区" }).click();
+      await mobile.getByRole("navigation", { name: "工作台区域" }).getByRole("button", { name: /文件与上下文/ }).click();
       await mobile.locator(".project-tree-name").filter({ hasText: filename }).click();
       await mobile.getByRole("button", { name: "编辑正文" }).waitFor();
       check("390px 文件编辑无横向溢出", await mobile.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));

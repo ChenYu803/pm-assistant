@@ -60,7 +60,8 @@ try {
   };
   const openTree = async () => {
     const toggle = page.getByRole("button", { name: "展开文件区" });
-    if (await toggle.count()) await toggle.click();
+    if (await page.getByRole("navigation", { name: "工作台区域" }).isVisible()) await page.getByRole("navigation", { name: "工作台区域" }).getByRole("button", { name: /文件与上下文/ }).click();
+    else if (await toggle.count()) await toggle.click();
     await page.getByRole("tab", { name: /项目文件树/ }).click();
     // 其他迭代可能尚无所属文件夹，等待文件树本身而非当前文件夹。
     await page.locator(".project-tree").waitFor();
@@ -102,6 +103,8 @@ try {
   await mkdir(".impeccable/review", { recursive: true });
   await confirmation.screenshot({ path: ".impeccable/review/task-undo-confirm-desktop.png", animations: "disabled" });
   await page.setViewportSize({ width: 390, height: 844 });
+  // 窄屏需要显式切到文件区；区域切换保留已打开的整套撤回确认。
+  await page.getByRole("navigation", { name: "工作台区域" }).getByRole("button", { name: /文件与上下文/ }).click();
   await confirmation.screenshot({ path: ".impeccable/review/task-undo-confirm-mobile.png", animations: "disabled" });
   check("390px 确认区无横向溢出", await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   // 用正式回放故障入口验证写入后事务回滚，界面保留确认供重试。

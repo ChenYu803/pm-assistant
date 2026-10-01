@@ -76,8 +76,11 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
   const [snapshotRevision, setSnapshotRevision] = useState(0);
   const [focusSnapshotMessageId, setFocusSnapshotMessageId] = useState<string | null>(null);
   const [contextOpen, setContextOpen] = useState(true);
+  const [compactView, setCompactView] = useState<"conversation" | "sessions" | "files">("conversation");
+  const [workbenchReady, setWorkbenchReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [messagesLoading, setMessagesLoading] = useState(false);
+  const [messagesFailed, setMessagesFailed] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState<{ target: StageKey; missing: StageKey } | null>(null);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
@@ -93,8 +96,6 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
   const [demoExpanded, setDemoExpanded] = useState(true);
   const [toast, setToast] = useState("");
   const messageList = useRef<HTMLDivElement>(null);
-  const conversationPanel = useRef<HTMLElement>(null);
-  const contextPanel = useRef<HTMLElement>(null);
   const loadSequence = useRef(0);
   const messageVersion = useRef(0);
   const activeView = useRef<{ stage: StageKey; sessionId: string | null }>({ stage: "analysis", sessionId: null });
@@ -147,8 +148,9 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
         request(`/api/projects/${project.id}/files`),
       ]);
       setStages(state.stages);
+      setWorkbenchReady(true);
       setCurrentStage(state.currentStage);
-      if (window.matchMedia("(max-width: 760px)").matches) {
+      if (window.matchMedia("(max-width: 1100px)").matches) {
         setContextOpen(false);
         setDemoExpanded(false);
       }
@@ -195,6 +197,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
     setMessages([]);
     setEditingId(null);
     setMessagesLoading(Boolean(sessionId));
+    setMessagesFailed(false);
     if (!sessionId) return;
     try {
       const [history, context] = await Promise.all([
@@ -205,7 +208,10 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
       if (startedAtMessageVersion === messageVersion.current) setMessages(history.messages);
       setContextBySession((previous) => ({ ...previous, [sessionId]: context.fileIds }));
     } catch (caught) {
-      if (requestSequence === loadSequence.current) setError(caught instanceof Error ? caught.message : "会话内容加载失败。");
+      if (requestSequence === loadSequence.current) {
+        setMessagesFailed(true);
+        setError(caught instanceof Error ? caught.message : "会话内容加载失败。");
+      }
     } finally {
       if (requestSequence === loadSequence.current) setMessagesLoading(false);
     }
@@ -227,12 +233,26 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
 
   function openContextPanel() {
     setContextOpen(true);
-    if (window.matchMedia("(max-width: 760px)").matches) {
-      window.setTimeout(() => contextPanel.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
-    }
+    setCompactView("files");
+  }
+
+  function closeContextPanel() {
+    setContextOpen(false);
+    setCompactView("conversation");
+  }
+
+  function navigateContextTabs(event: React.KeyboardEvent<HTMLDivElement>) {
+    const buttons = [...event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const index = buttons.indexOf(event.target as HTMLButtonElement);
+    if (index < 0 || !["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const next = event.key === "Home" ? 0 : event.key === "End" ? buttons.length - 1 : (index + (event.key === "ArrowRight" ? 1 : -1) + buttons.length) % buttons.length;
+    buttons[next].click();
+    buttons[next].focus();
   }
 
   async function enterStage(key: StageKey, bypass = false) {
+    setCompactView("conversation");
     setNotice(null);
     if (!bypass) {
       const index = stageOrder.indexOf(key);
@@ -283,6 +303,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
       setActiveSessionId(session.id);
       setMessagesLoading(true);
       setDemoId(null);
+      setCompactView("conversation");
     } catch (caught) {
       if (activeView.current.stage === stage) setError(caught instanceof Error ? caught.message : "创建会话失败。");
     } finally {
@@ -292,6 +313,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
   }
 
   async function chooseSession(session: Session) {
+    setCompactView("conversation");
     if (activeView.current.stage === currentStage && activeView.current.sessionId === session.id && !demoId && currentStatus !== "completed") return;
     loadSequence.current += 1;
     activeView.current = { stage: currentStage, sessionId: session.id };
@@ -309,9 +331,6 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
 
   function viewGeneratingSession(session: Session) {
     void chooseSession(session);
-    if (window.matchMedia("(max-width: 760px)").matches) {
-      window.setTimeout(() => conversationPanel.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 0);
-    }
   }
 
   async function completeStage() {
@@ -363,7 +382,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
   }
 
   async function sendMessage(content: string, editMessageId?: string, regenerateMessageId?: string) {
-    if (!activeSessionId || currentStatus === "completed" || (!content.trim() && !regenerateMessageId) || sendingIds.current.has(activeSessionId)) return;
+    if (!activeSessionId || messagesLoading || messagesFailed || currentStatus === "completed" || (!content.trim() && !regenerateMessageId) || sendingIds.current.has(activeSessionId)) return;
     const sessionId = activeSessionId;
     const stage = currentStage;
     sendingIds.current.add(sessionId);
@@ -445,6 +464,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
   }, [activeSessionId, base, contextUpdating, currentStage, request]);
 
   function selectDemo(id: string) {
+    setCompactView("conversation");
     loadSequence.current += 1;
     activeView.current = { stage: currentStage, sessionId: null };
     setActiveSessionId(null);
@@ -490,9 +510,9 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
         <div className="workbench-identity">
           <span className="workbench-brand"><span className="workbench-mark">A</span><span>AI 产品现场</span></span>
           <span className="workbench-divider" aria-hidden="true" />
-          <div className="workbench-project"><strong>{iteration.display_name}</strong><span>{project.name}<b>{`迭代 ${String(iteration.iteration_number).padStart(2, "0")}`}</b></span></div>
+          <div className="workbench-project"><strong title={iteration.display_name}>{iteration.display_name}</strong><span>{toast ? <span className="workbench-feedback" role="status" title={toast}>{toast}</span> : <><span title={project.name}>{project.name}</span><b>{`产品迭代 ${String(iteration.iteration_number).padStart(2, "0")}`}</b></>}</span></div>
         </div>
-        <div className="workbench-header-actions">{!contextOpen && <button className="workbench-quiet-button file-toggle" type="button" onClick={openContextPanel} aria-expanded="false"><Icon name="panel"/>展开文件区</button>}<Link href="/projects" className="workbench-back">返回迭代管理</Link></div>
+        <div className="workbench-header-actions">{!contextOpen && <button className="workbench-quiet-button file-toggle" type="button" onClick={openContextPanel} aria-expanded="false" aria-controls="workbench-files"><Icon name="panel"/>展开文件区</button>}<Link href="/projects" className="workbench-back">返回迭代管理</Link></div>
       </header>
 
       <section className="workbench-stage-area" aria-label="四环阶段导航">
@@ -504,20 +524,25 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
         {notice && <div className="workbench-notice" role="status"><div><strong>还没有确认的{stageInfo.find((stage) => stage.key === notice.missing)?.label}成果</strong><p>直接进入{stageInfo.find((stage) => stage.key === notice.target)?.label}，可能会缺少前置依据。你仍可以继续。</p></div><div className="notice-actions"><button type="button" onClick={() => void enterStage(notice.missing, true)}>返回{stageInfo.find((stage) => stage.key === notice.missing)?.label}</button><button className="notice-continue" type="button" onClick={() => void enterStage(notice.target, true)}>继续进入{stageInfo.find((stage) => stage.key === notice.target)?.label}</button></div></div>}
       </section>
 
-      {error && <div className="workbench-error" role="alert"><span>{error}</span><button type="button" onClick={() => setError("")}>关闭</button></div>}
-      {loading ? <div className="workbench-loading" aria-label="正在加载工作台"><span/><span/><span/></div> : <div className={`workbench-grid ${contextOpen ? "" : "context-collapsed"}`}>
-        <aside className="workbench-sessions" aria-label="阶段会话">
+      {error && <div className="workbench-error" role="alert"><span>{error}</span>{!workbenchReady ? <button type="button" disabled={loading} onClick={() => void loadWorkbench()}>重新加载工作台</button> : <button type="button" onClick={() => setError("")}>关闭</button>}</div>}
+      <nav className="workbench-view-nav" aria-label="工作台区域">
+        <button type="button" disabled={loading || !workbenchReady} aria-pressed={compactView === "conversation"} aria-controls="workbench-conversation" onClick={() => setCompactView("conversation")}>对话</button>
+        <button type="button" disabled={loading || !workbenchReady} aria-pressed={compactView === "sessions"} aria-controls="workbench-sessions" onClick={() => setCompactView("sessions")}>阶段会话 <span>{sessions.length}</span></button>
+        <button type="button" disabled={loading || !workbenchReady} aria-pressed={compactView === "files"} aria-controls="workbench-files" onClick={openContextPanel}>文件与上下文 <span>{contextIds.length}</span></button>
+      </nav>
+      {loading ? <div className="workbench-loading" role="status" aria-label="正在加载工作台"><div/><div/><div/></div> : !workbenchReady ? <div className="workbench-unavailable"><h2>工作台未能加载</h2><p>请重新加载后继续，项目成果不会受影响。</p></div> : <div className={`workbench-grid ${contextOpen ? "" : "context-collapsed"}`} data-compact-view={compactView}>
+        <aside className="workbench-sessions" id="workbench-sessions" aria-label="阶段会话">
           <div className="sessions-heading"><h2>阶段会话</h2><button className="new-session-button" type="button" disabled={creatingSession || contextUpdating} onClick={() => void createSession()} aria-label="新建会话" title="新建会话"><Icon name="plus"/></button></div>
           {sessions.length ? <div className="real-session-list">{sessions.map((session) => <div className="session-list-item" key={session.id}>
-            <button className="session-row" data-session-id={session.id} type="button" disabled={contextUpdating} aria-current={activeSessionId === session.id ? "page" : undefined} onClick={() => void chooseSession(session)}><strong>{session.title}</strong><small>{generatingSessionIds.includes(session.id) || sendingSessionIds.includes(session.id) ? "生成中 · " : session.title === "新会话" ? "尚无消息 · " : ""}{session.updatedAt ? new Date(session.updatedAt).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }) : ""}</small></button>
+            <button className="session-row" data-session-id={session.id} type="button" title={session.title} disabled={contextUpdating} aria-current={activeSessionId === session.id ? "page" : undefined} onClick={() => void chooseSession(session)}><strong>{session.title}</strong><small>{generatingSessionIds.includes(session.id) || sendingSessionIds.includes(session.id) ? "生成中 · " : session.title === "新会话" ? "尚无消息 · " : ""}{session.updatedAt ? new Date(session.updatedAt).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }) : ""}</small></button>
             <button className="session-delete-button" type="button" disabled={contextUpdating || creatingSession || stageUpdating} aria-label={`删除会话：${session.title}`} title={`删除会话：${session.title}`} onClick={() => setDeletingSession({ session, stage: currentStage })}><Icon name="trash" /></button>
           </div>)}</div> : <p className="session-empty">本阶段还没有会话，可新建会话开始。</p>}
           {demoSessions.length > 0 && currentStage === "analysis" ? <details className="demo-section" open={demoExpanded} onToggle={(event) => setDemoExpanded(event.currentTarget.open)}><summary className="demo-divider disclosure-summary"><span>演示会话</span><small>只读样例</small><DisclosureIcon /></summary>
           <div className="demo-session-list">{demoSessions.map((session) => <button key={session.id} type="button" className="demo-session" disabled={contextUpdating} aria-current={demoId === session.id ? "page" : undefined} onClick={() => selectDemo(session.id)}><strong>{session.title}</strong><small>{session.messages.length} 条示例消息</small></button>)}</div></details> : null}
         </aside>
 
-        <section className="workbench-conversation" aria-labelledby="conversation-title" ref={conversationPanel}>
-          <div className="conversation-heading"><h2 id="conversation-title">{activeSession?.title ?? selectedDemo?.title ?? currentInfo.label}</h2>
+        <section className="workbench-conversation" id="workbench-conversation" aria-labelledby="conversation-title">
+          <div className="conversation-heading"><div className="conversation-identity"><span>对话 · {currentInfo.label}</span><h2 id="conversation-title" title={activeSession?.title ?? selectedDemo?.title ?? currentInfo.label}>{activeSession?.title ?? selectedDemo?.title ?? currentInfo.label}</h2></div>
             {!selectedDemo && currentStatus === "in_progress" && currentStageState?.sessions.length ? <button className="stage-complete-button" type="button" disabled={stageUpdating || Boolean(stageGenerating)} aria-describedby={stageGenerating ? "stage-generation-note" : undefined} onClick={() => void completeStage()}>完成本阶段</button> : null}
             {!selectedDemo && currentStatus === "completed" ? <button className="stage-reopen-button" type="button" disabled={stageUpdating} onClick={() => void reopenStage()}>重新打开阶段</button> : null}
           </div>
@@ -526,10 +551,11 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
             {otherBusySessions.length ? <div className="stage-generation-links">{otherBusySessions.map((session) => <button key={session.id} type="button" disabled={contextUpdating} onClick={() => viewGeneratingSession(session)} title={`查看生成中的会话：${session.title}`}>{busySessions.length === 1 ? "查看会话" : session.title}</button>)}</div> : busySessions.length ? null : <span>刷新页面后可查看该会话。</span>}
           </div> : null}
           <div className="workbench-message-list" ref={messageList} aria-live="polite">
-            {selectedDemo ? <div className="demo-warning">这是只读样例会话，不会写入你的工作记录。</div> : null}
+            {selectedDemo ? <div className="demo-warning">这是只读样例会话，不会保存到你的阶段会话。</div> : null}
             {!activeSession && !selectedDemo ? <div className="stage-empty"><div><h3>从你想解决的问题开始。</h3><p>{currentInfo.hint}</p><button type="button" disabled={creatingSession || contextUpdating} onClick={() => void createSession()}>开始本阶段工作</button></div></div> : null}
             {activeSession && messagesLoading ? <p className="session-loading" role="status">正在打开会话…</p> : null}
-            {activeSession && !messagesLoading && messages.length === 0 ? <div className="stage-empty session-start"><h3>这个会话还没有消息</h3><p>{currentInfo.hint}</p></div> : null}
+            {activeSession && messagesFailed ? <div className="stage-empty session-start"><h3>会话内容未能加载</h3><p>消息与上下文尚未读取，请重试后继续。</p><button type="button" onClick={() => { setError(""); void loadMessages(activeSessionId); }}>重新加载会话</button></div> : null}
+            {activeSession && !messagesLoading && !messagesFailed && messages.length === 0 ? <div className="stage-empty session-start"><h3>这个会话还没有消息</h3><p>{currentInfo.hint}</p></div> : null}
             {(selectedDemo ? currentDemoMessages.map(([role, content], index): Message => ({ id: `demo-${index}`, role, content })) : messages).map((message) => <article className={`workbench-message ${message.role}${(message.candidate || message.taskCandidate) ? " has-candidate" : ""}`} key={message.id}>
               <div className="message-label">{message.role === "user" ? "你" : currentInfo.agent}{message.status === "generating" ? <span> · 生成中</span> : message.status === "failed" ? <span> · {message.errorMessage === "生成已停止" ? "已停止" : "生成失败"}</span> : null}</div>
               {editingId === message.id ? <div className="inline-message-edit"><textarea aria-label="修改这条消息" value={editValue} onChange={(event) => setEditValue(event.target.value)}/><div><button type="button" onClick={() => { setEditingId(null); setEditValue(""); }}>取消</button><button type="button" disabled={!editValue.trim() || sending || currentStatus === "completed"} onClick={() => void sendMessage(editValue, message.id)}>发送</button></div></div> : <><div className="message-content">{message.status === "failed" && !message.content ? message.errorMessage ?? "生成失败" : message.displayContent ?? message.content}</div>{message.candidate && activeSessionId ? <MarkdownCandidateReview candidate={message.candidate} stage={currentStage === "prototype" ? "prototype" : "analysis"} iterationId={iteration.id} sessionId={activeSessionId} files={files.filter((file) => !file.deleted)} onDecided={() => refreshCandidateState(activeSessionId, currentStage)} /> : null}{message.taskCandidate && activeSessionId ? <TaskSetCandidateReview candidate={message.taskCandidate} iterationId={iteration.id} sessionId={activeSessionId} onDecided={() => refreshCandidateState(activeSessionId, currentStage)} /> : null}{currentStage === "prototype" && message.role === "assistant" && message.status === "completed" && message.content.includes("%%%HTML_BEGIN%%%") ? <button className="message-snapshot-link" type="button" onClick={() => { setFocusSnapshotMessageId(message.id); setContextTab("snapshots"); openContextPanel(); }}>打开本轮 HTML 快照</button> : null}{!selectedDemo && <div className="message-actions"><button type="button" title="复制消息" aria-label="复制消息" onClick={() => { void navigator.clipboard.writeText(message.displayContent ?? message.content).then(() => showToast("已复制消息")).catch(() => showToast("复制失败，请手动选择文本")); }}><Icon name="copy"/></button>{message.role === "user" && message.id === lastUserId && <button type="button" title="修改并重新发送" aria-label="修改并重新发送" disabled={currentStatus === "completed" || sending} onClick={() => { setEditingId(message.id); setEditValue(message.taskCandidate ? message.displayContent ?? "" : message.content); }}><Icon name="edit"/></button>}{message.role === "assistant" && message.id === lastAssistantId && <button type="button" title={message.status === "failed" ? "重试生成" : "重新生成"} aria-label={message.status === "failed" ? "重试生成" : "重新生成"} disabled={sending || currentStatus === "completed" || !["completed", "failed"].includes(message.status ?? "")} onClick={() => void sendMessage("", undefined, message.id)}><Icon name="refresh"/></button>}</div>}</>}
@@ -537,14 +563,20 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
           </div>
           {currentStage === "tickets" && activeSessionId && !selectedDemo && currentStatus !== "completed" && !sessionGenerating ? <TaskSetManualProposal key={activeSessionId} iterationId={iteration.id} sessionId={activeSessionId} onCreated={() => refreshCandidateState(activeSessionId, currentStage)} /> : null}
           <form className="workbench-composer" onSubmit={(event) => { event.preventDefault(); void sendMessage(input); }}>
-            <textarea value={input} onChange={(event) => { if (activeSessionId) setDrafts((previous) => ({ ...previous, [activeSessionId]: event.target.value })); }} disabled={!activeSession || sessionGenerating || currentStatus === "completed" || Boolean(selectedDemo) || messagesLoading} placeholder={selectedDemo ? "演示会话为只读" : currentStatus === "completed" ? "重新打开阶段后可继续讨论" : activeSession ? "写下你现在想讨论的问题或判断……" : "开始本阶段工作后即可发送消息"} aria-label="输入消息"/>
-            <div>{sessionGenerating ? <button className="stop-generation-button" type="button" disabled={stoppingGeneration} onClick={() => void stopGeneration()}>{stoppingGeneration ? "正在停止…" : "停止生成"}</button> : null}<button type="submit" disabled={!activeSession || !input.trim() || sessionGenerating || currentStatus === "completed" || messagesLoading}>{sending ? "发送中…" : "发送消息"}</button></div>
+            <button className="composer-context-button" type="button" onClick={() => { setContextTab("context"); openContextPanel(); }}>当前上下文 · {loadedFiles.length} 个文件</button>
+            <textarea value={input} onChange={(event) => { if (activeSessionId) setDrafts((previous) => ({ ...previous, [activeSessionId]: event.target.value })); }} disabled={!activeSession || sessionGenerating || currentStatus === "completed" || Boolean(selectedDemo) || messagesLoading || messagesFailed} placeholder={selectedDemo ? "演示会话为只读" : currentStatus === "completed" ? "重新打开阶段后可继续讨论" : messagesFailed ? "重新加载会话后可继续讨论" : activeSession ? "写下你现在想讨论的问题或判断……" : "开始本阶段工作后即可发送消息"} aria-label="输入消息"/>
+            <div>{sessionGenerating ? <button className="stop-generation-button" type="button" disabled={stoppingGeneration} onClick={() => void stopGeneration()}>{stoppingGeneration ? "正在停止…" : "停止生成"}</button> : null}<button type="submit" disabled={!activeSession || !input.trim() || sessionGenerating || currentStatus === "completed" || messagesLoading || messagesFailed}>{sending ? "发送中…" : "发送消息"}</button></div>
           </form>
         </section>
 
-        {contextOpen && <aside className="workbench-context" aria-label="项目文件与上下文" ref={contextPanel}>
-          <div className="context-heading"><h2>文件与上下文</h2><button type="button" className="context-close" aria-label="关闭文件区" title="关闭文件区" onClick={() => setContextOpen(false)}><Icon name="close"/></button></div>
-          <div className="context-switch" role="tablist" aria-label="文件视图"><button type="button" role="tab" aria-selected={contextTab === "tree"} onClick={() => setContextTab("tree")}>项目文件树 <span>{files.filter((file) => !file.deleted).length}</span></button><button type="button" role="tab" aria-selected={contextTab === "context"} onClick={() => setContextTab("context")}>当前上下文 <span>{contextIds.length}</span></button><button type="button" role="tab" aria-selected={contextTab === "writes"} onClick={() => setContextTab("writes")}>本轮写入</button>{currentStage === "prototype" ? <button type="button" role="tab" aria-selected={contextTab === "snapshots"} onClick={() => setContextTab("snapshots")}>HTML 快照</button> : null}</div>
+        {contextOpen && <aside className="workbench-context" id="workbench-files" aria-label="项目文件与上下文">
+          <div className="context-heading"><h2>文件与上下文</h2><button type="button" className="context-close" aria-label="关闭文件区" title="关闭文件区" onClick={closeContextPanel}><Icon name="close"/></button></div>
+          <div className="context-switch" role="tablist" aria-label="文件视图" onKeyDown={navigateContextTabs}>{([
+            ["tree", "项目文件树", files.filter((file) => !file.deleted).length],
+            ["context", "当前上下文", contextIds.length], ["writes", "本轮写入", null],
+            ...(currentStage === "prototype" ? [["snapshots", "HTML 快照", null] as const] : []),
+          ] as const).map(([tab, label, count]) => <button key={tab} id={`context-tab-${tab}`} type="button" role="tab" aria-controls="context-tab-panel" tabIndex={contextTab === tab ? 0 : -1} aria-selected={contextTab === tab} onClick={() => setContextTab(tab)}>{label}{count !== null && <span>{count}</span>}</button>)}</div>
+          <div className="context-tab-panel" id="context-tab-panel" role="tabpanel" aria-labelledby={`context-tab-${contextTab}`} tabIndex={0}>
           {contextTab === "snapshots" && currentStage === "prototype" ? <PrototypeSnapshotPanel projectId={project.id} iterationId={iteration.id} revision={snapshotRevision} focusMessageId={focusSnapshotMessageId} /> : contextTab === "writes" ? <IterationWriteSummary iterationId={iteration.id} revision={writeRevision} /> : contextTab === "tree" ? <div className="context-scroll">
             <p className="context-guidance">{activeSessionId ? "在文件树中加入上下文；打开预览不会自动加入。" : "请先开始阶段会话，才能加入文件。预览不会自动加入。"}</p>
             <ProjectFileTree
@@ -558,17 +590,18 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
               }).catch(() => showToast("文件已保存，目录刷新失败，请重新打开工作台")); }}
               onAddToContext={(fileId) => void toggleContext(fileId, true)}
               loadedFileIds={contextIds}
-              addDisabled={!activeSessionId || messagesLoading || contextUpdating}
-              addDisabledReason={!activeSessionId ? "请先开始阶段会话" : messagesLoading ? "正在加载会话" : contextUpdating ? "正在更新上下文" : undefined}
+              addDisabled={!activeSessionId || messagesLoading || messagesFailed || contextUpdating}
+              addDisabledReason={!activeSessionId ? "请先开始阶段会话" : messagesLoading ? "正在加载会话" : messagesFailed ? "请先重新加载会话" : contextUpdating ? "正在更新上下文" : undefined}
             />
           </div> : <div className="context-scroll">
             <p className="context-guidance">{activeSessionId ? "这里只显示已加入文件。移除后，Agent 下一轮不再读取其正文。" : "请先开始阶段会话，再从项目文件树加入文件。"}</p>
             {!loadedFiles.length && <p className="context-empty">{activeSessionId ? "当前上下文为空，Agent 看得到文件目录，但看不到文件正文。" : "当前没有可管理的上下文文件。"}</p>}
             {loadedFiles.map((file) => <div className="project-file-row loaded" key={file.id}>
               <span title={file.filename}><Icon name="file"/><span className="context-file-info"><strong>{file.filename}</strong><small>最近写入：{file.lastContentIteration ?? "未记录"} · {file.canUndo ? "可撤回" : "不可撤回"}</small></span></span>
-              <button type="button" disabled={messagesLoading || contextUpdating} onClick={() => void toggleContext(file.id, false)} aria-label={`从当前上下文移除 ${file.filename}`}>移除</button>
+              <button type="button" disabled={messagesLoading || messagesFailed || contextUpdating} onClick={() => void toggleContext(file.id, false)} aria-label={`从当前上下文移除 ${file.filename}`}>移除</button>
             </div>)}
           </div>}
+          </div>
         </aside>}
       </div>}
     </div>
@@ -576,6 +609,5 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
       generating={sendingSessionIds.includes(deletingSession.session.id) || stages.some((stage) => stage.generatingSessionIds.includes(deletingSession.session.id))}
       onClose={() => setDeletingSession(null)} onDeleted={() => finishSessionDeletion(deletingSession.session, deletingSession.stage)}
       onViewGeneration={() => { const session = deletingSession.session; setDeletingSession(null); viewGeneratingSession(session); void refreshStageFacts().catch(() => undefined); }} /> : null}
-    {toast && <div className="workbench-toast" role="status">{toast}</div>}
   </main>;
 }
