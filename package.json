@@ -14,6 +14,7 @@
     "verify:v141-iteration-lifecycle": "tsx scripts/verify-v141-iteration-lifecycle.mjs",
     "verify:v141-stage-status": "tsx scripts/verify-v141-stage-status.mjs",
     "verify:v141-workspace-integration": "tsx scripts/verify-v141-workspace-integration.mjs",
+    "verify:v141-replay-foundation": "tsx scripts/verify-v141-replay-foundation.mjs",
     "verify:v141-project-file-tree": "tsx scripts/verify-v141-project-file-tree.mjs",
     "verify:v141-task-folder-ownership": "tsx scripts/verify-v141-task-folder-ownership.mjs",
     "verify:v141-task-set-submit": "tsx scripts/verify-v141-task-set-submit.mjs",
