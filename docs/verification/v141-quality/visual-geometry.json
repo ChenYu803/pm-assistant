@@ -1,0 +1,1274 @@
+[
+  {
+    "label": "1440×900 需求分析空阶段",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "nav": {
+      "x": 24,
+      "y": 84,
+      "right": 1416,
+      "bottom": 140,
+      "width": 1392,
+      "height": 56
+    },
+    "grid": {
+      "x": 24,
+      "y": 152,
+      "right": 1416,
+      "bottom": 884,
+      "width": 1392,
+      "height": 732
+    },
+    "regions": [
+      {
+        "x": 25,
+        "y": 153,
+        "right": 257,
+        "bottom": 883,
+        "width": 232,
+        "height": 730
+      },
+      {
+        "x": 257,
+        "y": 153,
+        "right": 1071,
+        "bottom": 883,
+        "width": 814,
+        "height": 730
+      },
+      {
+        "x": 1071,
+        "y": 153,
+        "right": 1415,
+        "bottom": 883,
+        "width": 344,
+        "height": 730
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 1440,
+    "fits": true
+  },
+  {
+    "label": "1440×900 原型设计空阶段",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "nav": {
+      "x": 24,
+      "y": 84,
+      "right": 1416,
+      "bottom": 140,
+      "width": 1392,
+      "height": 56
+    },
+    "grid": {
+      "x": 24,
+      "y": 152,
+      "right": 1416,
+      "bottom": 884,
+      "width": 1392,
+      "height": 732
+    },
+    "regions": [
+      {
+        "x": 25,
+        "y": 153,
+        "right": 257,
+        "bottom": 883,
+        "width": 232,
+        "height": 730
+      },
+      {
+        "x": 257,
+        "y": 153,
+        "right": 1071,
+        "bottom": 883,
+        "width": 814,
+        "height": 730
+      },
+      {
+        "x": 1071,
+        "y": 153,
+        "right": 1415,
+        "bottom": 883,
+        "width": 344,
+        "height": 730
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 1440,
+    "fits": true
+  },
+  {
+    "label": "1440×900 PRD空阶段",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "nav": {
+      "x": 24,
+      "y": 84,
+      "right": 1416,
+      "bottom": 140,
+      "width": 1392,
+      "height": 56
+    },
+    "grid": {
+      "x": 24,
+      "y": 152,
+      "right": 1416,
+      "bottom": 884,
+      "width": 1392,
+      "height": 732
+    },
+    "regions": [
+      {
+        "x": 25,
+        "y": 153,
+        "right": 257,
+        "bottom": 883,
+        "width": 232,
+        "height": 730
+      },
+      {
+        "x": 257,
+        "y": 153,
+        "right": 1071,
+        "bottom": 883,
+        "width": 814,
+        "height": 730
+      },
+      {
+        "x": 1071,
+        "y": 153,
+        "right": 1415,
+        "bottom": 883,
+        "width": 344,
+        "height": 730
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 1440,
+    "fits": true
+  },
+  {
+    "label": "1440×900 任务拆分空阶段",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "nav": {
+      "x": 24,
+      "y": 84,
+      "right": 1416,
+      "bottom": 140,
+      "width": 1392,
+      "height": 56
+    },
+    "grid": {
+      "x": 24,
+      "y": 152,
+      "right": 1416,
+      "bottom": 884,
+      "width": 1392,
+      "height": 732
+    },
+    "regions": [
+      {
+        "x": 25,
+        "y": 153,
+        "right": 257,
+        "bottom": 883,
+        "width": 232,
+        "height": 730
+      },
+      {
+        "x": 257,
+        "y": 153,
+        "right": 1071,
+        "bottom": 883,
+        "width": 814,
+        "height": 730
+      },
+      {
+        "x": 1071,
+        "y": 153,
+        "right": 1415,
+        "bottom": 883,
+        "width": 344,
+        "height": 730
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 1440,
+    "fits": true
+  },
+  {
+    "label": "1440×900 长名称待确认候选",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "nav": {
+      "x": 24,
+      "y": 84,
+      "right": 1416,
+      "bottom": 140,
+      "width": 1392,
+      "height": 56
+    },
+    "grid": {
+      "x": 24,
+      "y": 152,
+      "right": 1416,
+      "bottom": 884,
+      "width": 1392,
+      "height": 732
+    },
+    "regions": [
+      {
+        "x": 25,
+        "y": 153,
+        "right": 257,
+        "bottom": 883,
+        "width": 232,
+        "height": 730
+      },
+      {
+        "x": 257,
+        "y": 153,
+        "right": 1071,
+        "bottom": 883,
+        "width": 814,
+        "height": 730
+      },
+      {
+        "x": 1071,
+        "y": 153,
+        "right": 1415,
+        "bottom": 883,
+        "width": 344,
+        "height": 730
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 1440,
+    "fits": true
+  },
+  {
+    "label": "1440×900 长文件名文件树",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "nav": {
+      "x": 24,
+      "y": 84,
+      "right": 1416,
+      "bottom": 140,
+      "width": 1392,
+      "height": 56
+    },
+    "grid": {
+      "x": 24,
+      "y": 152,
+      "right": 1416,
+      "bottom": 884,
+      "width": 1392,
+      "height": 732
+    },
+    "regions": [
+      {
+        "x": 25,
+        "y": 153,
+        "right": 257,
+        "bottom": 883,
+        "width": 232,
+        "height": 730
+      },
+      {
+        "x": 257,
+        "y": 153,
+        "right": 1071,
+        "bottom": 883,
+        "width": 814,
+        "height": 730
+      },
+      {
+        "x": 1071,
+        "y": 153,
+        "right": 1415,
+        "bottom": 883,
+        "width": 344,
+        "height": 730
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 1440,
+    "fits": true
+  },
+  {
+    "label": "1440×900 生成状态",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "nav": {
+      "x": 24,
+      "y": 84,
+      "right": 1416,
+      "bottom": 140,
+      "width": 1392,
+      "height": 56
+    },
+    "grid": {
+      "x": 24,
+      "y": 152,
+      "right": 1416,
+      "bottom": 884,
+      "width": 1392,
+      "height": 732
+    },
+    "regions": [
+      {
+        "x": 25,
+        "y": 153,
+        "right": 257,
+        "bottom": 883,
+        "width": 232,
+        "height": 730
+      },
+      {
+        "x": 257,
+        "y": 153,
+        "right": 1071,
+        "bottom": 883,
+        "width": 814,
+        "height": 730
+      },
+      {
+        "x": 1071,
+        "y": 153,
+        "right": 1415,
+        "bottom": 883,
+        "width": 344,
+        "height": 730
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 1440,
+    "fits": true
+  },
+  {
+    "label": "1440×900 会话失败",
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "nav": {
+      "x": 24,
+      "y": 84,
+      "right": 1416,
+      "bottom": 140,
+      "width": 1392,
+      "height": 56
+    },
+    "grid": {
+      "x": 24,
+      "y": 216,
+      "right": 1416,
+      "bottom": 884,
+      "width": 1392,
+      "height": 668
+    },
+    "regions": [
+      {
+        "x": 25,
+        "y": 217,
+        "right": 257,
+        "bottom": 883,
+        "width": 232,
+        "height": 666
+      },
+      {
+        "x": 257,
+        "y": 217,
+        "right": 1071,
+        "bottom": 883,
+        "width": 814,
+        "height": 666
+      },
+      {
+        "x": 1071,
+        "y": 217,
+        "right": 1415,
+        "bottom": 883,
+        "width": 344,
+        "height": 666
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 1440,
+    "fits": true
+  },
+  {
+    "label": "1440桌面200%缩放等效CSS视口",
+    "viewport": {
+      "width": 720,
+      "height": 450
+    },
+    "nav": {
+      "x": 12,
+      "y": 57,
+      "right": 708,
+      "bottom": 102,
+      "width": 696,
+      "height": 45
+    },
+    "grid": {
+      "x": 12,
+      "y": 156,
+      "right": 708,
+      "bottom": 438,
+      "width": 696,
+      "height": 282
+    },
+    "regions": [
+      {
+        "x": 13,
+        "y": 157,
+        "right": 707,
+        "bottom": 437,
+        "width": 694,
+        "height": 280
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 720,
+    "fits": true
+  },
+  {
+    "label": "390×844 需求分析空阶段",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "nav": {
+      "x": 12,
+      "y": 72,
+      "right": 378,
+      "bottom": 132,
+      "width": 366,
+      "height": 60
+    },
+    "grid": {
+      "x": 12,
+      "y": 194,
+      "right": 378,
+      "bottom": 832,
+      "width": 366,
+      "height": 638
+    },
+    "regions": [
+      {
+        "x": 13,
+        "y": 195,
+        "right": 377,
+        "bottom": 831,
+        "width": 364,
+        "height": 636
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 390,
+    "fits": true
+  },
+  {
+    "label": "390×844 原型设计空阶段",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "nav": {
+      "x": 12,
+      "y": 72,
+      "right": 378,
+      "bottom": 132,
+      "width": 366,
+      "height": 60
+    },
+    "grid": {
+      "x": 12,
+      "y": 194,
+      "right": 378,
+      "bottom": 832,
+      "width": 366,
+      "height": 638
+    },
+    "regions": [
+      {
+        "x": 13,
+        "y": 195,
+        "right": 377,
+        "bottom": 831,
+        "width": 364,
+        "height": 636
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 390,
+    "fits": true
+  },
+  {
+    "label": "390×844 PRD空阶段",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "nav": {
+      "x": 12,
+      "y": 72,
+      "right": 378,
+      "bottom": 132,
+      "width": 366,
+      "height": 60
+    },
+    "grid": {
+      "x": 12,
+      "y": 194,
+      "right": 378,
+      "bottom": 832,
+      "width": 366,
+      "height": 638
+    },
+    "regions": [
+      {
+        "x": 13,
+        "y": 195,
+        "right": 377,
+        "bottom": 831,
+        "width": 364,
+        "height": 636
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 390,
+    "fits": true
+  },
+  {
+    "label": "390×844 任务拆分空阶段",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "nav": {
+      "x": 12,
+      "y": 72,
+      "right": 378,
+      "bottom": 132,
+      "width": 366,
+      "height": 60
+    },
+    "grid": {
+      "x": 12,
+      "y": 194,
+      "right": 378,
+      "bottom": 832,
+      "width": 366,
+      "height": 638
+    },
+    "regions": [
+      {
+        "x": 13,
+        "y": 195,
+        "right": 377,
+        "bottom": 831,
+        "width": 364,
+        "height": 636
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 390,
+    "fits": true
+  },
+  {
+    "label": "390×844 长名称待确认候选",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "nav": {
+      "x": 12,
+      "y": 72,
+      "right": 378,
+      "bottom": 132,
+      "width": 366,
+      "height": 60
+    },
+    "grid": {
+      "x": 12,
+      "y": 194,
+      "right": 378,
+      "bottom": 832,
+      "width": 366,
+      "height": 638
+    },
+    "regions": [
+      {
+        "x": 13,
+        "y": 195,
+        "right": 377,
+        "bottom": 831,
+        "width": 364,
+        "height": 636
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 390,
+    "fits": true
+  },
+  {
+    "label": "390×844 长文件名文件树",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "nav": {
+      "x": 12,
+      "y": 72,
+      "right": 378,
+      "bottom": 132,
+      "width": 366,
+      "height": 60
+    },
+    "grid": {
+      "x": 12,
+      "y": 194,
+      "right": 378,
+      "bottom": 832,
+      "width": 366,
+      "height": 638
+    },
+    "regions": [
+      {
+        "x": 13,
+        "y": 195,
+        "right": 377,
+        "bottom": 831,
+        "width": 364,
+        "height": 636
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 390,
+    "fits": true
+  },
+  {
+    "label": "390×844 生成状态",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "nav": {
+      "x": 12,
+      "y": 72,
+      "right": 378,
+      "bottom": 132,
+      "width": 366,
+      "height": 60
+    },
+    "grid": {
+      "x": 12,
+      "y": 194,
+      "right": 378,
+      "bottom": 832,
+      "width": 366,
+      "height": 638
+    },
+    "regions": [
+      {
+        "x": 13,
+        "y": 195,
+        "right": 377,
+        "bottom": 831,
+        "width": 364,
+        "height": 636
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 390,
+    "fits": true
+  },
+  {
+    "label": "390×844 会话失败",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "nav": {
+      "x": 12,
+      "y": 72,
+      "right": 378,
+      "bottom": 132,
+      "width": 366,
+      "height": 60
+    },
+    "grid": {
+      "x": 12,
+      "y": 258,
+      "right": 378,
+      "bottom": 832,
+      "width": 366,
+      "height": 574
+    },
+    "regions": [
+      {
+        "x": 13,
+        "y": 259,
+        "right": 377,
+        "bottom": 831,
+        "width": 364,
+        "height": 572
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 390,
+    "fits": true
+  },
+  {
+    "label": "390×844 长会话名",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "nav": {
+      "x": 12,
+      "y": 72,
+      "right": 378,
+      "bottom": 132,
+      "width": 366,
+      "height": 60
+    },
+    "grid": {
+      "x": 12,
+      "y": 194,
+      "right": 378,
+      "bottom": 832,
+      "width": 366,
+      "height": 638
+    },
+    "regions": [
+      {
+        "x": 13,
+        "y": 195,
+        "right": 377,
+        "bottom": 831,
+        "width": 364,
+        "height": 636
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 390,
+    "fits": true
+  },
+  {
+    "label": "320×740 对话",
+    "viewport": {
+      "width": 320,
+      "height": 740
+    },
+    "nav": {
+      "x": 12,
+      "y": 72,
+      "right": 308,
+      "bottom": 132,
+      "width": 296,
+      "height": 60
+    },
+    "grid": {
+      "x": 12,
+      "y": 194,
+      "right": 308,
+      "bottom": 728,
+      "width": 296,
+      "height": 534
+    },
+    "regions": [
+      {
+        "x": 13,
+        "y": 195,
+        "right": 307,
+        "bottom": 727,
+        "width": 294,
+        "height": 532
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 320,
+    "fits": true
+  },
+  {
+    "label": "320×740 文件区",
+    "viewport": {
+      "width": 320,
+      "height": 740
+    },
+    "nav": {
+      "x": 12,
+      "y": 72,
+      "right": 308,
+      "bottom": 132,
+      "width": 296,
+      "height": 60
+    },
+    "grid": {
+      "x": 12,
+      "y": 194,
+      "right": 308,
+      "bottom": 728,
+      "width": 296,
+      "height": 534
+    },
+    "regions": [
+      {
+        "x": 13,
+        "y": 195,
+        "right": 307,
+        "bottom": 727,
+        "width": 294,
+        "height": 532
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 320,
+    "fits": true
+  },
+  {
+    "label": "768×900 对话",
+    "viewport": {
+      "width": 768,
+      "height": 900
+    },
+    "nav": {
+      "x": 12,
+      "y": 84,
+      "right": 756,
+      "bottom": 140,
+      "width": 744,
+      "height": 56
+    },
+    "grid": {
+      "x": 12,
+      "y": 206,
+      "right": 756,
+      "bottom": 888,
+      "width": 744,
+      "height": 682
+    },
+    "regions": [
+      {
+        "x": 13,
+        "y": 207,
+        "right": 755,
+        "bottom": 887,
+        "width": 742,
+        "height": 680
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 768,
+    "fits": true
+  },
+  {
+    "label": "768×900 文件区",
+    "viewport": {
+      "width": 768,
+      "height": 900
+    },
+    "nav": {
+      "x": 12,
+      "y": 84,
+      "right": 756,
+      "bottom": 140,
+      "width": 744,
+      "height": 56
+    },
+    "grid": {
+      "x": 12,
+      "y": 206,
+      "right": 756,
+      "bottom": 888,
+      "width": 744,
+      "height": 682
+    },
+    "regions": [
+      {
+        "x": 13,
+        "y": 207,
+        "right": 755,
+        "bottom": 887,
+        "width": 742,
+        "height": 680
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 768,
+    "fits": true
+  },
+  {
+    "label": "1100×800 对话",
+    "viewport": {
+      "width": 1100,
+      "height": 800
+    },
+    "nav": {
+      "x": 12,
+      "y": 84,
+      "right": 1088,
+      "bottom": 140,
+      "width": 1076,
+      "height": 56
+    },
+    "grid": {
+      "x": 12,
+      "y": 206,
+      "right": 1088,
+      "bottom": 788,
+      "width": 1076,
+      "height": 582
+    },
+    "regions": [
+      {
+        "x": 13,
+        "y": 207,
+        "right": 1087,
+        "bottom": 787,
+        "width": 1074,
+        "height": 580
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 1100,
+    "fits": true
+  },
+  {
+    "label": "1100×800 文件区",
+    "viewport": {
+      "width": 1100,
+      "height": 800
+    },
+    "nav": {
+      "x": 12,
+      "y": 84,
+      "right": 1088,
+      "bottom": 140,
+      "width": 1076,
+      "height": 56
+    },
+    "grid": {
+      "x": 12,
+      "y": 206,
+      "right": 1088,
+      "bottom": 788,
+      "width": 1076,
+      "height": 582
+    },
+    "regions": [
+      {
+        "x": 13,
+        "y": 207,
+        "right": 1087,
+        "bottom": 787,
+        "width": 1074,
+        "height": 580
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 1100,
+    "fits": true
+  },
+  {
+    "label": "844×390 对话",
+    "viewport": {
+      "width": 844,
+      "height": 390
+    },
+    "nav": {
+      "x": 12,
+      "y": 57.9375,
+      "right": 832,
+      "bottom": 101.9375,
+      "width": 820,
+      "height": 44
+    },
+    "grid": {
+      "x": 12,
+      "y": 155.9375,
+      "right": 832,
+      "bottom": 378,
+      "width": 820,
+      "height": 222.0625
+    },
+    "regions": [
+      {
+        "x": 13,
+        "y": 156.9375,
+        "right": 831,
+        "bottom": 377,
+        "width": 818,
+        "height": 220.0625
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 844,
+    "fits": true
+  },
+  {
+    "label": "844×390 文件区",
+    "viewport": {
+      "width": 844,
+      "height": 390
+    },
+    "nav": {
+      "x": 12,
+      "y": 57.9375,
+      "right": 832,
+      "bottom": 101.9375,
+      "width": 820,
+      "height": 44
+    },
+    "grid": {
+      "x": 12,
+      "y": 155.9375,
+      "right": 832,
+      "bottom": 378,
+      "width": 820,
+      "height": 222.0625
+    },
+    "regions": [
+      {
+        "x": 13,
+        "y": 156.9375,
+        "right": 831,
+        "bottom": 377,
+        "width": 818,
+        "height": 220.0625
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 844,
+    "fits": true
+  },
+  {
+    "label": "1101×800 对话",
+    "viewport": {
+      "width": 1101,
+      "height": 800
+    },
+    "nav": {
+      "x": 24,
+      "y": 84,
+      "right": 1077,
+      "bottom": 140,
+      "width": 1053,
+      "height": 56
+    },
+    "grid": {
+      "x": 24,
+      "y": 152,
+      "right": 1077,
+      "bottom": 784,
+      "width": 1053,
+      "height": 632
+    },
+    "regions": [
+      {
+        "x": 25,
+        "y": 153,
+        "right": 217,
+        "bottom": 783,
+        "width": 192,
+        "height": 630
+      },
+      {
+        "x": 217,
+        "y": 153,
+        "right": 776,
+        "bottom": 783,
+        "width": 559,
+        "height": 630
+      },
+      {
+        "x": 776,
+        "y": 153,
+        "right": 1076,
+        "bottom": 783,
+        "width": 300,
+        "height": 630
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 1101,
+    "fits": true
+  },
+  {
+    "label": "1101×800 文件区",
+    "viewport": {
+      "width": 1101,
+      "height": 800
+    },
+    "nav": {
+      "x": 24,
+      "y": 84,
+      "right": 1077,
+      "bottom": 140,
+      "width": 1053,
+      "height": 56
+    },
+    "grid": {
+      "x": 24,
+      "y": 152,
+      "right": 1077,
+      "bottom": 784,
+      "width": 1053,
+      "height": 632
+    },
+    "regions": [
+      {
+        "x": 25,
+        "y": 153,
+        "right": 217,
+        "bottom": 783,
+        "width": 192,
+        "height": 630
+      },
+      {
+        "x": 217,
+        "y": 153,
+        "right": 776,
+        "bottom": 783,
+        "width": 559,
+        "height": 630
+      },
+      {
+        "x": 776,
+        "y": 153,
+        "right": 1076,
+        "bottom": 783,
+        "width": 300,
+        "height": 630
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 1101,
+    "fits": true
+  },
+  {
+    "label": "1280×800 对话",
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "nav": {
+      "x": 24,
+      "y": 84,
+      "right": 1256,
+      "bottom": 140,
+      "width": 1232,
+      "height": 56
+    },
+    "grid": {
+      "x": 24,
+      "y": 152,
+      "right": 1256,
+      "bottom": 784,
+      "width": 1232,
+      "height": 632
+    },
+    "regions": [
+      {
+        "x": 25,
+        "y": 153,
+        "right": 217,
+        "bottom": 783,
+        "width": 192,
+        "height": 630
+      },
+      {
+        "x": 217,
+        "y": 153,
+        "right": 955,
+        "bottom": 783,
+        "width": 738,
+        "height": 630
+      },
+      {
+        "x": 955,
+        "y": 153,
+        "right": 1255,
+        "bottom": 783,
+        "width": 300,
+        "height": 630
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 1280,
+    "fits": true
+  },
+  {
+    "label": "1280×800 文件区",
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "nav": {
+      "x": 24,
+      "y": 84,
+      "right": 1256,
+      "bottom": 140,
+      "width": 1232,
+      "height": 56
+    },
+    "grid": {
+      "x": 24,
+      "y": 152,
+      "right": 1256,
+      "bottom": 784,
+      "width": 1232,
+      "height": 632
+    },
+    "regions": [
+      {
+        "x": 25,
+        "y": 153,
+        "right": 217,
+        "bottom": 783,
+        "width": 192,
+        "height": 630
+      },
+      {
+        "x": 217,
+        "y": 153,
+        "right": 955,
+        "bottom": 783,
+        "width": 738,
+        "height": 630
+      },
+      {
+        "x": 955,
+        "y": 153,
+        "right": 1255,
+        "bottom": 783,
+        "width": 300,
+        "height": 630
+      }
+    ],
+    "disjoint": true,
+    "pageWidth": 1280,
+    "fits": true
+  }
+]

@@ -1,0 +1,771 @@
+{
+  "ticket": 22,
+  "slug": "deletion-failure-replay",
+  "pass": 170,
+  "fail": 0,
+  "outputDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9",
+  "database": "v141_replay_55c171bbc751d840",
+  "cleaned": true,
+  "seconds": 100.7,
+  "scenario": {
+    "pass": 163,
+    "fail": 0,
+    "aiMode": "replay",
+    "workflows": [
+      {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "projectId": "4bfaf902-0000-4bef-9177-6c3bcaacdabd",
+        "deletedIterationId": "8b1b5274-b982-4507-86e4-27d135b4ec59",
+        "replacementIterationId": "f9a9fd21-77e4-4bc2-9d1d-f706e6d83ea2",
+        "sessionIds": [
+          "c7481de6-7599-416e-9a91-fa082cee5376",
+          "f3f23fd0-62e3-4f66-9c67-7054d029f805",
+          "6ca5cc42-4fbe-49bd-9af9-a53e9b662061",
+          "dac34e1b-3d08-4444-8a1d-da999d5a85b7",
+          "5cfe11b3-4349-4734-ada3-19c01931cae2"
+        ],
+        "fileId": "031ca6cf-109d-4f6c-82de-ac85348e8dd6",
+        "folderId": "293247cc-60ad-4b19-aa8b-6be0cd710c57",
+        "snapshotId": "4bf72e03-5c26-4176-b7ca-e7d487957101",
+        "projectDeleted": true
+      },
+      {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "projectId": "06c9318d-da17-4422-8d01-409f218c11a3",
+        "deletedIterationId": "c70b0b3f-07b0-42f0-a22a-53a6e8dea2e9",
+        "replacementIterationId": "c9272680-1f0d-4c67-9a4e-25ba48574de8",
+        "sessionIds": [
+          "adfb1e9b-f057-4144-b3c9-3ff6eff1d7a3",
+          "2c6c3ebe-ea24-46fa-830e-3e0d4021a7c8",
+          "93b4038c-58f4-4395-b855-bb61d792fe63",
+          "ea334335-9585-4d17-be94-1779ba6d8f47",
+          "1107496c-4fd0-439a-99a3-c7741fa418f4"
+        ],
+        "fileId": "74edb897-7c02-4971-904f-0fccbea744a0",
+        "folderId": "b4b34389-39a4-403a-8ef2-3b7e8ce39188",
+        "snapshotId": "0d42b20d-e734-41a7-bd5b-6291f354f8c3",
+        "projectDeleted": true
+      }
+    ],
+    "screenshots": [
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-1440-file-create-retry.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-1440-file-overwrite-retry.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-1440-iteration-generation-blocked.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-1440-generation-delete-blocked.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-1440-session-delete-confirm.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-1440-session-delete-retry.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-1440-generation-failure-retry.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-1440-tasks-创建-retry.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-1440-tasks-update-retry.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-1440-iteration-delete-confirm.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-1440-iteration-delete-retry.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-1440-archived-readonly.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-1440-deleted-source-placeholder.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-1440-archived-html.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-390-file-create-retry.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-390-file-overwrite-retry.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-390-iteration-generation-blocked.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-390-generation-delete-blocked.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-390-session-delete-confirm.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-390-session-delete-retry.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-390-generation-failure-retry.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-390-tasks-创建-retry.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-390-tasks-update-retry.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-390-iteration-delete-confirm.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-390-iteration-delete-retry.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-390-archived-readonly.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-390-deleted-source-placeholder.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-NgAHU9\\deletion-390-archived-html.png"
+    ],
+    "assertions": [
+      {
+        "name": "权限泄露保护能识别嵌套响应中含换行和引号的MD及HTML原文",
+        "okay": true
+      },
+      {
+        "name": "发送前正式服务确认 AI_MODE=replay",
+        "okay": true
+      },
+      {
+        "name": "专项注册前独立数据库没有用户",
+        "okay": true
+      },
+      {
+        "name": "1440×900 create正式候选 pending",
+        "okay": true
+      },
+      {
+        "name": "1440×900 普通create真实事务失败资产、备份和来源不变",
+        "okay": true
+      },
+      {
+        "name": "1440×900 普通create失败候选原样且确认入口可重试",
+        "okay": true
+      },
+      {
+        "name": "1440×900 file-create-retry无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 overwrite正式候选 pending",
+        "okay": true
+      },
+      {
+        "name": "1440×900 普通overwrite真实事务失败资产、备份和来源不变",
+        "okay": true
+      },
+      {
+        "name": "1440×900 普通overwrite失败候选原样且确认入口可重试",
+        "okay": true
+      },
+      {
+        "name": "1440×900 file-overwrite-retry无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 普通编辑事务失败原正文备份修订来源不变",
+        "okay": true
+      },
+      {
+        "name": "1440×900 正式上下文加入成功",
+        "okay": true
+      },
+      {
+        "name": "1440×900 删除前有非空旧版和未确认候选",
+        "okay": true
+      },
+      {
+        "name": "1440×900 真正 in-flight 生成同时阻止会话和迭代删除",
+        "okay": true
+      },
+      {
+        "name": "1440×900 生成中409完整会话消息上下文候选过程保持不变",
+        "okay": true
+      },
+      {
+        "name": "1440×900 真实生成阻止迭代UI删除并保留对象和全部过程",
+        "okay": true
+      },
+      {
+        "name": "1440×900 iteration-generation-blocked无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 真实生成中 UI 禁用删除并提供停止入口",
+        "okay": true
+      },
+      {
+        "name": "1440×900 generation-delete-blocked无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 停止真实请求后返回409且资产候选保留",
+        "okay": true
+      },
+      {
+        "name": "1440×900 真正写入持锁同时阻止会话和迭代删除且不排队",
+        "okay": true
+      },
+      {
+        "name": "1440×900 写入锁冲突对象候选及资产逐字段保留",
+        "okay": true
+      },
+      {
+        "name": "1440×900 停止后删除恢复且确认明确候选丢失和成果保留",
+        "okay": true
+      },
+      {
+        "name": "1440×900 session-delete-confirm无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 会话删除网络失败无假成功且可原位重试",
+        "okay": true
+      },
+      {
+        "name": "1440×900 session-delete-retry无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 会话删除清理消息上下文普通候选但保留全部成果",
+        "okay": true
+      },
+      {
+        "name": "1440×900 会话删除清空iteration_session_messages",
+        "okay": true
+      },
+      {
+        "name": "1440×900 会话删除清空iteration_session_context_files",
+        "okay": true
+      },
+      {
+        "name": "1440×900 会话删除清空iteration_file_candidates",
+        "okay": true
+      },
+      {
+        "name": "1440×900 会话删除后历史来源保留精确会话名称快照及已删除状态",
+        "okay": true
+      },
+      {
+        "name": "1440×900 HTML快照真实提交故障回滚候选快照且消息 failed 可重试",
+        "okay": true
+      },
+      {
+        "name": "1440×900 HTML失败真实UI提供重试生成且无成功快照入口",
+        "okay": true
+      },
+      {
+        "name": "1440×900 generation-failure-retry无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 生成重试只留下一个完整HTML快照",
+        "okay": true
+      },
+      {
+        "name": "1440×900 创建正式任务候选 pending",
+        "okay": true
+      },
+      {
+        "name": "1440×900 创建真实整套故障没有半套文件夹序号快照或来源",
+        "okay": true
+      },
+      {
+        "name": "1440×900 tasks-创建-retry无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 任务整套修改故障不留下半成品且可重试",
+        "okay": true
+      },
+      {
+        "name": "1440×900 tasks-update-retry无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 任务删除前旧集合非空且存在待确认候选",
+        "okay": true
+      },
+      {
+        "name": "1440×900 任务会话删除只清理候选，非空旧集合原样保留",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户删除精确404且无正文名称身份泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户删除精确404且无正文名称身份泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户历史或快照读取精确404且无正文名称身份泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户历史或快照读取精确404且无正文名称身份泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目会话删除精确404且无正文名称身份泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目文件修改精确404且无正文名称身份泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目快照读取精确404且无正文名称身份泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 所有权限失败后资产候选过程逐字段不变",
+        "okay": true
+      },
+      {
+        "name": "1440×900 迭代删除确认明确保留资产旧集合及不可撤销",
+        "okay": true
+      },
+      {
+        "name": "1440×900 iteration-delete-confirm无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 迭代删除网络失败弹窗对象保留无假成功",
+        "okay": true
+      },
+      {
+        "name": "1440×900 iteration-delete-retry无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 迭代删除保留所有项目资产及非空备份快照来源",
+        "okay": true
+      },
+      {
+        "name": "1440×900 删除来源保留稳定编号名称且无跳转ID",
+        "okay": true
+      },
+      {
+        "name": "1440×900 任务文件夹归档并失去活跃所属迭代",
+        "okay": true
+      },
+      {
+        "name": "1440×900 archived-readonly无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 无迭代正文仍可预览下载且全部修改入口隐藏",
+        "okay": true
+      },
+      {
+        "name": "1440×900 已删除来源真实UI文本占位无跳转及改名删除",
+        "okay": true
+      },
+      {
+        "name": "1440×900 deleted-source-placeholder无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 archived-html无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 来源删除后MD下载HTML预览下载字节保留",
+        "okay": true
+      },
+      {
+        "name": "1440×900 无迭代旧PATCH入口守卫",
+        "okay": true
+      },
+      {
+        "name": "1440×900 无迭代旧DELETE入口守卫",
+        "okay": true
+      },
+      {
+        "name": "1440×900 无迭代旧POST入口守卫",
+        "okay": true
+      },
+      {
+        "name": "1440×900 无迭代旧POST入口守卫",
+        "okay": true
+      },
+      {
+        "name": "1440×900 无迭代旧上下文及HTML创建入口守卫",
+        "okay": true
+      },
+      {
+        "name": "1440×900 旧工作记录真实replay消息和操作创建完成",
+        "okay": true
+      },
+      {
+        "name": "1440×900 项目删除前旧工作记录标签消息操作都非空",
+        "okay": true
+      },
+      {
+        "name": "1440×900 新迭代编号不复用且归档任务可加入上下文",
+        "okay": true
+      },
+      {
+        "name": "1440×900 新迭代不能edit归档任务",
+        "okay": true
+      },
+      {
+        "name": "1440×900 新迭代不能rename归档任务",
+        "okay": true
+      },
+      {
+        "name": "1440×900 新迭代不能delete归档任务",
+        "okay": true
+      },
+      {
+        "name": "1440×900 新迭代不能restore归档任务",
+        "okay": true
+      },
+      {
+        "name": "1440×900 新迭代不能撤回归档整套且拒绝后资产原样",
+        "okay": true
+      },
+      {
+        "name": "1440×900 新迭代独立集合正式任务候选 pending",
+        "okay": true
+      },
+      {
+        "name": "1440×900 新迭代Agent只能写自己的集合且归档所有字段原样",
+        "okay": true
+      },
+      {
+        "name": "1440×900 项目级联真实故障全部文件来源及新旧过程回滚可重试",
+        "okay": true
+      },
+      {
+        "name": "1440×900 只有删除项目才清理全部项目资产来源和新旧过程",
+        "okay": true
+      },
+      {
+        "name": "1440×900 项目删除不会影响另一项目及迭代",
+        "okay": true
+      },
+      {
+        "name": "1440×900 连续流程浏览器无未捕获异常",
+        "okay": true
+      },
+      {
+        "name": "390×844 create正式候选 pending",
+        "okay": true
+      },
+      {
+        "name": "390×844 普通create真实事务失败资产、备份和来源不变",
+        "okay": true
+      },
+      {
+        "name": "390×844 普通create失败候选原样且确认入口可重试",
+        "okay": true
+      },
+      {
+        "name": "390×844 file-create-retry无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 overwrite正式候选 pending",
+        "okay": true
+      },
+      {
+        "name": "390×844 普通overwrite真实事务失败资产、备份和来源不变",
+        "okay": true
+      },
+      {
+        "name": "390×844 普通overwrite失败候选原样且确认入口可重试",
+        "okay": true
+      },
+      {
+        "name": "390×844 file-overwrite-retry无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 普通编辑事务失败原正文备份修订来源不变",
+        "okay": true
+      },
+      {
+        "name": "390×844 正式上下文加入成功",
+        "okay": true
+      },
+      {
+        "name": "390×844 删除前有非空旧版和未确认候选",
+        "okay": true
+      },
+      {
+        "name": "390×844 真正 in-flight 生成同时阻止会话和迭代删除",
+        "okay": true
+      },
+      {
+        "name": "390×844 生成中409完整会话消息上下文候选过程保持不变",
+        "okay": true
+      },
+      {
+        "name": "390×844 真实生成阻止迭代UI删除并保留对象和全部过程",
+        "okay": true
+      },
+      {
+        "name": "390×844 iteration-generation-blocked无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 真实生成中 UI 禁用删除并提供停止入口",
+        "okay": true
+      },
+      {
+        "name": "390×844 generation-delete-blocked无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 停止真实请求后返回409且资产候选保留",
+        "okay": true
+      },
+      {
+        "name": "390×844 真正写入持锁同时阻止会话和迭代删除且不排队",
+        "okay": true
+      },
+      {
+        "name": "390×844 写入锁冲突对象候选及资产逐字段保留",
+        "okay": true
+      },
+      {
+        "name": "390×844 停止后删除恢复且确认明确候选丢失和成果保留",
+        "okay": true
+      },
+      {
+        "name": "390×844 session-delete-confirm无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 会话删除网络失败无假成功且可原位重试",
+        "okay": true
+      },
+      {
+        "name": "390×844 session-delete-retry无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 会话删除清理消息上下文普通候选但保留全部成果",
+        "okay": true
+      },
+      {
+        "name": "390×844 会话删除清空iteration_session_messages",
+        "okay": true
+      },
+      {
+        "name": "390×844 会话删除清空iteration_session_context_files",
+        "okay": true
+      },
+      {
+        "name": "390×844 会话删除清空iteration_file_candidates",
+        "okay": true
+      },
+      {
+        "name": "390×844 会话删除后历史来源保留精确会话名称快照及已删除状态",
+        "okay": true
+      },
+      {
+        "name": "390×844 HTML快照真实提交故障回滚候选快照且消息 failed 可重试",
+        "okay": true
+      },
+      {
+        "name": "390×844 HTML失败真实UI提供重试生成且无成功快照入口",
+        "okay": true
+      },
+      {
+        "name": "390×844 generation-failure-retry无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 生成重试只留下一个完整HTML快照",
+        "okay": true
+      },
+      {
+        "name": "390×844 创建正式任务候选 pending",
+        "okay": true
+      },
+      {
+        "name": "390×844 创建真实整套故障没有半套文件夹序号快照或来源",
+        "okay": true
+      },
+      {
+        "name": "390×844 tasks-创建-retry无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 任务整套修改故障不留下半成品且可重试",
+        "okay": true
+      },
+      {
+        "name": "390×844 tasks-update-retry无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 任务删除前旧集合非空且存在待确认候选",
+        "okay": true
+      },
+      {
+        "name": "390×844 任务会话删除只清理候选，非空旧集合原样保留",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户删除精确404且无正文名称身份泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户删除精确404且无正文名称身份泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户历史或快照读取精确404且无正文名称身份泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户历史或快照读取精确404且无正文名称身份泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目会话删除精确404且无正文名称身份泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目文件修改精确404且无正文名称身份泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目快照读取精确404且无正文名称身份泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 所有权限失败后资产候选过程逐字段不变",
+        "okay": true
+      },
+      {
+        "name": "390×844 迭代删除确认明确保留资产旧集合及不可撤销",
+        "okay": true
+      },
+      {
+        "name": "390×844 iteration-delete-confirm无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 迭代删除网络失败弹窗对象保留无假成功",
+        "okay": true
+      },
+      {
+        "name": "390×844 iteration-delete-retry无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 迭代删除保留所有项目资产及非空备份快照来源",
+        "okay": true
+      },
+      {
+        "name": "390×844 删除来源保留稳定编号名称且无跳转ID",
+        "okay": true
+      },
+      {
+        "name": "390×844 任务文件夹归档并失去活跃所属迭代",
+        "okay": true
+      },
+      {
+        "name": "390×844 archived-readonly无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 无迭代正文仍可预览下载且全部修改入口隐藏",
+        "okay": true
+      },
+      {
+        "name": "390×844 已删除来源真实UI文本占位无跳转及改名删除",
+        "okay": true
+      },
+      {
+        "name": "390×844 deleted-source-placeholder无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 archived-html无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 来源删除后MD下载HTML预览下载字节保留",
+        "okay": true
+      },
+      {
+        "name": "390×844 无迭代旧PATCH入口守卫",
+        "okay": true
+      },
+      {
+        "name": "390×844 无迭代旧DELETE入口守卫",
+        "okay": true
+      },
+      {
+        "name": "390×844 无迭代旧POST入口守卫",
+        "okay": true
+      },
+      {
+        "name": "390×844 无迭代旧POST入口守卫",
+        "okay": true
+      },
+      {
+        "name": "390×844 无迭代旧上下文及HTML创建入口守卫",
+        "okay": true
+      },
+      {
+        "name": "390×844 旧工作记录真实replay消息和操作创建完成",
+        "okay": true
+      },
+      {
+        "name": "390×844 项目删除前旧工作记录标签消息操作都非空",
+        "okay": true
+      },
+      {
+        "name": "390×844 新迭代编号不复用且归档任务可加入上下文",
+        "okay": true
+      },
+      {
+        "name": "390×844 新迭代不能edit归档任务",
+        "okay": true
+      },
+      {
+        "name": "390×844 新迭代不能rename归档任务",
+        "okay": true
+      },
+      {
+        "name": "390×844 新迭代不能delete归档任务",
+        "okay": true
+      },
+      {
+        "name": "390×844 新迭代不能restore归档任务",
+        "okay": true
+      },
+      {
+        "name": "390×844 新迭代不能撤回归档整套且拒绝后资产原样",
+        "okay": true
+      },
+      {
+        "name": "390×844 新迭代独立集合正式任务候选 pending",
+        "okay": true
+      },
+      {
+        "name": "390×844 新迭代Agent只能写自己的集合且归档所有字段原样",
+        "okay": true
+      },
+      {
+        "name": "390×844 项目级联真实故障全部文件来源及新旧过程回滚可重试",
+        "okay": true
+      },
+      {
+        "name": "390×844 只有删除项目才清理全部项目资产来源和新旧过程",
+        "okay": true
+      },
+      {
+        "name": "390×844 项目删除不会影响另一项目及迭代",
+        "okay": true
+      },
+      {
+        "name": "390×844 连续流程浏览器无未捕获异常",
+        "okay": true
+      }
+    ]
+  },
+  "environment": {
+    "database": "v141_replay_55c171bbc751d840",
+    "serverVersion": "9.7.2",
+    "initialCounts": {
+      "agent_file_contexts": 0,
+      "iteration_file_candidates": 0,
+      "iteration_session_context_files": 0,
+      "iteration_session_messages": 0,
+      "iteration_sessions": 0,
+      "iteration_stage_states": 0,
+      "iteration_task_set_candidates": 0,
+      "message_file_writes": 0,
+      "messages": 0,
+      "product_iterations": 0,
+      "project_file_changes": 0,
+      "project_files": 0,
+      "projects": 0,
+      "prototype_snapshots": 0,
+      "tab_deletion_operations": 0,
+      "tab_operations": 0,
+      "tabs": 0,
+      "task_folders": 0,
+      "users": 0,
+      "work_records": 0
+    }
+  },
+  "evidenceErrors": [],
+  "archive": "D:\\Project\\4.Project\\Agent2\\.scratch\\screenshots\\v141-quality-raw\\22-deletion-failure-replay",
+  "screenshots": [],
+  "okay": true
+}

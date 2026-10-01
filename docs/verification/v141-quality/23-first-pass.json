@@ -1,0 +1,335 @@
+{
+  "ticket": 23,
+  "slug": "quality-visual",
+  "pass": 62,
+  "fail": 4,
+  "outputDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-Qa3UTH",
+  "database": "v141_replay_7ab406008c03b7e3",
+  "cleaned": true,
+  "seconds": 51.9,
+  "scenario": {
+    "pass": 56,
+    "fail": 3,
+    "aiMode": "replay",
+    "workflows": [
+      {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "projectId": "094e7b56-d792-44f0-acf5-a61139cd0049",
+        "iterationId": "2e7552d6-bd4b-46ba-8670-faa52fb88093",
+        "sessionId": "3c7233e0-a302-4067-a7cb-078d44a1e669"
+      },
+      {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "projectId": "dff919c4-fb33-4308-86b9-a822db5a833a",
+        "iterationId": "3ea8cbc6-db1c-41b9-853b-5b9666a9a78f",
+        "sessionId": "a3a06d67-ac53-4436-81d8-029f4e6c57f8"
+      }
+    ],
+    "screenshots": [
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-Qa3UTH\\visual-1440-candidate.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-Qa3UTH\\visual-1440-files.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-Qa3UTH\\visual-1440-context.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-Qa3UTH\\visual-1440-source.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-Qa3UTH\\visual-1440-generating.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-Qa3UTH\\visual-1440-failure.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-Qa3UTH\\visual-390-candidate.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-Qa3UTH\\visual-390-files.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-Qa3UTH\\visual-390-context.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-Qa3UTH\\visual-390-source.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-Qa3UTH\\visual-390-generating.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-Qa3UTH\\visual-390-failure.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-Qa3UTH\\visual-390-sessions.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-Qa3UTH\\visual-320-conversation.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-Qa3UTH\\visual-844-conversation.png"
+    ],
+    "assertions": [
+      {
+        "name": "服务端固定 replay，无真实模型",
+        "okay": true
+      },
+      {
+        "name": "1440×900 需求分析空阶段 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 原型设计空阶段 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 PRD空阶段 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 任务拆分空阶段 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 长名称待确认候选 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 候选确认按钮实际可点击",
+        "okay": true
+      },
+      {
+        "name": "1440×900 Agent 正文有真实标题和列表排版",
+        "okay": true
+      },
+      {
+        "name": "1440×900 长文件名文件树 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 长上下文名称可移除且不挡控件",
+        "okay": true
+      },
+      {
+        "name": "1440×900 长路径预览关闭可达",
+        "okay": true
+      },
+      {
+        "name": "1440×900 来源时间线及跳转信息可读",
+        "okay": true
+      },
+      {
+        "name": "1440×900 生成中停止可达、阶段完成禁用",
+        "okay": true
+      },
+      {
+        "name": "1440×900 生成状态 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 失败禁用发送且重试可达",
+        "okay": true
+      },
+      {
+        "name": "1440×900 会话失败 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 重试后保留原草稿",
+        "okay": false
+      },
+      {
+        "name": "1440桌面200%缩放等效CSS视口 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "200%缩放后核心发送可达",
+        "okay": true
+      },
+      {
+        "name": "1440×900 文件视图键盘切换且焦点可见",
+        "okay": true
+      },
+      {
+        "name": "1440×900 没有浏览器运行时错误",
+        "okay": true
+      },
+      {
+        "name": "390×844 需求分析空阶段 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 原型设计空阶段 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 PRD空阶段 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 任务拆分空阶段 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 长名称待确认候选 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 候选确认按钮实际可点击",
+        "okay": false
+      },
+      {
+        "name": "390×844 Agent 正文有真实标题和列表排版",
+        "okay": true
+      },
+      {
+        "name": "390×844 长文件名文件树 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 长上下文名称可移除且不挡控件",
+        "okay": true
+      },
+      {
+        "name": "390×844 长路径预览关闭可达",
+        "okay": true
+      },
+      {
+        "name": "390×844 来源时间线及跳转信息可读",
+        "okay": true
+      },
+      {
+        "name": "390×844 生成中停止可达、阶段完成禁用",
+        "okay": true
+      },
+      {
+        "name": "390×844 生成状态 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 失败禁用发送且重试可达",
+        "okay": true
+      },
+      {
+        "name": "390×844 会话失败 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 重试后保留原草稿",
+        "okay": false
+      },
+      {
+        "name": "390×844 长会话名 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 新建和删除会话触控至少44px",
+        "okay": true
+      },
+      {
+        "name": "320×740 对话 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "320×740 发送按钮不被截断或覆盖",
+        "okay": true
+      },
+      {
+        "name": "320×740 文件区 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "768×900 对话 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "768×900 发送按钮不被截断或覆盖",
+        "okay": true
+      },
+      {
+        "name": "768×900 文件区 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1100×800 对话 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1100×800 发送按钮不被截断或覆盖",
+        "okay": true
+      },
+      {
+        "name": "1100×800 文件区 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "844×390 对话 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "844×390 发送按钮不被截断或覆盖",
+        "okay": true
+      },
+      {
+        "name": "844×390 文件区 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1101×800 对话 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1101×800 发送按钮不被截断或覆盖",
+        "okay": true
+      },
+      {
+        "name": "1101×800 文件区 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1280×800 对话 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1280×800 发送按钮不被截断或覆盖",
+        "okay": true
+      },
+      {
+        "name": "1280×800 文件区 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 文件视图键盘切换且焦点可见",
+        "okay": true
+      },
+      {
+        "name": "390×844 没有浏览器运行时错误",
+        "okay": true
+      }
+    ]
+  },
+  "environment": {
+    "database": "v141_replay_7ab406008c03b7e3",
+    "serverVersion": "9.7.2",
+    "initialCounts": {
+      "agent_file_contexts": 0,
+      "iteration_file_candidates": 0,
+      "iteration_session_context_files": 0,
+      "iteration_session_messages": 0,
+      "iteration_sessions": 0,
+      "iteration_stage_states": 0,
+      "iteration_task_set_candidates": 0,
+      "message_file_writes": 0,
+      "messages": 0,
+      "product_iterations": 0,
+      "project_file_changes": 0,
+      "project_files": 0,
+      "projects": 0,
+      "prototype_snapshots": 0,
+      "tab_deletion_operations": 0,
+      "tab_operations": 0,
+      "tabs": 0,
+      "task_folders": 0,
+      "users": 0,
+      "work_records": 0
+    }
+  },
+  "evidenceErrors": [],
+  "screenshots": [
+    "screenshots/visual-1440-candidate.png",
+    "screenshots/visual-1440-files.png",
+    "screenshots/visual-1440-context.png",
+    "screenshots/visual-1440-source.png",
+    "screenshots/visual-1440-generating.png",
+    "screenshots/visual-1440-failure.png",
+    "screenshots/visual-390-candidate.png",
+    "screenshots/visual-390-files.png",
+    "screenshots/visual-390-context.png",
+    "screenshots/visual-390-source.png",
+    "screenshots/visual-390-generating.png",
+    "screenshots/visual-390-failure.png",
+    "screenshots/visual-390-sessions.png",
+    "screenshots/visual-320-conversation.png",
+    "screenshots/visual-844-conversation.png"
+  ],
+  "okay": false
+}

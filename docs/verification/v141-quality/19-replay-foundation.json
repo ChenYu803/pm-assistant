@@ -1,0 +1,455 @@
+{
+  "ticket": 19,
+  "slug": "replay-foundation",
+  "pass": 97,
+  "fail": 0,
+  "outputDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-replay-foundation-5GJKGl",
+  "database": "v141_replay_1e9eab659119cb99",
+  "cleaned": true,
+  "seconds": 74.9,
+  "scenario": {
+    "pass": 90,
+    "fail": 0,
+    "aiMode": "replay",
+    "workflows": [
+      {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "projectId": "5fdafda2-cf5c-4877-98c6-3d919c073ff3",
+        "iterationIds": [
+          "6eda64dd-c832-43b9-bfc2-8f4099b05c5b",
+          "1692b6a2-6f41-4d2b-aa37-b23216dd4046"
+        ],
+        "sessionIds": [
+          "beab2ebc-ac5c-463a-80f4-7fcdb0d206a7",
+          "b7bcab54-15bd-4a8f-bbee-b4c3bf61a47d"
+        ],
+        "fixtureId": "886430da-c083-4bfd-b97f-0d44b9ccdbe5",
+        "fixturePurpose": "非空上下文隔离与项目级目录共享；不验收产品成果写入"
+      },
+      {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "projectId": "860f6cc8-14ae-4501-a047-230241fbf297",
+        "iterationIds": [
+          "d8e5015d-dee2-4d39-b63a-35a9c90ed772",
+          "32b705ab-171e-49d2-b43f-76e1e674cb7a"
+        ],
+        "sessionIds": [
+          "70ab9502-623f-48e9-97cb-4835dd10ab24",
+          "23ca7953-ae2c-4a27-81a0-3d19afc43d3c"
+        ],
+        "fixtureId": "be2b04a2-c27b-4cd7-8296-30850356364e",
+        "fixturePurpose": "非空上下文隔离与项目级目录共享；不验收产品成果写入"
+      }
+    ],
+    "screenshots": [
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-replay-foundation-5GJKGl\\foundation-1440-empty-navigation.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-replay-foundation-5GJKGl\\foundation-1440-sessions.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-replay-foundation-5GJKGl\\foundation-1440-shared-files.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-replay-foundation-5GJKGl\\foundation-390-empty-navigation.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-replay-foundation-5GJKGl\\foundation-390-sessions.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-replay-foundation-5GJKGl\\foundation-390-shared-files.png"
+    ],
+    "assertions": [
+      {
+        "name": "发送聊天前确认服务端固定回放",
+        "okay": true
+      },
+      {
+        "name": "浏览器回放开始前没有用户",
+        "okay": true
+      },
+      {
+        "name": "1440×900 正式注册成功进入项目页",
+        "okay": true
+      },
+      {
+        "name": "1440×900 显式退出清除认证",
+        "okay": true
+      },
+      {
+        "name": "1440×900 原账号登录成功",
+        "okay": true
+      },
+      {
+        "name": "1440×900 新建目标没有默认选项",
+        "okay": true
+      },
+      {
+        "name": "1440×900 第一轮目标保存且稳定编号为 1",
+        "okay": true
+      },
+      {
+        "name": "1440×900 新建目标没有默认选项",
+        "okay": true
+      },
+      {
+        "name": "1440×900 暂不填写先明确展示已知与未知边界",
+        "okay": true
+      },
+      {
+        "name": "1440×900 风险返回保留选择与名称",
+        "okay": true
+      },
+      {
+        "name": "1440×900 风险返回保留目标草稿",
+        "okay": true
+      },
+      {
+        "name": "1440×900 确认后本次创建不重复警告",
+        "okay": true
+      },
+      {
+        "name": "1440×900 第二轮目标为空且编号递增",
+        "okay": true
+      },
+      {
+        "name": "1440×900 稳定编号展示为只读",
+        "okay": true
+      },
+      {
+        "name": "1440×900 展示名称可改且稳定编号不变",
+        "okay": true
+      },
+      {
+        "name": "1440×900 四环初始未开始且无会话",
+        "okay": true
+      },
+      {
+        "name": "1440×900 需求分析一级导航可见",
+        "okay": true
+      },
+      {
+        "name": "1440×900 原型设计一级导航可见",
+        "okay": true
+      },
+      {
+        "name": "1440×900 PRD一级导航可见",
+        "okay": true
+      },
+      {
+        "name": "1440×900 任务拆分一级导航可见",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跳过前置环节的提示允许返回",
+        "okay": true
+      },
+      {
+        "name": "1440×900 可直接进入空任务拆分",
+        "okay": true
+      },
+      {
+        "name": "1440×900 可直接进入空原型设计",
+        "okay": true
+      },
+      {
+        "name": "1440×900 可直接进入空PRD",
+        "okay": true
+      },
+      {
+        "name": "1440×900 空阶段来回导航不建会话、不变状态、不写文件",
+        "okay": true
+      },
+      {
+        "name": "1440×900 显式创建会话进入进行中",
+        "okay": true
+      },
+      {
+        "name": "1440×900 零写入也能完成阶段",
+        "okay": true
+      },
+      {
+        "name": "1440×900 刷新保持完成状态和输入锁定",
+        "okay": true
+      },
+      {
+        "name": "1440×900 显式重新打开恢复进行中",
+        "okay": true
+      },
+      {
+        "name": "1440×900 新会话输入和消息为空",
+        "okay": true
+      },
+      {
+        "name": "1440×900 新会话不继承另一会话上下文",
+        "okay": true
+      },
+      {
+        "name": "1440×900 生成状态仅属于第二会话",
+        "okay": true
+      },
+      {
+        "name": "1440×900 两会话消息和过程状态独立",
+        "okay": true
+      },
+      {
+        "name": "1440×900 切回会话一恢复独立草稿",
+        "okay": true
+      },
+      {
+        "name": "1440×900 会话一对话正文不显示会话二消息",
+        "okay": true
+      },
+      {
+        "name": "1440×900 切回会话一恢复已加载文件",
+        "okay": true
+      },
+      {
+        "name": "1440×900 切回会话二恢复独立草稿",
+        "okay": true
+      },
+      {
+        "name": "1440×900 会话二对话正文不显示会话一消息",
+        "okay": true
+      },
+      {
+        "name": "1440×900 迭代 2 可见同一项目文件",
+        "okay": true
+      },
+      {
+        "name": "1440×900 迭代 1 可见同一项目文件",
+        "okay": true
+      },
+      {
+        "name": "1440×900 文件视图无横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 导航、候选、切会话和切迭代均未自动写入文件",
+        "okay": true
+      },
+      {
+        "name": "1440×900 数据库最终消息事实与两会话 API 一致",
+        "okay": true
+      },
+      {
+        "name": "1440×900 数据库引用只属于会话一",
+        "okay": true
+      },
+      {
+        "name": "1440×900 最终两个编号为 1/2 且下一编号为 3",
+        "okay": true
+      },
+      {
+        "name": "1440×900 浏览器无运行时错误",
+        "okay": true
+      },
+      {
+        "name": "390×844 正式注册成功进入项目页",
+        "okay": true
+      },
+      {
+        "name": "390×844 显式退出清除认证",
+        "okay": true
+      },
+      {
+        "name": "390×844 原账号登录成功",
+        "okay": true
+      },
+      {
+        "name": "390×844 新建目标没有默认选项",
+        "okay": true
+      },
+      {
+        "name": "390×844 第一轮目标保存且稳定编号为 1",
+        "okay": true
+      },
+      {
+        "name": "390×844 新建目标没有默认选项",
+        "okay": true
+      },
+      {
+        "name": "390×844 暂不填写先明确展示已知与未知边界",
+        "okay": true
+      },
+      {
+        "name": "390×844 风险返回保留选择与名称",
+        "okay": true
+      },
+      {
+        "name": "390×844 风险返回保留目标草稿",
+        "okay": true
+      },
+      {
+        "name": "390×844 确认后本次创建不重复警告",
+        "okay": true
+      },
+      {
+        "name": "390×844 第二轮目标为空且编号递增",
+        "okay": true
+      },
+      {
+        "name": "390×844 稳定编号展示为只读",
+        "okay": true
+      },
+      {
+        "name": "390×844 展示名称可改且稳定编号不变",
+        "okay": true
+      },
+      {
+        "name": "390×844 四环初始未开始且无会话",
+        "okay": true
+      },
+      {
+        "name": "390×844 需求分析一级导航可见",
+        "okay": true
+      },
+      {
+        "name": "390×844 原型设计一级导航可见",
+        "okay": true
+      },
+      {
+        "name": "390×844 PRD一级导航可见",
+        "okay": true
+      },
+      {
+        "name": "390×844 任务拆分一级导航可见",
+        "okay": true
+      },
+      {
+        "name": "390×844 跳过前置环节的提示允许返回",
+        "okay": true
+      },
+      {
+        "name": "390×844 可直接进入空任务拆分",
+        "okay": true
+      },
+      {
+        "name": "390×844 可直接进入空原型设计",
+        "okay": true
+      },
+      {
+        "name": "390×844 可直接进入空PRD",
+        "okay": true
+      },
+      {
+        "name": "390×844 空阶段来回导航不建会话、不变状态、不写文件",
+        "okay": true
+      },
+      {
+        "name": "390×844 显式创建会话进入进行中",
+        "okay": true
+      },
+      {
+        "name": "390×844 零写入也能完成阶段",
+        "okay": true
+      },
+      {
+        "name": "390×844 刷新保持完成状态和输入锁定",
+        "okay": true
+      },
+      {
+        "name": "390×844 显式重新打开恢复进行中",
+        "okay": true
+      },
+      {
+        "name": "390×844 新会话输入和消息为空",
+        "okay": true
+      },
+      {
+        "name": "390×844 新会话不继承另一会话上下文",
+        "okay": true
+      },
+      {
+        "name": "390×844 生成状态仅属于第二会话",
+        "okay": true
+      },
+      {
+        "name": "390×844 两会话消息和过程状态独立",
+        "okay": true
+      },
+      {
+        "name": "390×844 切回会话一恢复独立草稿",
+        "okay": true
+      },
+      {
+        "name": "390×844 会话一对话正文不显示会话二消息",
+        "okay": true
+      },
+      {
+        "name": "390×844 切回会话一恢复已加载文件",
+        "okay": true
+      },
+      {
+        "name": "390×844 切回会话二恢复独立草稿",
+        "okay": true
+      },
+      {
+        "name": "390×844 会话二对话正文不显示会话一消息",
+        "okay": true
+      },
+      {
+        "name": "390×844 迭代 2 可见同一项目文件",
+        "okay": true
+      },
+      {
+        "name": "390×844 迭代 1 可见同一项目文件",
+        "okay": true
+      },
+      {
+        "name": "390×844 文件视图无横向溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 导航、候选、切会话和切迭代均未自动写入文件",
+        "okay": true
+      },
+      {
+        "name": "390×844 数据库最终消息事实与两会话 API 一致",
+        "okay": true
+      },
+      {
+        "name": "390×844 数据库引用只属于会话一",
+        "okay": true
+      },
+      {
+        "name": "390×844 最终两个编号为 1/2 且下一编号为 3",
+        "okay": true
+      },
+      {
+        "name": "390×844 浏览器无运行时错误",
+        "okay": true
+      }
+    ]
+  },
+  "environment": {
+    "database": "v141_replay_1e9eab659119cb99",
+    "serverVersion": "9.7.2",
+    "initialCounts": {
+      "agent_file_contexts": 0,
+      "iteration_file_candidates": 0,
+      "iteration_session_context_files": 0,
+      "iteration_session_messages": 0,
+      "iteration_sessions": 0,
+      "iteration_stage_states": 0,
+      "iteration_task_set_candidates": 0,
+      "message_file_writes": 0,
+      "messages": 0,
+      "product_iterations": 0,
+      "project_file_changes": 0,
+      "project_files": 0,
+      "projects": 0,
+      "prototype_snapshots": 0,
+      "tab_deletion_operations": 0,
+      "tab_operations": 0,
+      "tabs": 0,
+      "task_folders": 0,
+      "users": 0,
+      "work_records": 0
+    }
+  },
+  "archive": "D:\\Project\\4.Project\\Agent2\\.scratch\\screenshots\\v141-quality-raw\\19-replay-foundation-recovery",
+  "okay": true,
+  "evidenceErrors": [],
+  "screenshots": [],
+  "recovery": {
+    "startedAt": "2026-10-01T16:05:01.059Z",
+    "interruptedEvidence": "environment-interruption/19-replay-foundation.json"
+  }
+}

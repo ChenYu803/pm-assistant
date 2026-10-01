@@ -1,0 +1,8 @@
+{
+  "exitCode": 1,
+  "cause": "生产构建清理 .next 与其中隔离回放服务并发，导致 ENOTEMPTY 及19号服务启动失败",
+  "command": "npm run build",
+  "diagnostic": "\r\n> pm-assistant@0.1.0 build\r\n> next build\r\n\r\n▲ Next.js 16.3.0 (Turbopack)\r\n- Environments: .env.local\r\n✓ Running next.config.ts took 37ms\r\n\r\n> Build error occurred\r\nError: ENOTEMPTY: directory not empty, rmdir 'D:\\Project\\4.Project\\Agent2\\.next\\v141_replay_d35b183510487197\\app\\.next\\dev\\server'\r\n    at ignore-listed frames {\r\n  errno: -4051,\r\n  code: 'ENOTEMPTY',\r\n  syscall: 'rmdir',\r\n  path: 'D:\\\\Project\\\\4.Project\\\\Agent2\\\\.next\\\\v141_replay_d35b183510487197\\\\app\\\\.next\\\\dev\\\\server'\r\n}\r\n",
+  "kind": "验收编排错误",
+  "scope": "只影响本次隔离测试服务；该随机测试库和账号已清理"
+}

@@ -1,0 +1,718 @@
+{
+  "ticket": 23,
+  "slug": "quality-visual",
+  "pass": 87,
+  "fail": 0,
+  "outputDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-0COeJu",
+  "database": "v141_replay_e3454712551479de",
+  "cleaned": true,
+  "seconds": 51.7,
+  "scenario": {
+    "pass": 80,
+    "fail": 0,
+    "aiMode": "replay",
+    "workflows": [
+      {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "projectId": "2a427f21-e439-48bf-906a-46098dea0245",
+        "iterationId": "eb275ac0-1f7b-4f05-848b-29fe993898f5",
+        "sessionId": "eebb256f-7506-4fdf-95e8-8f7ae6333dd8"
+      },
+      {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "projectId": "beca5797-b4f4-4468-b2f7-0438d65ece08",
+        "iterationId": "996e7a66-c163-4ac8-8371-f0d76c703c23",
+        "sessionId": "78f6a5bd-a352-4adf-bc42-21d26e765a4b"
+      }
+    ],
+    "screenshots": [
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-0COeJu\\visual-1440-candidate.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-0COeJu\\visual-1440-files.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-0COeJu\\visual-1440-context.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-0COeJu\\visual-1440-source.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-0COeJu\\visual-1440-generating.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-0COeJu\\visual-1440-failure.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-0COeJu\\visual-390-candidate.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-0COeJu\\visual-390-files.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-0COeJu\\visual-390-context.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-0COeJu\\visual-390-source.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-0COeJu\\visual-390-generating.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-0COeJu\\visual-390-failure.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-0COeJu\\visual-390-sessions.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-0COeJu\\visual-320-conversation.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-0COeJu\\visual-844-conversation.png"
+    ],
+    "assertions": [
+      {
+        "name": "服务端固定 replay，无真实模型",
+        "okay": true
+      },
+      {
+        "name": "1440×900 需求分析空阶段 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 原型设计空阶段 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 PRD空阶段 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 任务拆分空阶段 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 用户HTML输入保留为文本且不执行",
+        "okay": true
+      },
+      {
+        "name": "1440×900 Agent正文 文字对比度至少4.5:1",
+        "okay": true
+      },
+      {
+        "name": "1440×900 用户正文 文字对比度至少4.5:1",
+        "okay": true
+      },
+      {
+        "name": "1440×900 Agent辅助标签 文字对比度至少4.5:1",
+        "okay": true
+      },
+      {
+        "name": "1440×900 用户辅助标签 文字对比度至少4.5:1",
+        "okay": true
+      },
+      {
+        "name": "1440×900 输入占位文字 文字对比度至少4.5:1",
+        "okay": true
+      },
+      {
+        "name": "1440×900 长名称待确认候选 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 候选确认按钮实际可点击",
+        "okay": true
+      },
+      {
+        "name": "1440×900 Agent 正文有真实标题和列表排版",
+        "okay": true
+      },
+      {
+        "name": "1440×900 长文件名文件树 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 长上下文名称可移除且不挡控件",
+        "okay": true
+      },
+      {
+        "name": "1440×900 上下文辅助提示 文字对比度至少4.5:1",
+        "okay": true
+      },
+      {
+        "name": "1440×900 长路径预览关闭可达",
+        "okay": true
+      },
+      {
+        "name": "1440×900 来源时间线及跳转信息可读",
+        "okay": true
+      },
+      {
+        "name": "1440×900 生成中停止可达、阶段完成禁用",
+        "okay": true
+      },
+      {
+        "name": "1440×900 生成状态 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 失败禁用发送且重试可达",
+        "okay": true
+      },
+      {
+        "name": "1440×900 读取失败仍保留原草稿",
+        "okay": true
+      },
+      {
+        "name": "1440×900 会话失败 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 重试后保留原草稿",
+        "okay": true
+      },
+      {
+        "name": "1440×900 第二会话保留独立草稿",
+        "okay": true
+      },
+      {
+        "name": "1440桌面200%缩放等效CSS视口 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "200%缩放后核心发送可达",
+        "okay": true
+      },
+      {
+        "name": "1440×900 文件视图键盘切换且焦点可见",
+        "okay": true
+      },
+      {
+        "name": "1440×900 没有浏览器运行时错误",
+        "okay": true
+      },
+      {
+        "name": "390×844 需求分析空阶段 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 原型设计空阶段 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 PRD空阶段 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 任务拆分空阶段 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 用户HTML输入保留为文本且不执行",
+        "okay": true
+      },
+      {
+        "name": "390×844 Agent正文 文字对比度至少4.5:1",
+        "okay": true
+      },
+      {
+        "name": "390×844 用户正文 文字对比度至少4.5:1",
+        "okay": true
+      },
+      {
+        "name": "390×844 Agent辅助标签 文字对比度至少4.5:1",
+        "okay": true
+      },
+      {
+        "name": "390×844 用户辅助标签 文字对比度至少4.5:1",
+        "okay": true
+      },
+      {
+        "name": "390×844 输入占位文字 文字对比度至少4.5:1",
+        "okay": true
+      },
+      {
+        "name": "390×844 长名称待确认候选 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 候选确认按钮实际可点击",
+        "okay": true
+      },
+      {
+        "name": "390×844 候选确认按钮 触控至少44px且实际可达",
+        "okay": true
+      },
+      {
+        "name": "390×844 Agent 正文有真实标题和列表排版",
+        "okay": true
+      },
+      {
+        "name": "390×844 长文件名文件树 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 长上下文名称可移除且不挡控件",
+        "okay": true
+      },
+      {
+        "name": "390×844 上下文移除按钮 触控至少44px且实际可达",
+        "okay": true
+      },
+      {
+        "name": "390×844 上下文辅助提示 文字对比度至少4.5:1",
+        "okay": true
+      },
+      {
+        "name": "390×844 长路径预览关闭可达",
+        "okay": true
+      },
+      {
+        "name": "390×844 预览关闭按钮 触控至少44px且实际可达",
+        "okay": true
+      },
+      {
+        "name": "390×844 来源时间线及跳转信息可读",
+        "okay": true
+      },
+      {
+        "name": "390×844 生成中停止可达、阶段完成禁用",
+        "okay": true
+      },
+      {
+        "name": "390×844 生成状态 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 失败禁用发送且重试可达",
+        "okay": true
+      },
+      {
+        "name": "390×844 读取失败仍保留原草稿",
+        "okay": true
+      },
+      {
+        "name": "390×844 会话失败 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 重试后保留原草稿",
+        "okay": true
+      },
+      {
+        "name": "390×844 第二会话保留独立草稿",
+        "okay": true
+      },
+      {
+        "name": "390×844 长会话名 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 新建和删除会话触控至少44px",
+        "okay": true
+      },
+      {
+        "name": "320×740 对话 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "320×740 发送按钮不被截断或覆盖",
+        "okay": true
+      },
+      {
+        "name": "320×740 文件区 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "768×900 对话 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "768×900 发送按钮不被截断或覆盖",
+        "okay": true
+      },
+      {
+        "name": "768×900 文件区 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1100×800 对话 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1100×800 发送按钮不被截断或覆盖",
+        "okay": true
+      },
+      {
+        "name": "1100×800 文件区 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "844×390 对话 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "844×390 发送按钮不被截断或覆盖",
+        "okay": true
+      },
+      {
+        "name": "844×390 文件区 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1101×800 对话 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1101×800 发送按钮不被截断或覆盖",
+        "okay": true
+      },
+      {
+        "name": "1101×800 文件区 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1280×800 对话 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1280×800 发送按钮不被截断或覆盖",
+        "okay": true
+      },
+      {
+        "name": "1280×800 文件区 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 文件视图键盘切换且焦点可见",
+        "okay": true
+      },
+      {
+        "name": "390×844 没有浏览器运行时错误",
+        "okay": true
+      }
+    ],
+    "contrasts": [
+      {
+        "label": "1440×900 Agent正文",
+        "pseudo": null,
+        "foreground": [
+          21,
+          20,
+          15,
+          1
+        ],
+        "effectiveForeground": [
+          21,
+          20,
+          15,
+          1
+        ],
+        "background": [
+          251,
+          248,
+          240,
+          1
+        ],
+        "ratio": 17.374656501637194
+      },
+      {
+        "label": "1440×900 用户正文",
+        "pseudo": null,
+        "foreground": [
+          36,
+          34,
+          29,
+          1
+        ],
+        "effectiveForeground": [
+          36,
+          34,
+          29,
+          1
+        ],
+        "background": [
+          238,
+          231,
+          215,
+          1
+        ],
+        "ratio": 12.899128841871724
+      },
+      {
+        "label": "1440×900 Agent辅助标签",
+        "pseudo": null,
+        "foreground": [
+          146,
+          69,
+          54,
+          1
+        ],
+        "effectiveForeground": [
+          146,
+          69,
+          54,
+          1
+        ],
+        "background": [
+          251,
+          248,
+          240,
+          1
+        ],
+        "ratio": 6.328385275912658
+      },
+      {
+        "label": "1440×900 用户辅助标签",
+        "pseudo": null,
+        "foreground": [
+          98,
+          92,
+          80,
+          1
+        ],
+        "effectiveForeground": [
+          98,
+          92,
+          80,
+          1
+        ],
+        "background": [
+          251,
+          248,
+          240,
+          1
+        ],
+        "ratio": 6.249802133720848
+      },
+      {
+        "label": "1440×900 输入占位文字",
+        "pseudo": "::placeholder",
+        "foreground": [
+          98,
+          90,
+          77,
+          1
+        ],
+        "effectiveForeground": [
+          98,
+          90,
+          77,
+          1
+        ],
+        "background": [
+          255,
+          253,
+          248,
+          1
+        ],
+        "ratio": 6.6875407776236475
+      },
+      {
+        "label": "1440×900 上下文辅助提示",
+        "pseudo": null,
+        "foreground": [
+          98,
+          92,
+          80,
+          1
+        ],
+        "effectiveForeground": [
+          98,
+          92,
+          80,
+          1
+        ],
+        "background": [
+          238,
+          231,
+          215,
+          1
+        ],
+        "ratio": 5.384362673851371
+      },
+      {
+        "label": "390×844 Agent正文",
+        "pseudo": null,
+        "foreground": [
+          21,
+          20,
+          15,
+          1
+        ],
+        "effectiveForeground": [
+          21,
+          20,
+          15,
+          1
+        ],
+        "background": [
+          251,
+          248,
+          240,
+          1
+        ],
+        "ratio": 17.374656501637194
+      },
+      {
+        "label": "390×844 用户正文",
+        "pseudo": null,
+        "foreground": [
+          36,
+          34,
+          29,
+          1
+        ],
+        "effectiveForeground": [
+          36,
+          34,
+          29,
+          1
+        ],
+        "background": [
+          238,
+          231,
+          215,
+          1
+        ],
+        "ratio": 12.899128841871724
+      },
+      {
+        "label": "390×844 Agent辅助标签",
+        "pseudo": null,
+        "foreground": [
+          146,
+          69,
+          54,
+          1
+        ],
+        "effectiveForeground": [
+          146,
+          69,
+          54,
+          1
+        ],
+        "background": [
+          251,
+          248,
+          240,
+          1
+        ],
+        "ratio": 6.328385275912658
+      },
+      {
+        "label": "390×844 用户辅助标签",
+        "pseudo": null,
+        "foreground": [
+          98,
+          92,
+          80,
+          1
+        ],
+        "effectiveForeground": [
+          98,
+          92,
+          80,
+          1
+        ],
+        "background": [
+          251,
+          248,
+          240,
+          1
+        ],
+        "ratio": 6.249802133720848
+      },
+      {
+        "label": "390×844 输入占位文字",
+        "pseudo": "::placeholder",
+        "foreground": [
+          98,
+          90,
+          77,
+          1
+        ],
+        "effectiveForeground": [
+          98,
+          90,
+          77,
+          1
+        ],
+        "background": [
+          255,
+          253,
+          248,
+          1
+        ],
+        "ratio": 6.6875407776236475
+      },
+      {
+        "label": "390×844 上下文辅助提示",
+        "pseudo": null,
+        "foreground": [
+          98,
+          92,
+          80,
+          1
+        ],
+        "effectiveForeground": [
+          98,
+          92,
+          80,
+          1
+        ],
+        "background": [
+          238,
+          231,
+          215,
+          1
+        ],
+        "ratio": 5.384362673851371
+      }
+    ],
+    "touchTargets": [
+      {
+        "label": "390×844 候选确认按钮",
+        "width": 78,
+        "height": 44,
+        "reachable": true
+      },
+      {
+        "label": "390×844 上下文移除按钮",
+        "width": 44,
+        "height": 44,
+        "reachable": true
+      },
+      {
+        "label": "390×844 预览关闭按钮",
+        "width": 44,
+        "height": 44,
+        "reachable": true
+      }
+    ]
+  },
+  "environment": {
+    "database": "v141_replay_e3454712551479de",
+    "serverVersion": "9.7.2",
+    "initialCounts": {
+      "agent_file_contexts": 0,
+      "iteration_file_candidates": 0,
+      "iteration_session_context_files": 0,
+      "iteration_session_messages": 0,
+      "iteration_sessions": 0,
+      "iteration_stage_states": 0,
+      "iteration_task_set_candidates": 0,
+      "message_file_writes": 0,
+      "messages": 0,
+      "product_iterations": 0,
+      "project_file_changes": 0,
+      "project_files": 0,
+      "projects": 0,
+      "prototype_snapshots": 0,
+      "tab_deletion_operations": 0,
+      "tab_operations": 0,
+      "tabs": 0,
+      "task_folders": 0,
+      "users": 0,
+      "work_records": 0
+    }
+  },
+  "evidenceErrors": [],
+  "archive": "D:\\Project\\4.Project\\Agent2\\.scratch\\screenshots\\v141-quality-raw\\23-quality-visual",
+  "screenshots": [
+    "screenshots/visual-1440-candidate.png",
+    "screenshots/visual-1440-files.png",
+    "screenshots/visual-1440-context.png",
+    "screenshots/visual-1440-source.png",
+    "screenshots/visual-1440-generating.png",
+    "screenshots/visual-1440-failure.png",
+    "screenshots/visual-390-candidate.png",
+    "screenshots/visual-390-files.png",
+    "screenshots/visual-390-context.png",
+    "screenshots/visual-390-source.png",
+    "screenshots/visual-390-generating.png",
+    "screenshots/visual-390-failure.png",
+    "screenshots/visual-390-sessions.png",
+    "screenshots/visual-320-conversation.png",
+    "screenshots/visual-844-conversation.png"
+  ],
+  "okay": true
+}

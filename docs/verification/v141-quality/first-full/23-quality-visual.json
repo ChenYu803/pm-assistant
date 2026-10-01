@@ -1,0 +1,290 @@
+{
+  "ticket": 23,
+  "slug": "quality-visual",
+  "pass": 27,
+  "fail": 2,
+  "outputDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-BlzJYk",
+  "database": "v141_replay_e3f385bfa8a620c9",
+  "cleaned": true,
+  "seconds": 60.8,
+  "scenario": {
+    "pass": 21,
+    "fail": 1,
+    "aiMode": "replay",
+    "workflows": [],
+    "screenshots": [
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-BlzJYk\\visual-1440-candidate.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-BlzJYk\\visual-1440-files.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-BlzJYk\\visual-1440-context.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-BlzJYk\\visual-1440-source.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-quality-visual-BlzJYk\\visual-1440-generating.png"
+    ],
+    "assertions": [
+      {
+        "name": "服务端固定 replay，无真实模型",
+        "okay": true
+      },
+      {
+        "name": "1440×900 需求分析空阶段 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 原型设计空阶段 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 PRD空阶段 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 任务拆分空阶段 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 用户HTML输入保留为文本且不执行",
+        "okay": true
+      },
+      {
+        "name": "1440×900 Agent正文 文字对比度至少4.5:1",
+        "okay": true
+      },
+      {
+        "name": "1440×900 用户正文 文字对比度至少4.5:1",
+        "okay": true
+      },
+      {
+        "name": "1440×900 Agent辅助标签 文字对比度至少4.5:1",
+        "okay": true
+      },
+      {
+        "name": "1440×900 用户辅助标签 文字对比度至少4.5:1",
+        "okay": true
+      },
+      {
+        "name": "1440×900 输入占位文字 文字对比度至少4.5:1",
+        "okay": true
+      },
+      {
+        "name": "1440×900 长名称待确认候选 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 候选确认按钮实际可点击",
+        "okay": true
+      },
+      {
+        "name": "1440×900 Agent 正文有真实标题和列表排版",
+        "okay": true
+      },
+      {
+        "name": "1440×900 长文件名文件树 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 长上下文名称可移除且不挡控件",
+        "okay": true
+      },
+      {
+        "name": "1440×900 上下文辅助提示 文字对比度至少4.5:1",
+        "okay": true
+      },
+      {
+        "name": "1440×900 长路径预览关闭可达",
+        "okay": true
+      },
+      {
+        "name": "1440×900 来源时间线及跳转信息可读",
+        "okay": true
+      },
+      {
+        "name": "1440×900 生成中停止可达、阶段完成禁用",
+        "okay": true
+      },
+      {
+        "name": "1440×900 生成状态 导航与区域无重叠、无页面横向溢出",
+        "okay": true
+      },
+      {
+        "name": "视觉专项异常：locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.session-row[data-session-id=\"d13aead9-b258-4026-a34a-ebea791bacb9\"][aria-current=\"page\"]')\u001b[22m\n",
+        "okay": false
+      }
+    ],
+    "contrasts": [
+      {
+        "label": "1440×900 Agent正文",
+        "pseudo": null,
+        "foreground": [
+          21,
+          20,
+          15,
+          1
+        ],
+        "effectiveForeground": [
+          21,
+          20,
+          15,
+          1
+        ],
+        "background": [
+          251,
+          248,
+          240,
+          1
+        ],
+        "ratio": 17.374656501637194
+      },
+      {
+        "label": "1440×900 用户正文",
+        "pseudo": null,
+        "foreground": [
+          36,
+          34,
+          29,
+          1
+        ],
+        "effectiveForeground": [
+          36,
+          34,
+          29,
+          1
+        ],
+        "background": [
+          238,
+          231,
+          215,
+          1
+        ],
+        "ratio": 12.899128841871724
+      },
+      {
+        "label": "1440×900 Agent辅助标签",
+        "pseudo": null,
+        "foreground": [
+          146,
+          69,
+          54,
+          1
+        ],
+        "effectiveForeground": [
+          146,
+          69,
+          54,
+          1
+        ],
+        "background": [
+          251,
+          248,
+          240,
+          1
+        ],
+        "ratio": 6.328385275912658
+      },
+      {
+        "label": "1440×900 用户辅助标签",
+        "pseudo": null,
+        "foreground": [
+          98,
+          92,
+          80,
+          1
+        ],
+        "effectiveForeground": [
+          98,
+          92,
+          80,
+          1
+        ],
+        "background": [
+          251,
+          248,
+          240,
+          1
+        ],
+        "ratio": 6.249802133720848
+      },
+      {
+        "label": "1440×900 输入占位文字",
+        "pseudo": "::placeholder",
+        "foreground": [
+          98,
+          90,
+          77,
+          1
+        ],
+        "effectiveForeground": [
+          98,
+          90,
+          77,
+          1
+        ],
+        "background": [
+          255,
+          253,
+          248,
+          1
+        ],
+        "ratio": 6.6875407776236475
+      },
+      {
+        "label": "1440×900 上下文辅助提示",
+        "pseudo": null,
+        "foreground": [
+          98,
+          92,
+          80,
+          1
+        ],
+        "effectiveForeground": [
+          98,
+          92,
+          80,
+          1
+        ],
+        "background": [
+          238,
+          231,
+          215,
+          1
+        ],
+        "ratio": 5.384362673851371
+      }
+    ],
+    "touchTargets": []
+  },
+  "environment": {
+    "database": "v141_replay_e3f385bfa8a620c9",
+    "serverVersion": "9.7.2",
+    "initialCounts": {
+      "agent_file_contexts": 0,
+      "iteration_file_candidates": 0,
+      "iteration_session_context_files": 0,
+      "iteration_session_messages": 0,
+      "iteration_sessions": 0,
+      "iteration_stage_states": 0,
+      "iteration_task_set_candidates": 0,
+      "message_file_writes": 0,
+      "messages": 0,
+      "product_iterations": 0,
+      "project_file_changes": 0,
+      "project_files": 0,
+      "projects": 0,
+      "prototype_snapshots": 0,
+      "tab_deletion_operations": 0,
+      "tab_operations": 0,
+      "tabs": 0,
+      "task_folders": 0,
+      "users": 0,
+      "work_records": 0
+    }
+  },
+  "evidenceErrors": [],
+  "archive": "D:\\Project\\4.Project\\Agent2\\.scratch\\screenshots\\v141-quality-raw\\23-quality-visual",
+  "screenshots": [
+    "screenshots/visual-1440-candidate.png",
+    "screenshots/visual-1440-files.png",
+    "screenshots/visual-1440-context.png",
+    "screenshots/visual-1440-source.png",
+    "screenshots/visual-1440-generating.png"
+  ],
+  "okay": false
+}

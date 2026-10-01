@@ -1,0 +1,43 @@
+{
+  "ticket": 19,
+  "slug": "replay-foundation",
+  "pass": 5,
+  "fail": 1,
+  "outputDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-replay-foundation-nk1he9",
+  "database": "v141_replay_d35b183510487197",
+  "cleaned": true,
+  "seconds": 8,
+  "scenario": null,
+  "environment": {
+    "database": "v141_replay_d35b183510487197",
+    "serverVersion": "9.7.2",
+    "initialCounts": {
+      "agent_file_contexts": 0,
+      "iteration_file_candidates": 0,
+      "iteration_session_context_files": 0,
+      "iteration_session_messages": 0,
+      "iteration_sessions": 0,
+      "iteration_stage_states": 0,
+      "iteration_task_set_candidates": 0,
+      "message_file_writes": 0,
+      "messages": 0,
+      "product_iterations": 0,
+      "project_file_changes": 0,
+      "project_files": 0,
+      "projects": 0,
+      "prototype_snapshots": 0,
+      "tab_deletion_operations": 0,
+      "tab_operations": 0,
+      "tabs": 0,
+      "task_folders": 0,
+      "users": 0,
+      "work_records": 0
+    }
+  },
+  "evidenceErrors": [
+    "scenario-summary.json：ENOENT"
+  ],
+  "archive": "D:\\Project\\4.Project\\Agent2\\.scratch\\screenshots\\v141-quality-raw\\19-replay-foundation",
+  "screenshots": [],
+  "okay": false
+}

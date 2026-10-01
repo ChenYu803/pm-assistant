@@ -1,0 +1,278 @@
+[
+  {
+    "label": "1440×900 Agent正文",
+    "pseudo": null,
+    "foreground": [
+      21,
+      20,
+      15,
+      1
+    ],
+    "effectiveForeground": [
+      21,
+      20,
+      15,
+      1
+    ],
+    "background": [
+      251,
+      248,
+      240,
+      1
+    ],
+    "ratio": 17.374656501637194
+  },
+  {
+    "label": "1440×900 用户正文",
+    "pseudo": null,
+    "foreground": [
+      36,
+      34,
+      29,
+      1
+    ],
+    "effectiveForeground": [
+      36,
+      34,
+      29,
+      1
+    ],
+    "background": [
+      238,
+      231,
+      215,
+      1
+    ],
+    "ratio": 12.899128841871724
+  },
+  {
+    "label": "1440×900 Agent辅助标签",
+    "pseudo": null,
+    "foreground": [
+      146,
+      69,
+      54,
+      1
+    ],
+    "effectiveForeground": [
+      146,
+      69,
+      54,
+      1
+    ],
+    "background": [
+      251,
+      248,
+      240,
+      1
+    ],
+    "ratio": 6.328385275912658
+  },
+  {
+    "label": "1440×900 用户辅助标签",
+    "pseudo": null,
+    "foreground": [
+      98,
+      92,
+      80,
+      1
+    ],
+    "effectiveForeground": [
+      98,
+      92,
+      80,
+      1
+    ],
+    "background": [
+      251,
+      248,
+      240,
+      1
+    ],
+    "ratio": 6.249802133720848
+  },
+  {
+    "label": "1440×900 输入占位文字",
+    "pseudo": "::placeholder",
+    "foreground": [
+      98,
+      90,
+      77,
+      1
+    ],
+    "effectiveForeground": [
+      98,
+      90,
+      77,
+      1
+    ],
+    "background": [
+      255,
+      253,
+      248,
+      1
+    ],
+    "ratio": 6.6875407776236475
+  },
+  {
+    "label": "1440×900 上下文辅助提示",
+    "pseudo": null,
+    "foreground": [
+      98,
+      92,
+      80,
+      1
+    ],
+    "effectiveForeground": [
+      98,
+      92,
+      80,
+      1
+    ],
+    "background": [
+      238,
+      231,
+      215,
+      1
+    ],
+    "ratio": 5.384362673851371
+  },
+  {
+    "label": "390×844 Agent正文",
+    "pseudo": null,
+    "foreground": [
+      21,
+      20,
+      15,
+      1
+    ],
+    "effectiveForeground": [
+      21,
+      20,
+      15,
+      1
+    ],
+    "background": [
+      251,
+      248,
+      240,
+      1
+    ],
+    "ratio": 17.374656501637194
+  },
+  {
+    "label": "390×844 用户正文",
+    "pseudo": null,
+    "foreground": [
+      36,
+      34,
+      29,
+      1
+    ],
+    "effectiveForeground": [
+      36,
+      34,
+      29,
+      1
+    ],
+    "background": [
+      238,
+      231,
+      215,
+      1
+    ],
+    "ratio": 12.899128841871724
+  },
+  {
+    "label": "390×844 Agent辅助标签",
+    "pseudo": null,
+    "foreground": [
+      146,
+      69,
+      54,
+      1
+    ],
+    "effectiveForeground": [
+      146,
+      69,
+      54,
+      1
+    ],
+    "background": [
+      251,
+      248,
+      240,
+      1
+    ],
+    "ratio": 6.328385275912658
+  },
+  {
+    "label": "390×844 用户辅助标签",
+    "pseudo": null,
+    "foreground": [
+      98,
+      92,
+      80,
+      1
+    ],
+    "effectiveForeground": [
+      98,
+      92,
+      80,
+      1
+    ],
+    "background": [
+      251,
+      248,
+      240,
+      1
+    ],
+    "ratio": 6.249802133720848
+  },
+  {
+    "label": "390×844 输入占位文字",
+    "pseudo": "::placeholder",
+    "foreground": [
+      98,
+      90,
+      77,
+      1
+    ],
+    "effectiveForeground": [
+      98,
+      90,
+      77,
+      1
+    ],
+    "background": [
+      255,
+      253,
+      248,
+      1
+    ],
+    "ratio": 6.6875407776236475
+  },
+  {
+    "label": "390×844 上下文辅助提示",
+    "pseudo": null,
+    "foreground": [
+      98,
+      92,
+      80,
+      1
+    ],
+    "effectiveForeground": [
+      98,
+      92,
+      80,
+      1
+    ],
+    "background": [
+      238,
+      231,
+      215,
+      1
+    ],
+    "ratio": 5.384362673851371
+  }
+]

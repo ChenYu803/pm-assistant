@@ -1,0 +1,1169 @@
+{
+  "ticket": 21,
+  "slug": "task-permission-replay",
+  "pass": 271,
+  "fail": 0,
+  "outputDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-task-permission-replay-YTROqe",
+  "database": "v141_replay_422a4d5a3daeb36d",
+  "cleaned": true,
+  "seconds": 117.6,
+  "scenario": {
+    "pass": 264,
+    "fail": 0,
+    "aiMode": "replay",
+    "workflows": [
+      {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "projectId": "20feabef-1d30-4761-b47e-93d5da94bfaa",
+        "iterationIds": [
+          "5eec0ab9-3b48-4736-9277-149f4a5769a1",
+          "ab8a800b-58e0-4382-a5fc-2af78a8495bd"
+        ],
+        "sessionIds": [
+          "a0b21e13-41a5-4f1d-99e7-fbfb604907e2",
+          "a08b633d-6f10-462e-9451-83b96fab8ac8"
+        ],
+        "folderIds": [
+          "b81b931c-ab24-4a7e-9411-36dcceb74607",
+          "b43944bb-2f11-4357-b00e-b44095480ff2"
+        ],
+        "permissionChecks": 62,
+        "finalFiles": 3
+      },
+      {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "projectId": "859c244d-bed5-49fd-a97c-9db6650d67c6",
+        "iterationIds": [
+          "6784ef0c-0ed0-4639-b68f-4215fa3f1878",
+          "e48f2863-6cd5-41ad-b438-a3b9ade1d2fb"
+        ],
+        "sessionIds": [
+          "e053f242-e2ff-4576-9c31-5923f26eff03",
+          "24a054fb-2b07-4682-85a8-94bb6307f1bc"
+        ],
+        "folderIds": [
+          "c872ef51-d85a-4681-b638-8e7f5aa8f651",
+          "54adc73e-e593-491e-bca8-b4667d3491cc"
+        ],
+        "permissionChecks": 62,
+        "finalFiles": 3
+      }
+    ],
+    "screenshots": [
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-task-permission-replay-YTROqe\\tasks-1440-initial-retry.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-task-permission-replay-YTROqe\\tasks-1440-manual-editor.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-task-permission-replay-YTROqe\\tasks-1440-mixed-candidate.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-task-permission-replay-YTROqe\\tasks-1440-mixed-retry.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-task-permission-replay-YTROqe\\tasks-1440-restore-confirm.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-task-permission-replay-YTROqe\\tasks-1440-restore-retry.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-task-permission-replay-YTROqe\\tasks-1440-restore-complete.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-task-permission-replay-YTROqe\\tasks-1440-restored-open-file.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-task-permission-replay-YTROqe\\tasks-1440-other-readonly.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-task-permission-replay-YTROqe\\tasks-1440-archived-readonly.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-task-permission-replay-YTROqe\\tasks-390-initial-retry.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-task-permission-replay-YTROqe\\tasks-390-manual-editor.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-task-permission-replay-YTROqe\\tasks-390-mixed-candidate.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-task-permission-replay-YTROqe\\tasks-390-mixed-retry.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-task-permission-replay-YTROqe\\tasks-390-restore-confirm.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-task-permission-replay-YTROqe\\tasks-390-restore-retry.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-task-permission-replay-YTROqe\\tasks-390-restore-complete.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-task-permission-replay-YTROqe\\tasks-390-restored-open-file.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-task-permission-replay-YTROqe\\tasks-390-other-readonly.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-task-permission-replay-YTROqe\\tasks-390-archived-readonly.png"
+    ],
+    "assertions": [
+      {
+        "name": "聊天前服务端确认 AI_MODE=replay",
+        "okay": true
+      },
+      {
+        "name": "专项从零用户空库开始",
+        "okay": true
+      },
+      {
+        "name": "1440×900 首套放弃 到达真实供应商入参边界",
+        "okay": true
+      },
+      {
+        "name": "1440×900 replay Agent 生成完整两个待确认 issue",
+        "okay": true
+      },
+      {
+        "name": "1440×900 首套整体放弃不创建任何资产",
+        "okay": true
+      },
+      {
+        "name": "1440×900 首套确认 到达真实供应商入参边界",
+        "okay": true
+      },
+      {
+        "name": "1440×900 故障仅注入本次公开 mutation 一次",
+        "okay": true
+      },
+      {
+        "name": "1440×900 initial失败所有资产字段、快照、序号和来源完全不变",
+        "okay": true
+      },
+      {
+        "name": "1440×900 initial失败候选 pending 且可重试",
+        "okay": true
+      },
+      {
+        "name": "1440×900 initial-retry无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 首套只含稳定01和02且均首修订",
+        "okay": true
+      },
+      {
+        "name": "1440×900 手动编辑只提供后缀且已有系统编号保持",
+        "okay": true
+      },
+      {
+        "name": "1440×900 manual-editor无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 混合候选包含更新正文及改名、新增和删除",
+        "okay": true
+      },
+      {
+        "name": "1440×900 混合差异正文可审阅且只可整体确认或放弃",
+        "okay": true
+      },
+      {
+        "name": "1440×900 mixed-candidate无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 混合候选整体放弃全部资产不变",
+        "okay": true
+      },
+      {
+        "name": "1440×900 手动编辑只提供后缀且已有系统编号保持",
+        "okay": true
+      },
+      {
+        "name": "1440×900 manual-editor无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 混合候选包含更新正文及改名、新增和删除",
+        "okay": true
+      },
+      {
+        "name": "1440×900 混合差异正文可审阅且只可整体确认或放弃",
+        "okay": true
+      },
+      {
+        "name": "1440×900 mixed-candidate无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 故障仅注入本次公开 mutation 一次",
+        "okay": true
+      },
+      {
+        "name": "1440×900 mixed失败所有资产字段、快照、序号和来源完全不变",
+        "okay": true
+      },
+      {
+        "name": "1440×900 mixed失败候选 pending 且可重试",
+        "okay": true
+      },
+      {
+        "name": "1440×900 mixed-retry无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 整套提交无新旧混杂且更新身份稳定",
+        "okay": true
+      },
+      {
+        "name": "1440×900 唯一旧集合精确匹配写入前身份编号正文路径及修订清单",
+        "okay": true
+      },
+      {
+        "name": "1440×900 用户整套三类变更同组同来源",
+        "okay": true
+      },
+      {
+        "name": "1440×900 restore-confirm无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 故障仅注入本次公开 mutation 一次",
+        "okay": true
+      },
+      {
+        "name": "1440×900 撤回失败全部资产、快照、序号和来源完全不变",
+        "okay": true
+      },
+      {
+        "name": "1440×900 restore-retry无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 整套撤回恢复原身份正文文件名并移除新增",
+        "okay": true
+      },
+      {
+        "name": "1440×900 被改和被删项撤回生成新修订并消耗备份",
+        "okay": true
+      },
+      {
+        "name": "1440×900 restore-complete无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 所属UI edit整套撤回恢复身份正文路径",
+        "okay": true
+      },
+      {
+        "name": "1440×900 所属UI rename整套撤回恢复身份正文路径",
+        "okay": true
+      },
+      {
+        "name": "1440×900 回归确实在旧删除占位仍显示时点击",
+        "okay": true
+      },
+      {
+        "name": "1440×900 目录恢复后当前弹窗立即变为可预览可编辑",
+        "okay": true
+      },
+      {
+        "name": "1440×900 restored-open-file无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 所属UI delete整套撤回恢复身份正文路径",
+        "okay": true
+      },
+      {
+        "name": "1440×900 UI 查看下载是同一纯正文",
+        "okay": true
+      },
+      {
+        "name": "1440×900 所属手动加载 到达真实供应商入参边界",
+        "okay": true
+      },
+      {
+        "name": "1440×900 所属手动加载纯正文到实际供应商",
+        "okay": true
+      },
+      {
+        "name": "1440×900 其他迭代预览只读且无正文编辑",
+        "okay": true
+      },
+      {
+        "name": "1440×900 其他迭代无改名删除或撤回按钮",
+        "okay": true
+      },
+      {
+        "name": "1440×900 other-readonly无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 UI 查看下载是同一纯正文",
+        "okay": true
+      },
+      {
+        "name": "1440×900 其他迭代手动加载 到达真实供应商入参边界",
+        "okay": true
+      },
+      {
+        "name": "1440×900 其他迭代手动加载同一纯正文到实际供应商",
+        "okay": true
+      },
+      {
+        "name": "1440×900 所属用户也不能修改系统序号 PATCH 精确拒绝400且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 消耗旧集合后禁止重做 PATCH 精确拒绝409且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨迭代edit POST 精确拒绝403且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨迭代rename PATCH 精确拒绝403且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨迭代delete DELETE 精确拒绝403且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨迭代restore POST 精确拒绝409且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨迭代文件夹撤回 PATCH 精确拒绝403且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 错迭代候选 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 错迭代候选 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 错迭代候选 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 错迭代手动候选 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 错迭代手动候选 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 旧文件入口不能绕过任务归属 PATCH 精确拒绝403且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 旧文件入口不能绕过任务归属 DELETE 精确拒绝403且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 旧Agent文件入口 POST 精确拒绝409且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 旧ticket-set入口 POST 精确拒绝409且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨迭代全部拒绝后资产候选上下文逐字段不变",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目合法读取仅自己的空目录或上下文",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目合法读取仅自己的空目录或上下文",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目合法读取仅自己的空目录或上下文",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目任务文件 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目任务文件 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目任务文件 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目任务修改edit POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目任务修改rename PATCH 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目任务修改delete DELETE 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目任务修改restore POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目上下文 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目上下文会话入口 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目上下文 DELETE 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目上下文会话入口 DELETE 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目候选 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目候选 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目候选 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目文件夹撤回 PATCH 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目错项目文件夹创建 POST 精确拒绝409且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户任务文件 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户任务文件 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户任务文件 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户任务修改edit POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户任务修改rename PATCH 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户任务修改delete DELETE 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户任务修改restore POST 精确拒绝409且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户上下文 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户上下文会话入口 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户上下文 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户上下文会话入口 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户上下文 DELETE 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户上下文会话入口 DELETE 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户候选 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户候选 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户候选 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户手动候选 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户手动候选 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户文件夹撤回 PATCH 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨用户错项目文件夹创建 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目错配手动候选 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目错配手动候选 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨项目跨用户拒绝后全部资产、候选和上下文不变",
+        "okay": true
+      },
+      {
+        "name": "1440×900 手动编辑只提供后缀且已有系统编号保持",
+        "okay": true
+      },
+      {
+        "name": "1440×900 manual-editor无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 混合候选包含更新正文及改名、新增和删除",
+        "okay": true
+      },
+      {
+        "name": "1440×900 混合差异正文可审阅且只可整体确认或放弃",
+        "okay": true
+      },
+      {
+        "name": "1440×900 mixed-candidate无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 被删03不复用且依赖同步映射为04",
+        "okay": true
+      },
+      {
+        "name": "1440×900 其他迭代可建立自己的集合而不能改变原所属文件夹",
+        "okay": true
+      },
+      {
+        "name": "1440×900 每迭代至多一个任务文件夹 POST 精确拒绝409且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 删除所属前确实存在非空唯一旧集合",
+        "okay": true
+      },
+      {
+        "name": "1440×900 公开删除迭代成功",
+        "okay": true
+      },
+      {
+        "name": "1440×900 公开删除迭代成功",
+        "okay": true
+      },
+      {
+        "name": "1440×900 所属删除后资产正文、唯一快照和来源完整保留",
+        "okay": true
+      },
+      {
+        "name": "1440×900 所属迭代删除后任务文件夹全部只读归档",
+        "okay": true
+      },
+      {
+        "name": "1440×900 全部迭代删除后的旧文件守卫 PATCH 精确拒绝409且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 全部迭代删除后的旧文件守卫 DELETE 精确拒绝409且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 全部迭代删除后的旧Agent入口 POST 精确拒绝409且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 全部迭代删除后的旧ticket-set入口 POST 精确拒绝409且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 项目UI展示归档且无任务撤回入口",
+        "okay": true
+      },
+      {
+        "name": "1440×900 浏览器无运行时错误和水平溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 archived-readonly无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 首套放弃 到达真实供应商入参边界",
+        "okay": true
+      },
+      {
+        "name": "390×844 replay Agent 生成完整两个待确认 issue",
+        "okay": true
+      },
+      {
+        "name": "390×844 首套整体放弃不创建任何资产",
+        "okay": true
+      },
+      {
+        "name": "390×844 首套确认 到达真实供应商入参边界",
+        "okay": true
+      },
+      {
+        "name": "390×844 故障仅注入本次公开 mutation 一次",
+        "okay": true
+      },
+      {
+        "name": "390×844 initial失败所有资产字段、快照、序号和来源完全不变",
+        "okay": true
+      },
+      {
+        "name": "390×844 initial失败候选 pending 且可重试",
+        "okay": true
+      },
+      {
+        "name": "390×844 initial-retry无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 首套只含稳定01和02且均首修订",
+        "okay": true
+      },
+      {
+        "name": "390×844 手动编辑只提供后缀且已有系统编号保持",
+        "okay": true
+      },
+      {
+        "name": "390×844 manual-editor无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 混合候选包含更新正文及改名、新增和删除",
+        "okay": true
+      },
+      {
+        "name": "390×844 混合差异正文可审阅且只可整体确认或放弃",
+        "okay": true
+      },
+      {
+        "name": "390×844 mixed-candidate无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 混合候选整体放弃全部资产不变",
+        "okay": true
+      },
+      {
+        "name": "390×844 手动编辑只提供后缀且已有系统编号保持",
+        "okay": true
+      },
+      {
+        "name": "390×844 manual-editor无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 混合候选包含更新正文及改名、新增和删除",
+        "okay": true
+      },
+      {
+        "name": "390×844 混合差异正文可审阅且只可整体确认或放弃",
+        "okay": true
+      },
+      {
+        "name": "390×844 mixed-candidate无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 故障仅注入本次公开 mutation 一次",
+        "okay": true
+      },
+      {
+        "name": "390×844 mixed失败所有资产字段、快照、序号和来源完全不变",
+        "okay": true
+      },
+      {
+        "name": "390×844 mixed失败候选 pending 且可重试",
+        "okay": true
+      },
+      {
+        "name": "390×844 mixed-retry无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 整套提交无新旧混杂且更新身份稳定",
+        "okay": true
+      },
+      {
+        "name": "390×844 唯一旧集合精确匹配写入前身份编号正文路径及修订清单",
+        "okay": true
+      },
+      {
+        "name": "390×844 用户整套三类变更同组同来源",
+        "okay": true
+      },
+      {
+        "name": "390×844 restore-confirm无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 故障仅注入本次公开 mutation 一次",
+        "okay": true
+      },
+      {
+        "name": "390×844 撤回失败全部资产、快照、序号和来源完全不变",
+        "okay": true
+      },
+      {
+        "name": "390×844 restore-retry无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 整套撤回恢复原身份正文文件名并移除新增",
+        "okay": true
+      },
+      {
+        "name": "390×844 被改和被删项撤回生成新修订并消耗备份",
+        "okay": true
+      },
+      {
+        "name": "390×844 restore-complete无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 所属UI edit整套撤回恢复身份正文路径",
+        "okay": true
+      },
+      {
+        "name": "390×844 所属UI rename整套撤回恢复身份正文路径",
+        "okay": true
+      },
+      {
+        "name": "390×844 回归确实在旧删除占位仍显示时点击",
+        "okay": true
+      },
+      {
+        "name": "390×844 目录恢复后当前弹窗立即变为可预览可编辑",
+        "okay": true
+      },
+      {
+        "name": "390×844 restored-open-file无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 所属UI delete整套撤回恢复身份正文路径",
+        "okay": true
+      },
+      {
+        "name": "390×844 UI 查看下载是同一纯正文",
+        "okay": true
+      },
+      {
+        "name": "390×844 所属手动加载 到达真实供应商入参边界",
+        "okay": true
+      },
+      {
+        "name": "390×844 所属手动加载纯正文到实际供应商",
+        "okay": true
+      },
+      {
+        "name": "390×844 其他迭代预览只读且无正文编辑",
+        "okay": true
+      },
+      {
+        "name": "390×844 其他迭代无改名删除或撤回按钮",
+        "okay": true
+      },
+      {
+        "name": "390×844 other-readonly无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 UI 查看下载是同一纯正文",
+        "okay": true
+      },
+      {
+        "name": "390×844 其他迭代手动加载 到达真实供应商入参边界",
+        "okay": true
+      },
+      {
+        "name": "390×844 其他迭代手动加载同一纯正文到实际供应商",
+        "okay": true
+      },
+      {
+        "name": "390×844 所属用户也不能修改系统序号 PATCH 精确拒绝400且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 消耗旧集合后禁止重做 PATCH 精确拒绝409且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨迭代edit POST 精确拒绝403且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨迭代rename PATCH 精确拒绝403且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨迭代delete DELETE 精确拒绝403且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨迭代restore POST 精确拒绝409且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨迭代文件夹撤回 PATCH 精确拒绝403且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 错迭代候选 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 错迭代候选 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 错迭代候选 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 错迭代手动候选 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 错迭代手动候选 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 旧文件入口不能绕过任务归属 PATCH 精确拒绝403且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 旧文件入口不能绕过任务归属 DELETE 精确拒绝403且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 旧Agent文件入口 POST 精确拒绝409且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 旧ticket-set入口 POST 精确拒绝409且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨迭代全部拒绝后资产候选上下文逐字段不变",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目合法读取仅自己的空目录或上下文",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目合法读取仅自己的空目录或上下文",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目合法读取仅自己的空目录或上下文",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目任务文件 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目任务文件 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目任务文件 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目任务修改edit POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目任务修改rename PATCH 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目任务修改delete DELETE 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目任务修改restore POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目上下文 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目上下文会话入口 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目上下文 DELETE 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目上下文会话入口 DELETE 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目候选 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目候选 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目候选 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目文件夹撤回 PATCH 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目错项目文件夹创建 POST 精确拒绝409且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户任务文件 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户任务文件 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户任务文件 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户任务修改edit POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户任务修改rename PATCH 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户任务修改delete DELETE 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户任务修改restore POST 精确拒绝409且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户上下文 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户上下文会话入口 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户上下文 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户上下文会话入口 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户上下文 DELETE 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户上下文会话入口 DELETE 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户候选 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户候选 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户候选 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户手动候选 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户手动候选 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户文件夹撤回 PATCH 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨用户错项目文件夹创建 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目错配手动候选 GET 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目错配手动候选 POST 精确拒绝404且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨项目跨用户拒绝后全部资产、候选和上下文不变",
+        "okay": true
+      },
+      {
+        "name": "390×844 手动编辑只提供后缀且已有系统编号保持",
+        "okay": true
+      },
+      {
+        "name": "390×844 manual-editor无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 混合候选包含更新正文及改名、新增和删除",
+        "okay": true
+      },
+      {
+        "name": "390×844 混合差异正文可审阅且只可整体确认或放弃",
+        "okay": true
+      },
+      {
+        "name": "390×844 mixed-candidate无水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 被删03不复用且依赖同步映射为04",
+        "okay": true
+      },
+      {
+        "name": "390×844 其他迭代可建立自己的集合而不能改变原所属文件夹",
+        "okay": true
+      },
+      {
+        "name": "390×844 每迭代至多一个任务文件夹 POST 精确拒绝409且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 删除所属前确实存在非空唯一旧集合",
+        "okay": true
+      },
+      {
+        "name": "390×844 公开删除迭代成功",
+        "okay": true
+      },
+      {
+        "name": "390×844 公开删除迭代成功",
+        "okay": true
+      },
+      {
+        "name": "390×844 所属删除后资产正文、唯一快照和来源完整保留",
+        "okay": true
+      },
+      {
+        "name": "390×844 所属迭代删除后任务文件夹全部只读归档",
+        "okay": true
+      },
+      {
+        "name": "390×844 全部迭代删除后的旧文件守卫 PATCH 精确拒绝409且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 全部迭代删除后的旧文件守卫 DELETE 精确拒绝409且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 全部迭代删除后的旧Agent入口 POST 精确拒绝409且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 全部迭代删除后的旧ticket-set入口 POST 精确拒绝409且无秘密泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 项目UI展示归档且无任务撤回入口",
+        "okay": true
+      },
+      {
+        "name": "390×844 浏览器无运行时错误和水平溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 archived-readonly无水平溢出",
+        "okay": true
+      }
+    ]
+  },
+  "environment": {
+    "database": "v141_replay_422a4d5a3daeb36d",
+    "serverVersion": "9.7.2",
+    "initialCounts": {
+      "agent_file_contexts": 0,
+      "iteration_file_candidates": 0,
+      "iteration_session_context_files": 0,
+      "iteration_session_messages": 0,
+      "iteration_sessions": 0,
+      "iteration_stage_states": 0,
+      "iteration_task_set_candidates": 0,
+      "message_file_writes": 0,
+      "messages": 0,
+      "product_iterations": 0,
+      "project_file_changes": 0,
+      "project_files": 0,
+      "projects": 0,
+      "prototype_snapshots": 0,
+      "tab_deletion_operations": 0,
+      "tab_operations": 0,
+      "tabs": 0,
+      "task_folders": 0,
+      "users": 0,
+      "work_records": 0
+    }
+  },
+  "evidenceErrors": [],
+  "archive": "D:\\Project\\4.Project\\Agent2\\.scratch\\screenshots\\v141-quality-raw\\21-task-permission-replay",
+  "screenshots": [],
+  "okay": true
+}

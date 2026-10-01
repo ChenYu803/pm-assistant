@@ -59,7 +59,7 @@ export default function MarkdownCandidateReview({ candidate, stage, iterationId,
       <label className="analysis-candidate-label" htmlFor={`candidate-name-${candidate.id}`}>文件名</label>
       <input id={`candidate-name-${candidate.id}`} value={filename} onChange={(event) => { setFilename(event.target.value); setError(""); }} disabled={working} spellCheck={false} />
       {!validCandidateFilename(filename, stage) ? <p className="analysis-candidate-error" role="alert">文件名应为“{branch}-描述.md”，不能包含路径。</p> : null}
-      <div className="analysis-candidate-target"><span>{operation === "create" ? "创建新文件" : "覆盖已有文件"}</span><strong>{filename || "尚未填写文件名"}</strong><small>{branch} / {filename || "…"}</small></div>
+      <div className="analysis-candidate-target"><span>{operation === "create" ? "创建新文件" : "覆盖已有文件"}</span><strong title={filename}>{filename || "尚未填写文件名"}</strong><small title={`${branch} / ${filename}`}>{branch} / {filename || "…"}</small></div>
       <p className="analysis-candidate-explain">确认后将完整正文写入项目文件树。预览和放弃都不会修改项目文件。</p>
     </> : <p className="analysis-candidate-outcome">{status === "written" ? `已保存到${branch} / ${settled ? filename : candidate.finalFilename}` : "这份候选已放弃，项目文件未改变。"}</p>}
     {error ? <p className="analysis-candidate-error" role="alert">{error}{pending ? " 候选仍保留，可重试。" : ""}</p> : null}

@@ -1,0 +1,20 @@
+[
+  {
+    "label": "390×844 候选确认按钮",
+    "width": 78,
+    "height": 44,
+    "reachable": true
+  },
+  {
+    "label": "390×844 上下文移除按钮",
+    "width": 44,
+    "height": 44,
+    "reachable": true
+  },
+  {
+    "label": "390×844 预览关闭按钮",
+    "width": 44,
+    "height": 44,
+    "reachable": true
+  }
+]

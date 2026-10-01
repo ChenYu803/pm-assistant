@@ -132,11 +132,14 @@ function renderMarkdown(md: string): string {
       paraLines.push(lines[i]);
       i++;
     }
-    if (paraLines.length > 0) {
-      result.push(
-        `<p class="mb-3 leading-relaxed">${inlineMarkup(paraLines.join("\n"))}</p>`
-      );
+    // 流式输出可能停在半截标记；上面的分支未消费该行时，按正文安全渲染并推进，避免空转。
+    if (paraLines.length === 0) {
+      paraLines.push(line);
+      i++;
     }
+    result.push(
+      `<p class="mb-3 leading-relaxed">${inlineMarkup(paraLines.join("\n"))}</p>`
+    );
   }
 
   return result.join("\n");

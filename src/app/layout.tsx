@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Providers from "@/components/Providers";
 import Navbar from "@/components/Navbar";
 import "./globals.css";
+import "./workbench-quality.css";
 
 export const metadata: Metadata = {
   title: "PM Assistant",

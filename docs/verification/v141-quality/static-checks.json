@@ -1,0 +1,68 @@
+{
+  "browser": "Microsoft Edge",
+  "browserVersion": "154.0.4258.48",
+  "detector": {
+    "findings": [],
+    "targets": [
+      "src/app/workbench-quality.css",
+      "src/components/ProductIterationWorkbench.tsx",
+      "src/components/ProjectFileTree.tsx",
+      "src/components/MarkdownCandidateReview.tsx"
+    ]
+  },
+  "next": "16.3.0",
+  "date": "2026-10-02",
+  "syntax": {
+    "exitCode": 0,
+    "commands": [
+      "node --check scripts/verify-v141-quality-visual-gate.mjs",
+      "node --check scripts/verify-v141-quality-visual-scenario.mjs",
+      "node --check scripts/verify-v141-markdown-progress.mjs"
+    ]
+  },
+  "node": "v24.21.0",
+  "aiMode": "replay",
+  "typecheck": {
+    "command": "npx tsc --noEmit",
+    "exitCode": 0
+  },
+  "lint": {
+    "warnings": [
+      "ChatArea.tsx:875 既有 react-hooks/exhaustive-deps 警告"
+    ],
+    "command": "npm run lint",
+    "exitCode": 0
+  },
+  "build": {
+    "command": "npm run build",
+    "exitCode": 0
+  },
+  "markdownSafety": {
+    "pass": 4,
+    "fail": 0,
+    "assertions": [
+      {
+        "name": "HTML 标签只显示为文本",
+        "okay": true
+      },
+      {
+        "name": "危险协议没有变成链接",
+        "okay": true
+      },
+      {
+        "name": "安全链接保留",
+        "okay": true
+      },
+      {
+        "name": "标题、代码和表格保留语义结构",
+        "okay": true
+      }
+    ]
+  },
+  "review": {
+    "standards": 0,
+    "spec": 0,
+    "resolved": "半截 Markdown P1 空转问题已按实际组件红绿验证修复"
+  },
+  "sourceFingerprintAfterBuild": "与最终专项一致"
+}

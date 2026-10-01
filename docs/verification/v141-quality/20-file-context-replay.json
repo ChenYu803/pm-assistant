@@ -1,0 +1,823 @@
+{
+  "ticket": 20,
+  "slug": "file-context-replay",
+  "pass": 183,
+  "fail": 0,
+  "outputDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-file-context-replay-itS7kb",
+  "database": "v141_replay_d7003f3e68fb227f",
+  "cleaned": true,
+  "seconds": 101.9,
+  "scenario": {
+    "pass": 176,
+    "fail": 0,
+    "aiMode": "replay",
+    "workflows": [
+      {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "projectId": "b74a5f10-1589-4d82-90bd-002109057020",
+        "iterationIds": [
+          "aa823e82-2edb-4d43-a261-4f946536b8ad",
+          "fcb79ca9-f0a6-4415-b687-124035af6f4f"
+        ],
+        "sessionIds": [
+          "ca880cbf-aa75-4df4-a679-77affee92e55",
+          "546da124-ed56-4f3c-8eb2-54f862e28f59",
+          "dfbf729c-6040-455a-b9c7-e68ad597584d"
+        ],
+        "fileIds": [
+          "ce81e6be-cb1d-49e0-8469-73b75220089f",
+          "e41d3450-93ff-4798-a915-b19d617b345e",
+          "7eb01535-b218-4944-bcc0-45434d7a15ae"
+        ],
+        "snapshotId": "51b57e9d-9206-404e-9119-e947e30b4aab",
+        "finalFileCount": 2,
+        "expectedAnalysisRevision": 5,
+        "expectedPrototypeRevision": 2,
+        "preservedPrototypeBackup": true
+      },
+      {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "projectId": "ece076eb-7f00-4701-972e-f7c0ae74aa8b",
+        "iterationIds": [
+          "18ef488d-5902-42a3-b532-db7ee2988589",
+          "1639acfb-4507-4140-a044-eb0d203499a1"
+        ],
+        "sessionIds": [
+          "acaf04f2-4e0f-4c9a-a60b-0902246d689c",
+          "4e12f0ab-82ad-4c23-9740-50b00daed218",
+          "bec4854c-10a1-41ad-b3b7-617b44eb4a25"
+        ],
+        "fileIds": [
+          "2b92a623-e471-481a-926f-df2956ecb3e5",
+          "5be40e57-45d1-4908-8b3d-988a95a2041e",
+          "0fa0a253-3c0c-4f77-a4c8-2a3069615ea0"
+        ],
+        "snapshotId": "6389e264-4bec-4b07-b3d3-7ca1cf1cc242",
+        "finalFileCount": 2,
+        "expectedAnalysisRevision": 5,
+        "expectedPrototypeRevision": 2,
+        "preservedPrototypeBackup": true
+      }
+    ],
+    "screenshots": [
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-file-context-replay-itS7kb\\files-1440-analysis-create-candidate.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-file-context-replay-itS7kb\\files-1440-prototype-create-candidate.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-file-context-replay-itS7kb\\files-1440-prd-create-candidate.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-file-context-replay-itS7kb\\files-1440-loaded-context.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-file-context-replay-itS7kb\\files-1440-analysis-overwrite-candidate.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-file-context-replay-itS7kb\\files-1440-source-history.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-file-context-replay-itS7kb\\files-1440-readonly-source.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-file-context-replay-itS7kb\\files-1440-readonly-html.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-file-context-replay-itS7kb\\files-390-analysis-create-candidate.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-file-context-replay-itS7kb\\files-390-prototype-create-candidate.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-file-context-replay-itS7kb\\files-390-prd-create-candidate.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-file-context-replay-itS7kb\\files-390-loaded-context.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-file-context-replay-itS7kb\\files-390-analysis-overwrite-candidate.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-file-context-replay-itS7kb\\files-390-source-history.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-file-context-replay-itS7kb\\files-390-readonly-source.png",
+      "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-file-context-replay-itS7kb\\files-390-readonly-html.png"
+    ],
+    "assertions": [
+      {
+        "name": "聊天前确认服务端 AI_MODE=replay",
+        "okay": true
+      },
+      {
+        "name": "专项开始前 MySQL 没有用户",
+        "okay": true
+      },
+      {
+        "name": "1440×900 通过正式注册进入项目页",
+        "okay": true
+      },
+      {
+        "name": "1440×900 空树固定四个树枝",
+        "okay": true
+      },
+      {
+        "name": "1440×900 空上下文明确正文边界",
+        "okay": true
+      },
+      {
+        "name": "1440×900 初始空上下文 到达真实供应商参数边界",
+        "okay": true
+      },
+      {
+        "name": "1440×900 空请求只包含项目迭代阶段与空目录",
+        "okay": true
+      },
+      {
+        "name": "1440×900 需求分析-专项1440.md 为待确认真实候选",
+        "okay": true
+      },
+      {
+        "name": "1440×900 需求分析-专项1440.md 确认前可预览完整 Markdown",
+        "okay": true
+      },
+      {
+        "name": "1440×900 需求分析-专项1440.md 确认前不落盘",
+        "okay": true
+      },
+      {
+        "name": "1440×900 需求分析-专项1440.md 用户确认才增加一条来源并进入正确树枝",
+        "okay": true
+      },
+      {
+        "name": "1440×900 需求分析-专项1440.md 正文与真实候选相同且不含 changelog",
+        "okay": true
+      },
+      {
+        "name": "1440×900 需求分析-专项1440.md 在需求分析树枝可见",
+        "okay": true
+      },
+      {
+        "name": "1440×900 首次创建首修订且无旧版",
+        "okay": true
+      },
+      {
+        "name": "1440×900 原型候选 到达真实供应商参数边界",
+        "okay": true
+      },
+      {
+        "name": "1440×900 已存在的未加载需求分析只在目录出现",
+        "okay": true
+      },
+      {
+        "name": "1440×900 原型-专项1440.md 为待确认真实候选",
+        "okay": true
+      },
+      {
+        "name": "1440×900 原型-专项1440.md 确认前可预览完整 Markdown",
+        "okay": true
+      },
+      {
+        "name": "1440×900 原型-专项1440.md 确认前不落盘",
+        "okay": true
+      },
+      {
+        "name": "1440×900 原型-专项1440.md 用户确认才增加一条来源并进入正确树枝",
+        "okay": true
+      },
+      {
+        "name": "1440×900 原型-专项1440.md 正文与真实候选相同且不含 changelog",
+        "okay": true
+      },
+      {
+        "name": "1440×900 原型-专项1440.md 在原型树枝可见",
+        "okay": true
+      },
+      {
+        "name": "1440×900 HTML 自动保存为独立快照且 iframe 隔离",
+        "okay": true
+      },
+      {
+        "name": "1440×900 HTML 内嵌预览实际呈现业务正文",
+        "okay": true
+      },
+      {
+        "name": "1440×900 HTML 可从 UI 下载",
+        "okay": true
+      },
+      {
+        "name": "1440×900 HTML 可以新窗口再次打开",
+        "okay": true
+      },
+      {
+        "name": "1440×900 PRD候选 到达真实供应商参数边界",
+        "okay": true
+      },
+      {
+        "name": "1440×900 未加载需求分析与原型正文均未泄露",
+        "okay": true
+      },
+      {
+        "name": "1440×900 PRD-专项1440.md 为待确认真实候选",
+        "okay": true
+      },
+      {
+        "name": "1440×900 PRD-专项1440.md 确认前可预览完整 Markdown",
+        "okay": true
+      },
+      {
+        "name": "1440×900 PRD-专项1440.md 确认前不落盘",
+        "okay": true
+      },
+      {
+        "name": "1440×900 PRD-专项1440.md 用户确认才增加一条来源并进入正确树枝",
+        "okay": true
+      },
+      {
+        "name": "1440×900 PRD-专项1440.md 正文与真实候选相同且不含 changelog",
+        "okay": true
+      },
+      {
+        "name": "1440×900 PRD-专项1440.md 在PRD树枝可见",
+        "okay": true
+      },
+      {
+        "name": "1440×900 需求分析-专项1440.md UI 下载为同一纯正文",
+        "okay": true
+      },
+      {
+        "name": "1440×900 原型-专项1440.md UI 下载为同一纯正文",
+        "okay": true
+      },
+      {
+        "name": "1440×900 PRD-专项1440.md UI 下载为同一纯正文",
+        "okay": true
+      },
+      {
+        "name": "1440×900 HTML 与过程文档不进入文件目录和上下文",
+        "okay": true
+      },
+      {
+        "name": "1440×900 删除来源前原型具有真实非空唯一上一版",
+        "okay": true
+      },
+      {
+        "name": "1440×900 用户编辑增加修订并保存唯一上一版",
+        "okay": true
+      },
+      {
+        "name": "1440×900 非空目录未加载 到达真实供应商参数边界",
+        "okay": true
+      },
+      {
+        "name": "1440×900 非空目录空上下文不泄露任何未加载正文",
+        "okay": true
+      },
+      {
+        "name": "1440×900 打开正文预览不会加入上下文",
+        "okay": true
+      },
+      {
+        "name": "1440×900 加载旧正文 到达真实供应商参数边界",
+        "okay": true
+      },
+      {
+        "name": "1440×900 加载请求读取当前正文及同版来源摘要",
+        "okay": true
+      },
+      {
+        "name": "1440×900 供应商普通对话不自动注入完整时间线",
+        "okay": true
+      },
+      {
+        "name": "1440×900 当前上下文只列加入的一个文件且不展示修订",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨迭代覆盖候选 到达真实供应商参数边界",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨迭代覆盖候选确认前保留旧正文和修订",
+        "okay": true
+      },
+      {
+        "name": "1440×900 需求分析-专项1440.md 为待确认真实候选",
+        "okay": true
+      },
+      {
+        "name": "1440×900 需求分析-专项1440.md 确认前可预览完整 Markdown",
+        "okay": true
+      },
+      {
+        "name": "1440×900 需求分析-专项1440.md 确认前不落盘",
+        "okay": true
+      },
+      {
+        "name": "1440×900 需求分析-专项1440.md 用户确认才增加一条来源并进入正确树枝",
+        "okay": true
+      },
+      {
+        "name": "1440×900 需求分析-专项1440.md 正文与真实候选相同且不含 changelog",
+        "okay": true
+      },
+      {
+        "name": "1440×900 需求分析-专项1440.md 在需求分析树枝可见",
+        "okay": true
+      },
+      {
+        "name": "1440×900 确认覆盖递增修订并替换唯一旧版",
+        "okay": true
+      },
+      {
+        "name": "1440×900 下一次用户保存只留下紧邻上一版",
+        "okay": true
+      },
+      {
+        "name": "1440×900 原会话仍保留文件引用",
+        "okay": true
+      },
+      {
+        "name": "1440×900 跨迭代更新后的下一轮 到达真实供应商参数边界",
+        "okay": true
+      },
+      {
+        "name": "1440×900 原会话下一轮使用另一迭代最新正文及同版来源",
+        "okay": true
+      },
+      {
+        "name": "1440×900 移除后的下一轮 到达真实供应商参数边界",
+        "okay": true
+      },
+      {
+        "name": "1440×900 移除后下一轮只读目录而无正文",
+        "okay": true
+      },
+      {
+        "name": "1440×900 上下文 API 与 MySQL 引用均已清空",
+        "okay": true
+      },
+      {
+        "name": "1440×900 撤回确认说明不能重做",
+        "okay": true
+      },
+      {
+        "name": "1440×900 撤回恢复紧邻正文、增加修订并消耗备份",
+        "okay": true
+      },
+      {
+        "name": "1440×900 公开 API 也拒绝第二次撤回且不产生重做修订",
+        "okay": true
+      },
+      {
+        "name": "1440×900 详情区分 Agent 写入与用户操作且隐藏修订",
+        "okay": true
+      },
+      {
+        "name": "1440×900 改名保留身份、正文修订和最近正文来源",
+        "okay": true
+      },
+      {
+        "name": "1440×900 本轮写入按稳定文件身份归并操作",
+        "okay": true
+      },
+      {
+        "name": "1440×900 文件删除确认说明正文备份和引用不可恢复",
+        "okay": true
+      },
+      {
+        "name": "1440×900 删除彻底移除正文并保留路径来源占位",
+        "okay": true
+      },
+      {
+        "name": "1440×900 已删除文件无法下载正文",
+        "okay": true
+      },
+      {
+        "name": "1440×900 来源会话删除前明确保留文件与来源",
+        "okay": true
+      },
+      {
+        "name": "1440×900 会话删除保留正文及 Agent 来源名称快照",
+        "okay": true
+      },
+      {
+        "name": "1440×900 详情显示会话已删除占位",
+        "okay": true
+      },
+      {
+        "name": "1440×900 原型来源会话删除后保留正文、非空唯一备份及来源快照",
+        "okay": true
+      },
+      {
+        "name": "1440×900 删除所有来源迭代仍保留正文与完整来源时间线",
+        "okay": true
+      },
+      {
+        "name": "1440×900 来源迭代删除后仍保留原型正文、非空唯一备份与可撤回事实",
+        "okay": true
+      },
+      {
+        "name": "1440×900 没有当前迭代仍展示固定四树枝及删除占位",
+        "okay": true
+      },
+      {
+        "name": "1440×900 无当前迭代公开旧编辑删除入口均拒绝且资产不变",
+        "okay": true
+      },
+      {
+        "name": "1440×900 需求分析-改名1440.md 只读UI 下载为同一纯正文",
+        "okay": true
+      },
+      {
+        "name": "1440×900 无当前迭代仅可浏览详情且来源迭代不再跳转",
+        "okay": true
+      },
+      {
+        "name": "1440×900 删除迭代后从项目重开 HTML 快照",
+        "okay": true
+      },
+      {
+        "name": "1440×900 删除来源后归档 HTML 内嵌预览仍实际呈现正文",
+        "okay": true
+      },
+      {
+        "name": "1440×900 无当前迭代 HTML 仍可再次打开",
+        "okay": true
+      },
+      {
+        "name": "1440×900 无当前迭代 HTML 仍可下载原正文",
+        "okay": true
+      },
+      {
+        "name": "1440×900 桌面或移动文件视图无横向溢出",
+        "okay": true
+      },
+      {
+        "name": "1440×900 MySQL 最终耐久文件与历史 API 事实一致",
+        "okay": true
+      },
+      {
+        "name": "1440×900 浏览器无运行时异常",
+        "okay": true
+      },
+      {
+        "name": "390×844 通过正式注册进入项目页",
+        "okay": true
+      },
+      {
+        "name": "390×844 空树固定四个树枝",
+        "okay": true
+      },
+      {
+        "name": "390×844 空上下文明确正文边界",
+        "okay": true
+      },
+      {
+        "name": "390×844 初始空上下文 到达真实供应商参数边界",
+        "okay": true
+      },
+      {
+        "name": "390×844 空请求只包含项目迭代阶段与空目录",
+        "okay": true
+      },
+      {
+        "name": "390×844 需求分析-专项390.md 为待确认真实候选",
+        "okay": true
+      },
+      {
+        "name": "390×844 需求分析-专项390.md 确认前可预览完整 Markdown",
+        "okay": true
+      },
+      {
+        "name": "390×844 需求分析-专项390.md 确认前不落盘",
+        "okay": true
+      },
+      {
+        "name": "390×844 需求分析-专项390.md 用户确认才增加一条来源并进入正确树枝",
+        "okay": true
+      },
+      {
+        "name": "390×844 需求分析-专项390.md 正文与真实候选相同且不含 changelog",
+        "okay": true
+      },
+      {
+        "name": "390×844 需求分析-专项390.md 在需求分析树枝可见",
+        "okay": true
+      },
+      {
+        "name": "390×844 首次创建首修订且无旧版",
+        "okay": true
+      },
+      {
+        "name": "390×844 原型候选 到达真实供应商参数边界",
+        "okay": true
+      },
+      {
+        "name": "390×844 已存在的未加载需求分析只在目录出现",
+        "okay": true
+      },
+      {
+        "name": "390×844 原型-专项390.md 为待确认真实候选",
+        "okay": true
+      },
+      {
+        "name": "390×844 原型-专项390.md 确认前可预览完整 Markdown",
+        "okay": true
+      },
+      {
+        "name": "390×844 原型-专项390.md 确认前不落盘",
+        "okay": true
+      },
+      {
+        "name": "390×844 原型-专项390.md 用户确认才增加一条来源并进入正确树枝",
+        "okay": true
+      },
+      {
+        "name": "390×844 原型-专项390.md 正文与真实候选相同且不含 changelog",
+        "okay": true
+      },
+      {
+        "name": "390×844 原型-专项390.md 在原型树枝可见",
+        "okay": true
+      },
+      {
+        "name": "390×844 HTML 自动保存为独立快照且 iframe 隔离",
+        "okay": true
+      },
+      {
+        "name": "390×844 HTML 内嵌预览实际呈现业务正文",
+        "okay": true
+      },
+      {
+        "name": "390×844 HTML 可从 UI 下载",
+        "okay": true
+      },
+      {
+        "name": "390×844 HTML 可以新窗口再次打开",
+        "okay": true
+      },
+      {
+        "name": "390×844 PRD候选 到达真实供应商参数边界",
+        "okay": true
+      },
+      {
+        "name": "390×844 未加载需求分析与原型正文均未泄露",
+        "okay": true
+      },
+      {
+        "name": "390×844 PRD-专项390.md 为待确认真实候选",
+        "okay": true
+      },
+      {
+        "name": "390×844 PRD-专项390.md 确认前可预览完整 Markdown",
+        "okay": true
+      },
+      {
+        "name": "390×844 PRD-专项390.md 确认前不落盘",
+        "okay": true
+      },
+      {
+        "name": "390×844 PRD-专项390.md 用户确认才增加一条来源并进入正确树枝",
+        "okay": true
+      },
+      {
+        "name": "390×844 PRD-专项390.md 正文与真实候选相同且不含 changelog",
+        "okay": true
+      },
+      {
+        "name": "390×844 PRD-专项390.md 在PRD树枝可见",
+        "okay": true
+      },
+      {
+        "name": "390×844 需求分析-专项390.md UI 下载为同一纯正文",
+        "okay": true
+      },
+      {
+        "name": "390×844 原型-专项390.md UI 下载为同一纯正文",
+        "okay": true
+      },
+      {
+        "name": "390×844 PRD-专项390.md UI 下载为同一纯正文",
+        "okay": true
+      },
+      {
+        "name": "390×844 HTML 与过程文档不进入文件目录和上下文",
+        "okay": true
+      },
+      {
+        "name": "390×844 删除来源前原型具有真实非空唯一上一版",
+        "okay": true
+      },
+      {
+        "name": "390×844 用户编辑增加修订并保存唯一上一版",
+        "okay": true
+      },
+      {
+        "name": "390×844 非空目录未加载 到达真实供应商参数边界",
+        "okay": true
+      },
+      {
+        "name": "390×844 非空目录空上下文不泄露任何未加载正文",
+        "okay": true
+      },
+      {
+        "name": "390×844 打开正文预览不会加入上下文",
+        "okay": true
+      },
+      {
+        "name": "390×844 加载旧正文 到达真实供应商参数边界",
+        "okay": true
+      },
+      {
+        "name": "390×844 加载请求读取当前正文及同版来源摘要",
+        "okay": true
+      },
+      {
+        "name": "390×844 供应商普通对话不自动注入完整时间线",
+        "okay": true
+      },
+      {
+        "name": "390×844 当前上下文只列加入的一个文件且不展示修订",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨迭代覆盖候选 到达真实供应商参数边界",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨迭代覆盖候选确认前保留旧正文和修订",
+        "okay": true
+      },
+      {
+        "name": "390×844 需求分析-专项390.md 为待确认真实候选",
+        "okay": true
+      },
+      {
+        "name": "390×844 需求分析-专项390.md 确认前可预览完整 Markdown",
+        "okay": true
+      },
+      {
+        "name": "390×844 需求分析-专项390.md 确认前不落盘",
+        "okay": true
+      },
+      {
+        "name": "390×844 需求分析-专项390.md 用户确认才增加一条来源并进入正确树枝",
+        "okay": true
+      },
+      {
+        "name": "390×844 需求分析-专项390.md 正文与真实候选相同且不含 changelog",
+        "okay": true
+      },
+      {
+        "name": "390×844 需求分析-专项390.md 在需求分析树枝可见",
+        "okay": true
+      },
+      {
+        "name": "390×844 确认覆盖递增修订并替换唯一旧版",
+        "okay": true
+      },
+      {
+        "name": "390×844 下一次用户保存只留下紧邻上一版",
+        "okay": true
+      },
+      {
+        "name": "390×844 原会话仍保留文件引用",
+        "okay": true
+      },
+      {
+        "name": "390×844 跨迭代更新后的下一轮 到达真实供应商参数边界",
+        "okay": true
+      },
+      {
+        "name": "390×844 原会话下一轮使用另一迭代最新正文及同版来源",
+        "okay": true
+      },
+      {
+        "name": "390×844 移除后的下一轮 到达真实供应商参数边界",
+        "okay": true
+      },
+      {
+        "name": "390×844 移除后下一轮只读目录而无正文",
+        "okay": true
+      },
+      {
+        "name": "390×844 上下文 API 与 MySQL 引用均已清空",
+        "okay": true
+      },
+      {
+        "name": "390×844 撤回确认说明不能重做",
+        "okay": true
+      },
+      {
+        "name": "390×844 撤回恢复紧邻正文、增加修订并消耗备份",
+        "okay": true
+      },
+      {
+        "name": "390×844 公开 API 也拒绝第二次撤回且不产生重做修订",
+        "okay": true
+      },
+      {
+        "name": "390×844 详情区分 Agent 写入与用户操作且隐藏修订",
+        "okay": true
+      },
+      {
+        "name": "390×844 改名保留身份、正文修订和最近正文来源",
+        "okay": true
+      },
+      {
+        "name": "390×844 本轮写入按稳定文件身份归并操作",
+        "okay": true
+      },
+      {
+        "name": "390×844 文件删除确认说明正文备份和引用不可恢复",
+        "okay": true
+      },
+      {
+        "name": "390×844 删除彻底移除正文并保留路径来源占位",
+        "okay": true
+      },
+      {
+        "name": "390×844 已删除文件无法下载正文",
+        "okay": true
+      },
+      {
+        "name": "390×844 来源会话删除前明确保留文件与来源",
+        "okay": true
+      },
+      {
+        "name": "390×844 会话删除保留正文及 Agent 来源名称快照",
+        "okay": true
+      },
+      {
+        "name": "390×844 详情显示会话已删除占位",
+        "okay": true
+      },
+      {
+        "name": "390×844 原型来源会话删除后保留正文、非空唯一备份及来源快照",
+        "okay": true
+      },
+      {
+        "name": "390×844 删除所有来源迭代仍保留正文与完整来源时间线",
+        "okay": true
+      },
+      {
+        "name": "390×844 来源迭代删除后仍保留原型正文、非空唯一备份与可撤回事实",
+        "okay": true
+      },
+      {
+        "name": "390×844 没有当前迭代仍展示固定四树枝及删除占位",
+        "okay": true
+      },
+      {
+        "name": "390×844 无当前迭代公开旧编辑删除入口均拒绝且资产不变",
+        "okay": true
+      },
+      {
+        "name": "390×844 需求分析-改名390.md 只读UI 下载为同一纯正文",
+        "okay": true
+      },
+      {
+        "name": "390×844 无当前迭代仅可浏览详情且来源迭代不再跳转",
+        "okay": true
+      },
+      {
+        "name": "390×844 删除迭代后从项目重开 HTML 快照",
+        "okay": true
+      },
+      {
+        "name": "390×844 删除来源后归档 HTML 内嵌预览仍实际呈现正文",
+        "okay": true
+      },
+      {
+        "name": "390×844 无当前迭代 HTML 仍可再次打开",
+        "okay": true
+      },
+      {
+        "name": "390×844 无当前迭代 HTML 仍可下载原正文",
+        "okay": true
+      },
+      {
+        "name": "390×844 桌面或移动文件视图无横向溢出",
+        "okay": true
+      },
+      {
+        "name": "390×844 MySQL 最终耐久文件与历史 API 事实一致",
+        "okay": true
+      },
+      {
+        "name": "390×844 浏览器无运行时异常",
+        "okay": true
+      }
+    ]
+  },
+  "environment": {
+    "database": "v141_replay_d7003f3e68fb227f",
+    "serverVersion": "9.7.2",
+    "initialCounts": {
+      "agent_file_contexts": 0,
+      "iteration_file_candidates": 0,
+      "iteration_session_context_files": 0,
+      "iteration_session_messages": 0,
+      "iteration_sessions": 0,
+      "iteration_stage_states": 0,
+      "iteration_task_set_candidates": 0,
+      "message_file_writes": 0,
+      "messages": 0,
+      "product_iterations": 0,
+      "project_file_changes": 0,
+      "project_files": 0,
+      "projects": 0,
+      "prototype_snapshots": 0,
+      "tab_deletion_operations": 0,
+      "tab_operations": 0,
+      "tabs": 0,
+      "task_folders": 0,
+      "users": 0,
+      "work_records": 0
+    }
+  },
+  "evidenceErrors": [],
+  "archive": "D:\\Project\\4.Project\\Agent2\\.scratch\\screenshots\\v141-quality-raw\\20-file-context-replay",
+  "screenshots": [],
+  "okay": true
+}
