@@ -518,6 +518,44 @@ try {
     for (const file of [analysis, prototype, prd]) await download(file);
     check(`${prefix} HTML 与过程文档不进入文件目录和上下文`, (await fileList()).length === 3 && (await fileList()).every((file) => file.filename.endsWith(".md") && !file.filename.includes("工作文档")) && (await api(`${sessionBase()}/context`)).fileIds.length === 0);
 
+    // 重新生成成功会在正式事务内删除原回复。先用真实用户编辑建立非空上一版，
+    // 再替换已确认 PRD 的来源消息，单独证明消息消失不清理项目成果和来源。
+    const prdOriginalMessageId = prdResult.message.id;
+    const prdEdited = `${prd.candidateContent}\n\n用户保留的 PRD 补充_${token}`;
+    await edit(prd, prdEdited);
+    const beforePrdSourceReplacement = await assets(); const beforePrdSourceHistory = await history(prd);
+    const prdBeforeSourceReplacement = await facts(prd);
+    const [originalPrdMessages] = await connection.execute("SELECT id FROM iteration_session_messages WHERE id = ? AND session_id = ? AND role = 'assistant' AND status = 'completed'", [prdOriginalMessageId, prdSession.id]);
+    const originalPrdCreation = beforePrdSourceReplacement.project_file_changes.find((change) => change.file_id === prd.id && change.operation === "create");
+    requireOkay(`${prefix} 来源回复替换前PRD已有真实来源及非空唯一上一版`, originalPrdMessages.length === 1 && originalPrdCreation?.message_id === prdOriginalMessageId && originalPrdCreation.actor === "agent" && originalPrdCreation.session_id === prdSession.id && prdBeforeSourceReplacement.content === prdEdited && prdBeforeSourceReplacement.previous_content === prd.candidateContent && Boolean(prdBeforeSourceReplacement.previous_content) && Number(prdBeforeSourceReplacement.version) === 2 && beforePrdSourceHistory.canUndo);
+    await conversation(); await conversationReady();
+    const prdRegenerationRequest = page.waitForRequest((request) => new URL(request.url()).pathname === `${sessionBase()}/messages` && request.method() === "POST");
+    const prdReplacement = await mutation(`${sessionBase()}/messages`, () => page.getByRole("button", { name: "重新生成", exact: true }).click());
+    const prdSubmittedRegeneration = (await prdRegenerationRequest).postDataJSON();
+    await conversationReady();
+    const [deletedPrdMessages] = await connection.execute("SELECT id FROM iteration_session_messages WHERE id = ?", [prdOriginalMessageId]);
+    const prdReplacementMessage = prdReplacement.messages.at(-1);
+    const [newPrdMessages] = await connection.execute("SELECT id FROM iteration_session_messages WHERE id = ? AND session_id = ? AND role = 'assistant' AND status = 'completed'", [prdReplacementMessage.id, prdSession.id]);
+    requireOkay(`${prefix} 正式UI重新生成删除原来源消息且创建新pending回复`, prdSubmittedRegeneration.regenerateMessageId === prdOriginalMessageId && deletedPrdMessages.length === 0 && prdReplacementMessage.id !== prdOriginalMessageId && prdReplacementMessage.status === "completed" && prdReplacementMessage.candidate?.status === "pending" && newPrdMessages.length === 1 && !prdReplacement.messages.some((message) => message.id === prdOriginalMessageId));
+    const prdRegenerationRecords = (await readFile(join(output, "provider-requests.jsonl"), "utf8")).trim().split("\n").map((line) => JSON.parse(line));
+    const prdRegenerationProvider = prdRegenerationRecords.at(-1);
+    const originalPrdUserContent = prdResult.body.messages.filter((message) => message.role === "user").at(-1).content;
+    requireOkay(`${prefix} 已确认PRD来源回复重新生成到达真实供应商边界`, prdRegenerationProvider?.agentType === "mvp_prd" && prdRegenerationProvider.messages.filter((message) => message.role === "user").at(-1)?.content === originalPrdUserContent);
+    providerEvidence.push({ viewport, label: "已确认PRD来源回复重新生成", originalMessageId: prdOriginalMessageId, replacementMessageId: prdReplacementMessage.id, request: prdRegenerationProvider });
+    requireOkay(`${prefix} 来源消息实际删除后全部项目资产正文备份及来源逐字段不变`, equal(beforePrdSourceReplacement, await assets()) && equal(beforePrdSourceHistory, await history(prd)));
+    const prdAfterSourceReplacement = await facts(prd); const prdAfterSourceHistory = await history(prd);
+    const retainedPrdCreation = (await assets()).project_file_changes.find((change) => change.id === originalPrdCreation.id);
+    requireOkay(`${prefix} 原消息ID仍保留在Agent来源且会话迭代有效并可撤回`, retainedPrdCreation.message_id === prdOriginalMessageId && retainedPrdCreation.actor === "agent" && retainedPrdCreation.session_id === prdSession.id && prdAfterSourceHistory.createdBy.actor === "agent" && !prdAfterSourceHistory.createdBy.sessionDeleted && !prdAfterSourceHistory.createdBy.iterationDeleted && prdAfterSourceHistory.canUndo && prdAfterSourceReplacement.content === prdEdited && prdAfterSourceReplacement.previous_content === prd.candidateContent && Number(prdAfterSourceReplacement.version) === 2);
+    const replacementPrdCard = page.getByRole("region", { name: "PRD文件候选", exact: true }).last();
+    await replacementPrdCard.getByRole("button", { name: "放弃候选", exact: true }).waitFor();
+    await capture("source-message-replacement-retention");
+    await mutation(`/api/iterations/${iteration.id}/sessions/${session.id}/candidates/${prdReplacementMessage.candidate.id}`, () => replacementPrdCard.getByRole("button", { name: "放弃候选", exact: true }).click());
+    await replacementPrdCard.getByText("这份候选已放弃，项目文件未改变。", { exact: true }).waitFor();
+    requireOkay(`${prefix} 重新生成的新候选整体放弃不覆盖已确认PRD及唯一旧版`, equal(beforePrdSourceReplacement, await assets()) && (await api(`${sessionBase()}/messages`)).messages.at(-1).candidate.status === "discarded");
+    evidence.push({ viewport, type: "source-message-replacement-retention", fileId: prd.id, originalMessageId: prdOriginalMessageId, replacementMessageId: prdReplacementMessage.id, before: beforePrdSourceReplacement, after: await assets() });
+    journey.sourceMessageReplacement = { fileId: prd.id, originalMessageId: prdOriginalMessageId, replacementMessageId: prdReplacementMessage.id, oldMessageDeleted: true, preservedRevision: 2, preservedNonemptyBackup: true };
+    event("已确认成果来源消息替换删除与正文备份来源保留");
+
     // 原型保留独立的非空唯一旧版，用它验证删除来源不会丢失撤回能力。
     // 需求分析仍沿用原来的 r1..r5 / restore 链，两个假设互不干扰。
     const prototypeEdited = `${prototype.candidateContent}\n\n用户补充原型_${token}`;
@@ -849,7 +887,7 @@ try {
     journey.projectDeleted = true; event("第三迭代编号不复用与项目级联故障回滚再清理");
     check(`${prefix} 浏览器无运行时异常`, errors.length === 0);
     workflows.push({ viewport, projectId, iterationIds: [first.id, second.id], sessionIds: [analysisSession.id, prototypeSession.id, prdSession.id], fileIds: [analysis.id, prototype.id, prd.id], snapshotId: html[0].id, finalFileCount: finalFiles.length, expectedAnalysisRevision: 5, expectedPrototypeRevision: 2, preservedPrototypeBackup: Boolean(prototypeAfterIteration.previous_content) });
-    journey.checkpoints = ["registration-login", "two-iteration-goals", "four-stage-navigation-status", "multi-session-isolation-stop", "manual-context-provider", "ordinary-create-overwrite-rollback", "html-markdown", "revisions-undo-rename-delete", "task-set-atomic-submit-undo-sequence", "permission-isolation", "session-iteration-delete-failures", "deleted-source-readonly", "project-cascade-rollback"];
+    journey.checkpoints = ["registration-login", "two-iteration-goals", "four-stage-navigation-status", "multi-session-isolation-stop", "manual-context-provider", "ordinary-create-overwrite-rollback", "html-markdown", "source-message-replacement-retention", "revisions-undo-rename-delete", "task-set-atomic-submit-undo-sequence", "permission-isolation", "session-iteration-delete-failures", "deleted-source-readonly", "project-cascade-rollback"];
     journey.completed = fail === journeyFailStart; event("来源删除、无当前迭代只读与最终事实");
     await context.close();
   }

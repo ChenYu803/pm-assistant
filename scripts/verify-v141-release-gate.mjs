@@ -23,7 +23,8 @@ const requiredCheckpoints = ["registration-login", "two-iteration-goals",
   "four-stage-navigation-status", "multi-session-isolation-stop", "manual-context-provider",
   "ordinary-create-overwrite-rollback", "html-markdown", "revisions-undo-rename-delete",
   "task-set-atomic-submit-undo-sequence", "permission-isolation",
-  "session-iteration-delete-failures", "deleted-source-readonly", "project-cascade-rollback"];
+  "session-iteration-delete-failures", "deleted-source-readonly", "project-cascade-rollback",
+  "source-message-replacement-retention"];
 
 async function save() {
   await writeFile(join(evidenceRoot, "summary.json"), JSON.stringify(report, null, 2));
