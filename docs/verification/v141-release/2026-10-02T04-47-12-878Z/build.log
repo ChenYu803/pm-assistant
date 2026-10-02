@@ -1,0 +1,83 @@
+▲ Next.js 16.3.0 (Turbopack)
+- Environments: .env.local
+✓ Running next.config.ts took 34ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 1433ms
+  Running TypeScript ...
+  Finished TypeScript in 1799ms ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/17) ...
+  Generating static pages using 11 workers (4/17)
+  Generating static pages using 11 workers (8/17)
+  Generating static pages using 11 workers (12/17)
+✓ Generating static pages using 11 workers (17/17) in 352ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/auth/[...nextauth]
+├ ƒ /api/auth/register
+├ ƒ /api/iterations/[id]
+├ ƒ /api/iterations/[id]/files/[fileId]
+├ ƒ /api/iterations/[id]/sessions
+├ ƒ /api/iterations/[id]/sessions/[sessionId]
+├ ƒ /api/iterations/[id]/sessions/[sessionId]/candidates/[candidateId]
+├ ƒ /api/iterations/[id]/sessions/[sessionId]/context
+├ ƒ /api/iterations/[id]/sessions/[sessionId]/messages
+├ ƒ /api/iterations/[id]/sessions/[sessionId]/messages/[messageId]
+├ ƒ /api/iterations/[id]/sessions/[sessionId]/stop
+├ ƒ /api/iterations/[id]/sessions/[sessionId]/task-candidates
+├ ƒ /api/iterations/[id]/sessions/[sessionId]/task-candidates/[candidateId]
+├ ƒ /api/iterations/[id]/stages/[stage]/complete
+├ ƒ /api/iterations/[id]/stages/[stage]/sessions
+├ ƒ /api/iterations/[id]/stages/[stage]/sessions/[sessionId]/context
+├ ƒ /api/iterations/[id]/stages/[stage]/sessions/[sessionId]/messages
+├ ƒ /api/iterations/[id]/task-folder
+├ ƒ /api/iterations/[id]/workbench
+├ ƒ /api/iterations/[id]/writes
+├ ƒ /api/onboarding/career-document
+├ ƒ /api/profile
+├ ƒ /api/profile/password
+├ ƒ /api/projects
+├ ƒ /api/projects/[id]
+├ ƒ /api/projects/[id]/files
+├ ƒ /api/projects/[id]/files/[fileId]
+├ ƒ /api/projects/[id]/files/[fileId]/download
+├ ƒ /api/projects/[id]/files/[fileId]/history
+├ ƒ /api/projects/[id]/files/[fileId]/polish
+├ ƒ /api/projects/[id]/iterations
+├ ƒ /api/projects/[id]/snapshots
+├ ƒ /api/projects/[id]/snapshots/[snapshotId]
+├ ƒ /api/projects/[id]/task-folders
+├ ƒ /api/projects/[id]/ticket-sets
+├ ƒ /api/projects/[id]/ticket-sets/[version]/download
+├ ƒ /api/projects/[id]/work-records
+├ ƒ /api/tabs/[id]
+├ ƒ /api/tabs/[id]/chat
+├ ƒ /api/tabs/[id]/files
+├ ƒ /api/tabs/[id]/files/[fileId]
+├ ƒ /api/tabs/[id]/freeze
+├ ƒ /api/tabs/[id]/messages
+├ ƒ /api/verify/conditional-auto-naming
+├ ƒ /api/verify/replay-mode
+├ ƒ /api/work-records/[id]
+├ ƒ /api/work-records/[id]/auto-name
+├ ƒ /api/work-records/[id]/tabs
+├ ○ /login
+├ ○ /onboarding/assessment
+├ ○ /onboarding/brief
+├ ƒ /onboarding/scenes
+├ ƒ /profile
+├ ○ /projects
+├ ƒ /projects/[id]
+├ ƒ /projects/[id]/iterations/[iterationId]
+├ ○ /register
+└ ƒ /workspace/[workRecordId]
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand

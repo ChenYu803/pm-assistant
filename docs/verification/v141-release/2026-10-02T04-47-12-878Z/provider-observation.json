@@ -1,0 +1,5 @@
+{
+  "boundary": "createAIStream 入参：agentType / messages",
+  "sourceSha256": "3869f01d4ef983d3991ce93d264b610badf144ccbe9ca2663e04fc1bc943a229",
+  "observation": "仅隔离源码副本增加同步只读参数记录；不替换 prompt、输入或 replay 回复"
+}

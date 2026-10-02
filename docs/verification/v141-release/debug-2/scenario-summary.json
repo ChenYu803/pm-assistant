@@ -1,0 +1,2004 @@
+{
+  "pass": 219,
+  "fail": 1,
+  "aiMode": "replay",
+  "liveCalls": 0,
+  "workflows": [],
+  "journeys": [
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "email": "verify-release-1440-084ceb6a-e8b8-4b11-a1e8-0caa2561ac89@test.local",
+      "projectId": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+      "events": [
+        {
+          "name": "注册登录与主项目创建",
+          "projectId": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+          "iterationId": null,
+          "sessionId": null,
+          "stage": "analysis",
+          "occurredAt": "2026-10-02T04:22:46.905Z"
+        },
+        {
+          "name": "两迭代目标分支、稳定编号与四环状态",
+          "projectId": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+          "iterationId": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+          "sessionId": "62a49b4f-f18b-46fd-863b-8cdbc91cc4b8",
+          "stage": "analysis",
+          "occurredAt": "2026-10-02T04:23:01.802Z"
+        },
+        {
+          "name": "供应商边界：初始空上下文",
+          "projectId": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+          "iterationId": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+          "sessionId": "62a49b4f-f18b-46fd-863b-8cdbc91cc4b8",
+          "stage": "analysis",
+          "occurredAt": "2026-10-02T04:23:03.192Z"
+        },
+        {
+          "name": "普通候选create",
+          "projectId": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+          "iterationId": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+          "sessionId": "62a49b4f-f18b-46fd-863b-8cdbc91cc4b8",
+          "stage": "analysis",
+          "occurredAt": "2026-10-02T04:23:03.489Z"
+        },
+        {
+          "name": "同阶段多会话消息、上下文、草稿独立与真实生成停止",
+          "projectId": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+          "iterationId": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+          "sessionId": "62a49b4f-f18b-46fd-863b-8cdbc91cc4b8",
+          "stage": "analysis",
+          "occurredAt": "2026-10-02T04:23:09.536Z"
+        },
+        {
+          "name": "供应商边界：HTML快照故障",
+          "projectId": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+          "iterationId": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+          "sessionId": "b39990e7-eaf7-44fb-befb-7cdc0a81afd9",
+          "stage": "prototype",
+          "occurredAt": "2026-10-02T04:23:10.355Z"
+        },
+        {
+          "name": "HTML事务故障与同消息重试",
+          "projectId": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+          "iterationId": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+          "sessionId": "b39990e7-eaf7-44fb-befb-7cdc0a81afd9",
+          "stage": "prototype",
+          "occurredAt": "2026-10-02T04:23:10.606Z"
+        },
+        {
+          "name": "普通候选create",
+          "projectId": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+          "iterationId": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+          "sessionId": "b39990e7-eaf7-44fb-befb-7cdc0a81afd9",
+          "stage": "prototype",
+          "occurredAt": "2026-10-02T04:23:10.606Z"
+        },
+        {
+          "name": "供应商边界：PRD候选",
+          "projectId": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+          "iterationId": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+          "sessionId": "900b9f57-82f9-4eae-9201-b2c8cb6dbab3",
+          "stage": "prd",
+          "occurredAt": "2026-10-02T04:23:13.554Z"
+        },
+        {
+          "name": "普通候选create",
+          "projectId": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+          "iterationId": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+          "sessionId": "900b9f57-82f9-4eae-9201-b2c8cb6dbab3",
+          "stage": "prd",
+          "occurredAt": "2026-10-02T04:23:13.554Z"
+        },
+        {
+          "name": "供应商边界：非空目录未加载",
+          "projectId": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+          "iterationId": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+          "sessionId": "62a49b4f-f18b-46fd-863b-8cdbc91cc4b8",
+          "stage": "analysis",
+          "occurredAt": "2026-10-02T04:23:18.694Z"
+        },
+        {
+          "name": "供应商边界：加载旧正文",
+          "projectId": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+          "iterationId": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+          "sessionId": "62a49b4f-f18b-46fd-863b-8cdbc91cc4b8",
+          "stage": "analysis",
+          "occurredAt": "2026-10-02T04:23:19.218Z"
+        },
+        {
+          "name": "供应商边界：跨迭代覆盖候选",
+          "projectId": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+          "iterationId": "a1f83662-4cc4-4661-af20-39ddff032f5f",
+          "sessionId": "8ee6399e-0b99-47d2-bb69-a096da3bfec8",
+          "stage": "analysis",
+          "occurredAt": "2026-10-02T04:23:20.617Z"
+        },
+        {
+          "name": "普通候选overwrite",
+          "projectId": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+          "iterationId": "a1f83662-4cc4-4661-af20-39ddff032f5f",
+          "sessionId": "8ee6399e-0b99-47d2-bb69-a096da3bfec8",
+          "stage": "analysis",
+          "occurredAt": "2026-10-02T04:23:20.617Z"
+        },
+        {
+          "name": "供应商边界：跨迭代更新后的下一轮",
+          "projectId": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+          "iterationId": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+          "sessionId": "62a49b4f-f18b-46fd-863b-8cdbc91cc4b8",
+          "stage": "analysis",
+          "occurredAt": "2026-10-02T04:23:23.069Z"
+        },
+        {
+          "name": "供应商边界：移除后的下一轮",
+          "projectId": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+          "iterationId": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+          "sessionId": "62a49b4f-f18b-46fd-863b-8cdbc91cc4b8",
+          "stage": "analysis",
+          "occurredAt": "2026-10-02T04:23:23.534Z"
+        },
+        {
+          "name": "供应商边界：首套放弃",
+          "projectId": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+          "iterationId": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+          "sessionId": "2899b46b-fa02-4640-bba6-bd72abec7b08",
+          "stage": "tickets",
+          "occurredAt": "2026-10-02T04:23:28.523Z"
+        },
+        {
+          "name": "供应商边界：首套确认",
+          "projectId": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+          "iterationId": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+          "sessionId": "2899b46b-fa02-4640-bba6-bd72abec7b08",
+          "stage": "tickets",
+          "occurredAt": "2026-10-02T04:23:29.996Z"
+        },
+        {
+          "name": "供应商边界：所属手动加载",
+          "projectId": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+          "iterationId": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+          "sessionId": "2899b46b-fa02-4640-bba6-bd72abec7b08",
+          "stage": "tickets",
+          "occurredAt": "2026-10-02T04:23:37.940Z"
+        },
+        {
+          "name": "供应商边界：其他迭代手动加载",
+          "projectId": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+          "iterationId": "a1f83662-4cc4-4661-af20-39ddff032f5f",
+          "sessionId": "beb22708-9f3c-4b33-a6d1-8d55e33b15b8",
+          "stage": "tickets",
+          "occurredAt": "2026-10-02T04:23:40.296Z"
+        }
+      ],
+      "completed": false
+    }
+  ],
+  "screenshots": [
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-release-debug-2-VxQQJC\\release-1440-empty-navigation.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-release-debug-2-VxQQJC\\release-1440-analysis-create-candidate.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-release-debug-2-VxQQJC\\release-1440-create-failure-retry.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-release-debug-2-VxQQJC\\release-1440-generating-delete-blocked.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-release-debug-2-VxQQJC\\release-1440-snapshot-failure-retry.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-release-debug-2-VxQQJC\\release-1440-prototype-create-candidate.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-release-debug-2-VxQQJC\\release-1440-prd-create-candidate.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-release-debug-2-VxQQJC\\release-1440-loaded-context.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-release-debug-2-VxQQJC\\release-1440-analysis-overwrite-candidate.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-release-debug-2-VxQQJC\\release-1440-overwrite-failure-retry.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-release-debug-2-VxQQJC\\release-1440-source-history.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-release-debug-2-VxQQJC\\release-1440-initial-retry.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-release-debug-2-VxQQJC\\release-1440-manual-editor.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-release-debug-2-VxQQJC\\release-1440-mixed-candidate.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-release-debug-2-VxQQJC\\release-1440-mixed-retry.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-release-debug-2-VxQQJC\\release-1440-restore-confirm.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-release-debug-2-VxQQJC\\release-1440-restore-retry.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-release-debug-2-VxQQJC\\release-1440-restore-complete.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-release-debug-2-VxQQJC\\release-1440-restored-open-file.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-release-debug-2-VxQQJC\\release-1440-other-readonly.png"
+  ],
+  "assertions": [
+    {
+      "name": "聊天前确认服务端 AI_MODE=replay",
+      "okay": true
+    },
+    {
+      "name": "专项开始前 MySQL 没有用户",
+      "okay": true
+    },
+    {
+      "name": "1440×900 通过正式注册进入项目页",
+      "okay": true
+    },
+    {
+      "name": "1440×900 显式退出清除认证",
+      "okay": true
+    },
+    {
+      "name": "1440×900 同一主账号登录成功",
+      "okay": true
+    },
+    {
+      "name": "1440×900 新建目标没有默认选择",
+      "okay": true
+    },
+    {
+      "name": "1440×900 首轮填写目标且稳定编号1",
+      "okay": true
+    },
+    {
+      "name": "1440×900 暂不填写先明确展示已知与未知边界",
+      "okay": true
+    },
+    {
+      "name": "1440×900 风险返回保留选择与名称",
+      "okay": true
+    },
+    {
+      "name": "1440×900 风险返回保留目标草稿",
+      "okay": true
+    },
+    {
+      "name": "1440×900 确认后本次创建不重复警告",
+      "okay": true
+    },
+    {
+      "name": "1440×900 第二轮目标为空且编号递增",
+      "okay": true
+    },
+    {
+      "name": "1440×900 稳定编号字段只读",
+      "okay": true
+    },
+    {
+      "name": "1440×900 展示名改变不修改稳定编号",
+      "okay": true
+    },
+    {
+      "name": "1440×900 暂不填写后的目标可补充且编号2不变",
+      "okay": true
+    },
+    {
+      "name": "1440×900 四环初始未开始且无会话",
+      "okay": true
+    },
+    {
+      "name": "1440×900 需求分析一级导航可见",
+      "okay": true
+    },
+    {
+      "name": "1440×900 原型设计一级导航可见",
+      "okay": true
+    },
+    {
+      "name": "1440×900 PRD一级导航可见",
+      "okay": true
+    },
+    {
+      "name": "1440×900 任务拆分一级导航可见",
+      "okay": true
+    },
+    {
+      "name": "1440×900 跳过前置环节的提示允许返回",
+      "okay": true
+    },
+    {
+      "name": "1440×900 可直接进入空任务拆分",
+      "okay": true
+    },
+    {
+      "name": "1440×900 可直接进入空原型设计",
+      "okay": true
+    },
+    {
+      "name": "1440×900 可直接进入空PRD",
+      "okay": true
+    },
+    {
+      "name": "1440×900 空阶段来回导航不建会话、不变状态、不写文件",
+      "okay": true
+    },
+    {
+      "name": "1440×900 empty-navigation无水平溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 empty-navigation视口内操作控件横向完整可达",
+      "okay": true
+    },
+    {
+      "name": "1440×900 显式创建会话进入进行中",
+      "okay": true
+    },
+    {
+      "name": "1440×900 零写入也能完成阶段",
+      "okay": true
+    },
+    {
+      "name": "1440×900 刷新保持完成状态和输入锁定",
+      "okay": true
+    },
+    {
+      "name": "1440×900 显式重新打开恢复进行中",
+      "okay": true
+    },
+    {
+      "name": "1440×900 空树固定四个树枝",
+      "okay": true
+    },
+    {
+      "name": "1440×900 空上下文明确正文边界",
+      "okay": true
+    },
+    {
+      "name": "1440×900 初始空上下文 到达真实供应商参数边界",
+      "okay": true
+    },
+    {
+      "name": "1440×900 空请求只包含项目迭代阶段与空目录",
+      "okay": true
+    },
+    {
+      "name": "1440×900 待确认候选不改变阶段进度也不阻止显式完成",
+      "okay": true
+    },
+    {
+      "name": "1440×900 有pending候选仍能完成且候选不丢失",
+      "okay": true
+    },
+    {
+      "name": "1440×900 需求分析-专项1440.md 为待确认真实候选",
+      "okay": true
+    },
+    {
+      "name": "1440×900 需求分析-专项1440.md 确认前可预览完整 Markdown",
+      "okay": true
+    },
+    {
+      "name": "1440×900 需求分析-专项1440.md 确认前不落盘",
+      "okay": true
+    },
+    {
+      "name": "1440×900 analysis-create-candidate无水平溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 analysis-create-candidate视口内操作控件横向完整可达",
+      "okay": true
+    },
+    {
+      "name": "1440×900 普通create事务失败无半成品且候选原样可重试",
+      "okay": true
+    },
+    {
+      "name": "1440×900 create-failure-retry无水平溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 create-failure-retry视口内操作控件横向完整可达",
+      "okay": true
+    },
+    {
+      "name": "1440×900 需求分析-专项1440.md重复确认精确409且修订来源不重复",
+      "okay": true
+    },
+    {
+      "name": "1440×900 需求分析-专项1440.md 用户确认才增加一条来源并进入正确树枝",
+      "okay": true
+    },
+    {
+      "name": "1440×900 需求分析-专项1440.md 正文与真实候选相同且不含 changelog",
+      "okay": true
+    },
+    {
+      "name": "1440×900 需求分析-专项1440.md 在需求分析树枝可见",
+      "okay": true
+    },
+    {
+      "name": "1440×900 首次创建首修订且无旧版",
+      "okay": true
+    },
+    {
+      "name": "1440×900 同阶段新会话消息草稿上下文均独立为空",
+      "okay": true
+    },
+    {
+      "name": "1440×900 真实生成阻止complete且无资产变化",
+      "okay": true
+    },
+    {
+      "name": "1440×900 真实生成阻止4a9109d6-c8f1-4daa-a0a3-5b73ba1bea93且无资产变化",
+      "okay": true
+    },
+    {
+      "name": "1440×900 真实生成阻止0a878233-9f43-41d5-87d7-a6a880b96a59且无资产变化",
+      "okay": true
+    },
+    {
+      "name": "1440×900 生成中完成阶段按钮禁用且第一会话未被占用",
+      "okay": true
+    },
+    {
+      "name": "1440×900 生成中会话删除禁用并提供停止动作",
+      "okay": true
+    },
+    {
+      "name": "1440×900 generating-delete-blocked无水平溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 generating-delete-blocked视口内操作控件横向完整可达",
+      "okay": true
+    },
+    {
+      "name": "1440×900 停止真实生成返回409且没有新增文件",
+      "okay": true
+    },
+    {
+      "name": "1440×900 切回主会话保留独立草稿消息与引用",
+      "okay": true
+    },
+    {
+      "name": "1440×900 切回第二会话保留独立草稿与失败状态",
+      "okay": true
+    },
+    {
+      "name": "1440×900 HTML快照故障 到达真实供应商参数边界",
+      "okay": true
+    },
+    {
+      "name": "1440×900 HTML持久化故障无快照候选半成品且消息failed",
+      "okay": true
+    },
+    {
+      "name": "1440×900 HTML失败提供正式重试生成动作",
+      "okay": true
+    },
+    {
+      "name": "1440×900 snapshot-failure-retry无水平溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 snapshot-failure-retry视口内操作控件横向完整可达",
+      "okay": true
+    },
+    {
+      "name": "1440×900 原型失败同消息UI重试完成且供应商参数仍为正式入参",
+      "okay": true
+    },
+    {
+      "name": "1440×900 已存在的未加载需求分析只在目录出现",
+      "okay": true
+    },
+    {
+      "name": "1440×900 原型-专项1440.md 为待确认真实候选",
+      "okay": true
+    },
+    {
+      "name": "1440×900 原型-专项1440.md 确认前可预览完整 Markdown",
+      "okay": true
+    },
+    {
+      "name": "1440×900 原型-专项1440.md 确认前不落盘",
+      "okay": true
+    },
+    {
+      "name": "1440×900 prototype-create-candidate无水平溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 prototype-create-candidate视口内操作控件横向完整可达",
+      "okay": true
+    },
+    {
+      "name": "1440×900 原型-专项1440.md重复确认精确409且修订来源不重复",
+      "okay": true
+    },
+    {
+      "name": "1440×900 原型-专项1440.md 用户确认才增加一条来源并进入正确树枝",
+      "okay": true
+    },
+    {
+      "name": "1440×900 原型-专项1440.md 正文与真实候选相同且不含 changelog",
+      "okay": true
+    },
+    {
+      "name": "1440×900 原型-专项1440.md 在原型树枝可见",
+      "okay": true
+    },
+    {
+      "name": "1440×900 HTML 自动保存为独立快照且 iframe 隔离",
+      "okay": true
+    },
+    {
+      "name": "1440×900 HTML 内嵌预览实际呈现业务正文",
+      "okay": true
+    },
+    {
+      "name": "1440×900 HTML 可从 UI 下载",
+      "okay": true
+    },
+    {
+      "name": "1440×900 HTML 可以新窗口再次打开",
+      "okay": true
+    },
+    {
+      "name": "1440×900 PRD候选 到达真实供应商参数边界",
+      "okay": true
+    },
+    {
+      "name": "1440×900 未加载需求分析与原型正文均未泄露",
+      "okay": true
+    },
+    {
+      "name": "1440×900 PRD-专项1440.md 为待确认真实候选",
+      "okay": true
+    },
+    {
+      "name": "1440×900 PRD-专项1440.md 确认前可预览完整 Markdown",
+      "okay": true
+    },
+    {
+      "name": "1440×900 PRD-专项1440.md 确认前不落盘",
+      "okay": true
+    },
+    {
+      "name": "1440×900 prd-create-candidate无水平溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 prd-create-candidate视口内操作控件横向完整可达",
+      "okay": true
+    },
+    {
+      "name": "1440×900 PRD-专项1440.md重复确认精确409且修订来源不重复",
+      "okay": true
+    },
+    {
+      "name": "1440×900 PRD-专项1440.md 用户确认才增加一条来源并进入正确树枝",
+      "okay": true
+    },
+    {
+      "name": "1440×900 PRD-专项1440.md 正文与真实候选相同且不含 changelog",
+      "okay": true
+    },
+    {
+      "name": "1440×900 PRD-专项1440.md 在PRD树枝可见",
+      "okay": true
+    },
+    {
+      "name": "1440×900 需求分析-专项1440.md UI 下载为同一纯正文",
+      "okay": true
+    },
+    {
+      "name": "1440×900 原型-专项1440.md UI 下载为同一纯正文",
+      "okay": true
+    },
+    {
+      "name": "1440×900 PRD-专项1440.md UI 下载为同一纯正文",
+      "okay": true
+    },
+    {
+      "name": "1440×900 HTML 与过程文档不进入文件目录和上下文",
+      "okay": true
+    },
+    {
+      "name": "1440×900 用户编辑事务失败正文旧版修订来源全部不变",
+      "okay": true
+    },
+    {
+      "name": "1440×900 删除来源前原型具有真实非空唯一上一版",
+      "okay": true
+    },
+    {
+      "name": "1440×900 用户编辑增加修订并保存唯一上一版",
+      "okay": true
+    },
+    {
+      "name": "1440×900 非空目录未加载 到达真实供应商参数边界",
+      "okay": true
+    },
+    {
+      "name": "1440×900 非空目录空上下文不泄露任何未加载正文",
+      "okay": true
+    },
+    {
+      "name": "1440×900 打开正文预览不会加入上下文",
+      "okay": true
+    },
+    {
+      "name": "1440×900 加载旧正文 到达真实供应商参数边界",
+      "okay": true
+    },
+    {
+      "name": "1440×900 加载请求读取当前正文及同版来源摘要",
+      "okay": true
+    },
+    {
+      "name": "1440×900 供应商普通对话不自动注入完整时间线",
+      "okay": true
+    },
+    {
+      "name": "1440×900 当前上下文只列加入的一个文件且不展示修订",
+      "okay": true
+    },
+    {
+      "name": "1440×900 loaded-context无水平溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 loaded-context视口内操作控件横向完整可达",
+      "okay": true
+    },
+    {
+      "name": "1440×900 跨迭代覆盖候选 到达真实供应商参数边界",
+      "okay": true
+    },
+    {
+      "name": "1440×900 跨迭代覆盖候选确认前保留旧正文和修订",
+      "okay": true
+    },
+    {
+      "name": "1440×900 需求分析-专项1440.md 为待确认真实候选",
+      "okay": true
+    },
+    {
+      "name": "1440×900 需求分析-专项1440.md 确认前可预览完整 Markdown",
+      "okay": true
+    },
+    {
+      "name": "1440×900 需求分析-专项1440.md 确认前不落盘",
+      "okay": true
+    },
+    {
+      "name": "1440×900 analysis-overwrite-candidate无水平溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 analysis-overwrite-candidate视口内操作控件横向完整可达",
+      "okay": true
+    },
+    {
+      "name": "1440×900 普通overwrite事务失败无半成品且候选原样可重试",
+      "okay": true
+    },
+    {
+      "name": "1440×900 overwrite-failure-retry无水平溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 overwrite-failure-retry视口内操作控件横向完整可达",
+      "okay": true
+    },
+    {
+      "name": "1440×900 需求分析-专项1440.md重复确认精确409且修订来源不重复",
+      "okay": true
+    },
+    {
+      "name": "1440×900 需求分析-专项1440.md 用户确认才增加一条来源并进入正确树枝",
+      "okay": true
+    },
+    {
+      "name": "1440×900 需求分析-专项1440.md 正文与真实候选相同且不含 changelog",
+      "okay": true
+    },
+    {
+      "name": "1440×900 需求分析-专项1440.md 在需求分析树枝可见",
+      "okay": true
+    },
+    {
+      "name": "1440×900 确认覆盖递增修订并替换唯一旧版",
+      "okay": true
+    },
+    {
+      "name": "1440×900 下一次用户保存只留下紧邻上一版",
+      "okay": true
+    },
+    {
+      "name": "1440×900 原会话仍保留文件引用",
+      "okay": true
+    },
+    {
+      "name": "1440×900 跨迭代更新后的下一轮 到达真实供应商参数边界",
+      "okay": true
+    },
+    {
+      "name": "1440×900 原会话下一轮使用另一迭代最新正文及同版来源",
+      "okay": true
+    },
+    {
+      "name": "1440×900 移除后的下一轮 到达真实供应商参数边界",
+      "okay": true
+    },
+    {
+      "name": "1440×900 移除后下一轮只读目录而无正文",
+      "okay": true
+    },
+    {
+      "name": "1440×900 上下文 API 与 MySQL 引用均已清空",
+      "okay": true
+    },
+    {
+      "name": "1440×900 撤回确认说明不能重做",
+      "okay": true
+    },
+    {
+      "name": "1440×900 撤回恢复紧邻正文、增加修订并消耗备份",
+      "okay": true
+    },
+    {
+      "name": "1440×900 公开 API 也拒绝第二次撤回且不产生重做修订",
+      "okay": true
+    },
+    {
+      "name": "1440×900 详情区分 Agent 写入与用户操作且隐藏修订",
+      "okay": true
+    },
+    {
+      "name": "1440×900 source-history无水平溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 source-history视口内操作控件横向完整可达",
+      "okay": true
+    },
+    {
+      "name": "1440×900 改名保留身份、正文修订和最近正文来源",
+      "okay": true
+    },
+    {
+      "name": "1440×900 本轮写入按稳定文件身份归并操作",
+      "okay": true
+    },
+    {
+      "name": "1440×900 文件删除确认说明正文备份和引用不可恢复",
+      "okay": true
+    },
+    {
+      "name": "1440×900 删除彻底移除正文并保留路径来源占位",
+      "okay": true
+    },
+    {
+      "name": "1440×900 已删除文件无法下载正文",
+      "okay": true
+    },
+    {
+      "name": "1440×900 首套放弃 到达真实供应商参数边界",
+      "okay": true
+    },
+    {
+      "name": "1440×900 replay Agent 生成完整两个待确认 issue",
+      "okay": true
+    },
+    {
+      "name": "1440×900 首套整体放弃不创建任何资产",
+      "okay": true
+    },
+    {
+      "name": "1440×900 首套确认 到达真实供应商参数边界",
+      "okay": true
+    },
+    {
+      "name": "1440×900 故障仅注入本次公开 mutation 一次",
+      "okay": true
+    },
+    {
+      "name": "1440×900 initial失败所有资产字段、快照、序号和来源完全不变",
+      "okay": true
+    },
+    {
+      "name": "1440×900 initial失败候选 pending 且可重试",
+      "okay": true
+    },
+    {
+      "name": "1440×900 initial-retry无水平溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 initial-retry视口内操作控件横向完整可达",
+      "okay": true
+    },
+    {
+      "name": "1440×900 首套只含稳定01和02且均首修订",
+      "okay": true
+    },
+    {
+      "name": "1440×900 手动编辑只提供后缀且已有系统编号保持",
+      "okay": true
+    },
+    {
+      "name": "1440×900 manual-editor无水平溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 manual-editor视口内操作控件横向完整可达",
+      "okay": true
+    },
+    {
+      "name": "1440×900 混合候选包含更新正文及改名、新增和删除",
+      "okay": true
+    },
+    {
+      "name": "1440×900 混合差异正文可审阅且只可整体确认或放弃",
+      "okay": true
+    },
+    {
+      "name": "1440×900 mixed-candidate无水平溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 mixed-candidate视口内操作控件横向完整可达",
+      "okay": true
+    },
+    {
+      "name": "1440×900 混合候选整体放弃全部资产不变",
+      "okay": true
+    },
+    {
+      "name": "1440×900 手动编辑只提供后缀且已有系统编号保持",
+      "okay": true
+    },
+    {
+      "name": "1440×900 manual-editor无水平溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 manual-editor视口内操作控件横向完整可达",
+      "okay": true
+    },
+    {
+      "name": "1440×900 混合候选包含更新正文及改名、新增和删除",
+      "okay": true
+    },
+    {
+      "name": "1440×900 混合差异正文可审阅且只可整体确认或放弃",
+      "okay": true
+    },
+    {
+      "name": "1440×900 mixed-candidate无水平溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 mixed-candidate视口内操作控件横向完整可达",
+      "okay": true
+    },
+    {
+      "name": "1440×900 故障仅注入本次公开 mutation 一次",
+      "okay": true
+    },
+    {
+      "name": "1440×900 mixed失败所有资产字段、快照、序号和来源完全不变",
+      "okay": true
+    },
+    {
+      "name": "1440×900 mixed失败候选 pending 且可重试",
+      "okay": true
+    },
+    {
+      "name": "1440×900 mixed-retry无水平溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 mixed-retry视口内操作控件横向完整可达",
+      "okay": true
+    },
+    {
+      "name": "1440×900 整套提交无新旧混杂且更新身份稳定",
+      "okay": true
+    },
+    {
+      "name": "1440×900 唯一旧集合精确匹配写入前身份编号正文路径及修订清单",
+      "okay": true
+    },
+    {
+      "name": "1440×900 用户整套三类变更同组同来源",
+      "okay": true
+    },
+    {
+      "name": "1440×900 restore-confirm无水平溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 restore-confirm视口内操作控件横向完整可达",
+      "okay": true
+    },
+    {
+      "name": "1440×900 故障仅注入本次公开 mutation 一次",
+      "okay": true
+    },
+    {
+      "name": "1440×900 撤回失败全部资产、快照、序号和来源完全不变",
+      "okay": true
+    },
+    {
+      "name": "1440×900 restore-retry无水平溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 restore-retry视口内操作控件横向完整可达",
+      "okay": true
+    },
+    {
+      "name": "1440×900 整套撤回恢复原身份正文文件名并移除新增",
+      "okay": true
+    },
+    {
+      "name": "1440×900 被改和被删项撤回生成新修订并消耗备份",
+      "okay": true
+    },
+    {
+      "name": "1440×900 restore-complete无水平溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 restore-complete视口内操作控件横向完整可达",
+      "okay": true
+    },
+    {
+      "name": "1440×900 所属UI edit整套撤回恢复身份正文路径",
+      "okay": true
+    },
+    {
+      "name": "1440×900 所属UI rename整套撤回恢复身份正文路径",
+      "okay": true
+    },
+    {
+      "name": "1440×900 回归确实在旧删除占位仍显示时点击",
+      "okay": true
+    },
+    {
+      "name": "1440×900 目录恢复后当前弹窗立即变为可预览可编辑",
+      "okay": true
+    },
+    {
+      "name": "1440×900 restored-open-file无水平溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 restored-open-file视口内操作控件横向完整可达",
+      "okay": true
+    },
+    {
+      "name": "1440×900 所属UI delete整套撤回恢复身份正文路径",
+      "okay": true
+    },
+    {
+      "name": "1440×900 issues/iteration-1/01-data-model.md UI 下载为同一纯正文",
+      "okay": true
+    },
+    {
+      "name": "1440×900 所属手动加载 到达真实供应商参数边界",
+      "okay": true
+    },
+    {
+      "name": "1440×900 所属手动加载纯正文到实际供应商",
+      "okay": true
+    },
+    {
+      "name": "1440×900 其他迭代预览只读且无正文编辑",
+      "okay": true
+    },
+    {
+      "name": "1440×900 其他迭代无改名删除或撤回按钮",
+      "okay": true
+    },
+    {
+      "name": "1440×900 other-readonly无水平溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 other-readonly视口内操作控件横向完整可达",
+      "okay": true
+    },
+    {
+      "name": "1440×900 issues/iteration-1/01-data-model.md UI 下载为同一纯正文",
+      "okay": true
+    },
+    {
+      "name": "1440×900 其他迭代手动加载 到达真实供应商参数边界",
+      "okay": true
+    },
+    {
+      "name": "1440×900 其他迭代手动加载同一纯正文到实际供应商",
+      "okay": true
+    },
+    {
+      "name": "1440×900 所属用户也不能修改系统序号 PATCH 精确拒绝400且无秘密泄露",
+      "okay": true
+    },
+    {
+      "name": "1440×900 消耗旧集合后禁止重做 PATCH 精确拒绝409且无秘密泄露",
+      "okay": true
+    },
+    {
+      "name": "1440×900 跨迭代edit POST 精确拒绝403且无秘密泄露",
+      "okay": true
+    },
+    {
+      "name": "1440×900 跨迭代rename PATCH 精确拒绝403且无秘密泄露",
+      "okay": true
+    },
+    {
+      "name": "1440×900 跨迭代delete DELETE 精确拒绝403且无秘密泄露",
+      "okay": true
+    },
+    {
+      "name": "1440×900 跨迭代restore POST 精确拒绝409且无秘密泄露",
+      "okay": true
+    },
+    {
+      "name": "1440×900 跨迭代文件夹撤回 PATCH 精确拒绝403且无秘密泄露",
+      "okay": true
+    },
+    {
+      "name": "1440×900 错迭代候选 GET 精确拒绝404且无秘密泄露",
+      "okay": true
+    },
+    {
+      "name": "1440×900 错迭代候选 POST 精确拒绝404且无秘密泄露",
+      "okay": true
+    },
+    {
+      "name": "1440×900 错迭代候选 POST 精确拒绝404且无秘密泄露",
+      "okay": true
+    },
+    {
+      "name": "1440×900 错迭代手动候选 GET 精确拒绝404且无秘密泄露",
+      "okay": true
+    },
+    {
+      "name": "1440×900 错迭代手动候选 POST 精确拒绝404且无秘密泄露",
+      "okay": true
+    },
+    {
+      "name": "1440×900 旧文件入口不能绕过任务归属 PATCH 精确拒绝403且无秘密泄露",
+      "okay": true
+    },
+    {
+      "name": "1440×900 旧文件入口不能绕过任务归属 DELETE 精确拒绝403且无秘密泄露",
+      "okay": true
+    },
+    {
+      "name": "1440×900 旧Agent文件入口 POST 精确拒绝409且无秘密泄露",
+      "okay": true
+    },
+    {
+      "name": "1440×900 旧ticket-set入口 POST 精确拒绝409且无秘密泄露",
+      "okay": true
+    },
+    {
+      "name": "1440×900 跨迭代全部拒绝后资产候选上下文逐字段不变",
+      "okay": true
+    },
+    {
+      "name": "1440×900 新建目标没有默认选择",
+      "okay": true
+    },
+    {
+      "name": "专项回放中断：register is not defined",
+      "okay": false
+    }
+  ],
+  "permissions": [
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "label": "所属用户也不能修改系统序号",
+      "path": "/api/iterations/0a878233-9f43-41d5-87d7-a6a880b96a59/files/01372348-f51e-4a52-aa1b-8d95165b905e",
+      "method": "PATCH",
+      "expected": 400,
+      "actual": 400,
+      "leaked": false
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "label": "消耗旧集合后禁止重做",
+      "path": "/api/iterations/0a878233-9f43-41d5-87d7-a6a880b96a59/task-folder",
+      "method": "PATCH",
+      "expected": 409,
+      "actual": 409,
+      "leaked": false
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "label": "跨迭代edit",
+      "path": "/api/iterations/a1f83662-4cc4-4661-af20-39ddff032f5f/files/01372348-f51e-4a52-aa1b-8d95165b905e",
+      "method": "POST",
+      "expected": 403,
+      "actual": 403,
+      "leaked": false
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "label": "跨迭代rename",
+      "path": "/api/iterations/a1f83662-4cc4-4661-af20-39ddff032f5f/files/01372348-f51e-4a52-aa1b-8d95165b905e",
+      "method": "PATCH",
+      "expected": 403,
+      "actual": 403,
+      "leaked": false
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "label": "跨迭代delete",
+      "path": "/api/iterations/a1f83662-4cc4-4661-af20-39ddff032f5f/files/01372348-f51e-4a52-aa1b-8d95165b905e",
+      "method": "DELETE",
+      "expected": 403,
+      "actual": 403,
+      "leaked": false
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "label": "跨迭代restore",
+      "path": "/api/iterations/a1f83662-4cc4-4661-af20-39ddff032f5f/files/01372348-f51e-4a52-aa1b-8d95165b905e",
+      "method": "POST",
+      "expected": 409,
+      "actual": 409,
+      "leaked": false
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "label": "跨迭代文件夹撤回",
+      "path": "/api/iterations/a1f83662-4cc4-4661-af20-39ddff032f5f/task-folder",
+      "method": "PATCH",
+      "expected": 403,
+      "actual": 403,
+      "leaked": false
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "label": "错迭代候选",
+      "path": "/api/iterations/a1f83662-4cc4-4661-af20-39ddff032f5f/sessions/2899b46b-fa02-4640-bba6-bd72abec7b08/task-candidates/6a69f729-c9a8-45d7-8bda-6c7abc7edff0",
+      "method": "GET",
+      "expected": 404,
+      "actual": 404,
+      "leaked": false
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "label": "错迭代候选",
+      "path": "/api/iterations/a1f83662-4cc4-4661-af20-39ddff032f5f/sessions/2899b46b-fa02-4640-bba6-bd72abec7b08/task-candidates/6a69f729-c9a8-45d7-8bda-6c7abc7edff0",
+      "method": "POST",
+      "expected": 404,
+      "actual": 404,
+      "leaked": false
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "label": "错迭代候选",
+      "path": "/api/iterations/a1f83662-4cc4-4661-af20-39ddff032f5f/sessions/2899b46b-fa02-4640-bba6-bd72abec7b08/task-candidates/6a69f729-c9a8-45d7-8bda-6c7abc7edff0",
+      "method": "POST",
+      "expected": 404,
+      "actual": 404,
+      "leaked": false
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "label": "错迭代手动候选",
+      "path": "/api/iterations/a1f83662-4cc4-4661-af20-39ddff032f5f/sessions/2899b46b-fa02-4640-bba6-bd72abec7b08/task-candidates",
+      "method": "GET",
+      "expected": 404,
+      "actual": 404,
+      "leaked": false
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "label": "错迭代手动候选",
+      "path": "/api/iterations/a1f83662-4cc4-4661-af20-39ddff032f5f/sessions/2899b46b-fa02-4640-bba6-bd72abec7b08/task-candidates",
+      "method": "POST",
+      "expected": 404,
+      "actual": 404,
+      "leaked": false
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "label": "旧文件入口不能绕过任务归属",
+      "path": "/api/projects/ae740bf0-847e-42c9-a459-24a14eb840b3/files/01372348-f51e-4a52-aa1b-8d95165b905e",
+      "method": "PATCH",
+      "expected": 403,
+      "actual": 403,
+      "leaked": false
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "label": "旧文件入口不能绕过任务归属",
+      "path": "/api/projects/ae740bf0-847e-42c9-a459-24a14eb840b3/files/01372348-f51e-4a52-aa1b-8d95165b905e",
+      "method": "DELETE",
+      "expected": 403,
+      "actual": 403,
+      "leaked": false
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "label": "旧Agent文件入口",
+      "path": "/api/projects/ae740bf0-847e-42c9-a459-24a14eb840b3/files",
+      "method": "POST",
+      "expected": 409,
+      "actual": 409,
+      "leaked": false
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "label": "旧ticket-set入口",
+      "path": "/api/projects/ae740bf0-847e-42c9-a459-24a14eb840b3/ticket-sets",
+      "method": "POST",
+      "expected": 409,
+      "actual": 409,
+      "leaked": false
+    }
+  ],
+  "faultEvidence": [
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "type": "ordinary-create-rollback",
+      "before": {
+        "project_files": [],
+        "task_folders": [],
+        "prototype_snapshots": [],
+        "project_file_changes": []
+      },
+      "after": {
+        "project_files": [],
+        "task_folders": [],
+        "prototype_snapshots": [],
+        "project_file_changes": []
+      }
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "type": "snapshot-rollback",
+      "before": {
+        "project_files": [
+          {
+            "id": "ea9657fd-a98f-4622-879b-20ed0fb37cee",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "filename": "需求分析-专项1440.md",
+            "content": "# 需求分析\n\n### 用户与场景\n本校大学生在毕业季和日常生活中买卖闲置物品，当前主要依靠微信群，检索和交易效率较低。\n\n### 用户故事\n作为本校学生，我想发布、搜索并沟通二手商品，以便更高效地完成交易。\n\n### 功能范围\n做 X：商品发布、分类浏览与搜索、站内私聊、用户评价。不做 Y：物流配送和担保交易（MVP 聚焦校内自取）。\n\n### 成功指标\n上线首月发布商品 100 件，完成交易 30 笔。",
+            "previous_content": null,
+            "version": 1,
+            "created_at": "2026-10-02T04:23:04.942Z",
+            "updated_at": "2026-10-02T04:23:04.942Z",
+            "freeze_binding_tab_id": null,
+            "freeze_binding_document_digest": null,
+            "freeze_binding_locked_at": null,
+            "task_folder_id": null,
+            "issue_number": null
+          }
+        ],
+        "task_folders": [],
+        "prototype_snapshots": [],
+        "project_file_changes": [
+          {
+            "id": "f8046d7c-76ce-4670-af66-4d5f3ef1170d",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "file_id": "ea9657fd-a98f-4622-879b-20ed0fb37cee",
+            "task_change_group_id": null,
+            "task_folder_id": null,
+            "operation": "create",
+            "filename": "需求分析-专项1440.md",
+            "previous_filename": null,
+            "content_revision": 1,
+            "actor": "agent",
+            "iteration_id": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+            "iteration_number": 1,
+            "iteration_name": "首轮文件来源更名",
+            "stage": "analysis",
+            "session_id": "62a49b4f-f18b-46fd-863b-8cdbc91cc4b8",
+            "session_name": "生成需求分析 发布闸探针_084ceb6a-e8b8-4b11-a1e8-0caa2561ac89_初始空上下文",
+            "message_id": "aa510cb0-8a30-47fc-816e-2b95180b48fe",
+            "occurred_at": "2026-10-02T04:23:04.942Z",
+            "change_sequence": 2
+          }
+        ]
+      },
+      "after": {
+        "project_files": [
+          {
+            "id": "ea9657fd-a98f-4622-879b-20ed0fb37cee",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "filename": "需求分析-专项1440.md",
+            "content": "# 需求分析\n\n### 用户与场景\n本校大学生在毕业季和日常生活中买卖闲置物品，当前主要依靠微信群，检索和交易效率较低。\n\n### 用户故事\n作为本校学生，我想发布、搜索并沟通二手商品，以便更高效地完成交易。\n\n### 功能范围\n做 X：商品发布、分类浏览与搜索、站内私聊、用户评价。不做 Y：物流配送和担保交易（MVP 聚焦校内自取）。\n\n### 成功指标\n上线首月发布商品 100 件，完成交易 30 笔。",
+            "previous_content": null,
+            "version": 1,
+            "created_at": "2026-10-02T04:23:04.942Z",
+            "updated_at": "2026-10-02T04:23:04.942Z",
+            "freeze_binding_tab_id": null,
+            "freeze_binding_document_digest": null,
+            "freeze_binding_locked_at": null,
+            "task_folder_id": null,
+            "issue_number": null
+          }
+        ],
+        "task_folders": [],
+        "prototype_snapshots": [],
+        "project_file_changes": [
+          {
+            "id": "f8046d7c-76ce-4670-af66-4d5f3ef1170d",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "file_id": "ea9657fd-a98f-4622-879b-20ed0fb37cee",
+            "task_change_group_id": null,
+            "task_folder_id": null,
+            "operation": "create",
+            "filename": "需求分析-专项1440.md",
+            "previous_filename": null,
+            "content_revision": 1,
+            "actor": "agent",
+            "iteration_id": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+            "iteration_number": 1,
+            "iteration_name": "首轮文件来源更名",
+            "stage": "analysis",
+            "session_id": "62a49b4f-f18b-46fd-863b-8cdbc91cc4b8",
+            "session_name": "生成需求分析 发布闸探针_084ceb6a-e8b8-4b11-a1e8-0caa2561ac89_初始空上下文",
+            "message_id": "aa510cb0-8a30-47fc-816e-2b95180b48fe",
+            "occurred_at": "2026-10-02T04:23:04.942Z",
+            "change_sequence": 2
+          }
+        ]
+      }
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "type": "ordinary-edit-rollback",
+      "before": {
+        "project_files": [
+          {
+            "id": "3a126125-61e7-4bf8-9e45-1d0df14bd093",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "filename": "原型-专项1440.md",
+            "content": "# 原型：校园二手交易\n\n## 商品浏览页\n- **目的**：浏览与搜索校内闲置商品。\n- **元素**：搜索框、分类筛选和商品列表。\n- **操作**：输入关键词后筛选商品，点击商品进入详情。\n- **入口·出口**：从首页进入，可进入商品详情页。\n- **依赖**：商品目录。\n\n## 用户流程：查找商品\n- **触发**：学生需要购买闲置商品。\n- **主路径**：打开浏览页 → 搜索商品 → 查看详情。\n- **异常分支**：没有结果时显示空状态。",
+            "previous_content": null,
+            "version": 1,
+            "created_at": "2026-10-02T04:23:10.982Z",
+            "updated_at": "2026-10-02T04:23:10.982Z",
+            "freeze_binding_tab_id": null,
+            "freeze_binding_document_digest": null,
+            "freeze_binding_locked_at": null,
+            "task_folder_id": null,
+            "issue_number": null
+          },
+          {
+            "id": "9ae18fc9-6787-4de8-a6a5-40e48e98ed70",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "filename": "PRD-专项1440.md",
+            "content": "# 在线点餐 - MVP PRD\n\n## 1. 概念\n核心用户：公司员工。要解决的一件事：减少午餐排队时间。产品形态：Web 应用。MVP 功能：菜品浏览、购物车、提交订单、订单状态。外部依赖声明：无。\n\n## 2. Out of Scope\n在线支付和外卖配送暂不实现。\n\n## 3. 页面清单\n## 菜品浏览页\n- **目的**：浏览和搜索菜品。\n- **元素**：菜品列表、搜索框、加入购物车按钮。\n- **操作**：搜索过滤列表，点击按钮加入购物车。\n- **入口·出口**：从首页进入，可前往购物车页。\n- **依赖**：菜品数据、购物车状态。\n\n## 4. 实体级数据模型\n### 菜品\n定义：店铺可售卖的菜。字段表：名称、价格、状态。状态机：在售 → 售罄。关系：订单引用菜品。\n\n## 5. 用户流程 + 验收标准\n## 用户流程：提交订单\n- **触发**：顾客在购物车确认菜品。\n- **主路径**：点击提交订单 → 创建订单 → 跳转订单详情。\n- **异常分支**：购物车为空时提示并停留原页。\n#### 验收标准\n- [ ] 当购物车非空时提交订单，系统创建订单并跳转详情页。\n\n## 6. 文案基调\n轻松、直接、口语化。",
+            "previous_content": null,
+            "version": 1,
+            "created_at": "2026-10-02T04:23:13.777Z",
+            "updated_at": "2026-10-02T04:23:13.777Z",
+            "freeze_binding_tab_id": null,
+            "freeze_binding_document_digest": null,
+            "freeze_binding_locked_at": null,
+            "task_folder_id": null,
+            "issue_number": null
+          },
+          {
+            "id": "ea9657fd-a98f-4622-879b-20ed0fb37cee",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "filename": "需求分析-专项1440.md",
+            "content": "# 需求分析\n\n### 用户与场景\n本校大学生在毕业季和日常生活中买卖闲置物品，当前主要依靠微信群，检索和交易效率较低。\n\n### 用户故事\n作为本校学生，我想发布、搜索并沟通二手商品，以便更高效地完成交易。\n\n### 功能范围\n做 X：商品发布、分类浏览与搜索、站内私聊、用户评价。不做 Y：物流配送和担保交易（MVP 聚焦校内自取）。\n\n### 成功指标\n上线首月发布商品 100 件，完成交易 30 笔。",
+            "previous_content": null,
+            "version": 1,
+            "created_at": "2026-10-02T04:23:04.942Z",
+            "updated_at": "2026-10-02T04:23:04.942Z",
+            "freeze_binding_tab_id": null,
+            "freeze_binding_document_digest": null,
+            "freeze_binding_locked_at": null,
+            "task_folder_id": null,
+            "issue_number": null
+          }
+        ],
+        "task_folders": [],
+        "prototype_snapshots": [
+          {
+            "id": "69e3c91c-7e0b-4c7b-896b-e49e7c063349",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "tab_id": null,
+            "iteration_id": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+            "session_id": "b39990e7-eaf7-44fb-befb-7cdc0a81afd9",
+            "message_id": "09cf7e80-5157-4152-86d6-ab4b9affb3f7",
+            "content": "<!doctype html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><title>校园二手</title></head><body><main><h1>校园二手</h1></main></body></html>",
+            "version": 1,
+            "created_at": "2026-10-02T04:23:10.468Z"
+          }
+        ],
+        "project_file_changes": [
+          {
+            "id": "5de14614-5e6a-46f7-926d-ffad73d9dd46",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "file_id": "9ae18fc9-6787-4de8-a6a5-40e48e98ed70",
+            "task_change_group_id": null,
+            "task_folder_id": null,
+            "operation": "create",
+            "filename": "PRD-专项1440.md",
+            "previous_filename": null,
+            "content_revision": 1,
+            "actor": "agent",
+            "iteration_id": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+            "iteration_number": 1,
+            "iteration_name": "首轮文件来源更名",
+            "stage": "prd",
+            "session_id": "900b9f57-82f9-4eae-9201-b2c8cb6dbab3",
+            "session_name": "详细撰写六章 PRD 发布闸探针_084ceb6a-e8b8-4b11-a1e8-0caa2561ac89_PRD候选",
+            "message_id": "73c81bab-83ad-460e-840a-ab394e7d5d89",
+            "occurred_at": "2026-10-02T04:23:13.777Z",
+            "change_sequence": 4
+          },
+          {
+            "id": "7099c554-ad1b-4f9d-b92e-575efd007794",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "file_id": "3a126125-61e7-4bf8-9e45-1d0df14bd093",
+            "task_change_group_id": null,
+            "task_folder_id": null,
+            "operation": "create",
+            "filename": "原型-专项1440.md",
+            "previous_filename": null,
+            "content_revision": 1,
+            "actor": "agent",
+            "iteration_id": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+            "iteration_number": 1,
+            "iteration_name": "首轮文件来源更名",
+            "stage": "prototype",
+            "session_id": "b39990e7-eaf7-44fb-befb-7cdc0a81afd9",
+            "session_name": "同时生成结构化原型 Markdown 和 HTML 发布闸探针_084ceb6a-e8b8-4b11-a1e8-0caa2561ac89_HTML快照故障",
+            "message_id": "09cf7e80-5157-4152-86d6-ab4b9affb3f7",
+            "occurred_at": "2026-10-02T04:23:10.982Z",
+            "change_sequence": 3
+          },
+          {
+            "id": "f8046d7c-76ce-4670-af66-4d5f3ef1170d",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "file_id": "ea9657fd-a98f-4622-879b-20ed0fb37cee",
+            "task_change_group_id": null,
+            "task_folder_id": null,
+            "operation": "create",
+            "filename": "需求分析-专项1440.md",
+            "previous_filename": null,
+            "content_revision": 1,
+            "actor": "agent",
+            "iteration_id": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+            "iteration_number": 1,
+            "iteration_name": "首轮文件来源更名",
+            "stage": "analysis",
+            "session_id": "62a49b4f-f18b-46fd-863b-8cdbc91cc4b8",
+            "session_name": "生成需求分析 发布闸探针_084ceb6a-e8b8-4b11-a1e8-0caa2561ac89_初始空上下文",
+            "message_id": "aa510cb0-8a30-47fc-816e-2b95180b48fe",
+            "occurred_at": "2026-10-02T04:23:04.942Z",
+            "change_sequence": 2
+          }
+        ]
+      },
+      "after": {
+        "project_files": [
+          {
+            "id": "3a126125-61e7-4bf8-9e45-1d0df14bd093",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "filename": "原型-专项1440.md",
+            "content": "# 原型：校园二手交易\n\n## 商品浏览页\n- **目的**：浏览与搜索校内闲置商品。\n- **元素**：搜索框、分类筛选和商品列表。\n- **操作**：输入关键词后筛选商品，点击商品进入详情。\n- **入口·出口**：从首页进入，可进入商品详情页。\n- **依赖**：商品目录。\n\n## 用户流程：查找商品\n- **触发**：学生需要购买闲置商品。\n- **主路径**：打开浏览页 → 搜索商品 → 查看详情。\n- **异常分支**：没有结果时显示空状态。",
+            "previous_content": null,
+            "version": 1,
+            "created_at": "2026-10-02T04:23:10.982Z",
+            "updated_at": "2026-10-02T04:23:10.982Z",
+            "freeze_binding_tab_id": null,
+            "freeze_binding_document_digest": null,
+            "freeze_binding_locked_at": null,
+            "task_folder_id": null,
+            "issue_number": null
+          },
+          {
+            "id": "9ae18fc9-6787-4de8-a6a5-40e48e98ed70",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "filename": "PRD-专项1440.md",
+            "content": "# 在线点餐 - MVP PRD\n\n## 1. 概念\n核心用户：公司员工。要解决的一件事：减少午餐排队时间。产品形态：Web 应用。MVP 功能：菜品浏览、购物车、提交订单、订单状态。外部依赖声明：无。\n\n## 2. Out of Scope\n在线支付和外卖配送暂不实现。\n\n## 3. 页面清单\n## 菜品浏览页\n- **目的**：浏览和搜索菜品。\n- **元素**：菜品列表、搜索框、加入购物车按钮。\n- **操作**：搜索过滤列表，点击按钮加入购物车。\n- **入口·出口**：从首页进入，可前往购物车页。\n- **依赖**：菜品数据、购物车状态。\n\n## 4. 实体级数据模型\n### 菜品\n定义：店铺可售卖的菜。字段表：名称、价格、状态。状态机：在售 → 售罄。关系：订单引用菜品。\n\n## 5. 用户流程 + 验收标准\n## 用户流程：提交订单\n- **触发**：顾客在购物车确认菜品。\n- **主路径**：点击提交订单 → 创建订单 → 跳转订单详情。\n- **异常分支**：购物车为空时提示并停留原页。\n#### 验收标准\n- [ ] 当购物车非空时提交订单，系统创建订单并跳转详情页。\n\n## 6. 文案基调\n轻松、直接、口语化。",
+            "previous_content": null,
+            "version": 1,
+            "created_at": "2026-10-02T04:23:13.777Z",
+            "updated_at": "2026-10-02T04:23:13.777Z",
+            "freeze_binding_tab_id": null,
+            "freeze_binding_document_digest": null,
+            "freeze_binding_locked_at": null,
+            "task_folder_id": null,
+            "issue_number": null
+          },
+          {
+            "id": "ea9657fd-a98f-4622-879b-20ed0fb37cee",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "filename": "需求分析-专项1440.md",
+            "content": "# 需求分析\n\n### 用户与场景\n本校大学生在毕业季和日常生活中买卖闲置物品，当前主要依靠微信群，检索和交易效率较低。\n\n### 用户故事\n作为本校学生，我想发布、搜索并沟通二手商品，以便更高效地完成交易。\n\n### 功能范围\n做 X：商品发布、分类浏览与搜索、站内私聊、用户评价。不做 Y：物流配送和担保交易（MVP 聚焦校内自取）。\n\n### 成功指标\n上线首月发布商品 100 件，完成交易 30 笔。",
+            "previous_content": null,
+            "version": 1,
+            "created_at": "2026-10-02T04:23:04.942Z",
+            "updated_at": "2026-10-02T04:23:04.942Z",
+            "freeze_binding_tab_id": null,
+            "freeze_binding_document_digest": null,
+            "freeze_binding_locked_at": null,
+            "task_folder_id": null,
+            "issue_number": null
+          }
+        ],
+        "task_folders": [],
+        "prototype_snapshots": [
+          {
+            "id": "69e3c91c-7e0b-4c7b-896b-e49e7c063349",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "tab_id": null,
+            "iteration_id": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+            "session_id": "b39990e7-eaf7-44fb-befb-7cdc0a81afd9",
+            "message_id": "09cf7e80-5157-4152-86d6-ab4b9affb3f7",
+            "content": "<!doctype html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><title>校园二手</title></head><body><main><h1>校园二手</h1></main></body></html>",
+            "version": 1,
+            "created_at": "2026-10-02T04:23:10.468Z"
+          }
+        ],
+        "project_file_changes": [
+          {
+            "id": "5de14614-5e6a-46f7-926d-ffad73d9dd46",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "file_id": "9ae18fc9-6787-4de8-a6a5-40e48e98ed70",
+            "task_change_group_id": null,
+            "task_folder_id": null,
+            "operation": "create",
+            "filename": "PRD-专项1440.md",
+            "previous_filename": null,
+            "content_revision": 1,
+            "actor": "agent",
+            "iteration_id": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+            "iteration_number": 1,
+            "iteration_name": "首轮文件来源更名",
+            "stage": "prd",
+            "session_id": "900b9f57-82f9-4eae-9201-b2c8cb6dbab3",
+            "session_name": "详细撰写六章 PRD 发布闸探针_084ceb6a-e8b8-4b11-a1e8-0caa2561ac89_PRD候选",
+            "message_id": "73c81bab-83ad-460e-840a-ab394e7d5d89",
+            "occurred_at": "2026-10-02T04:23:13.777Z",
+            "change_sequence": 4
+          },
+          {
+            "id": "7099c554-ad1b-4f9d-b92e-575efd007794",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "file_id": "3a126125-61e7-4bf8-9e45-1d0df14bd093",
+            "task_change_group_id": null,
+            "task_folder_id": null,
+            "operation": "create",
+            "filename": "原型-专项1440.md",
+            "previous_filename": null,
+            "content_revision": 1,
+            "actor": "agent",
+            "iteration_id": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+            "iteration_number": 1,
+            "iteration_name": "首轮文件来源更名",
+            "stage": "prototype",
+            "session_id": "b39990e7-eaf7-44fb-befb-7cdc0a81afd9",
+            "session_name": "同时生成结构化原型 Markdown 和 HTML 发布闸探针_084ceb6a-e8b8-4b11-a1e8-0caa2561ac89_HTML快照故障",
+            "message_id": "09cf7e80-5157-4152-86d6-ab4b9affb3f7",
+            "occurred_at": "2026-10-02T04:23:10.982Z",
+            "change_sequence": 3
+          },
+          {
+            "id": "f8046d7c-76ce-4670-af66-4d5f3ef1170d",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "file_id": "ea9657fd-a98f-4622-879b-20ed0fb37cee",
+            "task_change_group_id": null,
+            "task_folder_id": null,
+            "operation": "create",
+            "filename": "需求分析-专项1440.md",
+            "previous_filename": null,
+            "content_revision": 1,
+            "actor": "agent",
+            "iteration_id": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+            "iteration_number": 1,
+            "iteration_name": "首轮文件来源更名",
+            "stage": "analysis",
+            "session_id": "62a49b4f-f18b-46fd-863b-8cdbc91cc4b8",
+            "session_name": "生成需求分析 发布闸探针_084ceb6a-e8b8-4b11-a1e8-0caa2561ac89_初始空上下文",
+            "message_id": "aa510cb0-8a30-47fc-816e-2b95180b48fe",
+            "occurred_at": "2026-10-02T04:23:04.942Z",
+            "change_sequence": 2
+          }
+        ]
+      }
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "type": "ordinary-overwrite-rollback",
+      "before": {
+        "project_files": [
+          {
+            "id": "3a126125-61e7-4bf8-9e45-1d0df14bd093",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "filename": "原型-专项1440.md",
+            "content": "# 原型：校园二手交易\n\n## 商品浏览页\n- **目的**：浏览与搜索校内闲置商品。\n- **元素**：搜索框、分类筛选和商品列表。\n- **操作**：输入关键词后筛选商品，点击商品进入详情。\n- **入口·出口**：从首页进入，可进入商品详情页。\n- **依赖**：商品目录。\n\n## 用户流程：查找商品\n- **触发**：学生需要购买闲置商品。\n- **主路径**：打开浏览页 → 搜索商品 → 查看详情。\n- **异常分支**：没有结果时显示空状态。\n\n用户补充原型_084ceb6a-e8b8-4b11-a1e8-0caa2561ac89",
+            "previous_content": "# 原型：校园二手交易\n\n## 商品浏览页\n- **目的**：浏览与搜索校内闲置商品。\n- **元素**：搜索框、分类筛选和商品列表。\n- **操作**：输入关键词后筛选商品，点击商品进入详情。\n- **入口·出口**：从首页进入，可进入商品详情页。\n- **依赖**：商品目录。\n\n## 用户流程：查找商品\n- **触发**：学生需要购买闲置商品。\n- **主路径**：打开浏览页 → 搜索商品 → 查看详情。\n- **异常分支**：没有结果时显示空状态。",
+            "version": 2,
+            "created_at": "2026-10-02T04:23:10.982Z",
+            "updated_at": "2026-10-02T04:23:17.511Z",
+            "freeze_binding_tab_id": null,
+            "freeze_binding_document_digest": null,
+            "freeze_binding_locked_at": null,
+            "task_folder_id": null,
+            "issue_number": null
+          },
+          {
+            "id": "9ae18fc9-6787-4de8-a6a5-40e48e98ed70",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "filename": "PRD-专项1440.md",
+            "content": "# 在线点餐 - MVP PRD\n\n## 1. 概念\n核心用户：公司员工。要解决的一件事：减少午餐排队时间。产品形态：Web 应用。MVP 功能：菜品浏览、购物车、提交订单、订单状态。外部依赖声明：无。\n\n## 2. Out of Scope\n在线支付和外卖配送暂不实现。\n\n## 3. 页面清单\n## 菜品浏览页\n- **目的**：浏览和搜索菜品。\n- **元素**：菜品列表、搜索框、加入购物车按钮。\n- **操作**：搜索过滤列表，点击按钮加入购物车。\n- **入口·出口**：从首页进入，可前往购物车页。\n- **依赖**：菜品数据、购物车状态。\n\n## 4. 实体级数据模型\n### 菜品\n定义：店铺可售卖的菜。字段表：名称、价格、状态。状态机：在售 → 售罄。关系：订单引用菜品。\n\n## 5. 用户流程 + 验收标准\n## 用户流程：提交订单\n- **触发**：顾客在购物车确认菜品。\n- **主路径**：点击提交订单 → 创建订单 → 跳转订单详情。\n- **异常分支**：购物车为空时提示并停留原页。\n#### 验收标准\n- [ ] 当购物车非空时提交订单，系统创建订单并跳转详情页。\n\n## 6. 文案基调\n轻松、直接、口语化。",
+            "previous_content": null,
+            "version": 1,
+            "created_at": "2026-10-02T04:23:13.777Z",
+            "updated_at": "2026-10-02T04:23:13.777Z",
+            "freeze_binding_tab_id": null,
+            "freeze_binding_document_digest": null,
+            "freeze_binding_locked_at": null,
+            "task_folder_id": null,
+            "issue_number": null
+          },
+          {
+            "id": "ea9657fd-a98f-4622-879b-20ed0fb37cee",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "filename": "需求分析-专项1440.md",
+            "content": "# 用户保存的正文\n\n正文边界旧版_084ceb6a-e8b8-4b11-a1e8-0caa2561ac89",
+            "previous_content": "# 需求分析\n\n### 用户与场景\n本校大学生在毕业季和日常生活中买卖闲置物品，当前主要依靠微信群，检索和交易效率较低。\n\n### 用户故事\n作为本校学生，我想发布、搜索并沟通二手商品，以便更高效地完成交易。\n\n### 功能范围\n做 X：商品发布、分类浏览与搜索、站内私聊、用户评价。不做 Y：物流配送和担保交易（MVP 聚焦校内自取）。\n\n### 成功指标\n上线首月发布商品 100 件，完成交易 30 笔。",
+            "version": 2,
+            "created_at": "2026-10-02T04:23:04.942Z",
+            "updated_at": "2026-10-02T04:23:18.288Z",
+            "freeze_binding_tab_id": null,
+            "freeze_binding_document_digest": null,
+            "freeze_binding_locked_at": null,
+            "task_folder_id": null,
+            "issue_number": null
+          }
+        ],
+        "task_folders": [],
+        "prototype_snapshots": [
+          {
+            "id": "69e3c91c-7e0b-4c7b-896b-e49e7c063349",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "tab_id": null,
+            "iteration_id": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+            "session_id": "b39990e7-eaf7-44fb-befb-7cdc0a81afd9",
+            "message_id": "09cf7e80-5157-4152-86d6-ab4b9affb3f7",
+            "content": "<!doctype html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><title>校园二手</title></head><body><main><h1>校园二手</h1></main></body></html>",
+            "version": 1,
+            "created_at": "2026-10-02T04:23:10.468Z"
+          }
+        ],
+        "project_file_changes": [
+          {
+            "id": "5de14614-5e6a-46f7-926d-ffad73d9dd46",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "file_id": "9ae18fc9-6787-4de8-a6a5-40e48e98ed70",
+            "task_change_group_id": null,
+            "task_folder_id": null,
+            "operation": "create",
+            "filename": "PRD-专项1440.md",
+            "previous_filename": null,
+            "content_revision": 1,
+            "actor": "agent",
+            "iteration_id": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+            "iteration_number": 1,
+            "iteration_name": "首轮文件来源更名",
+            "stage": "prd",
+            "session_id": "900b9f57-82f9-4eae-9201-b2c8cb6dbab3",
+            "session_name": "详细撰写六章 PRD 发布闸探针_084ceb6a-e8b8-4b11-a1e8-0caa2561ac89_PRD候选",
+            "message_id": "73c81bab-83ad-460e-840a-ab394e7d5d89",
+            "occurred_at": "2026-10-02T04:23:13.777Z",
+            "change_sequence": 4
+          },
+          {
+            "id": "7099c554-ad1b-4f9d-b92e-575efd007794",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "file_id": "3a126125-61e7-4bf8-9e45-1d0df14bd093",
+            "task_change_group_id": null,
+            "task_folder_id": null,
+            "operation": "create",
+            "filename": "原型-专项1440.md",
+            "previous_filename": null,
+            "content_revision": 1,
+            "actor": "agent",
+            "iteration_id": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+            "iteration_number": 1,
+            "iteration_name": "首轮文件来源更名",
+            "stage": "prototype",
+            "session_id": "b39990e7-eaf7-44fb-befb-7cdc0a81afd9",
+            "session_name": "同时生成结构化原型 Markdown 和 HTML 发布闸探针_084ceb6a-e8b8-4b11-a1e8-0caa2561ac89_HTML快照故障",
+            "message_id": "09cf7e80-5157-4152-86d6-ab4b9affb3f7",
+            "occurred_at": "2026-10-02T04:23:10.982Z",
+            "change_sequence": 3
+          },
+          {
+            "id": "ea0e9581-5666-4c93-8d38-31f0aaf1a202",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "file_id": "3a126125-61e7-4bf8-9e45-1d0df14bd093",
+            "task_change_group_id": null,
+            "task_folder_id": null,
+            "operation": "edit",
+            "filename": "原型-专项1440.md",
+            "previous_filename": null,
+            "content_revision": 2,
+            "actor": "user",
+            "iteration_id": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+            "iteration_number": 1,
+            "iteration_name": "首轮文件来源更名",
+            "stage": null,
+            "session_id": null,
+            "session_name": null,
+            "message_id": null,
+            "occurred_at": "2026-10-02T04:23:17.511Z",
+            "change_sequence": 6
+          },
+          {
+            "id": "f8046d7c-76ce-4670-af66-4d5f3ef1170d",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "file_id": "ea9657fd-a98f-4622-879b-20ed0fb37cee",
+            "task_change_group_id": null,
+            "task_folder_id": null,
+            "operation": "create",
+            "filename": "需求分析-专项1440.md",
+            "previous_filename": null,
+            "content_revision": 1,
+            "actor": "agent",
+            "iteration_id": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+            "iteration_number": 1,
+            "iteration_name": "首轮文件来源更名",
+            "stage": "analysis",
+            "session_id": "62a49b4f-f18b-46fd-863b-8cdbc91cc4b8",
+            "session_name": "生成需求分析 发布闸探针_084ceb6a-e8b8-4b11-a1e8-0caa2561ac89_初始空上下文",
+            "message_id": "aa510cb0-8a30-47fc-816e-2b95180b48fe",
+            "occurred_at": "2026-10-02T04:23:04.942Z",
+            "change_sequence": 2
+          },
+          {
+            "id": "fd45ad56-b73b-4cb6-a207-8b58892b516a",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "file_id": "ea9657fd-a98f-4622-879b-20ed0fb37cee",
+            "task_change_group_id": null,
+            "task_folder_id": null,
+            "operation": "edit",
+            "filename": "需求分析-专项1440.md",
+            "previous_filename": null,
+            "content_revision": 2,
+            "actor": "user",
+            "iteration_id": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+            "iteration_number": 1,
+            "iteration_name": "首轮文件来源更名",
+            "stage": null,
+            "session_id": null,
+            "session_name": null,
+            "message_id": null,
+            "occurred_at": "2026-10-02T04:23:18.288Z",
+            "change_sequence": 7
+          }
+        ]
+      },
+      "after": {
+        "project_files": [
+          {
+            "id": "3a126125-61e7-4bf8-9e45-1d0df14bd093",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "filename": "原型-专项1440.md",
+            "content": "# 原型：校园二手交易\n\n## 商品浏览页\n- **目的**：浏览与搜索校内闲置商品。\n- **元素**：搜索框、分类筛选和商品列表。\n- **操作**：输入关键词后筛选商品，点击商品进入详情。\n- **入口·出口**：从首页进入，可进入商品详情页。\n- **依赖**：商品目录。\n\n## 用户流程：查找商品\n- **触发**：学生需要购买闲置商品。\n- **主路径**：打开浏览页 → 搜索商品 → 查看详情。\n- **异常分支**：没有结果时显示空状态。\n\n用户补充原型_084ceb6a-e8b8-4b11-a1e8-0caa2561ac89",
+            "previous_content": "# 原型：校园二手交易\n\n## 商品浏览页\n- **目的**：浏览与搜索校内闲置商品。\n- **元素**：搜索框、分类筛选和商品列表。\n- **操作**：输入关键词后筛选商品，点击商品进入详情。\n- **入口·出口**：从首页进入，可进入商品详情页。\n- **依赖**：商品目录。\n\n## 用户流程：查找商品\n- **触发**：学生需要购买闲置商品。\n- **主路径**：打开浏览页 → 搜索商品 → 查看详情。\n- **异常分支**：没有结果时显示空状态。",
+            "version": 2,
+            "created_at": "2026-10-02T04:23:10.982Z",
+            "updated_at": "2026-10-02T04:23:17.511Z",
+            "freeze_binding_tab_id": null,
+            "freeze_binding_document_digest": null,
+            "freeze_binding_locked_at": null,
+            "task_folder_id": null,
+            "issue_number": null
+          },
+          {
+            "id": "9ae18fc9-6787-4de8-a6a5-40e48e98ed70",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "filename": "PRD-专项1440.md",
+            "content": "# 在线点餐 - MVP PRD\n\n## 1. 概念\n核心用户：公司员工。要解决的一件事：减少午餐排队时间。产品形态：Web 应用。MVP 功能：菜品浏览、购物车、提交订单、订单状态。外部依赖声明：无。\n\n## 2. Out of Scope\n在线支付和外卖配送暂不实现。\n\n## 3. 页面清单\n## 菜品浏览页\n- **目的**：浏览和搜索菜品。\n- **元素**：菜品列表、搜索框、加入购物车按钮。\n- **操作**：搜索过滤列表，点击按钮加入购物车。\n- **入口·出口**：从首页进入，可前往购物车页。\n- **依赖**：菜品数据、购物车状态。\n\n## 4. 实体级数据模型\n### 菜品\n定义：店铺可售卖的菜。字段表：名称、价格、状态。状态机：在售 → 售罄。关系：订单引用菜品。\n\n## 5. 用户流程 + 验收标准\n## 用户流程：提交订单\n- **触发**：顾客在购物车确认菜品。\n- **主路径**：点击提交订单 → 创建订单 → 跳转订单详情。\n- **异常分支**：购物车为空时提示并停留原页。\n#### 验收标准\n- [ ] 当购物车非空时提交订单，系统创建订单并跳转详情页。\n\n## 6. 文案基调\n轻松、直接、口语化。",
+            "previous_content": null,
+            "version": 1,
+            "created_at": "2026-10-02T04:23:13.777Z",
+            "updated_at": "2026-10-02T04:23:13.777Z",
+            "freeze_binding_tab_id": null,
+            "freeze_binding_document_digest": null,
+            "freeze_binding_locked_at": null,
+            "task_folder_id": null,
+            "issue_number": null
+          },
+          {
+            "id": "ea9657fd-a98f-4622-879b-20ed0fb37cee",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "filename": "需求分析-专项1440.md",
+            "content": "# 用户保存的正文\n\n正文边界旧版_084ceb6a-e8b8-4b11-a1e8-0caa2561ac89",
+            "previous_content": "# 需求分析\n\n### 用户与场景\n本校大学生在毕业季和日常生活中买卖闲置物品，当前主要依靠微信群，检索和交易效率较低。\n\n### 用户故事\n作为本校学生，我想发布、搜索并沟通二手商品，以便更高效地完成交易。\n\n### 功能范围\n做 X：商品发布、分类浏览与搜索、站内私聊、用户评价。不做 Y：物流配送和担保交易（MVP 聚焦校内自取）。\n\n### 成功指标\n上线首月发布商品 100 件，完成交易 30 笔。",
+            "version": 2,
+            "created_at": "2026-10-02T04:23:04.942Z",
+            "updated_at": "2026-10-02T04:23:18.288Z",
+            "freeze_binding_tab_id": null,
+            "freeze_binding_document_digest": null,
+            "freeze_binding_locked_at": null,
+            "task_folder_id": null,
+            "issue_number": null
+          }
+        ],
+        "task_folders": [],
+        "prototype_snapshots": [
+          {
+            "id": "69e3c91c-7e0b-4c7b-896b-e49e7c063349",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "tab_id": null,
+            "iteration_id": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+            "session_id": "b39990e7-eaf7-44fb-befb-7cdc0a81afd9",
+            "message_id": "09cf7e80-5157-4152-86d6-ab4b9affb3f7",
+            "content": "<!doctype html><html lang=\"zh-CN\"><head><meta charset=\"utf-8\"><title>校园二手</title></head><body><main><h1>校园二手</h1></main></body></html>",
+            "version": 1,
+            "created_at": "2026-10-02T04:23:10.468Z"
+          }
+        ],
+        "project_file_changes": [
+          {
+            "id": "5de14614-5e6a-46f7-926d-ffad73d9dd46",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "file_id": "9ae18fc9-6787-4de8-a6a5-40e48e98ed70",
+            "task_change_group_id": null,
+            "task_folder_id": null,
+            "operation": "create",
+            "filename": "PRD-专项1440.md",
+            "previous_filename": null,
+            "content_revision": 1,
+            "actor": "agent",
+            "iteration_id": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+            "iteration_number": 1,
+            "iteration_name": "首轮文件来源更名",
+            "stage": "prd",
+            "session_id": "900b9f57-82f9-4eae-9201-b2c8cb6dbab3",
+            "session_name": "详细撰写六章 PRD 发布闸探针_084ceb6a-e8b8-4b11-a1e8-0caa2561ac89_PRD候选",
+            "message_id": "73c81bab-83ad-460e-840a-ab394e7d5d89",
+            "occurred_at": "2026-10-02T04:23:13.777Z",
+            "change_sequence": 4
+          },
+          {
+            "id": "7099c554-ad1b-4f9d-b92e-575efd007794",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "file_id": "3a126125-61e7-4bf8-9e45-1d0df14bd093",
+            "task_change_group_id": null,
+            "task_folder_id": null,
+            "operation": "create",
+            "filename": "原型-专项1440.md",
+            "previous_filename": null,
+            "content_revision": 1,
+            "actor": "agent",
+            "iteration_id": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+            "iteration_number": 1,
+            "iteration_name": "首轮文件来源更名",
+            "stage": "prototype",
+            "session_id": "b39990e7-eaf7-44fb-befb-7cdc0a81afd9",
+            "session_name": "同时生成结构化原型 Markdown 和 HTML 发布闸探针_084ceb6a-e8b8-4b11-a1e8-0caa2561ac89_HTML快照故障",
+            "message_id": "09cf7e80-5157-4152-86d6-ab4b9affb3f7",
+            "occurred_at": "2026-10-02T04:23:10.982Z",
+            "change_sequence": 3
+          },
+          {
+            "id": "ea0e9581-5666-4c93-8d38-31f0aaf1a202",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "file_id": "3a126125-61e7-4bf8-9e45-1d0df14bd093",
+            "task_change_group_id": null,
+            "task_folder_id": null,
+            "operation": "edit",
+            "filename": "原型-专项1440.md",
+            "previous_filename": null,
+            "content_revision": 2,
+            "actor": "user",
+            "iteration_id": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+            "iteration_number": 1,
+            "iteration_name": "首轮文件来源更名",
+            "stage": null,
+            "session_id": null,
+            "session_name": null,
+            "message_id": null,
+            "occurred_at": "2026-10-02T04:23:17.511Z",
+            "change_sequence": 6
+          },
+          {
+            "id": "f8046d7c-76ce-4670-af66-4d5f3ef1170d",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "file_id": "ea9657fd-a98f-4622-879b-20ed0fb37cee",
+            "task_change_group_id": null,
+            "task_folder_id": null,
+            "operation": "create",
+            "filename": "需求分析-专项1440.md",
+            "previous_filename": null,
+            "content_revision": 1,
+            "actor": "agent",
+            "iteration_id": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+            "iteration_number": 1,
+            "iteration_name": "首轮文件来源更名",
+            "stage": "analysis",
+            "session_id": "62a49b4f-f18b-46fd-863b-8cdbc91cc4b8",
+            "session_name": "生成需求分析 发布闸探针_084ceb6a-e8b8-4b11-a1e8-0caa2561ac89_初始空上下文",
+            "message_id": "aa510cb0-8a30-47fc-816e-2b95180b48fe",
+            "occurred_at": "2026-10-02T04:23:04.942Z",
+            "change_sequence": 2
+          },
+          {
+            "id": "fd45ad56-b73b-4cb6-a207-8b58892b516a",
+            "project_id": "ae740bf0-847e-42c9-a459-24a14eb840b3",
+            "file_id": "ea9657fd-a98f-4622-879b-20ed0fb37cee",
+            "task_change_group_id": null,
+            "task_folder_id": null,
+            "operation": "edit",
+            "filename": "需求分析-专项1440.md",
+            "previous_filename": null,
+            "content_revision": 2,
+            "actor": "user",
+            "iteration_id": "0a878233-9f43-41d5-87d7-a6a880b96a59",
+            "iteration_number": 1,
+            "iteration_name": "首轮文件来源更名",
+            "stage": null,
+            "session_id": null,
+            "session_name": null,
+            "message_id": null,
+            "occurred_at": "2026-10-02T04:23:18.288Z",
+            "change_sequence": 7
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-02",
+  "timezone": "Asia/Shanghai",
+  "skill": "impeccable",
+  "scope": "保留正式工作台视觉，复核本轮桌面与手机来源替换候选、已删除来源详情；引用同源码23号断点、对比度和触控证据",
+  "viewports": [{ "width": 1440, "height": 900 }, { "width": 390, "height": 844 }],
+  "screenshots": [
+    "screenshots/release-1440-source-message-replacement-retention.png",
+    "screenshots/release-390-source-message-replacement-retention.png",
+    "screenshots/release-1440-readonly-source.png",
+    "screenshots/release-390-readonly-source.png"
+  ],
+  "findings": [],
+  "okay": true,
+  "standardsReview": { "findings": 0 },
+  "specReview": { "initialFindings": 1, "resolved": "来源消息真实删除后保留正文、非空唯一旧版与永久来源", "remainingFindings": 0 },
+  "finalDocumentationReview": { "standardsFindings": 0, "specFindings": 0, "ticketAcceptanceCriteriaMet": true, "activeContractReferencesRemoved": true },
+  "realModelCalled": false,
+  "releaseDecision": "v1.41 MySQL/replay 发布闸通过"
+}

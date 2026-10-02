@@ -10,11 +10,15 @@
 
 产品经理已明确暂停 v1.41 后续迭代，改为以 Vercel + Supabase PostgreSQL + 阿里云域名快速低成本上线的 v1.42。首发用途为个人面试展示和免费试用，主要保留入职体验并补齐最小四环成果闭环；平台选免费套餐方向，域名倾向低价 `.cn`。Supabase 全新数据库首发，不迁移任何现有账号或业务数据，本机 MySQL 数据原样保留；保留 MySQL 实现及初始化脚本，v1.42 只对 PostgreSQL 发布验收，未来切回作为独立任务。v1.41 的 01—05 已完成事实保留；用户随后分别单独指定执行 06—09 号票，其余票仍未恢复，下方“下一前沿为 06”等均为此前历史记录。
 
-本轮使用 grill-with-docs（grilling + domain-modeling）讨论范围，已确定决策记入 `docs/adr/0006-v142-vercel-supabase-launch.md`，决策树与待答问题位于 `.scratch/pm-assistant-v1.42/discussion.md`。当前前沿为演示/试用访问边界、真实模型费用和最小成果功能清单；用户询问日期问题的目的，已解释其仅用于固定面试期限下的范围取舍，尚无硬期限。域名首推 `pmstage.cn`，未确认可注册或购买。尚无 v1.42 实现票，不执行数据库迁移或部署。新工作台候选交付仍未接齐，不能把换库完成视为产品发布完成。本轮为纯文档记录，不运行构建、回放或真实模型验证。
+本轮使用 grill-with-docs（grilling + domain-modeling）讨论范围，已确定决策记入 `docs/adr/0006-v142-vercel-supabase-launch.md`，决策树与待答问题位于 `.scratch/pm-assistant-v1.42/discussion.md`。当前前沿为演示/试用访问边界、真实模型费用和最小成果功能清单；用户询问日期问题的目的，已解释其仅用于固定面试期限下的范围取舍，尚无硬期限。域名首推 `pmstage.cn`，未确认可注册或购买。尚无 v1.42 实现票，不执行数据库迁移或部署。新工作台候选交付已在v1.41接齐并通过MySQL/replay最终发布闸；v1.42 PostgreSQL仍须独立实现和验收，不能把换库完成视为产品发布完成。本轮为纯文档记录，不运行构建、回放或真实模型验证。
 
 2026-09-27：补齐账号个人主页：已登录首页右上角改为“个人主页”，`/profile` 提供昵称编辑、只读邮箱、按原有至少 6 位规则修改密码和退出后返回首页。MySQL 迁移 `0012_account_nickname` 为既有账号新增可空昵称，旧账号初始显示未设置；认证边界与密码校验在服务端完成。`verify:account-profile` 14/14、`verify:mysql-init` 4/4 通过，桌面及 390px 截图已检查；`verify:account-project-workspace` 13/14，唯一失败为旧 `/workspace` 刷新恢复选中 tab 的既有路径断言，本次未改动该路径。v1.41 下一前沿仍为 06 号票；部署现有数据库时须先执行新迁移。
 
-### v1.41：01-09、11-23 号已完成；10 号实现仍在工作区
+### v1.41：01—24 已完成，MySQL/replay 最终发布闸通过
+
+2026-10-02：按用户单独指定完成 24 号最终发布闸。新增 `npm run verify:v141-release-gate`，从独立全新 MySQL 9.7.2 空库重复初始化，注册前 20 张业务表零行；1440×900 与 390×844 各沿同一主账号和项目完成连续旅程，727/727（用户场景720、环境7），发布入口25/25，约210秒。每条旅程29事件、14检查点，覆盖19—22全部旅程，并补齐来源回复真实替换删除后正文、非空唯一旧版和永久来源保留。引用23号同源码808/808，163项输入逐字节一致；类型检查、全仓lint、生产构建、Markdown12/12和语法通过，lint为0 error、3 warning（既有Hook与两个验证脚本未使用变量）。154条权限响应、14组故障/来源保留事实、38条实际供应商入参、50张截图、58组控件边界；Impeccable桌面/手机与规范/需求双轴最终均无阻塞。全部固定replay，未调用真实模型；随机库与测试账号全部清理，日常数据保留。此前10号已验收实现已单独收口提交；本票结论记录后删除临时实施纪律并清理AGENTS.md和活动文档入口。完整证据见 `docs/verification/v141-release-gate.md`；其余既有配置、部署及截图修改保留，未推送。v1.41已完成，下一前沿为独立的v1.42上线讨论，尚无数据库迁移或部署授权。
+
+本票新增注意事项：构建与隔离回放保持串行；旧项目URL只跳转列表，创建对照项目后必须显式选回主项目。任务树完整路径在title中；正式重新生成会物理删除来源回复，须在已有非空备份上验证资产和永久来源保留。调试限定四轮，失败摘要与断言永久保留；完整日志和截图保留于 `.scratch/screenshots/v141-release-debug/` 与 `v141-release-raw/`，不能用旧专项汇总替代最终连续旅程。
 
 2026-10-02：按用户单独指定完成 23 号专项质量与视觉验收。使用 implement、Impeccable 和 code-review；正式工作台保留暖纸/墨黑/珊瑚色基调，统一中文字体、消息/候选阅读层级、文件区与来源排版、SVG 与移动关键触控尺寸，长候选名收束且保留完整值，横屏输入区保持发送可达。Agent 正文接入既有安全 MarkdownRenderer，同时修复半截标记不消费输入造成的同步空转；实际组件红证据 6 项硬超时，修复后有界回归 12/12。19—22 同一最终源码分别 97/97、183/183、271/271、170/170，视觉 87/87，共 808/808；12 项文字对比度最低 5.38:1，1440×900、390×844、窄屏/平板/横屏/中间断点与缩放等效重排均已核对。类型检查、全仓 lint、生产构建、脚本语法与机械设计检测通过，lint 仅既有 ChatArea Hook warning；code-review 两轴最终均 0 项。全部固定 replay，未调用真实模型；独立空库注册前 20 张业务表零行、重复初始化成功，测试资源全部清理，日常数据保留。构建曾与 .next 下隔离回放并发打断 19 服务，完整失败记录保留，最终只单独恢复受影响的19并核对全部源码指纹，已通过的20—23不重跑；这不是24号要求的一次连续发布回放。质量证据见 docs/verification/v141-quality-visual-gate.md 和 v141-quality/。只提交本票增量，保留既有10号PRD与部署等用户修改；下一张为24最终发布闸，仍须用户单独指定，v1.42讨论优先级不变。
 
@@ -258,8 +262,8 @@ v1.3 不迁移旧 MongoDB 数据，不提供 MongoDB 回退，不新增用户可
 
 - 产品决策与领域词汇：`CONTEXT.md`
 - 当前规范：`.scratch/pm-assistant-v1.41/spec.md`
-- 当前实现票：`.scratch/pm-assistant-v1.41/issues/01-` 至 `24-` 共 24 张；01—09、11—23 已完成并标记 resolved，10 号实现仍在未提交工作区；23 专项质量与视觉验收已完成，24 为尚待单独指定的最终发布闸
+- 当前实现票：`.scratch/pm-assistant-v1.41/issues/01-` 至 `24-` 共24张，全部resolved；10号实现已收口提交，24号最终发布闸通过，结论与证据见 `docs/verification/v141-release-gate.md`
 - v1.4 历史规范与票：`.scratch/pm-assistant-v1.4/spec.md`、`.scratch/pm-assistant-v1.4/issues/`
 - v1.3 历史规范：`.scratch/pm-assistant-v1.3/spec.md`
-- 实现纪律与协议快照：`AGENTS.md`、`docs/agents/implement-context-hygiene.md`；v1.41 专属原型清单：`.scratch/pm-assistant-v1.41/v1.41-prototype-inputs.md`；v1.41 专属原型纪律：`docs/agents/v1.41-implement-prototype-contract.md`
+- 实现纪律与协议快照：`AGENTS.md`、`docs/agents/implement-context-hygiene.md`；v1.41历史产品输入清单：`.scratch/pm-assistant-v1.41/v1.41-prototype-inputs.md`；版本专属临时纪律已在24号通过后退役，后续按当前票据判断输入
 - 架构决策：`docs/adr/`

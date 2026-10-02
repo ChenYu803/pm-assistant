@@ -1,0 +1,1850 @@
+[
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "普通单文件3MiB限制",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/files/349afc0a-b46a-4e7d-9497-4d8806cf2a6f",
+    "method": "POST",
+    "expected": 413,
+    "actual": 413,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "任务单文件3MiB限制",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/files/297bc7c7-a1a0-44f9-be30-23ddf4125646",
+    "method": "POST",
+    "expected": 413,
+    "actual": 413,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "所属用户也不能修改系统序号",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/files/297bc7c7-a1a0-44f9-be30-23ddf4125646",
+    "method": "PATCH",
+    "expected": 400,
+    "actual": 400,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "消耗旧集合后禁止重做",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/task-folder",
+    "method": "PATCH",
+    "expected": 409,
+    "actual": 409,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨迭代edit",
+    "path": "/api/iterations/beef12ac-6b9d-4147-ac28-68583fde3bcc/files/297bc7c7-a1a0-44f9-be30-23ddf4125646",
+    "method": "POST",
+    "expected": 403,
+    "actual": 403,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨迭代rename",
+    "path": "/api/iterations/beef12ac-6b9d-4147-ac28-68583fde3bcc/files/297bc7c7-a1a0-44f9-be30-23ddf4125646",
+    "method": "PATCH",
+    "expected": 403,
+    "actual": 403,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨迭代delete",
+    "path": "/api/iterations/beef12ac-6b9d-4147-ac28-68583fde3bcc/files/297bc7c7-a1a0-44f9-be30-23ddf4125646",
+    "method": "DELETE",
+    "expected": 403,
+    "actual": 403,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨迭代restore",
+    "path": "/api/iterations/beef12ac-6b9d-4147-ac28-68583fde3bcc/files/297bc7c7-a1a0-44f9-be30-23ddf4125646",
+    "method": "POST",
+    "expected": 409,
+    "actual": 409,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨迭代文件夹撤回",
+    "path": "/api/iterations/beef12ac-6b9d-4147-ac28-68583fde3bcc/task-folder",
+    "method": "PATCH",
+    "expected": 403,
+    "actual": 403,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "错迭代候选",
+    "path": "/api/iterations/beef12ac-6b9d-4147-ac28-68583fde3bcc/sessions/5901bea4-a3a9-4851-8734-3924d901eda2/task-candidates/72097905-15d0-4f4e-b98e-c5833b6deb75",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "错迭代候选",
+    "path": "/api/iterations/beef12ac-6b9d-4147-ac28-68583fde3bcc/sessions/5901bea4-a3a9-4851-8734-3924d901eda2/task-candidates/72097905-15d0-4f4e-b98e-c5833b6deb75",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "错迭代候选",
+    "path": "/api/iterations/beef12ac-6b9d-4147-ac28-68583fde3bcc/sessions/5901bea4-a3a9-4851-8734-3924d901eda2/task-candidates/72097905-15d0-4f4e-b98e-c5833b6deb75",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "错迭代手动候选",
+    "path": "/api/iterations/beef12ac-6b9d-4147-ac28-68583fde3bcc/sessions/5901bea4-a3a9-4851-8734-3924d901eda2/task-candidates",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "错迭代手动候选",
+    "path": "/api/iterations/beef12ac-6b9d-4147-ac28-68583fde3bcc/sessions/5901bea4-a3a9-4851-8734-3924d901eda2/task-candidates",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "旧文件入口不能绕过任务归属",
+    "path": "/api/projects/ad21db41-987e-4a10-920f-8959f9c92eb0/files/297bc7c7-a1a0-44f9-be30-23ddf4125646",
+    "method": "PATCH",
+    "expected": 403,
+    "actual": 403,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "旧文件入口不能绕过任务归属",
+    "path": "/api/projects/ad21db41-987e-4a10-920f-8959f9c92eb0/files/297bc7c7-a1a0-44f9-be30-23ddf4125646",
+    "method": "DELETE",
+    "expected": 403,
+    "actual": 403,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "旧Agent文件入口",
+    "path": "/api/projects/ad21db41-987e-4a10-920f-8959f9c92eb0/files",
+    "method": "POST",
+    "expected": 409,
+    "actual": 409,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "旧ticket-set入口",
+    "path": "/api/projects/ad21db41-987e-4a10-920f-8959f9c92eb0/ticket-sets",
+    "method": "POST",
+    "expected": 409,
+    "actual": 409,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目普通文件正文来源下载",
+    "path": "/api/projects/f84d9fca-bfbd-4911-b0df-fb82928d321b/files/349afc0a-b46a-4e7d-9497-4d8806cf2a6f",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目普通文件正文来源下载",
+    "path": "/api/projects/f84d9fca-bfbd-4911-b0df-fb82928d321b/files/349afc0a-b46a-4e7d-9497-4d8806cf2a6f/history",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目普通文件正文来源下载",
+    "path": "/api/projects/f84d9fca-bfbd-4911-b0df-fb82928d321b/files/349afc0a-b46a-4e7d-9497-4d8806cf2a6f/download",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目HTML快照",
+    "path": "/api/projects/f84d9fca-bfbd-4911-b0df-fb82928d321b/snapshots/fbcd9870-46c2-4fa2-8f9e-f10c832ef88f",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目HTML快照",
+    "path": "/api/projects/f84d9fca-bfbd-4911-b0df-fb82928d321b/snapshots/fbcd9870-46c2-4fa2-8f9e-f10c832ef88f?mode=view",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目HTML快照",
+    "path": "/api/projects/f84d9fca-bfbd-4911-b0df-fb82928d321b/snapshots/fbcd9870-46c2-4fa2-8f9e-f10c832ef88f?mode=download",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目普通文件改写",
+    "path": "/api/iterations/92d9115c-f86a-477e-bff6-37e0a8acd7f2/files/349afc0a-b46a-4e7d-9497-4d8806cf2a6f",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目任务文件",
+    "path": "/api/projects/f84d9fca-bfbd-4911-b0df-fb82928d321b/files/297bc7c7-a1a0-44f9-be30-23ddf4125646",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目任务文件",
+    "path": "/api/projects/f84d9fca-bfbd-4911-b0df-fb82928d321b/files/297bc7c7-a1a0-44f9-be30-23ddf4125646/history",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目任务文件",
+    "path": "/api/projects/f84d9fca-bfbd-4911-b0df-fb82928d321b/files/297bc7c7-a1a0-44f9-be30-23ddf4125646/download",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目任务修改edit",
+    "path": "/api/iterations/92d9115c-f86a-477e-bff6-37e0a8acd7f2/files/297bc7c7-a1a0-44f9-be30-23ddf4125646",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目任务修改rename",
+    "path": "/api/iterations/92d9115c-f86a-477e-bff6-37e0a8acd7f2/files/297bc7c7-a1a0-44f9-be30-23ddf4125646",
+    "method": "PATCH",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目任务修改delete",
+    "path": "/api/iterations/92d9115c-f86a-477e-bff6-37e0a8acd7f2/files/297bc7c7-a1a0-44f9-be30-23ddf4125646",
+    "method": "DELETE",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目任务修改restore",
+    "path": "/api/iterations/92d9115c-f86a-477e-bff6-37e0a8acd7f2/files/297bc7c7-a1a0-44f9-be30-23ddf4125646",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目上下文",
+    "path": "/api/iterations/92d9115c-f86a-477e-bff6-37e0a8acd7f2/stages/tickets/sessions/8b66e00a-a29f-4586-9517-689def7c2218/context",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目上下文会话入口",
+    "path": "/api/iterations/92d9115c-f86a-477e-bff6-37e0a8acd7f2/sessions/8b66e00a-a29f-4586-9517-689def7c2218/context",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目上下文",
+    "path": "/api/iterations/92d9115c-f86a-477e-bff6-37e0a8acd7f2/stages/tickets/sessions/8b66e00a-a29f-4586-9517-689def7c2218/context",
+    "method": "DELETE",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目上下文会话入口",
+    "path": "/api/iterations/92d9115c-f86a-477e-bff6-37e0a8acd7f2/sessions/8b66e00a-a29f-4586-9517-689def7c2218/context",
+    "method": "DELETE",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目候选",
+    "path": "/api/iterations/92d9115c-f86a-477e-bff6-37e0a8acd7f2/sessions/8b66e00a-a29f-4586-9517-689def7c2218/task-candidates/72097905-15d0-4f4e-b98e-c5833b6deb75",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目候选",
+    "path": "/api/iterations/92d9115c-f86a-477e-bff6-37e0a8acd7f2/sessions/8b66e00a-a29f-4586-9517-689def7c2218/task-candidates/72097905-15d0-4f4e-b98e-c5833b6deb75",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目候选",
+    "path": "/api/iterations/92d9115c-f86a-477e-bff6-37e0a8acd7f2/sessions/8b66e00a-a29f-4586-9517-689def7c2218/task-candidates/72097905-15d0-4f4e-b98e-c5833b6deb75",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目文件夹撤回",
+    "path": "/api/iterations/92d9115c-f86a-477e-bff6-37e0a8acd7f2/task-folder",
+    "method": "PATCH",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目错项目文件夹创建",
+    "path": "/api/iterations/92d9115c-f86a-477e-bff6-37e0a8acd7f2/task-folder",
+    "method": "POST",
+    "expected": 409,
+    "actual": 409,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户普通文件正文来源下载",
+    "path": "/api/projects/ad21db41-987e-4a10-920f-8959f9c92eb0/files/349afc0a-b46a-4e7d-9497-4d8806cf2a6f",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户普通文件正文来源下载",
+    "path": "/api/projects/ad21db41-987e-4a10-920f-8959f9c92eb0/files/349afc0a-b46a-4e7d-9497-4d8806cf2a6f/history",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户普通文件正文来源下载",
+    "path": "/api/projects/ad21db41-987e-4a10-920f-8959f9c92eb0/files/349afc0a-b46a-4e7d-9497-4d8806cf2a6f/download",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户HTML快照",
+    "path": "/api/projects/ad21db41-987e-4a10-920f-8959f9c92eb0/snapshots/fbcd9870-46c2-4fa2-8f9e-f10c832ef88f",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户HTML快照",
+    "path": "/api/projects/ad21db41-987e-4a10-920f-8959f9c92eb0/snapshots/fbcd9870-46c2-4fa2-8f9e-f10c832ef88f?mode=view",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户HTML快照",
+    "path": "/api/projects/ad21db41-987e-4a10-920f-8959f9c92eb0/snapshots/fbcd9870-46c2-4fa2-8f9e-f10c832ef88f?mode=download",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户普通文件改写",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/files/349afc0a-b46a-4e7d-9497-4d8806cf2a6f",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户过程或项目删除",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b",
+    "method": "DELETE",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户过程或项目删除",
+    "path": "/api/projects/ad21db41-987e-4a10-920f-8959f9c92eb0",
+    "method": "DELETE",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户过程或项目删除",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/sessions/5901bea4-a3a9-4851-8734-3924d901eda2",
+    "method": "DELETE",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户",
+    "path": "/api/projects/ad21db41-987e-4a10-920f-8959f9c92eb0/task-folders",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户",
+    "path": "/api/projects/ad21db41-987e-4a10-920f-8959f9c92eb0/files",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/workbench",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户任务文件",
+    "path": "/api/projects/ad21db41-987e-4a10-920f-8959f9c92eb0/files/297bc7c7-a1a0-44f9-be30-23ddf4125646",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户任务文件",
+    "path": "/api/projects/ad21db41-987e-4a10-920f-8959f9c92eb0/files/297bc7c7-a1a0-44f9-be30-23ddf4125646/history",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户任务文件",
+    "path": "/api/projects/ad21db41-987e-4a10-920f-8959f9c92eb0/files/297bc7c7-a1a0-44f9-be30-23ddf4125646/download",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户任务修改edit",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/files/297bc7c7-a1a0-44f9-be30-23ddf4125646",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户任务修改rename",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/files/297bc7c7-a1a0-44f9-be30-23ddf4125646",
+    "method": "PATCH",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户任务修改delete",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/files/297bc7c7-a1a0-44f9-be30-23ddf4125646",
+    "method": "DELETE",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户任务修改restore",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/files/297bc7c7-a1a0-44f9-be30-23ddf4125646",
+    "method": "POST",
+    "expected": 409,
+    "actual": 409,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户上下文",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/stages/tickets/sessions/5901bea4-a3a9-4851-8734-3924d901eda2/context",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户上下文会话入口",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/sessions/5901bea4-a3a9-4851-8734-3924d901eda2/context",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户上下文",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/stages/tickets/sessions/5901bea4-a3a9-4851-8734-3924d901eda2/context",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户上下文会话入口",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/sessions/5901bea4-a3a9-4851-8734-3924d901eda2/context",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户上下文",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/stages/tickets/sessions/5901bea4-a3a9-4851-8734-3924d901eda2/context",
+    "method": "DELETE",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户上下文会话入口",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/sessions/5901bea4-a3a9-4851-8734-3924d901eda2/context",
+    "method": "DELETE",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户候选",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/sessions/5901bea4-a3a9-4851-8734-3924d901eda2/task-candidates/72097905-15d0-4f4e-b98e-c5833b6deb75",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户候选",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/sessions/5901bea4-a3a9-4851-8734-3924d901eda2/task-candidates/72097905-15d0-4f4e-b98e-c5833b6deb75",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户候选",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/sessions/5901bea4-a3a9-4851-8734-3924d901eda2/task-candidates/72097905-15d0-4f4e-b98e-c5833b6deb75",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户手动候选",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/sessions/5901bea4-a3a9-4851-8734-3924d901eda2/task-candidates",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户手动候选",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/sessions/5901bea4-a3a9-4851-8734-3924d901eda2/task-candidates",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户文件夹撤回",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/task-folder",
+    "method": "PATCH",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨用户错项目文件夹创建",
+    "path": "/api/iterations/44f59b59-8a35-44bd-918d-5348a0807d0b/task-folder",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目错配手动候选",
+    "path": "/api/iterations/92d9115c-f86a-477e-bff6-37e0a8acd7f2/sessions/5901bea4-a3a9-4851-8734-3924d901eda2/task-candidates",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "跨项目错配手动候选",
+    "path": "/api/iterations/92d9115c-f86a-477e-bff6-37e0a8acd7f2/sessions/5901bea4-a3a9-4851-8734-3924d901eda2/task-candidates",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "label": "每迭代至多一个任务文件夹",
+    "path": "/api/iterations/beef12ac-6b9d-4147-ac28-68583fde3bcc/task-folder",
+    "method": "POST",
+    "expected": 409,
+    "actual": 409,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "普通单文件3MiB限制",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/files/3b3c3e38-18a5-4424-9324-75ccbcf848c9",
+    "method": "POST",
+    "expected": 413,
+    "actual": 413,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "任务单文件3MiB限制",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/files/6655eb66-7434-424e-89df-6883bbcef909",
+    "method": "POST",
+    "expected": 413,
+    "actual": 413,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "所属用户也不能修改系统序号",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/files/6655eb66-7434-424e-89df-6883bbcef909",
+    "method": "PATCH",
+    "expected": 400,
+    "actual": 400,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "消耗旧集合后禁止重做",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/task-folder",
+    "method": "PATCH",
+    "expected": 409,
+    "actual": 409,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨迭代edit",
+    "path": "/api/iterations/9489d03b-4094-4670-8c69-3f534bfb9f70/files/6655eb66-7434-424e-89df-6883bbcef909",
+    "method": "POST",
+    "expected": 403,
+    "actual": 403,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨迭代rename",
+    "path": "/api/iterations/9489d03b-4094-4670-8c69-3f534bfb9f70/files/6655eb66-7434-424e-89df-6883bbcef909",
+    "method": "PATCH",
+    "expected": 403,
+    "actual": 403,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨迭代delete",
+    "path": "/api/iterations/9489d03b-4094-4670-8c69-3f534bfb9f70/files/6655eb66-7434-424e-89df-6883bbcef909",
+    "method": "DELETE",
+    "expected": 403,
+    "actual": 403,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨迭代restore",
+    "path": "/api/iterations/9489d03b-4094-4670-8c69-3f534bfb9f70/files/6655eb66-7434-424e-89df-6883bbcef909",
+    "method": "POST",
+    "expected": 409,
+    "actual": 409,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨迭代文件夹撤回",
+    "path": "/api/iterations/9489d03b-4094-4670-8c69-3f534bfb9f70/task-folder",
+    "method": "PATCH",
+    "expected": 403,
+    "actual": 403,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "错迭代候选",
+    "path": "/api/iterations/9489d03b-4094-4670-8c69-3f534bfb9f70/sessions/4866cb26-c23e-4cfe-abee-a66ae70874e9/task-candidates/f422e727-1097-4f02-93fc-1ac7a9876218",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "错迭代候选",
+    "path": "/api/iterations/9489d03b-4094-4670-8c69-3f534bfb9f70/sessions/4866cb26-c23e-4cfe-abee-a66ae70874e9/task-candidates/f422e727-1097-4f02-93fc-1ac7a9876218",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "错迭代候选",
+    "path": "/api/iterations/9489d03b-4094-4670-8c69-3f534bfb9f70/sessions/4866cb26-c23e-4cfe-abee-a66ae70874e9/task-candidates/f422e727-1097-4f02-93fc-1ac7a9876218",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "错迭代手动候选",
+    "path": "/api/iterations/9489d03b-4094-4670-8c69-3f534bfb9f70/sessions/4866cb26-c23e-4cfe-abee-a66ae70874e9/task-candidates",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "错迭代手动候选",
+    "path": "/api/iterations/9489d03b-4094-4670-8c69-3f534bfb9f70/sessions/4866cb26-c23e-4cfe-abee-a66ae70874e9/task-candidates",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "旧文件入口不能绕过任务归属",
+    "path": "/api/projects/7d822515-c3ea-4af2-8424-fb96d29ce6bc/files/6655eb66-7434-424e-89df-6883bbcef909",
+    "method": "PATCH",
+    "expected": 403,
+    "actual": 403,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "旧文件入口不能绕过任务归属",
+    "path": "/api/projects/7d822515-c3ea-4af2-8424-fb96d29ce6bc/files/6655eb66-7434-424e-89df-6883bbcef909",
+    "method": "DELETE",
+    "expected": 403,
+    "actual": 403,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "旧Agent文件入口",
+    "path": "/api/projects/7d822515-c3ea-4af2-8424-fb96d29ce6bc/files",
+    "method": "POST",
+    "expected": 409,
+    "actual": 409,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "旧ticket-set入口",
+    "path": "/api/projects/7d822515-c3ea-4af2-8424-fb96d29ce6bc/ticket-sets",
+    "method": "POST",
+    "expected": 409,
+    "actual": 409,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目普通文件正文来源下载",
+    "path": "/api/projects/cb855b96-f535-4d91-8b4f-cf9d3f0fc538/files/3b3c3e38-18a5-4424-9324-75ccbcf848c9",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目普通文件正文来源下载",
+    "path": "/api/projects/cb855b96-f535-4d91-8b4f-cf9d3f0fc538/files/3b3c3e38-18a5-4424-9324-75ccbcf848c9/history",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目普通文件正文来源下载",
+    "path": "/api/projects/cb855b96-f535-4d91-8b4f-cf9d3f0fc538/files/3b3c3e38-18a5-4424-9324-75ccbcf848c9/download",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目HTML快照",
+    "path": "/api/projects/cb855b96-f535-4d91-8b4f-cf9d3f0fc538/snapshots/8334a9c0-341e-4dfe-b733-4c73ab3d241e",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目HTML快照",
+    "path": "/api/projects/cb855b96-f535-4d91-8b4f-cf9d3f0fc538/snapshots/8334a9c0-341e-4dfe-b733-4c73ab3d241e?mode=view",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目HTML快照",
+    "path": "/api/projects/cb855b96-f535-4d91-8b4f-cf9d3f0fc538/snapshots/8334a9c0-341e-4dfe-b733-4c73ab3d241e?mode=download",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目普通文件改写",
+    "path": "/api/iterations/5c63ba8e-3f90-4d2e-a18a-249e9a60def7/files/3b3c3e38-18a5-4424-9324-75ccbcf848c9",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目任务文件",
+    "path": "/api/projects/cb855b96-f535-4d91-8b4f-cf9d3f0fc538/files/6655eb66-7434-424e-89df-6883bbcef909",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目任务文件",
+    "path": "/api/projects/cb855b96-f535-4d91-8b4f-cf9d3f0fc538/files/6655eb66-7434-424e-89df-6883bbcef909/history",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目任务文件",
+    "path": "/api/projects/cb855b96-f535-4d91-8b4f-cf9d3f0fc538/files/6655eb66-7434-424e-89df-6883bbcef909/download",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目任务修改edit",
+    "path": "/api/iterations/5c63ba8e-3f90-4d2e-a18a-249e9a60def7/files/6655eb66-7434-424e-89df-6883bbcef909",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目任务修改rename",
+    "path": "/api/iterations/5c63ba8e-3f90-4d2e-a18a-249e9a60def7/files/6655eb66-7434-424e-89df-6883bbcef909",
+    "method": "PATCH",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目任务修改delete",
+    "path": "/api/iterations/5c63ba8e-3f90-4d2e-a18a-249e9a60def7/files/6655eb66-7434-424e-89df-6883bbcef909",
+    "method": "DELETE",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目任务修改restore",
+    "path": "/api/iterations/5c63ba8e-3f90-4d2e-a18a-249e9a60def7/files/6655eb66-7434-424e-89df-6883bbcef909",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目上下文",
+    "path": "/api/iterations/5c63ba8e-3f90-4d2e-a18a-249e9a60def7/stages/tickets/sessions/8b7cfc34-fb9c-4d39-91a6-0079b2c28161/context",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目上下文会话入口",
+    "path": "/api/iterations/5c63ba8e-3f90-4d2e-a18a-249e9a60def7/sessions/8b7cfc34-fb9c-4d39-91a6-0079b2c28161/context",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目上下文",
+    "path": "/api/iterations/5c63ba8e-3f90-4d2e-a18a-249e9a60def7/stages/tickets/sessions/8b7cfc34-fb9c-4d39-91a6-0079b2c28161/context",
+    "method": "DELETE",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目上下文会话入口",
+    "path": "/api/iterations/5c63ba8e-3f90-4d2e-a18a-249e9a60def7/sessions/8b7cfc34-fb9c-4d39-91a6-0079b2c28161/context",
+    "method": "DELETE",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目候选",
+    "path": "/api/iterations/5c63ba8e-3f90-4d2e-a18a-249e9a60def7/sessions/8b7cfc34-fb9c-4d39-91a6-0079b2c28161/task-candidates/f422e727-1097-4f02-93fc-1ac7a9876218",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目候选",
+    "path": "/api/iterations/5c63ba8e-3f90-4d2e-a18a-249e9a60def7/sessions/8b7cfc34-fb9c-4d39-91a6-0079b2c28161/task-candidates/f422e727-1097-4f02-93fc-1ac7a9876218",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目候选",
+    "path": "/api/iterations/5c63ba8e-3f90-4d2e-a18a-249e9a60def7/sessions/8b7cfc34-fb9c-4d39-91a6-0079b2c28161/task-candidates/f422e727-1097-4f02-93fc-1ac7a9876218",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目文件夹撤回",
+    "path": "/api/iterations/5c63ba8e-3f90-4d2e-a18a-249e9a60def7/task-folder",
+    "method": "PATCH",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目错项目文件夹创建",
+    "path": "/api/iterations/5c63ba8e-3f90-4d2e-a18a-249e9a60def7/task-folder",
+    "method": "POST",
+    "expected": 409,
+    "actual": 409,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户普通文件正文来源下载",
+    "path": "/api/projects/7d822515-c3ea-4af2-8424-fb96d29ce6bc/files/3b3c3e38-18a5-4424-9324-75ccbcf848c9",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户普通文件正文来源下载",
+    "path": "/api/projects/7d822515-c3ea-4af2-8424-fb96d29ce6bc/files/3b3c3e38-18a5-4424-9324-75ccbcf848c9/history",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户普通文件正文来源下载",
+    "path": "/api/projects/7d822515-c3ea-4af2-8424-fb96d29ce6bc/files/3b3c3e38-18a5-4424-9324-75ccbcf848c9/download",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户HTML快照",
+    "path": "/api/projects/7d822515-c3ea-4af2-8424-fb96d29ce6bc/snapshots/8334a9c0-341e-4dfe-b733-4c73ab3d241e",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户HTML快照",
+    "path": "/api/projects/7d822515-c3ea-4af2-8424-fb96d29ce6bc/snapshots/8334a9c0-341e-4dfe-b733-4c73ab3d241e?mode=view",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户HTML快照",
+    "path": "/api/projects/7d822515-c3ea-4af2-8424-fb96d29ce6bc/snapshots/8334a9c0-341e-4dfe-b733-4c73ab3d241e?mode=download",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户普通文件改写",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/files/3b3c3e38-18a5-4424-9324-75ccbcf848c9",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户过程或项目删除",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44",
+    "method": "DELETE",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户过程或项目删除",
+    "path": "/api/projects/7d822515-c3ea-4af2-8424-fb96d29ce6bc",
+    "method": "DELETE",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户过程或项目删除",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/sessions/4866cb26-c23e-4cfe-abee-a66ae70874e9",
+    "method": "DELETE",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户",
+    "path": "/api/projects/7d822515-c3ea-4af2-8424-fb96d29ce6bc/task-folders",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户",
+    "path": "/api/projects/7d822515-c3ea-4af2-8424-fb96d29ce6bc/files",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/workbench",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户任务文件",
+    "path": "/api/projects/7d822515-c3ea-4af2-8424-fb96d29ce6bc/files/6655eb66-7434-424e-89df-6883bbcef909",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户任务文件",
+    "path": "/api/projects/7d822515-c3ea-4af2-8424-fb96d29ce6bc/files/6655eb66-7434-424e-89df-6883bbcef909/history",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户任务文件",
+    "path": "/api/projects/7d822515-c3ea-4af2-8424-fb96d29ce6bc/files/6655eb66-7434-424e-89df-6883bbcef909/download",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户任务修改edit",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/files/6655eb66-7434-424e-89df-6883bbcef909",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户任务修改rename",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/files/6655eb66-7434-424e-89df-6883bbcef909",
+    "method": "PATCH",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户任务修改delete",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/files/6655eb66-7434-424e-89df-6883bbcef909",
+    "method": "DELETE",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户任务修改restore",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/files/6655eb66-7434-424e-89df-6883bbcef909",
+    "method": "POST",
+    "expected": 409,
+    "actual": 409,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户上下文",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/stages/tickets/sessions/4866cb26-c23e-4cfe-abee-a66ae70874e9/context",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户上下文会话入口",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/sessions/4866cb26-c23e-4cfe-abee-a66ae70874e9/context",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户上下文",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/stages/tickets/sessions/4866cb26-c23e-4cfe-abee-a66ae70874e9/context",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户上下文会话入口",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/sessions/4866cb26-c23e-4cfe-abee-a66ae70874e9/context",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户上下文",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/stages/tickets/sessions/4866cb26-c23e-4cfe-abee-a66ae70874e9/context",
+    "method": "DELETE",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户上下文会话入口",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/sessions/4866cb26-c23e-4cfe-abee-a66ae70874e9/context",
+    "method": "DELETE",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户候选",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/sessions/4866cb26-c23e-4cfe-abee-a66ae70874e9/task-candidates/f422e727-1097-4f02-93fc-1ac7a9876218",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户候选",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/sessions/4866cb26-c23e-4cfe-abee-a66ae70874e9/task-candidates/f422e727-1097-4f02-93fc-1ac7a9876218",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户候选",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/sessions/4866cb26-c23e-4cfe-abee-a66ae70874e9/task-candidates/f422e727-1097-4f02-93fc-1ac7a9876218",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户手动候选",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/sessions/4866cb26-c23e-4cfe-abee-a66ae70874e9/task-candidates",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户手动候选",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/sessions/4866cb26-c23e-4cfe-abee-a66ae70874e9/task-candidates",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户文件夹撤回",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/task-folder",
+    "method": "PATCH",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨用户错项目文件夹创建",
+    "path": "/api/iterations/b9982945-92ca-40dc-b556-099a0d92ca44/task-folder",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目错配手动候选",
+    "path": "/api/iterations/5c63ba8e-3f90-4d2e-a18a-249e9a60def7/sessions/4866cb26-c23e-4cfe-abee-a66ae70874e9/task-candidates",
+    "method": "GET",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "跨项目错配手动候选",
+    "path": "/api/iterations/5c63ba8e-3f90-4d2e-a18a-249e9a60def7/sessions/4866cb26-c23e-4cfe-abee-a66ae70874e9/task-candidates",
+    "method": "POST",
+    "expected": 404,
+    "actual": 404,
+    "leaked": false
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "label": "每迭代至多一个任务文件夹",
+    "path": "/api/iterations/9489d03b-4094-4670-8c69-3f534bfb9f70/task-folder",
+    "method": "POST",
+    "expected": 409,
+    "actual": 409,
+    "leaked": false
+  }
+]

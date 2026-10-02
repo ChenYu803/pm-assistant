@@ -1,0 +1,9 @@
+
+D:\Project\4.Project\Agent2\scripts\verify-v141-release-gate-scenario.mjs
+  391:39  warning  'firstRoute' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  857:11  warning  'snapshotPath' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Project\4.Project\Agent2\src\components\ChatArea.tsx
+  875:6  warning  React Hook useEffect has missing dependencies: 'onTabFreezeStateChange' and 'onTabVersionChange'. Either include them or remove the dependency array. If 'onTabVersionChange' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
+
+✖ 3 problems (0 errors, 3 warnings)

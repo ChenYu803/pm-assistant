@@ -1,0 +1,6929 @@
+[
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "empty-navigation",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 1344,
+        "right": 1416,
+        "top": 13.5,
+        "bottom": 57.5
+      },
+      {
+        "label": "01需求分析未开始",
+        "left": 25,
+        "right": 372.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "02原型设计未开始",
+        "left": 372.5,
+        "right": 720,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "03PRD未开始",
+        "left": 720,
+        "right": 1067.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "04任务拆分未开始",
+        "left": 1067.5,
+        "right": 1415,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "新建会话",
+        "left": 207,
+        "right": 245,
+        "top": 169,
+        "bottom": 207
+      },
+      {
+        "label": "开始本阶段工作",
+        "left": 434,
+        "right": 551,
+        "top": 482.34375,
+        "bottom": 522.34375
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 285,
+        "right": 400.484375,
+        "top": 705,
+        "bottom": 741
+      },
+      {
+        "label": "输入消息",
+        "left": 285,
+        "right": 1043,
+        "top": 745,
+        "bottom": 821
+      },
+      {
+        "label": "发送消息",
+        "left": 947,
+        "right": 1043,
+        "top": 829,
+        "bottom": 867
+      },
+      {
+        "label": "关闭文件区",
+        "left": 1363,
+        "right": 1399,
+        "top": 169,
+        "bottom": 205
+      },
+      {
+        "label": "项目文件树0",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "当前上下文0",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "本轮写入",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 271,
+        "bottom": 315
+      },
+      {
+        "label": "为本迭代建立任务文件夹",
+        "left": 1101,
+        "right": 1255,
+        "top": 716.390625,
+        "bottom": 752.390625
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "analysis-create-candidate",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 1344,
+        "right": 1416,
+        "top": 13.5,
+        "bottom": 57.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 25,
+        "right": 372.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "02原型设计未开始",
+        "left": 372.5,
+        "right": 720,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "03PRD未开始",
+        "left": 720,
+        "right": 1067.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "04任务拆分未开始",
+        "left": 1067.5,
+        "right": 1415,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "新建会话",
+        "left": 207,
+        "right": 245,
+        "top": 169,
+        "bottom": 207
+      },
+      {
+        "label": "生成需求分析 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_初始空上下文10/2 12:48:17",
+        "left": 37,
+        "right": 201,
+        "top": 229,
+        "bottom": 297
+      },
+      {
+        "label": "删除会话：生成需求分析 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_初始空上下文",
+        "left": 201,
+        "right": 245,
+        "top": 241,
+        "bottom": 285
+      },
+      {
+        "label": "完成本阶段",
+        "left": 959,
+        "right": 1043,
+        "top": 165.5,
+        "bottom": 203.5
+      },
+      {
+        "label": null,
+        "left": 308,
+        "right": 887,
+        "top": 341.90625,
+        "bottom": 381.90625
+      },
+      {
+        "label": "放弃候选",
+        "left": 723,
+        "right": 801,
+        "top": 526.1875,
+        "bottom": 566.1875
+      },
+      {
+        "label": "确认创建",
+        "left": 809,
+        "right": 887,
+        "top": 526.1875,
+        "bottom": 566.1875
+      },
+      {
+        "label": "收起 Markdown 预览",
+        "left": 308,
+        "right": 433.15625,
+        "top": 571.1875,
+        "bottom": 607.1875
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 285,
+        "right": 400.484375,
+        "top": 705,
+        "bottom": 741
+      },
+      {
+        "label": "输入消息",
+        "left": 285,
+        "right": 1043,
+        "top": 745,
+        "bottom": 821
+      },
+      {
+        "label": "发送消息",
+        "left": 947,
+        "right": 1043,
+        "top": 829,
+        "bottom": 867
+      },
+      {
+        "label": "关闭文件区",
+        "left": 1363,
+        "right": 1399,
+        "top": 169,
+        "bottom": 205
+      },
+      {
+        "label": "项目文件树0",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "当前上下文0",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "本轮写入",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 271,
+        "bottom": 315
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "create-failure-retry",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 1344,
+        "right": 1416,
+        "top": 13.5,
+        "bottom": 57.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 25,
+        "right": 372.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "02原型设计未开始",
+        "left": 372.5,
+        "right": 720,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "03PRD未开始",
+        "left": 720,
+        "right": 1067.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "04任务拆分未开始",
+        "left": 1067.5,
+        "right": 1415,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "新建会话",
+        "left": 207,
+        "right": 245,
+        "top": 169,
+        "bottom": 207
+      },
+      {
+        "label": "生成需求分析 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_初始空上下文10/2 12:48:17",
+        "left": 37,
+        "right": 201,
+        "top": 229,
+        "bottom": 297
+      },
+      {
+        "label": "删除会话：生成需求分析 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_初始空上下文",
+        "left": 201,
+        "right": 245,
+        "top": 241,
+        "bottom": 285
+      },
+      {
+        "label": "完成本阶段",
+        "left": 959,
+        "right": 1043,
+        "top": 165.5,
+        "bottom": 203.5
+      },
+      {
+        "label": null,
+        "left": 308,
+        "right": 887,
+        "top": 341.90625,
+        "bottom": 381.90625
+      },
+      {
+        "label": "放弃候选",
+        "left": 723,
+        "right": 801,
+        "top": 556.578125,
+        "bottom": 596.578125
+      },
+      {
+        "label": "确认创建",
+        "left": 809,
+        "right": 887,
+        "top": 556.578125,
+        "bottom": 596.578125
+      },
+      {
+        "label": "收起 Markdown 预览",
+        "left": 308,
+        "right": 433.15625,
+        "top": 601.578125,
+        "bottom": 637.578125
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 285,
+        "right": 400.484375,
+        "top": 705,
+        "bottom": 741
+      },
+      {
+        "label": "输入消息",
+        "left": 285,
+        "right": 1043,
+        "top": 745,
+        "bottom": 821
+      },
+      {
+        "label": "发送消息",
+        "left": 947,
+        "right": 1043,
+        "top": 829,
+        "bottom": 867
+      },
+      {
+        "label": "关闭文件区",
+        "left": 1363,
+        "right": 1399,
+        "top": 169,
+        "bottom": 205
+      },
+      {
+        "label": "项目文件树0",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "当前上下文0",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "本轮写入",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 271,
+        "bottom": 315
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "generating-delete-blocked",
+    "controls": [
+      {
+        "label": "查看会话并停止生成",
+        "left": 463,
+        "right": 617,
+        "top": 569.671875,
+        "bottom": 613.671875
+      },
+      {
+        "label": "取消",
+        "left": 792,
+        "right": 854,
+        "top": 647.671875,
+        "bottom": 690.671875
+      },
+      {
+        "label": "确认删除会话",
+        "left": 863,
+        "right": 977,
+        "top": 647.671875,
+        "bottom": 690.671875
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "snapshot-failure-retry",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 1344,
+        "right": 1416,
+        "top": 13.5,
+        "bottom": 57.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 25,
+        "right": 372.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 372.5,
+        "right": 720,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "03PRD未开始",
+        "left": 720,
+        "right": 1067.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "04任务拆分未开始",
+        "left": 1067.5,
+        "right": 1415,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "关闭",
+        "left": 1379,
+        "right": 1403,
+        "top": 162,
+        "bottom": 198
+      },
+      {
+        "label": "新建会话",
+        "left": 207,
+        "right": 245,
+        "top": 233,
+        "bottom": 271
+      },
+      {
+        "label": "新会话尚无消息 · 10/2 12:48:25",
+        "left": 37,
+        "right": 201,
+        "top": 293,
+        "bottom": 361
+      },
+      {
+        "label": "删除会话：新会话",
+        "left": 201,
+        "right": 245,
+        "top": 305,
+        "bottom": 349
+      },
+      {
+        "label": "完成本阶段",
+        "left": 959,
+        "right": 1043,
+        "top": 229.5,
+        "bottom": 267.5
+      },
+      {
+        "label": "复制消息",
+        "left": 965,
+        "right": 1001,
+        "top": 411.375,
+        "bottom": 447.375
+      },
+      {
+        "label": "修改并重新发送",
+        "left": 1005,
+        "right": 1041,
+        "top": 411.375,
+        "bottom": 447.375
+      },
+      {
+        "label": "复制消息",
+        "left": 287,
+        "right": 323,
+        "top": 530.125,
+        "bottom": 566.125
+      },
+      {
+        "label": "重试生成",
+        "left": 327,
+        "right": 363,
+        "top": 530.125,
+        "bottom": 566.125
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 285,
+        "right": 400.484375,
+        "top": 705,
+        "bottom": 741
+      },
+      {
+        "label": "输入消息",
+        "left": 285,
+        "right": 1043,
+        "top": 745,
+        "bottom": 821
+      },
+      {
+        "label": "发送消息",
+        "left": 947,
+        "right": 1043,
+        "top": 829,
+        "bottom": 867
+      },
+      {
+        "label": "关闭文件区",
+        "left": 1363,
+        "right": 1399,
+        "top": 233,
+        "bottom": 269
+      },
+      {
+        "label": "项目文件树1",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 291,
+        "bottom": 335
+      },
+      {
+        "label": "当前上下文0",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 291,
+        "bottom": 335
+      },
+      {
+        "label": "本轮写入",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 335,
+        "bottom": 379
+      },
+      {
+        "label": "HTML 快照",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 335,
+        "bottom": 379
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "prototype-create-candidate",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 1344,
+        "right": 1416,
+        "top": 13.5,
+        "bottom": 57.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 25,
+        "right": 372.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 372.5,
+        "right": 720,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "03PRD未开始",
+        "left": 720,
+        "right": 1067.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "04任务拆分未开始",
+        "left": 1067.5,
+        "right": 1415,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "新建会话",
+        "left": 207,
+        "right": 245,
+        "top": 169,
+        "bottom": 207
+      },
+      {
+        "label": "同时生成结构化原型 Markdown 和 HTML 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_HTML快照故障10/2 12:48:25",
+        "left": 37,
+        "right": 201,
+        "top": 229,
+        "bottom": 297
+      },
+      {
+        "label": "删除会话：同时生成结构化原型 Markdown 和 HTML 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_HTML快照故障",
+        "left": 201,
+        "right": 245,
+        "top": 241,
+        "bottom": 285
+      },
+      {
+        "label": "完成本阶段",
+        "left": 959,
+        "right": 1043,
+        "top": 165.5,
+        "bottom": 203.5
+      },
+      {
+        "label": null,
+        "left": 308,
+        "right": 887,
+        "top": 297.71875,
+        "bottom": 337.71875
+      },
+      {
+        "label": "放弃候选",
+        "left": 723,
+        "right": 801,
+        "top": 482,
+        "bottom": 522
+      },
+      {
+        "label": "确认创建",
+        "left": 809,
+        "right": 887,
+        "top": 482,
+        "bottom": 522
+      },
+      {
+        "label": "收起 Markdown 预览",
+        "left": 308,
+        "right": 433.15625,
+        "top": 527,
+        "bottom": 563
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 285,
+        "right": 400.484375,
+        "top": 705,
+        "bottom": 741
+      },
+      {
+        "label": "输入消息",
+        "left": 285,
+        "right": 1043,
+        "top": 745,
+        "bottom": 821
+      },
+      {
+        "label": "发送消息",
+        "left": 947,
+        "right": 1043,
+        "top": 829,
+        "bottom": 867
+      },
+      {
+        "label": "关闭文件区",
+        "left": 1363,
+        "right": 1399,
+        "top": 169,
+        "bottom": 205
+      },
+      {
+        "label": "项目文件树1",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "当前上下文0",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "本轮写入",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 271,
+        "bottom": 315
+      },
+      {
+        "label": "HTML 快照",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 271,
+        "bottom": 315
+      },
+      {
+        "label": "HTML 快照 · 第 1 版2026/10/2 12:48:25",
+        "left": 1089,
+        "right": 1234,
+        "top": 402.78125,
+        "bottom": 470.78125
+      },
+      {
+        "label": "新窗口打开",
+        "left": 1248.9375,
+        "right": 1313.9375,
+        "top": 494.28125,
+        "bottom": 526.28125
+      },
+      {
+        "label": "下载 HTML",
+        "left": 1321.9375,
+        "right": 1388,
+        "top": 494.28125,
+        "bottom": 526.28125
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "prd-create-candidate",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 1344,
+        "right": 1416,
+        "top": 13.5,
+        "bottom": 57.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 25,
+        "right": 372.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 372.5,
+        "right": 720,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 720,
+        "right": 1067.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "04任务拆分未开始",
+        "left": 1067.5,
+        "right": 1415,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "新建会话",
+        "left": 207,
+        "right": 245,
+        "top": 169,
+        "bottom": 207
+      },
+      {
+        "label": "详细撰写六章 PRD 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_PRD候选10/2 12:48:28",
+        "left": 37,
+        "right": 201,
+        "top": 229,
+        "bottom": 297
+      },
+      {
+        "label": "删除会话：详细撰写六章 PRD 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_PRD候选",
+        "left": 201,
+        "right": 245,
+        "top": 241,
+        "bottom": 285
+      },
+      {
+        "label": "完成本阶段",
+        "left": 959,
+        "right": 1043,
+        "top": 165.5,
+        "bottom": 203.5
+      },
+      {
+        "label": null,
+        "left": 308,
+        "right": 887,
+        "top": 341.96875,
+        "bottom": 381.96875
+      },
+      {
+        "label": "放弃候选",
+        "left": 723,
+        "right": 801,
+        "top": 526.25,
+        "bottom": 566.25
+      },
+      {
+        "label": "确认创建",
+        "left": 809,
+        "right": 887,
+        "top": 526.25,
+        "bottom": 566.25
+      },
+      {
+        "label": "收起 Markdown 预览",
+        "left": 308,
+        "right": 433.15625,
+        "top": 571.25,
+        "bottom": 607.25
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 285,
+        "right": 400.484375,
+        "top": 705,
+        "bottom": 741
+      },
+      {
+        "label": "输入消息",
+        "left": 285,
+        "right": 1043,
+        "top": 745,
+        "bottom": 821
+      },
+      {
+        "label": "发送消息",
+        "left": 947,
+        "right": 1043,
+        "top": 829,
+        "bottom": 867
+      },
+      {
+        "label": "关闭文件区",
+        "left": 1363,
+        "right": 1399,
+        "top": 169,
+        "bottom": 205
+      },
+      {
+        "label": "项目文件树2",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "当前上下文0",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "本轮写入",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 271,
+        "bottom": 315
+      },
+      {
+        "label": "需求分析-专项1440.md最近写入：迭代 01 · 不可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 423.890625,
+        "bottom": 480.890625
+      },
+      {
+        "label": "加入当前上下文：需求分析-专项1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 434.390625,
+        "bottom": 470.390625
+      },
+      {
+        "label": "原型-专项1440.md最近写入：迭代 01 · 不可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 542.890625,
+        "bottom": 599.890625
+      },
+      {
+        "label": "加入当前上下文：原型-专项1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 553.390625,
+        "bottom": 589.390625
+      },
+      {
+        "label": "为本迭代建立任务文件夹",
+        "left": 1101,
+        "right": 1255,
+        "top": 764.390625,
+        "bottom": 800.390625
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "source-message-replacement-retention",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 1344,
+        "right": 1416,
+        "top": 13.5,
+        "bottom": 57.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 25,
+        "right": 372.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 372.5,
+        "right": 720,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 720,
+        "right": 1067.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "04任务拆分未开始",
+        "left": 1067.5,
+        "right": 1415,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "新建会话",
+        "left": 207,
+        "right": 245,
+        "top": 169,
+        "bottom": 207
+      },
+      {
+        "label": "详细撰写六章 PRD 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_PRD候选10/2 12:48:33",
+        "left": 37,
+        "right": 201,
+        "top": 229,
+        "bottom": 297
+      },
+      {
+        "label": "删除会话：详细撰写六章 PRD 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_PRD候选",
+        "left": 201,
+        "right": 245,
+        "top": 241,
+        "bottom": 285
+      },
+      {
+        "label": "完成本阶段",
+        "left": 959,
+        "right": 1043,
+        "top": 165.5,
+        "bottom": 203.5
+      },
+      {
+        "label": null,
+        "left": 308,
+        "right": 887,
+        "top": 341.96875,
+        "bottom": 381.96875
+      },
+      {
+        "label": "放弃候选",
+        "left": 723,
+        "right": 801,
+        "top": 526.25,
+        "bottom": 566.25
+      },
+      {
+        "label": "确认创建",
+        "left": 809,
+        "right": 887,
+        "top": 526.25,
+        "bottom": 566.25
+      },
+      {
+        "label": "预览完整 Markdown",
+        "left": 308,
+        "right": 429.578125,
+        "top": 571.25,
+        "bottom": 607.25
+      },
+      {
+        "label": "复制消息",
+        "left": 287,
+        "right": 323,
+        "top": 636.25,
+        "bottom": 672.25
+      },
+      {
+        "label": "重新生成",
+        "left": 327,
+        "right": 363,
+        "top": 636.25,
+        "bottom": 672.25
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 285,
+        "right": 400.484375,
+        "top": 705,
+        "bottom": 741
+      },
+      {
+        "label": "输入消息",
+        "left": 285,
+        "right": 1043,
+        "top": 745,
+        "bottom": 821
+      },
+      {
+        "label": "发送消息",
+        "left": 947,
+        "right": 1043,
+        "top": 829,
+        "bottom": 867
+      },
+      {
+        "label": "关闭文件区",
+        "left": 1363,
+        "right": 1399,
+        "top": 169,
+        "bottom": 205
+      },
+      {
+        "label": "项目文件树3",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "当前上下文0",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "本轮写入",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 271,
+        "bottom": 315
+      },
+      {
+        "label": "需求分析-专项1440.md最近写入：迭代 01 · 不可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 423.890625,
+        "bottom": 480.890625
+      },
+      {
+        "label": "加入当前上下文：需求分析-专项1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 434.390625,
+        "bottom": 470.390625
+      },
+      {
+        "label": "原型-专项1440.md最近写入：迭代 01 · 不可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 542.890625,
+        "bottom": 599.890625
+      },
+      {
+        "label": "加入当前上下文：原型-专项1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 553.390625,
+        "bottom": 589.390625
+      },
+      {
+        "label": "PRD-专项1440.md最近写入：迭代 01 · 可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 661.890625,
+        "bottom": 718.890625
+      },
+      {
+        "label": "加入当前上下文：PRD-专项1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 672.390625,
+        "bottom": 708.390625
+      },
+      {
+        "label": "为本迭代建立任务文件夹",
+        "left": 1101,
+        "right": 1255,
+        "top": 788.390625,
+        "bottom": 824.390625
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "loaded-context",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 1344,
+        "right": 1416,
+        "top": 13.5,
+        "bottom": 57.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 25,
+        "right": 372.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 372.5,
+        "right": 720,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 720,
+        "right": 1067.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "04任务拆分未开始",
+        "left": 1067.5,
+        "right": 1415,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "新建会话",
+        "left": 207,
+        "right": 245,
+        "top": 169,
+        "bottom": 207
+      },
+      {
+        "label": "新会话尚无消息 · 10/2 12:48:22",
+        "left": 37,
+        "right": 201,
+        "top": 229,
+        "bottom": 297
+      },
+      {
+        "label": "删除会话：新会话",
+        "left": 201,
+        "right": 245,
+        "top": 241,
+        "bottom": 285
+      },
+      {
+        "label": "生成需求分析 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_初始空上下文10/2 12:48:35",
+        "left": 37,
+        "right": 201,
+        "top": 301,
+        "bottom": 369
+      },
+      {
+        "label": "删除会话：生成需求分析 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_初始空上下文",
+        "left": 201,
+        "right": 245,
+        "top": 313,
+        "bottom": 357
+      },
+      {
+        "label": "完成本阶段",
+        "left": 959,
+        "right": 1043,
+        "top": 165.5,
+        "bottom": 203.5
+      },
+      {
+        "label": null,
+        "left": 308,
+        "right": 887,
+        "top": 342,
+        "bottom": 382
+      },
+      {
+        "label": "放弃候选",
+        "left": 723,
+        "right": 801,
+        "top": 526.28125,
+        "bottom": 566.28125
+      },
+      {
+        "label": "确认创建",
+        "left": 809,
+        "right": 887,
+        "top": 526.28125,
+        "bottom": 566.28125
+      },
+      {
+        "label": "预览完整 Markdown",
+        "left": 308,
+        "right": 429.578125,
+        "top": 571.28125,
+        "bottom": 607.28125
+      },
+      {
+        "label": "复制消息",
+        "left": 287,
+        "right": 323,
+        "top": 636.28125,
+        "bottom": 672.28125
+      },
+      {
+        "label": "重新生成",
+        "left": 327,
+        "right": 363,
+        "top": 636.28125,
+        "bottom": 672.28125
+      },
+      {
+        "label": "当前上下文 · 1 个文件",
+        "left": 285,
+        "right": 398.640625,
+        "top": 705,
+        "bottom": 741
+      },
+      {
+        "label": "输入消息",
+        "left": 285,
+        "right": 1043,
+        "top": 745,
+        "bottom": 821
+      },
+      {
+        "label": "发送消息",
+        "left": 947,
+        "right": 1043,
+        "top": 829,
+        "bottom": 867
+      },
+      {
+        "label": "关闭文件区",
+        "left": 1363,
+        "right": 1399,
+        "top": 169,
+        "bottom": 205
+      },
+      {
+        "label": "项目文件树3",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "当前上下文1",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "本轮写入",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 271,
+        "bottom": 315
+      },
+      {
+        "label": "从当前上下文移除 需求分析-专项1440.md",
+        "left": 1363,
+        "right": 1397,
+        "top": 404.28125,
+        "bottom": 440.28125
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "analysis-overwrite-candidate",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 1344,
+        "right": 1416,
+        "top": 13.5,
+        "bottom": 57.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 25,
+        "right": 372.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "02原型设计未开始",
+        "left": 372.5,
+        "right": 720,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "03PRD未开始",
+        "left": 720,
+        "right": 1067.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "04任务拆分未开始",
+        "left": 1067.5,
+        "right": 1415,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "新建会话",
+        "left": 207,
+        "right": 245,
+        "top": 169,
+        "bottom": 207
+      },
+      {
+        "label": "生成需求分析 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_跨迭代覆盖候选10/2 12:48:37",
+        "left": 37,
+        "right": 201,
+        "top": 229,
+        "bottom": 297
+      },
+      {
+        "label": "删除会话：生成需求分析 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_跨迭代覆盖候选",
+        "left": 201,
+        "right": 245,
+        "top": 241,
+        "bottom": 285
+      },
+      {
+        "label": "完成本阶段",
+        "left": 959,
+        "right": 1043,
+        "top": 165.5,
+        "bottom": 203.5
+      },
+      {
+        "label": null,
+        "left": 308,
+        "right": 887,
+        "top": 341.90625,
+        "bottom": 381.90625
+      },
+      {
+        "label": "放弃候选",
+        "left": 723,
+        "right": 801,
+        "top": 526.1875,
+        "bottom": 566.1875
+      },
+      {
+        "label": "确认覆盖",
+        "left": 809,
+        "right": 887,
+        "top": 526.1875,
+        "bottom": 566.1875
+      },
+      {
+        "label": "收起 Markdown 预览",
+        "left": 308,
+        "right": 433.15625,
+        "top": 571.1875,
+        "bottom": 607.1875
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 285,
+        "right": 400.484375,
+        "top": 705,
+        "bottom": 741
+      },
+      {
+        "label": "输入消息",
+        "left": 285,
+        "right": 1043,
+        "top": 745,
+        "bottom": 821
+      },
+      {
+        "label": "发送消息",
+        "left": 947,
+        "right": 1043,
+        "top": 829,
+        "bottom": 867
+      },
+      {
+        "label": "关闭文件区",
+        "left": 1363,
+        "right": 1399,
+        "top": 169,
+        "bottom": 205
+      },
+      {
+        "label": "项目文件树3",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "当前上下文0",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "本轮写入",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 271,
+        "bottom": 315
+      },
+      {
+        "label": "需求分析-专项1440.md最近写入：迭代 01 · 可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 423.890625,
+        "bottom": 480.890625
+      },
+      {
+        "label": "加入当前上下文：需求分析-专项1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 434.390625,
+        "bottom": 470.390625
+      },
+      {
+        "label": "原型-专项1440.md最近写入：迭代 01 · 可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 542.890625,
+        "bottom": 599.890625
+      },
+      {
+        "label": "加入当前上下文：原型-专项1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 553.390625,
+        "bottom": 589.390625
+      },
+      {
+        "label": "PRD-专项1440.md最近写入：迭代 01 · 可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 661.890625,
+        "bottom": 718.890625
+      },
+      {
+        "label": "加入当前上下文：PRD-专项1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 672.390625,
+        "bottom": 708.390625
+      },
+      {
+        "label": "为本迭代建立任务文件夹",
+        "left": 1101,
+        "right": 1255,
+        "top": 788.390625,
+        "bottom": 824.390625
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "overwrite-failure-retry",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 1344,
+        "right": 1416,
+        "top": 13.5,
+        "bottom": 57.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 25,
+        "right": 372.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "02原型设计未开始",
+        "left": 372.5,
+        "right": 720,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "03PRD未开始",
+        "left": 720,
+        "right": 1067.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "04任务拆分未开始",
+        "left": 1067.5,
+        "right": 1415,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "新建会话",
+        "left": 207,
+        "right": 245,
+        "top": 169,
+        "bottom": 207
+      },
+      {
+        "label": "生成需求分析 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_跨迭代覆盖候选10/2 12:48:37",
+        "left": 37,
+        "right": 201,
+        "top": 229,
+        "bottom": 297
+      },
+      {
+        "label": "删除会话：生成需求分析 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_跨迭代覆盖候选",
+        "left": 201,
+        "right": 245,
+        "top": 241,
+        "bottom": 285
+      },
+      {
+        "label": "完成本阶段",
+        "left": 959,
+        "right": 1043,
+        "top": 165.5,
+        "bottom": 203.5
+      },
+      {
+        "label": null,
+        "left": 308,
+        "right": 887,
+        "top": 341.90625,
+        "bottom": 381.90625
+      },
+      {
+        "label": "放弃候选",
+        "left": 723,
+        "right": 801,
+        "top": 556.578125,
+        "bottom": 596.578125
+      },
+      {
+        "label": "确认覆盖",
+        "left": 809,
+        "right": 887,
+        "top": 556.578125,
+        "bottom": 596.578125
+      },
+      {
+        "label": "收起 Markdown 预览",
+        "left": 308,
+        "right": 433.15625,
+        "top": 601.578125,
+        "bottom": 637.578125
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 285,
+        "right": 400.484375,
+        "top": 705,
+        "bottom": 741
+      },
+      {
+        "label": "输入消息",
+        "left": 285,
+        "right": 1043,
+        "top": 745,
+        "bottom": 821
+      },
+      {
+        "label": "发送消息",
+        "left": 947,
+        "right": 1043,
+        "top": 829,
+        "bottom": 867
+      },
+      {
+        "label": "关闭文件区",
+        "left": 1363,
+        "right": 1399,
+        "top": 169,
+        "bottom": 205
+      },
+      {
+        "label": "项目文件树3",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "当前上下文0",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "本轮写入",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 271,
+        "bottom": 315
+      },
+      {
+        "label": "需求分析-专项1440.md最近写入：迭代 01 · 可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 423.890625,
+        "bottom": 480.890625
+      },
+      {
+        "label": "加入当前上下文：需求分析-专项1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 434.390625,
+        "bottom": 470.390625
+      },
+      {
+        "label": "原型-专项1440.md最近写入：迭代 01 · 可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 542.890625,
+        "bottom": 599.890625
+      },
+      {
+        "label": "加入当前上下文：原型-专项1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 553.390625,
+        "bottom": 589.390625
+      },
+      {
+        "label": "PRD-专项1440.md最近写入：迭代 01 · 可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 661.890625,
+        "bottom": 718.890625
+      },
+      {
+        "label": "加入当前上下文：PRD-专项1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 672.390625,
+        "bottom": 708.390625
+      },
+      {
+        "label": "为本迭代建立任务文件夹",
+        "left": 1101,
+        "right": 1255,
+        "top": 788.390625,
+        "bottom": 824.390625
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "source-history",
+    "controls": [
+      {
+        "label": "关闭预览",
+        "left": 1372,
+        "right": 1416,
+        "top": 20,
+        "bottom": 64
+      },
+      {
+        "label": "正文预览",
+        "left": 704,
+        "right": 760,
+        "top": 91.296875,
+        "bottom": 135.296875
+      },
+      {
+        "label": "文件详情与来源",
+        "left": 778,
+        "right": 873,
+        "top": 91.296875,
+        "bottom": 135.296875
+      },
+      {
+        "label": "迭代 01 · 首轮文件来源更名",
+        "left": 826,
+        "right": 995.640625,
+        "top": 277.875,
+        "bottom": 303.0625
+      },
+      {
+        "label": "迭代 01 · 首轮文件来源更名",
+        "left": 826,
+        "right": 995.640625,
+        "top": 400.03125,
+        "bottom": 425.21875
+      },
+      {
+        "label": "改名",
+        "left": 704,
+        "right": 754,
+        "top": 516,
+        "bottom": 552
+      },
+      {
+        "label": "删除文件",
+        "left": 762,
+        "right": 838,
+        "top": 516,
+        "bottom": 552
+      },
+      {
+        "label": "迭代 01 · 首轮文件来源更名",
+        "left": 704,
+        "right": 849.40625,
+        "top": 716.375,
+        "bottom": 737.96875
+      },
+      {
+        "label": "迭代 02 · 暂不填目标的第二轮",
+        "left": 704,
+        "right": 861.40625,
+        "top": 831.140625,
+        "bottom": 852.734375
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "initial-retry",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 1344,
+        "right": 1416,
+        "top": 13.5,
+        "bottom": 57.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 25,
+        "right": 372.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 372.5,
+        "right": 720,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 720,
+        "right": 1067.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "04任务拆分进行中",
+        "left": 1067.5,
+        "right": 1415,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "新建会话",
+        "left": 207,
+        "right": 245,
+        "top": 169,
+        "bottom": 207
+      },
+      {
+        "label": "确认并输出完整任务集合 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_首套放弃10/2 12:48:46",
+        "left": 37,
+        "right": 201,
+        "top": 229,
+        "bottom": 297
+      },
+      {
+        "label": "删除会话：确认并输出完整任务集合 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_首套放弃",
+        "left": 201,
+        "right": 245,
+        "top": 241,
+        "bottom": 285
+      },
+      {
+        "label": "完成本阶段",
+        "left": 959,
+        "right": 1043,
+        "top": 165.5,
+        "bottom": 203.5
+      },
+      {
+        "label": "预览正文",
+        "left": 385,
+        "right": 437,
+        "top": 346.90625,
+        "bottom": 382.90625
+      },
+      {
+        "label": "预览正文",
+        "left": 385,
+        "right": 437,
+        "top": 433,
+        "bottom": 469
+      },
+      {
+        "label": "放弃整套候选",
+        "left": 671,
+        "right": 775,
+        "top": 514,
+        "bottom": 554
+      },
+      {
+        "label": "确认整套提交",
+        "left": 783,
+        "right": 887,
+        "top": 514,
+        "bottom": 554
+      },
+      {
+        "label": "复制消息",
+        "left": 287,
+        "right": 323,
+        "top": 617.390625,
+        "bottom": 653.390625
+      },
+      {
+        "label": "重新生成",
+        "left": 327,
+        "right": 363,
+        "top": 617.390625,
+        "bottom": 653.390625
+      },
+      {
+        "label": "手动提出整套任务",
+        "left": 301,
+        "right": 419,
+        "top": 652,
+        "bottom": 688
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 285,
+        "right": 400.484375,
+        "top": 705,
+        "bottom": 741
+      },
+      {
+        "label": "输入消息",
+        "left": 285,
+        "right": 1043,
+        "top": 745,
+        "bottom": 821
+      },
+      {
+        "label": "发送消息",
+        "left": 947,
+        "right": 1043,
+        "top": 829,
+        "bottom": 867
+      },
+      {
+        "label": "关闭文件区",
+        "left": 1363,
+        "right": 1399,
+        "top": 169,
+        "bottom": 205
+      },
+      {
+        "label": "项目文件树2",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "当前上下文0",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "本轮写入",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 271,
+        "bottom": 315
+      },
+      {
+        "label": "需求分析-改名1440.md最近写入：迭代 01 · 不可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 423.890625,
+        "bottom": 480.890625
+      },
+      {
+        "label": "加入当前上下文：需求分析-改名1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 434.390625,
+        "bottom": 470.390625
+      },
+      {
+        "label": "原型-专项1440.md最近写入：迭代 01 · 可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 542.890625,
+        "bottom": 599.890625
+      },
+      {
+        "label": "加入当前上下文：原型-专项1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 553.390625,
+        "bottom": 589.390625
+      },
+      {
+        "label": "PRD-专项1440.md已删除 · 查看来源记录",
+        "left": 1095,
+        "right": 1397,
+        "top": 661.890625,
+        "bottom": 718.890625
+      },
+      {
+        "label": "为本迭代建立任务文件夹",
+        "left": 1101,
+        "right": 1255,
+        "top": 788.390625,
+        "bottom": 824.390625
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "manual-editor",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 1344,
+        "right": 1416,
+        "top": 13.5,
+        "bottom": 57.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 25,
+        "right": 372.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 372.5,
+        "right": 720,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 720,
+        "right": 1067.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "04任务拆分进行中",
+        "left": 1067.5,
+        "right": 1415,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "新建会话",
+        "left": 207,
+        "right": 245,
+        "top": 169,
+        "bottom": 207
+      },
+      {
+        "label": "确认并输出完整任务集合 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_首套放弃10/2 12:48:46",
+        "left": 37,
+        "right": 201,
+        "top": 229,
+        "bottom": 297
+      },
+      {
+        "label": "删除会话：确认并输出完整任务集合 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_首套放弃",
+        "left": 201,
+        "right": 245,
+        "top": 241,
+        "bottom": 285
+      },
+      {
+        "label": "完成本阶段",
+        "left": 959,
+        "right": 1043,
+        "top": 165.5,
+        "bottom": 203.5
+      },
+      {
+        "label": "预览正文",
+        "left": 385,
+        "right": 437,
+        "top": 292.90625,
+        "bottom": 328.90625
+      },
+      {
+        "label": "例如：订单查询",
+        "left": 303,
+        "right": 1025,
+        "top": 379.5,
+        "bottom": 415.5
+      },
+      {
+        "label": "# 03 — 完整任务\n\n**What to build:** 用户可以完成任务与权限核对 2d021e0c-1b4e-4e1d-b395-d93cb9a212c9\n\n**Blocked by:** ",
+        "left": 303,
+        "right": 1025,
+        "top": 445.5,
+        "bottom": 625.5
+      },
+      {
+        "label": "新增 issue",
+        "left": 301,
+        "right": 373.171875,
+        "top": 611.5,
+        "bottom": 645.5
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 285,
+        "right": 400.484375,
+        "top": 705,
+        "bottom": 741
+      },
+      {
+        "label": "输入消息",
+        "left": 285,
+        "right": 1043,
+        "top": 745,
+        "bottom": 821
+      },
+      {
+        "label": "发送消息",
+        "left": 947,
+        "right": 1043,
+        "top": 829,
+        "bottom": 867
+      },
+      {
+        "label": "关闭文件区",
+        "left": 1363,
+        "right": 1399,
+        "top": 169,
+        "bottom": 205
+      },
+      {
+        "label": "项目文件树4",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "当前上下文0",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "本轮写入",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 271,
+        "bottom": 315
+      },
+      {
+        "label": "需求分析-改名1440.md最近写入：迭代 01 · 不可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 423.890625,
+        "bottom": 480.890625
+      },
+      {
+        "label": "加入当前上下文：需求分析-改名1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 434.390625,
+        "bottom": 470.390625
+      },
+      {
+        "label": "原型-专项1440.md最近写入：迭代 01 · 可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 542.890625,
+        "bottom": 599.890625
+      },
+      {
+        "label": "加入当前上下文：原型-专项1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 553.390625,
+        "bottom": 589.390625
+      },
+      {
+        "label": "PRD-专项1440.md已删除 · 查看来源记录",
+        "left": 1095,
+        "right": 1397,
+        "top": 661.890625,
+        "bottom": 718.890625
+      },
+      {
+        "label": "撤回上次任务修改",
+        "left": 1113,
+        "right": 1227,
+        "top": 825.390625,
+        "bottom": 859.390625
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "mixed-candidate",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 1344,
+        "right": 1416,
+        "top": 13.5,
+        "bottom": 57.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 25,
+        "right": 372.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 372.5,
+        "right": 720,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 720,
+        "right": 1067.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "04任务拆分进行中",
+        "left": 1067.5,
+        "right": 1415,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "新建会话",
+        "left": 207,
+        "right": 245,
+        "top": 169,
+        "bottom": 207
+      },
+      {
+        "label": "确认并输出完整任务集合 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_首套放弃10/2 12:48:46",
+        "left": 37,
+        "right": 201,
+        "top": 229,
+        "bottom": 297
+      },
+      {
+        "label": "删除会话：确认并输出完整任务集合 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_首套放弃",
+        "left": 201,
+        "right": 245,
+        "top": 241,
+        "bottom": 285
+      },
+      {
+        "label": "完成本阶段",
+        "left": 959,
+        "right": 1043,
+        "top": 165.5,
+        "bottom": 203.5
+      },
+      {
+        "label": "收起正文",
+        "left": 498.109375,
+        "right": 550.109375,
+        "top": 411.75,
+        "bottom": 447.75
+      },
+      {
+        "label": "手动提出整套任务",
+        "left": 301,
+        "right": 419,
+        "top": 652,
+        "bottom": 688
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 285,
+        "right": 400.484375,
+        "top": 705,
+        "bottom": 741
+      },
+      {
+        "label": "输入消息",
+        "left": 285,
+        "right": 1043,
+        "top": 745,
+        "bottom": 821
+      },
+      {
+        "label": "发送消息",
+        "left": 947,
+        "right": 1043,
+        "top": 829,
+        "bottom": 867
+      },
+      {
+        "label": "关闭文件区",
+        "left": 1363,
+        "right": 1399,
+        "top": 169,
+        "bottom": 205
+      },
+      {
+        "label": "项目文件树4",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "当前上下文0",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "本轮写入",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 271,
+        "bottom": 315
+      },
+      {
+        "label": "需求分析-改名1440.md最近写入：迭代 01 · 不可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 423.890625,
+        "bottom": 480.890625
+      },
+      {
+        "label": "加入当前上下文：需求分析-改名1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 434.390625,
+        "bottom": 470.390625
+      },
+      {
+        "label": "原型-专项1440.md最近写入：迭代 01 · 可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 542.890625,
+        "bottom": 599.890625
+      },
+      {
+        "label": "加入当前上下文：原型-专项1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 553.390625,
+        "bottom": 589.390625
+      },
+      {
+        "label": "PRD-专项1440.md已删除 · 查看来源记录",
+        "left": 1095,
+        "right": 1397,
+        "top": 661.890625,
+        "bottom": 718.890625
+      },
+      {
+        "label": "撤回上次任务修改",
+        "left": 1113,
+        "right": 1227,
+        "top": 825.390625,
+        "bottom": 859.390625
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "manual-editor",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 1344,
+        "right": 1416,
+        "top": 13.5,
+        "bottom": 57.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 25,
+        "right": 372.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 372.5,
+        "right": 720,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 720,
+        "right": 1067.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "04任务拆分进行中",
+        "left": 1067.5,
+        "right": 1415,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "新建会话",
+        "left": 207,
+        "right": 245,
+        "top": 169,
+        "bottom": 207
+      },
+      {
+        "label": "确认并输出完整任务集合 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_首套放弃10/2 12:48:46",
+        "left": 37,
+        "right": 201,
+        "top": 229,
+        "bottom": 297
+      },
+      {
+        "label": "删除会话：确认并输出完整任务集合 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_首套放弃",
+        "left": 201,
+        "right": 245,
+        "top": 241,
+        "bottom": 285
+      },
+      {
+        "label": "完成本阶段",
+        "left": 959,
+        "right": 1043,
+        "top": 165.5,
+        "bottom": 203.5
+      },
+      {
+        "label": "例如：订单查询",
+        "left": 303,
+        "right": 1025,
+        "top": 379.5,
+        "bottom": 415.5
+      },
+      {
+        "label": "# 03 — 完整任务\n\n**What to build:** 用户可以完成任务与权限核对 2d021e0c-1b4e-4e1d-b395-d93cb9a212c9\n\n**Blocked by:** ",
+        "left": 303,
+        "right": 1025,
+        "top": 445.5,
+        "bottom": 625.5
+      },
+      {
+        "label": "新增 issue",
+        "left": 301,
+        "right": 373.171875,
+        "top": 611.5,
+        "bottom": 645.5
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 285,
+        "right": 400.484375,
+        "top": 705,
+        "bottom": 741
+      },
+      {
+        "label": "输入消息",
+        "left": 285,
+        "right": 1043,
+        "top": 745,
+        "bottom": 821
+      },
+      {
+        "label": "发送消息",
+        "left": 947,
+        "right": 1043,
+        "top": 829,
+        "bottom": 867
+      },
+      {
+        "label": "关闭文件区",
+        "left": 1363,
+        "right": 1399,
+        "top": 169,
+        "bottom": 205
+      },
+      {
+        "label": "项目文件树4",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "当前上下文0",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "本轮写入",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 271,
+        "bottom": 315
+      },
+      {
+        "label": "需求分析-改名1440.md最近写入：迭代 01 · 不可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 423.890625,
+        "bottom": 480.890625
+      },
+      {
+        "label": "加入当前上下文：需求分析-改名1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 434.390625,
+        "bottom": 470.390625
+      },
+      {
+        "label": "原型-专项1440.md最近写入：迭代 01 · 可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 542.890625,
+        "bottom": 599.890625
+      },
+      {
+        "label": "加入当前上下文：原型-专项1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 553.390625,
+        "bottom": 589.390625
+      },
+      {
+        "label": "PRD-专项1440.md已删除 · 查看来源记录",
+        "left": 1095,
+        "right": 1397,
+        "top": 661.890625,
+        "bottom": 718.890625
+      },
+      {
+        "label": "撤回上次任务修改",
+        "left": 1113,
+        "right": 1227,
+        "top": 825.390625,
+        "bottom": 859.390625
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "mixed-candidate",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 1344,
+        "right": 1416,
+        "top": 13.5,
+        "bottom": 57.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 25,
+        "right": 372.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 372.5,
+        "right": 720,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 720,
+        "right": 1067.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "04任务拆分进行中",
+        "left": 1067.5,
+        "right": 1415,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "新建会话",
+        "left": 207,
+        "right": 245,
+        "top": 169,
+        "bottom": 207
+      },
+      {
+        "label": "确认并输出完整任务集合 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_首套放弃10/2 12:48:46",
+        "left": 37,
+        "right": 201,
+        "top": 229,
+        "bottom": 297
+      },
+      {
+        "label": "删除会话：确认并输出完整任务集合 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_首套放弃",
+        "left": 201,
+        "right": 245,
+        "top": 241,
+        "bottom": 285
+      },
+      {
+        "label": "完成本阶段",
+        "left": 959,
+        "right": 1043,
+        "top": 165.5,
+        "bottom": 203.5
+      },
+      {
+        "label": "收起正文",
+        "left": 498.109375,
+        "right": 550.109375,
+        "top": 412.015625,
+        "bottom": 448.015625
+      },
+      {
+        "label": "手动提出整套任务",
+        "left": 301,
+        "right": 419,
+        "top": 652,
+        "bottom": 688
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 285,
+        "right": 400.484375,
+        "top": 705,
+        "bottom": 741
+      },
+      {
+        "label": "输入消息",
+        "left": 285,
+        "right": 1043,
+        "top": 745,
+        "bottom": 821
+      },
+      {
+        "label": "发送消息",
+        "left": 947,
+        "right": 1043,
+        "top": 829,
+        "bottom": 867
+      },
+      {
+        "label": "关闭文件区",
+        "left": 1363,
+        "right": 1399,
+        "top": 169,
+        "bottom": 205
+      },
+      {
+        "label": "项目文件树4",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "当前上下文0",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "本轮写入",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 271,
+        "bottom": 315
+      },
+      {
+        "label": "需求分析-改名1440.md最近写入：迭代 01 · 不可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 423.890625,
+        "bottom": 480.890625
+      },
+      {
+        "label": "加入当前上下文：需求分析-改名1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 434.390625,
+        "bottom": 470.390625
+      },
+      {
+        "label": "原型-专项1440.md最近写入：迭代 01 · 可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 542.890625,
+        "bottom": 599.890625
+      },
+      {
+        "label": "加入当前上下文：原型-专项1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 553.390625,
+        "bottom": 589.390625
+      },
+      {
+        "label": "PRD-专项1440.md已删除 · 查看来源记录",
+        "left": 1095,
+        "right": 1397,
+        "top": 661.890625,
+        "bottom": 718.890625
+      },
+      {
+        "label": "撤回上次任务修改",
+        "left": 1113,
+        "right": 1227,
+        "top": 825.390625,
+        "bottom": 859.390625
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "mixed-retry",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 1344,
+        "right": 1416,
+        "top": 13.5,
+        "bottom": 57.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 25,
+        "right": 372.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 372.5,
+        "right": 720,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 720,
+        "right": 1067.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "04任务拆分进行中",
+        "left": 1067.5,
+        "right": 1415,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "新建会话",
+        "left": 207,
+        "right": 245,
+        "top": 169,
+        "bottom": 207
+      },
+      {
+        "label": "确认并输出完整任务集合 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_首套放弃10/2 12:48:46",
+        "left": 37,
+        "right": 201,
+        "top": 229,
+        "bottom": 297
+      },
+      {
+        "label": "删除会话：确认并输出完整任务集合 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_首套放弃",
+        "left": 201,
+        "right": 245,
+        "top": 241,
+        "bottom": 285
+      },
+      {
+        "label": "完成本阶段",
+        "left": 959,
+        "right": 1043,
+        "top": 165.5,
+        "bottom": 203.5
+      },
+      {
+        "label": "预览正文",
+        "left": 498.109375,
+        "right": 550.109375,
+        "top": 418.859375,
+        "bottom": 454.859375
+      },
+      {
+        "label": "放弃整套候选",
+        "left": 804,
+        "right": 908,
+        "top": 513.53125,
+        "bottom": 553.53125
+      },
+      {
+        "label": "确认整套提交",
+        "left": 916,
+        "right": 1020,
+        "top": 513.53125,
+        "bottom": 553.53125
+      },
+      {
+        "label": "复制消息",
+        "left": 965,
+        "right": 1001,
+        "top": 616.921875,
+        "bottom": 652.921875
+      },
+      {
+        "label": "修改并重新发送",
+        "left": 1005,
+        "right": 1041,
+        "top": 616.921875,
+        "bottom": 652.921875
+      },
+      {
+        "label": "手动提出整套任务",
+        "left": 301,
+        "right": 419,
+        "top": 652,
+        "bottom": 688
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 285,
+        "right": 400.484375,
+        "top": 705,
+        "bottom": 741
+      },
+      {
+        "label": "输入消息",
+        "left": 285,
+        "right": 1043,
+        "top": 745,
+        "bottom": 821
+      },
+      {
+        "label": "发送消息",
+        "left": 947,
+        "right": 1043,
+        "top": 829,
+        "bottom": 867
+      },
+      {
+        "label": "关闭文件区",
+        "left": 1363,
+        "right": 1399,
+        "top": 169,
+        "bottom": 205
+      },
+      {
+        "label": "项目文件树4",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "当前上下文0",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "本轮写入",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 271,
+        "bottom": 315
+      },
+      {
+        "label": "需求分析-改名1440.md最近写入：迭代 01 · 不可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 423.890625,
+        "bottom": 480.890625
+      },
+      {
+        "label": "加入当前上下文：需求分析-改名1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 434.390625,
+        "bottom": 470.390625
+      },
+      {
+        "label": "原型-专项1440.md最近写入：迭代 01 · 可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 542.890625,
+        "bottom": 599.890625
+      },
+      {
+        "label": "加入当前上下文：原型-专项1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 553.390625,
+        "bottom": 589.390625
+      },
+      {
+        "label": "PRD-专项1440.md已删除 · 查看来源记录",
+        "left": 1095,
+        "right": 1397,
+        "top": 661.890625,
+        "bottom": 718.890625
+      },
+      {
+        "label": "撤回上次任务修改",
+        "left": 1113,
+        "right": 1227,
+        "top": 825.390625,
+        "bottom": 859.390625
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "restore-confirm",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 1344,
+        "right": 1416,
+        "top": 13.5,
+        "bottom": 57.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 25,
+        "right": 372.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 372.5,
+        "right": 720,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 720,
+        "right": 1067.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "04任务拆分进行中",
+        "left": 1067.5,
+        "right": 1415,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "新建会话",
+        "left": 207,
+        "right": 245,
+        "top": 169,
+        "bottom": 207
+      },
+      {
+        "label": "确认并输出完整任务集合 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_首套放弃10/2 12:48:46",
+        "left": 37,
+        "right": 201,
+        "top": 229,
+        "bottom": 297
+      },
+      {
+        "label": "删除会话：确认并输出完整任务集合 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_首套放弃",
+        "left": 201,
+        "right": 245,
+        "top": 241,
+        "bottom": 285
+      },
+      {
+        "label": "完成本阶段",
+        "left": 959,
+        "right": 1043,
+        "top": 165.5,
+        "bottom": 203.5
+      },
+      {
+        "label": "预览正文",
+        "left": 498.109375,
+        "right": 550.109375,
+        "top": 449.859375,
+        "bottom": 485.859375
+      },
+      {
+        "label": "复制消息",
+        "left": 965,
+        "right": 1001,
+        "top": 582.625,
+        "bottom": 618.625
+      },
+      {
+        "label": "修改并重新发送",
+        "left": 1005,
+        "right": 1041,
+        "top": 582.625,
+        "bottom": 618.625
+      },
+      {
+        "label": "手动提出整套任务",
+        "left": 301,
+        "right": 419,
+        "top": 652,
+        "bottom": 688
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 285,
+        "right": 400.484375,
+        "top": 705,
+        "bottom": 741
+      },
+      {
+        "label": "输入消息",
+        "left": 285,
+        "right": 1043,
+        "top": 745,
+        "bottom": 821
+      },
+      {
+        "label": "发送消息",
+        "left": 947,
+        "right": 1043,
+        "top": 829,
+        "bottom": 867
+      },
+      {
+        "label": "关闭文件区",
+        "left": 1363,
+        "right": 1399,
+        "top": 169,
+        "bottom": 205
+      },
+      {
+        "label": "项目文件树4",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "当前上下文0",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "本轮写入",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 271,
+        "bottom": 315
+      },
+      {
+        "label": "需求分析-改名1440.md最近写入：迭代 01 · 不可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 423.890625,
+        "bottom": 480.890625
+      },
+      {
+        "label": "加入当前上下文：需求分析-改名1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 434.390625,
+        "bottom": 470.390625
+      },
+      {
+        "label": "原型-专项1440.md最近写入：迭代 01 · 可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 542.890625,
+        "bottom": 599.890625
+      },
+      {
+        "label": "加入当前上下文：原型-专项1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 553.390625,
+        "bottom": 589.390625
+      },
+      {
+        "label": "PRD-专项1440.md已删除 · 查看来源记录",
+        "left": 1095,
+        "right": 1397,
+        "top": 661.890625,
+        "bottom": 718.890625
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "restore-retry",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 1344,
+        "right": 1416,
+        "top": 13.5,
+        "bottom": 57.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 25,
+        "right": 372.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 372.5,
+        "right": 720,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 720,
+        "right": 1067.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "04任务拆分进行中",
+        "left": 1067.5,
+        "right": 1415,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "新建会话",
+        "left": 207,
+        "right": 245,
+        "top": 169,
+        "bottom": 207
+      },
+      {
+        "label": "确认并输出完整任务集合 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_首套放弃10/2 12:48:46",
+        "left": 37,
+        "right": 201,
+        "top": 229,
+        "bottom": 297
+      },
+      {
+        "label": "删除会话：确认并输出完整任务集合 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_首套放弃",
+        "left": 201,
+        "right": 245,
+        "top": 241,
+        "bottom": 285
+      },
+      {
+        "label": "完成本阶段",
+        "left": 959,
+        "right": 1043,
+        "top": 165.5,
+        "bottom": 203.5
+      },
+      {
+        "label": "预览正文",
+        "left": 498.109375,
+        "right": 550.109375,
+        "top": 449.859375,
+        "bottom": 485.859375
+      },
+      {
+        "label": "复制消息",
+        "left": 965,
+        "right": 1001,
+        "top": 582.625,
+        "bottom": 618.625
+      },
+      {
+        "label": "修改并重新发送",
+        "left": 1005,
+        "right": 1041,
+        "top": 582.625,
+        "bottom": 618.625
+      },
+      {
+        "label": "手动提出整套任务",
+        "left": 301,
+        "right": 419,
+        "top": 652,
+        "bottom": 688
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 285,
+        "right": 400.484375,
+        "top": 705,
+        "bottom": 741
+      },
+      {
+        "label": "输入消息",
+        "left": 285,
+        "right": 1043,
+        "top": 745,
+        "bottom": 821
+      },
+      {
+        "label": "发送消息",
+        "left": 947,
+        "right": 1043,
+        "top": 829,
+        "bottom": 867
+      },
+      {
+        "label": "关闭文件区",
+        "left": 1363,
+        "right": 1399,
+        "top": 169,
+        "bottom": 205
+      },
+      {
+        "label": "项目文件树4",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "当前上下文0",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "本轮写入",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 271,
+        "bottom": 315
+      },
+      {
+        "label": "PRD-专项1440.md已删除 · 查看来源记录",
+        "left": 1095,
+        "right": 1397,
+        "top": 309.890625,
+        "bottom": 366.890625
+      },
+      {
+        "label": "取消",
+        "left": 1130,
+        "right": 1182,
+        "top": 696.390625,
+        "bottom": 734.390625
+      },
+      {
+        "label": "确认撤回整套",
+        "left": 1190,
+        "right": 1294,
+        "top": 696.390625,
+        "bottom": 734.390625
+      },
+      {
+        "label": "01-改名秘密_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9.md最近写入：迭代 01 · 可整套撤回",
+        "left": 1107,
+        "right": 1311,
+        "top": 758.890625,
+        "bottom": 815.890625
+      },
+      {
+        "label": "加入当前上下文：issues/iteration-1/01-改名秘密_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 769.390625,
+        "bottom": 805.390625
+      },
+      {
+        "label": "02-order-flow.md已删除 · 查看来源记录",
+        "left": 1107,
+        "right": 1397,
+        "top": 816.890625,
+        "bottom": 873.890625
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "restore-complete",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 1344,
+        "right": 1416,
+        "top": 13.5,
+        "bottom": 57.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 25,
+        "right": 372.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 372.5,
+        "right": 720,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 720,
+        "right": 1067.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "04任务拆分进行中",
+        "left": 1067.5,
+        "right": 1415,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "新建会话",
+        "left": 207,
+        "right": 245,
+        "top": 169,
+        "bottom": 207
+      },
+      {
+        "label": "确认并输出完整任务集合 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_首套放弃10/2 12:48:46",
+        "left": 37,
+        "right": 201,
+        "top": 229,
+        "bottom": 297
+      },
+      {
+        "label": "删除会话：确认并输出完整任务集合 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_首套放弃",
+        "left": 201,
+        "right": 245,
+        "top": 241,
+        "bottom": 285
+      },
+      {
+        "label": "完成本阶段",
+        "left": 959,
+        "right": 1043,
+        "top": 165.5,
+        "bottom": 203.5
+      },
+      {
+        "label": "预览正文",
+        "left": 498.109375,
+        "right": 550.109375,
+        "top": 449.859375,
+        "bottom": 485.859375
+      },
+      {
+        "label": "复制消息",
+        "left": 965,
+        "right": 1001,
+        "top": 582.625,
+        "bottom": 618.625
+      },
+      {
+        "label": "修改并重新发送",
+        "left": 1005,
+        "right": 1041,
+        "top": 582.625,
+        "bottom": 618.625
+      },
+      {
+        "label": "手动提出整套任务",
+        "left": 301,
+        "right": 419,
+        "top": 652,
+        "bottom": 688
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 285,
+        "right": 400.484375,
+        "top": 705,
+        "bottom": 741
+      },
+      {
+        "label": "输入消息",
+        "left": 285,
+        "right": 1043,
+        "top": 745,
+        "bottom": 821
+      },
+      {
+        "label": "发送消息",
+        "left": 947,
+        "right": 1043,
+        "top": 829,
+        "bottom": 867
+      },
+      {
+        "label": "关闭文件区",
+        "left": 1363,
+        "right": 1399,
+        "top": 169,
+        "bottom": 205
+      },
+      {
+        "label": "项目文件树4",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "当前上下文0",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "本轮写入",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 271,
+        "bottom": 315
+      },
+      {
+        "label": "PRD-专项1440.md已删除 · 查看来源记录",
+        "left": 1095,
+        "right": 1397,
+        "top": 309.890625,
+        "bottom": 366.890625
+      },
+      {
+        "label": "撤回上次任务修改",
+        "left": 1113,
+        "right": 1227,
+        "top": 507.390625,
+        "bottom": 541.390625
+      },
+      {
+        "label": "01-改名秘密_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9.md最近写入：迭代 01 · 可整套撤回",
+        "left": 1107,
+        "right": 1311,
+        "top": 746.890625,
+        "bottom": 803.890625
+      },
+      {
+        "label": "加入当前上下文：issues/iteration-1/01-改名秘密_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 757.390625,
+        "bottom": 793.390625
+      },
+      {
+        "label": "02-order-flow.md已删除 · 查看来源记录",
+        "left": 1107,
+        "right": 1397,
+        "top": 804.890625,
+        "bottom": 861.890625
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "restored-open-file",
+    "controls": [
+      {
+        "label": "关闭预览",
+        "left": 1372,
+        "right": 1416,
+        "top": 20,
+        "bottom": 64
+      },
+      {
+        "label": "正文预览",
+        "left": 704,
+        "right": 760,
+        "top": 91.296875,
+        "bottom": 135.296875
+      },
+      {
+        "label": "文件详情与来源",
+        "left": 778,
+        "right": 873,
+        "top": 91.296875,
+        "bottom": 135.296875
+      },
+      {
+        "label": "编辑正文",
+        "left": 1193.140625,
+        "right": 1271.140625,
+        "top": 849,
+        "bottom": 887
+      },
+      {
+        "label": "下载 issues/iteration-1/01-data-model.md",
+        "left": 1279.140625,
+        "right": 1416,
+        "top": 849,
+        "bottom": 887
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "other-readonly",
+    "controls": [
+      {
+        "label": "关闭预览",
+        "left": 1372,
+        "right": 1416,
+        "top": 20,
+        "bottom": 64
+      },
+      {
+        "label": "正文预览",
+        "left": 704,
+        "right": 760,
+        "top": 91.296875,
+        "bottom": 135.296875
+      },
+      {
+        "label": "文件详情与来源",
+        "left": 778,
+        "right": 873,
+        "top": 91.296875,
+        "bottom": 135.296875
+      },
+      {
+        "label": "迭代 01 · 首轮文件来源更名",
+        "left": 826,
+        "right": 995.640625,
+        "top": 277.875,
+        "bottom": 303.0625
+      },
+      {
+        "label": "迭代 01 · 首轮文件来源更名",
+        "left": 826,
+        "right": 995.640625,
+        "top": 400.03125,
+        "bottom": 425.21875
+      },
+      {
+        "label": "迭代 01 · 首轮文件来源更名",
+        "left": 704,
+        "right": 849.40625,
+        "top": 656.375,
+        "bottom": 677.96875
+      },
+      {
+        "label": "迭代 01 · 首轮文件来源更名",
+        "left": 704,
+        "right": 849.40625,
+        "top": 771.140625,
+        "bottom": 792.734375
+      },
+      {
+        "label": "迭代 01 · 首轮文件来源更名",
+        "left": 704,
+        "right": 849.40625,
+        "top": 885.90625,
+        "bottom": 907.5
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "manual-editor",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 1344,
+        "right": 1416,
+        "top": 13.5,
+        "bottom": 57.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 25,
+        "right": 372.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 372.5,
+        "right": 720,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 720,
+        "right": 1067.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "04任务拆分进行中",
+        "left": 1067.5,
+        "right": 1415,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "新建会话",
+        "left": 207,
+        "right": 245,
+        "top": 169,
+        "bottom": 207
+      },
+      {
+        "label": "确认并输出完整任务集合 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_首套放弃10/2 12:48:53",
+        "left": 37,
+        "right": 201,
+        "top": 229,
+        "bottom": 297
+      },
+      {
+        "label": "删除会话：确认并输出完整任务集合 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_首套放弃",
+        "left": 201,
+        "right": 245,
+        "top": 241,
+        "bottom": 285
+      },
+      {
+        "label": "完成本阶段",
+        "left": 959,
+        "right": 1043,
+        "top": 165.5,
+        "bottom": 203.5
+      },
+      {
+        "label": "复制消息",
+        "left": 965,
+        "right": 1001,
+        "top": 340.9375,
+        "bottom": 376.9375
+      },
+      {
+        "label": "修改并重新发送",
+        "left": 1005,
+        "right": 1041,
+        "top": 340.9375,
+        "bottom": 376.9375
+      },
+      {
+        "label": "例如：订单查询",
+        "left": 303,
+        "right": 1025,
+        "top": 379.5,
+        "bottom": 415.5
+      },
+      {
+        "label": "# 03 — 完整任务\n\n**What to build:** 用户可以完成任务与权限核对 2d021e0c-1b4e-4e1d-b395-d93cb9a212c9\n\n**Blocked by:** ",
+        "left": 303,
+        "right": 1025,
+        "top": 445.5,
+        "bottom": 625.5
+      },
+      {
+        "label": "新增 issue",
+        "left": 301,
+        "right": 373.171875,
+        "top": 611.5,
+        "bottom": 645.5
+      },
+      {
+        "label": "当前上下文 · 1 个文件",
+        "left": 285,
+        "right": 398.640625,
+        "top": 705,
+        "bottom": 741
+      },
+      {
+        "label": "输入消息",
+        "left": 285,
+        "right": 1043,
+        "top": 745,
+        "bottom": 821
+      },
+      {
+        "label": "发送消息",
+        "left": 947,
+        "right": 1043,
+        "top": 829,
+        "bottom": 867
+      },
+      {
+        "label": "关闭文件区",
+        "left": 1363,
+        "right": 1399,
+        "top": 169,
+        "bottom": 205
+      },
+      {
+        "label": "项目文件树4",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "当前上下文1",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "本轮写入",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 271,
+        "bottom": 315
+      },
+      {
+        "label": "需求分析-改名1440.md最近写入：迭代 01 · 不可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 423.890625,
+        "bottom": 480.890625
+      },
+      {
+        "label": "加入当前上下文：需求分析-改名1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 434.390625,
+        "bottom": 470.390625
+      },
+      {
+        "label": "原型-专项1440.md最近写入：迭代 01 · 可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 542.890625,
+        "bottom": 599.890625
+      },
+      {
+        "label": "加入当前上下文：原型-专项1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 553.390625,
+        "bottom": 589.390625
+      },
+      {
+        "label": "PRD-专项1440.md已删除 · 查看来源记录",
+        "left": 1095,
+        "right": 1397,
+        "top": 661.890625,
+        "bottom": 718.890625
+      },
+      {
+        "label": "撤回上次任务修改",
+        "left": 1113,
+        "right": 1227,
+        "top": 825.390625,
+        "bottom": 859.390625
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "mixed-candidate",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 1344,
+        "right": 1416,
+        "top": 13.5,
+        "bottom": 57.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 25,
+        "right": 372.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 372.5,
+        "right": 720,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 720,
+        "right": 1067.5,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "04任务拆分进行中",
+        "left": 1067.5,
+        "right": 1415,
+        "top": 85,
+        "bottom": 139
+      },
+      {
+        "label": "新建会话",
+        "left": 207,
+        "right": 245,
+        "top": 169,
+        "bottom": 207
+      },
+      {
+        "label": "确认并输出完整任务集合 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_首套放弃10/2 12:48:53",
+        "left": 37,
+        "right": 201,
+        "top": 229,
+        "bottom": 297
+      },
+      {
+        "label": "删除会话：确认并输出完整任务集合 发布闸探针_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9_首套放弃",
+        "left": 201,
+        "right": 245,
+        "top": 241,
+        "bottom": 285
+      },
+      {
+        "label": "完成本阶段",
+        "left": 959,
+        "right": 1043,
+        "top": 165.5,
+        "bottom": 203.5
+      },
+      {
+        "label": "收起正文",
+        "left": 498.109375,
+        "right": 550.109375,
+        "top": 411.859375,
+        "bottom": 447.859375
+      },
+      {
+        "label": "手动提出整套任务",
+        "left": 301,
+        "right": 419,
+        "top": 652,
+        "bottom": 688
+      },
+      {
+        "label": "当前上下文 · 1 个文件",
+        "left": 285,
+        "right": 398.640625,
+        "top": 705,
+        "bottom": 741
+      },
+      {
+        "label": "输入消息",
+        "left": 285,
+        "right": 1043,
+        "top": 745,
+        "bottom": 821
+      },
+      {
+        "label": "发送消息",
+        "left": 947,
+        "right": 1043,
+        "top": 829,
+        "bottom": 867
+      },
+      {
+        "label": "关闭文件区",
+        "left": 1363,
+        "right": 1399,
+        "top": 169,
+        "bottom": 205
+      },
+      {
+        "label": "项目文件树4",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "当前上下文1",
+        "left": 1243.5,
+        "right": 1399,
+        "top": 227,
+        "bottom": 271
+      },
+      {
+        "label": "本轮写入",
+        "left": 1088,
+        "right": 1243.5,
+        "top": 271,
+        "bottom": 315
+      },
+      {
+        "label": "需求分析-改名1440.md最近写入：迭代 01 · 不可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 423.890625,
+        "bottom": 480.890625
+      },
+      {
+        "label": "加入当前上下文：需求分析-改名1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 434.390625,
+        "bottom": 470.390625
+      },
+      {
+        "label": "原型-专项1440.md最近写入：迭代 01 · 可撤回",
+        "left": 1095,
+        "right": 1311,
+        "top": 542.890625,
+        "bottom": 599.890625
+      },
+      {
+        "label": "加入当前上下文：原型-专项1440.md",
+        "left": 1319,
+        "right": 1397,
+        "top": 553.390625,
+        "bottom": 589.390625
+      },
+      {
+        "label": "PRD-专项1440.md已删除 · 查看来源记录",
+        "left": 1095,
+        "right": 1397,
+        "top": 661.890625,
+        "bottom": 718.890625
+      },
+      {
+        "label": "撤回上次任务修改",
+        "left": 1113,
+        "right": 1227,
+        "top": 825.390625,
+        "bottom": 859.390625
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "session-delete-failure-retry",
+    "controls": [
+      {
+        "label": "取消",
+        "left": 792,
+        "right": 854,
+        "top": 637.5703125,
+        "bottom": 680.5703125
+      },
+      {
+        "label": "确认删除会话",
+        "left": 863,
+        "right": 977,
+        "top": 637.046142578125,
+        "bottom": 680.046142578125
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "iteration-delete-failure-retry",
+    "controls": [
+      {
+        "label": "取消",
+        "left": 792,
+        "right": 854,
+        "top": 637.5703125,
+        "bottom": 680.5703125
+      },
+      {
+        "label": "确认删除迭代",
+        "left": 863,
+        "right": 977,
+        "top": 637.5460205078125,
+        "bottom": 680.5460205078125
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "readonly-source",
+    "controls": [
+      {
+        "label": "关闭预览",
+        "left": 1378,
+        "right": 1416,
+        "top": 20,
+        "bottom": 58
+      },
+      {
+        "label": "正文预览",
+        "left": 704,
+        "right": 760,
+        "top": 93,
+        "bottom": 137
+      },
+      {
+        "label": "文件详情与来源",
+        "left": 778,
+        "right": 873,
+        "top": 93,
+        "bottom": 137
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    },
+    "name": "readonly-html",
+    "controls": [
+      {
+        "label": "02-order-flow.md最近写入：迭代 01（已删除） · 只读归档",
+        "left": 356,
+        "right": 1092,
+        "top": -0.390625,
+        "bottom": 40.109375
+      },
+      {
+        "label": "03-新增秘密_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9.md已删除 · 查看来源记录",
+        "left": 356,
+        "right": 1092,
+        "top": 41.109375,
+        "bottom": 81.609375
+      },
+      {
+        "label": "04-新增秘密_2d021e0c-1b4e-4e1d-b395-d93cb9a212c9.md已删除 · 查看来源记录",
+        "left": 356,
+        "right": 1092,
+        "top": 82.609375,
+        "bottom": 123.109375
+      },
+      {
+        "label": "01-本轮独立任务.md最近写入：迭代 02（已删除） · 只读归档",
+        "left": 356,
+        "right": 1092,
+        "top": 170.109375,
+        "bottom": 210.609375
+      },
+      {
+        "label": "HTML 快照 · 第 1 版2026/10/2 12:48:25",
+        "left": 333,
+        "right": 478,
+        "top": 343.203125,
+        "bottom": 411.203125
+      },
+      {
+        "label": "新窗口打开",
+        "left": 1080.46875,
+        "right": 1145.46875,
+        "top": 433.703125,
+        "bottom": 465.703125
+      },
+      {
+        "label": "下载 HTML",
+        "left": 1153.46875,
+        "right": 1222,
+        "top": 433.703125,
+        "bottom": 465.703125
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "empty-navigation",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 312,
+        "right": 378,
+        "top": 9.5,
+        "bottom": 53.5
+      },
+      {
+        "label": "01需求分析未开始",
+        "left": 13,
+        "right": 104,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "02原型设计未开始",
+        "left": 104,
+        "right": 195,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "03PRD未开始",
+        "left": 195,
+        "right": 286,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "04任务拆分未开始",
+        "left": 286,
+        "right": 377,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "对话",
+        "left": 13,
+        "right": 120.046875,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "阶段会话 0",
+        "left": 120.046875,
+        "right": 227.109375,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "文件与上下文 0",
+        "left": 227.109375,
+        "right": 377,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "开始本阶段工作",
+        "left": 45.953125,
+        "right": 162.953125,
+        "top": 478.890625,
+        "bottom": 518.890625
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 31,
+        "right": 146.484375,
+        "top": 643.40625,
+        "bottom": 687.40625
+      },
+      {
+        "label": "输入消息",
+        "left": 31,
+        "right": 359,
+        "top": 691.40625,
+        "bottom": 767
+      },
+      {
+        "label": "发送消息",
+        "left": 263,
+        "right": 359,
+        "top": 775,
+        "bottom": 819
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "analysis-create-candidate",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 312,
+        "right": 378,
+        "top": 9.5,
+        "bottom": 53.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 13,
+        "right": 104,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "02原型设计未开始",
+        "left": 104,
+        "right": 195,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "03PRD未开始",
+        "left": 195,
+        "right": 286,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "04任务拆分未开始",
+        "left": 286,
+        "right": 377,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "对话",
+        "left": 13,
+        "right": 120.046875,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "阶段会话 1",
+        "left": 120.046875,
+        "right": 227.109375,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "文件与上下文 0",
+        "left": 227.109375,
+        "right": 377,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "完成本阶段",
+        "left": 284,
+        "right": 359,
+        "top": 200.5,
+        "bottom": 244.5
+      },
+      {
+        "label": null,
+        "left": 50,
+        "right": 340,
+        "top": 240.71875,
+        "bottom": 280.71875
+      },
+      {
+        "label": "放弃候选",
+        "left": 176,
+        "right": 254,
+        "top": 484.484375,
+        "bottom": 528.484375
+      },
+      {
+        "label": "确认创建",
+        "left": 262,
+        "right": 340,
+        "top": 484.484375,
+        "bottom": 528.484375
+      },
+      {
+        "label": "收起 Markdown 预览",
+        "left": 50,
+        "right": 175.15625,
+        "top": 533.484375,
+        "bottom": 577.484375
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 31,
+        "right": 146.484375,
+        "top": 643.40625,
+        "bottom": 687.40625
+      },
+      {
+        "label": "输入消息",
+        "left": 31,
+        "right": 359,
+        "top": 691.40625,
+        "bottom": 767
+      },
+      {
+        "label": "发送消息",
+        "left": 263,
+        "right": 359,
+        "top": 775,
+        "bottom": 819
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "create-failure-retry",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 312,
+        "right": 378,
+        "top": 9.5,
+        "bottom": 53.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 13,
+        "right": 104,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "02原型设计未开始",
+        "left": 104,
+        "right": 195,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "03PRD未开始",
+        "left": 195,
+        "right": 286,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "04任务拆分未开始",
+        "left": 286,
+        "right": 377,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "对话",
+        "left": 13,
+        "right": 120.046875,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "阶段会话 1",
+        "left": 120.046875,
+        "right": 227.109375,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "文件与上下文 0",
+        "left": 227.109375,
+        "right": 377,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "完成本阶段",
+        "left": 284,
+        "right": 359,
+        "top": 200.5,
+        "bottom": 244.5
+      },
+      {
+        "label": null,
+        "left": 50,
+        "right": 340,
+        "top": 240.71875,
+        "bottom": 280.71875
+      },
+      {
+        "label": "放弃候选",
+        "left": 176,
+        "right": 254,
+        "top": 535.265625,
+        "bottom": 579.265625
+      },
+      {
+        "label": "确认创建",
+        "left": 262,
+        "right": 340,
+        "top": 535.265625,
+        "bottom": 579.265625
+      },
+      {
+        "label": "收起 Markdown 预览",
+        "left": 50,
+        "right": 175.15625,
+        "top": 584.265625,
+        "bottom": 628.265625
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 31,
+        "right": 146.484375,
+        "top": 643.40625,
+        "bottom": 687.40625
+      },
+      {
+        "label": "输入消息",
+        "left": 31,
+        "right": 359,
+        "top": 691.40625,
+        "bottom": 767
+      },
+      {
+        "label": "发送消息",
+        "left": 263,
+        "right": 359,
+        "top": 775,
+        "bottom": 819
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "generating-delete-blocked",
+    "controls": [
+      {
+        "label": "查看会话并停止生成",
+        "left": 36,
+        "right": 190,
+        "top": 553.9765625,
+        "bottom": 597.9765625
+      },
+      {
+        "label": "取消",
+        "left": 36,
+        "right": 354,
+        "top": 683.9765625,
+        "bottom": 726.9765625
+      },
+      {
+        "label": "确认删除会话",
+        "left": 36,
+        "right": 354,
+        "top": 631.9765625,
+        "bottom": 674.9765625
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "snapshot-failure-retry",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 312,
+        "right": 378,
+        "top": 9.5,
+        "bottom": 53.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 13,
+        "right": 104,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 104,
+        "right": 195,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "03PRD未开始",
+        "left": 195,
+        "right": 286,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "04任务拆分未开始",
+        "left": 286,
+        "right": 377,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "关闭",
+        "left": 341,
+        "right": 365,
+        "top": 150,
+        "bottom": 186
+      },
+      {
+        "label": "对话",
+        "left": 13,
+        "right": 120.046875,
+        "top": 205,
+        "bottom": 249
+      },
+      {
+        "label": "阶段会话 1",
+        "left": 120.046875,
+        "right": 227.109375,
+        "top": 205,
+        "bottom": 249
+      },
+      {
+        "label": "文件与上下文 0",
+        "left": 227.109375,
+        "right": 377,
+        "top": 205,
+        "bottom": 249
+      },
+      {
+        "label": "完成本阶段",
+        "left": 284,
+        "right": 359,
+        "top": 264.5,
+        "bottom": 308.5
+      },
+      {
+        "label": "复制消息",
+        "left": 265,
+        "right": 309,
+        "top": 448.75,
+        "bottom": 492.75
+      },
+      {
+        "label": "修改并重新发送",
+        "left": 313,
+        "right": 357,
+        "top": 448.75,
+        "bottom": 492.75
+      },
+      {
+        "label": "复制消息",
+        "left": 33,
+        "right": 77,
+        "top": 571.5,
+        "bottom": 615.5
+      },
+      {
+        "label": "重试生成",
+        "left": 81,
+        "right": 125,
+        "top": 571.5,
+        "bottom": 615.5
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 31,
+        "right": 146.484375,
+        "top": 643.40625,
+        "bottom": 687.40625
+      },
+      {
+        "label": "输入消息",
+        "left": 31,
+        "right": 359,
+        "top": 691.40625,
+        "bottom": 767
+      },
+      {
+        "label": "发送消息",
+        "left": 263,
+        "right": 359,
+        "top": 775,
+        "bottom": 819
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "prototype-create-candidate",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 312,
+        "right": 378,
+        "top": 9.5,
+        "bottom": 53.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 13,
+        "right": 104,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 104,
+        "right": 195,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "03PRD未开始",
+        "left": 195,
+        "right": 286,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "04任务拆分未开始",
+        "left": 286,
+        "right": 377,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "对话",
+        "left": 13,
+        "right": 120.046875,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "阶段会话 1",
+        "left": 120.046875,
+        "right": 227.109375,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "文件与上下文 0",
+        "left": 227.109375,
+        "right": 377,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "完成本阶段",
+        "left": 284,
+        "right": 359,
+        "top": 200.5,
+        "bottom": 244.5
+      },
+      {
+        "label": "放弃候选",
+        "left": 176,
+        "right": 254,
+        "top": 401.609375,
+        "bottom": 445.609375
+      },
+      {
+        "label": "确认创建",
+        "left": 262,
+        "right": 340,
+        "top": 401.609375,
+        "bottom": 445.609375
+      },
+      {
+        "label": "收起 Markdown 预览",
+        "left": 50,
+        "right": 175.15625,
+        "top": 450.609375,
+        "bottom": 494.609375
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 31,
+        "right": 146.484375,
+        "top": 643.40625,
+        "bottom": 687.40625
+      },
+      {
+        "label": "输入消息",
+        "left": 31,
+        "right": 359,
+        "top": 691.40625,
+        "bottom": 767
+      },
+      {
+        "label": "发送消息",
+        "left": 263,
+        "right": 359,
+        "top": 775,
+        "bottom": 819
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "prd-create-candidate",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 312,
+        "right": 378,
+        "top": 9.5,
+        "bottom": 53.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 13,
+        "right": 104,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 104,
+        "right": 195,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 195,
+        "right": 286,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "04任务拆分未开始",
+        "left": 286,
+        "right": 377,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "对话",
+        "left": 13,
+        "right": 120.046875,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "阶段会话 1",
+        "left": 120.046875,
+        "right": 227.109375,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "文件与上下文 0",
+        "left": 227.109375,
+        "right": 377,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "完成本阶段",
+        "left": 284,
+        "right": 359,
+        "top": 200.5,
+        "bottom": 244.5
+      },
+      {
+        "label": null,
+        "left": 50,
+        "right": 340,
+        "top": 240.34375,
+        "bottom": 280.34375
+      },
+      {
+        "label": "放弃候选",
+        "left": 176,
+        "right": 254,
+        "top": 484.109375,
+        "bottom": 528.109375
+      },
+      {
+        "label": "确认创建",
+        "left": 262,
+        "right": 340,
+        "top": 484.109375,
+        "bottom": 528.109375
+      },
+      {
+        "label": "收起 Markdown 预览",
+        "left": 50,
+        "right": 175.15625,
+        "top": 533.109375,
+        "bottom": 577.109375
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 31,
+        "right": 146.484375,
+        "top": 643.40625,
+        "bottom": 687.40625
+      },
+      {
+        "label": "输入消息",
+        "left": 31,
+        "right": 359,
+        "top": 691.40625,
+        "bottom": 767
+      },
+      {
+        "label": "发送消息",
+        "left": 263,
+        "right": 359,
+        "top": 775,
+        "bottom": 819
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "source-message-replacement-retention",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 312,
+        "right": 378,
+        "top": 9.5,
+        "bottom": 53.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 13,
+        "right": 104,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 104,
+        "right": 195,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 195,
+        "right": 286,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "04任务拆分未开始",
+        "left": 286,
+        "right": 377,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "对话",
+        "left": 13,
+        "right": 120.046875,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "阶段会话 1",
+        "left": 120.046875,
+        "right": 227.109375,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "文件与上下文 0",
+        "left": 227.109375,
+        "right": 377,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "完成本阶段",
+        "left": 284,
+        "right": 359,
+        "top": 200.5,
+        "bottom": 244.5
+      },
+      {
+        "label": "放弃候选",
+        "left": 176,
+        "right": 254,
+        "top": 454.109375,
+        "bottom": 498.109375
+      },
+      {
+        "label": "确认创建",
+        "left": 262,
+        "right": 340,
+        "top": 454.109375,
+        "bottom": 498.109375
+      },
+      {
+        "label": "预览完整 Markdown",
+        "left": 50,
+        "right": 171.578125,
+        "top": 503.109375,
+        "bottom": 547.109375
+      },
+      {
+        "label": "复制消息",
+        "left": 33,
+        "right": 77,
+        "top": 572.109375,
+        "bottom": 616.109375
+      },
+      {
+        "label": "重新生成",
+        "left": 81,
+        "right": 125,
+        "top": 572.109375,
+        "bottom": 616.109375
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 31,
+        "right": 146.484375,
+        "top": 643.40625,
+        "bottom": 687.40625
+      },
+      {
+        "label": "输入消息",
+        "left": 31,
+        "right": 359,
+        "top": 691.40625,
+        "bottom": 767
+      },
+      {
+        "label": "发送消息",
+        "left": 263,
+        "right": 359,
+        "top": 775,
+        "bottom": 819
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "loaded-context",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 312,
+        "right": 378,
+        "top": 9.5,
+        "bottom": 53.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 13,
+        "right": 104,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 104,
+        "right": 195,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 195,
+        "right": 286,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "04任务拆分未开始",
+        "left": 286,
+        "right": 377,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "对话",
+        "left": 13,
+        "right": 120.046875,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "阶段会话 2",
+        "left": 120.046875,
+        "right": 227.109375,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "文件与上下文 1",
+        "left": 227.109375,
+        "right": 377,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "关闭文件区",
+        "left": 317,
+        "right": 361,
+        "top": 211,
+        "bottom": 255
+      },
+      {
+        "label": "项目文件树3",
+        "left": 29,
+        "right": 195,
+        "top": 277,
+        "bottom": 321
+      },
+      {
+        "label": "当前上下文1",
+        "left": 195,
+        "right": 361,
+        "top": 277,
+        "bottom": 321
+      },
+      {
+        "label": "本轮写入",
+        "left": 29,
+        "right": 195,
+        "top": 321,
+        "bottom": 365
+      },
+      {
+        "label": "从当前上下文移除 需求分析-专项390.md",
+        "left": 315,
+        "right": 359,
+        "top": 450.28125,
+        "bottom": 494.28125
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "analysis-overwrite-candidate",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 312,
+        "right": 378,
+        "top": 9.5,
+        "bottom": 53.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 13,
+        "right": 104,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "02原型设计未开始",
+        "left": 104,
+        "right": 195,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "03PRD未开始",
+        "left": 195,
+        "right": 286,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "04任务拆分未开始",
+        "left": 286,
+        "right": 377,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "对话",
+        "left": 13,
+        "right": 120.046875,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "阶段会话 1",
+        "left": 120.046875,
+        "right": 227.109375,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "文件与上下文 0",
+        "left": 227.109375,
+        "right": 377,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "完成本阶段",
+        "left": 284,
+        "right": 359,
+        "top": 200.5,
+        "bottom": 244.5
+      },
+      {
+        "label": null,
+        "left": 50,
+        "right": 340,
+        "top": 240.71875,
+        "bottom": 280.71875
+      },
+      {
+        "label": "放弃候选",
+        "left": 176,
+        "right": 254,
+        "top": 484.484375,
+        "bottom": 528.484375
+      },
+      {
+        "label": "确认覆盖",
+        "left": 262,
+        "right": 340,
+        "top": 484.484375,
+        "bottom": 528.484375
+      },
+      {
+        "label": "收起 Markdown 预览",
+        "left": 50,
+        "right": 175.15625,
+        "top": 533.484375,
+        "bottom": 577.484375
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 31,
+        "right": 146.484375,
+        "top": 643.40625,
+        "bottom": 687.40625
+      },
+      {
+        "label": "输入消息",
+        "left": 31,
+        "right": 359,
+        "top": 691.40625,
+        "bottom": 767
+      },
+      {
+        "label": "发送消息",
+        "left": 263,
+        "right": 359,
+        "top": 775,
+        "bottom": 819
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "overwrite-failure-retry",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 312,
+        "right": 378,
+        "top": 9.5,
+        "bottom": 53.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 13,
+        "right": 104,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "02原型设计未开始",
+        "left": 104,
+        "right": 195,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "03PRD未开始",
+        "left": 195,
+        "right": 286,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "04任务拆分未开始",
+        "left": 286,
+        "right": 377,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "对话",
+        "left": 13,
+        "right": 120.046875,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "阶段会话 1",
+        "left": 120.046875,
+        "right": 227.109375,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "文件与上下文 0",
+        "left": 227.109375,
+        "right": 377,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "完成本阶段",
+        "left": 284,
+        "right": 359,
+        "top": 200.5,
+        "bottom": 244.5
+      },
+      {
+        "label": null,
+        "left": 50,
+        "right": 340,
+        "top": 240.71875,
+        "bottom": 280.71875
+      },
+      {
+        "label": "放弃候选",
+        "left": 176,
+        "right": 254,
+        "top": 535.265625,
+        "bottom": 579.265625
+      },
+      {
+        "label": "确认覆盖",
+        "left": 262,
+        "right": 340,
+        "top": 535.265625,
+        "bottom": 579.265625
+      },
+      {
+        "label": "收起 Markdown 预览",
+        "left": 50,
+        "right": 175.15625,
+        "top": 584.265625,
+        "bottom": 628.265625
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 31,
+        "right": 146.484375,
+        "top": 643.40625,
+        "bottom": 687.40625
+      },
+      {
+        "label": "输入消息",
+        "left": 31,
+        "right": 359,
+        "top": 691.40625,
+        "bottom": 767
+      },
+      {
+        "label": "发送消息",
+        "left": 263,
+        "right": 359,
+        "top": 775,
+        "bottom": 819
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "source-history",
+    "controls": [
+      {
+        "label": "关闭预览",
+        "left": 330,
+        "right": 374,
+        "top": 20,
+        "bottom": 64
+      },
+      {
+        "label": "正文预览",
+        "left": 16,
+        "right": 72,
+        "top": 91.296875,
+        "bottom": 135.296875
+      },
+      {
+        "label": "文件详情与来源",
+        "left": 90,
+        "right": 185,
+        "top": 91.296875,
+        "bottom": 135.296875
+      },
+      {
+        "label": "迭代 01 · 首轮文件来源更名",
+        "left": 116,
+        "right": 285.640625,
+        "top": 277.875,
+        "bottom": 303.0625
+      },
+      {
+        "label": "迭代 01 · 首轮文件来源更名",
+        "left": 116,
+        "right": 285.640625,
+        "top": 425.21875,
+        "bottom": 450.40625
+      },
+      {
+        "label": "改名",
+        "left": 16,
+        "right": 66,
+        "top": 541.1875,
+        "bottom": 585.1875
+      },
+      {
+        "label": "删除文件",
+        "left": 74,
+        "right": 150,
+        "top": 541.1875,
+        "bottom": 585.1875
+      },
+      {
+        "label": "迭代 01 · 首轮文件来源更名",
+        "left": 16,
+        "right": 161.40625,
+        "top": 749.5625,
+        "bottom": 771.15625
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "initial-retry",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 312,
+        "right": 378,
+        "top": 9.5,
+        "bottom": 53.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 13,
+        "right": 104,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 104,
+        "right": 195,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 195,
+        "right": 286,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "04任务拆分进行中",
+        "left": 286,
+        "right": 377,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "对话",
+        "left": 13,
+        "right": 120.046875,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "阶段会话 1",
+        "left": 120.046875,
+        "right": 227.109375,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "文件与上下文 0",
+        "left": 227.109375,
+        "right": 377,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "完成本阶段",
+        "left": 284,
+        "right": 359,
+        "top": 200.5,
+        "bottom": 244.5
+      },
+      {
+        "label": "预览正文",
+        "left": 52,
+        "right": 104,
+        "top": 233.015625,
+        "bottom": 277.015625
+      },
+      {
+        "label": "预览正文",
+        "left": 52,
+        "right": 104,
+        "top": 352.5,
+        "bottom": 396.5
+      },
+      {
+        "label": "放弃整套候选",
+        "left": 124,
+        "right": 228,
+        "top": 441.5,
+        "bottom": 485.5
+      },
+      {
+        "label": "确认整套提交",
+        "left": 236,
+        "right": 340,
+        "top": 441.5,
+        "bottom": 485.5
+      },
+      {
+        "label": "手动提出整套任务",
+        "left": 47,
+        "right": 165,
+        "top": 582.40625,
+        "bottom": 626.40625
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 31,
+        "right": 146.484375,
+        "top": 643.40625,
+        "bottom": 687.40625
+      },
+      {
+        "label": "输入消息",
+        "left": 31,
+        "right": 359,
+        "top": 691.40625,
+        "bottom": 767
+      },
+      {
+        "label": "发送消息",
+        "left": 263,
+        "right": 359,
+        "top": 775,
+        "bottom": 819
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "manual-editor",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 312,
+        "right": 378,
+        "top": 9.5,
+        "bottom": 53.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 13,
+        "right": 104,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 104,
+        "right": 195,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 195,
+        "right": 286,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "04任务拆分进行中",
+        "left": 286,
+        "right": 377,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "对话",
+        "left": 13,
+        "right": 120.046875,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "阶段会话 1",
+        "left": 120.046875,
+        "right": 227.109375,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "文件与上下文 0",
+        "left": 227.109375,
+        "right": 377,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "完成本阶段",
+        "left": 284,
+        "right": 359,
+        "top": 200.5,
+        "bottom": 244.5
+      },
+      {
+        "label": "预览正文",
+        "left": 52,
+        "right": 104,
+        "top": 282.5,
+        "bottom": 326.5
+      },
+      {
+        "label": "# 03 — 完整任务\n\n**What to build:** 用户可以完成任务与权限核对 d1354d3b-ec56-4f94-8fe1-72a294939104\n\n**Blocked by:** ",
+        "left": 49,
+        "right": 341,
+        "top": 298.71875,
+        "bottom": 478.71875
+      },
+      {
+        "label": "新增 issue",
+        "left": 47,
+        "right": 119.171875,
+        "top": 483.3125,
+        "bottom": 527.3125
+      },
+      {
+        "label": "取消",
+        "left": 159,
+        "right": 205,
+        "top": 582.3125,
+        "bottom": 626.3125
+      },
+      {
+        "label": "生成整套待确认候选",
+        "left": 213,
+        "right": 343,
+        "top": 582.3125,
+        "bottom": 626.3125
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 31,
+        "right": 146.484375,
+        "top": 643.40625,
+        "bottom": 687.40625
+      },
+      {
+        "label": "输入消息",
+        "left": 31,
+        "right": 359,
+        "top": 691.40625,
+        "bottom": 767
+      },
+      {
+        "label": "发送消息",
+        "left": 263,
+        "right": 359,
+        "top": 775,
+        "bottom": 819
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "mixed-candidate",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 312,
+        "right": 378,
+        "top": 9.5,
+        "bottom": 53.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 13,
+        "right": 104,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 104,
+        "right": 195,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 195,
+        "right": 286,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "04任务拆分进行中",
+        "left": 286,
+        "right": 377,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "对话",
+        "left": 13,
+        "right": 120.046875,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "阶段会话 1",
+        "left": 120.046875,
+        "right": 227.109375,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "文件与上下文 0",
+        "left": 227.109375,
+        "right": 377,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "完成本阶段",
+        "left": 284,
+        "right": 359,
+        "top": 200.5,
+        "bottom": 244.5
+      },
+      {
+        "label": "收起正文",
+        "left": 100.609375,
+        "right": 152.609375,
+        "top": 390.59375,
+        "bottom": 434.59375
+      },
+      {
+        "label": "手动提出整套任务",
+        "left": 47,
+        "right": 165,
+        "top": 582.40625,
+        "bottom": 626.40625
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 31,
+        "right": 146.484375,
+        "top": 643.40625,
+        "bottom": 687.40625
+      },
+      {
+        "label": "输入消息",
+        "left": 31,
+        "right": 359,
+        "top": 691.40625,
+        "bottom": 767
+      },
+      {
+        "label": "发送消息",
+        "left": 263,
+        "right": 359,
+        "top": 775,
+        "bottom": 819
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "manual-editor",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 312,
+        "right": 378,
+        "top": 9.5,
+        "bottom": 53.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 13,
+        "right": 104,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 104,
+        "right": 195,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 195,
+        "right": 286,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "04任务拆分进行中",
+        "left": 286,
+        "right": 377,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "对话",
+        "left": 13,
+        "right": 120.046875,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "阶段会话 1",
+        "left": 120.046875,
+        "right": 227.109375,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "文件与上下文 0",
+        "left": 227.109375,
+        "right": 377,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "完成本阶段",
+        "left": 284,
+        "right": 359,
+        "top": 200.5,
+        "bottom": 244.5
+      },
+      {
+        "label": "# 03 — 完整任务\n\n**What to build:** 用户可以完成任务与权限核对 d1354d3b-ec56-4f94-8fe1-72a294939104\n\n**Blocked by:** ",
+        "left": 49,
+        "right": 341,
+        "top": 298.71875,
+        "bottom": 478.71875
+      },
+      {
+        "label": "新增 issue",
+        "left": 47,
+        "right": 119.171875,
+        "top": 483.3125,
+        "bottom": 527.3125
+      },
+      {
+        "label": "取消",
+        "left": 159,
+        "right": 205,
+        "top": 582.3125,
+        "bottom": 626.3125
+      },
+      {
+        "label": "生成整套待确认候选",
+        "left": 213,
+        "right": 343,
+        "top": 582.3125,
+        "bottom": 626.3125
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 31,
+        "right": 146.484375,
+        "top": 643.40625,
+        "bottom": 687.40625
+      },
+      {
+        "label": "输入消息",
+        "left": 31,
+        "right": 359,
+        "top": 691.40625,
+        "bottom": 767
+      },
+      {
+        "label": "发送消息",
+        "left": 263,
+        "right": 359,
+        "top": 775,
+        "bottom": 819
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "mixed-candidate",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 312,
+        "right": 378,
+        "top": 9.5,
+        "bottom": 53.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 13,
+        "right": 104,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 104,
+        "right": 195,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 195,
+        "right": 286,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "04任务拆分进行中",
+        "left": 286,
+        "right": 377,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "对话",
+        "left": 13,
+        "right": 120.046875,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "阶段会话 1",
+        "left": 120.046875,
+        "right": 227.109375,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "文件与上下文 0",
+        "left": 227.109375,
+        "right": 377,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "完成本阶段",
+        "left": 284,
+        "right": 359,
+        "top": 200.5,
+        "bottom": 244.5
+      },
+      {
+        "label": "收起正文",
+        "left": 100.609375,
+        "right": 152.609375,
+        "top": 390.234375,
+        "bottom": 434.234375
+      },
+      {
+        "label": "手动提出整套任务",
+        "left": 47,
+        "right": 165,
+        "top": 582.40625,
+        "bottom": 626.40625
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 31,
+        "right": 146.484375,
+        "top": 643.40625,
+        "bottom": 687.40625
+      },
+      {
+        "label": "输入消息",
+        "left": 31,
+        "right": 359,
+        "top": 691.40625,
+        "bottom": 767
+      },
+      {
+        "label": "发送消息",
+        "left": 263,
+        "right": 359,
+        "top": 775,
+        "bottom": 819
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "mixed-retry",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 312,
+        "right": 378,
+        "top": 9.5,
+        "bottom": 53.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 13,
+        "right": 104,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 104,
+        "right": 195,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 195,
+        "right": 286,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "04任务拆分进行中",
+        "left": 286,
+        "right": 377,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "对话",
+        "left": 13,
+        "right": 120.046875,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "阶段会话 1",
+        "left": 120.046875,
+        "right": 227.109375,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "文件与上下文 0",
+        "left": 227.109375,
+        "right": 377,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "完成本阶段",
+        "left": 284,
+        "right": 359,
+        "top": 200.5,
+        "bottom": 244.5
+      },
+      {
+        "label": "放弃整套候选",
+        "left": 124,
+        "right": 228,
+        "top": 441.78125,
+        "bottom": 485.78125
+      },
+      {
+        "label": "确认整套提交",
+        "left": 236,
+        "right": 340,
+        "top": 441.78125,
+        "bottom": 485.78125
+      },
+      {
+        "label": "手动提出整套任务",
+        "left": 47,
+        "right": 165,
+        "top": 582.40625,
+        "bottom": 626.40625
+      },
+      {
+        "label": "当前上下文 · 0 个文件",
+        "left": 31,
+        "right": 146.484375,
+        "top": 643.40625,
+        "bottom": 687.40625
+      },
+      {
+        "label": "输入消息",
+        "left": 31,
+        "right": 359,
+        "top": 691.40625,
+        "bottom": 767
+      },
+      {
+        "label": "发送消息",
+        "left": 263,
+        "right": 359,
+        "top": 775,
+        "bottom": 819
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "restore-confirm",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 312,
+        "right": 378,
+        "top": 9.5,
+        "bottom": 53.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 13,
+        "right": 104,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 104,
+        "right": 195,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 195,
+        "right": 286,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "04任务拆分进行中",
+        "left": 286,
+        "right": 377,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "对话",
+        "left": 13,
+        "right": 120.046875,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "阶段会话 1",
+        "left": 120.046875,
+        "right": 227.109375,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "文件与上下文 0",
+        "left": 227.109375,
+        "right": 377,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "关闭文件区",
+        "left": 317,
+        "right": 361,
+        "top": 211,
+        "bottom": 255
+      },
+      {
+        "label": "项目文件树4",
+        "left": 29,
+        "right": 195,
+        "top": 277,
+        "bottom": 321
+      },
+      {
+        "label": "当前上下文0",
+        "left": 195,
+        "right": 361,
+        "top": 277,
+        "bottom": 321
+      },
+      {
+        "label": "本轮写入",
+        "left": 29,
+        "right": 195,
+        "top": 321,
+        "bottom": 365
+      },
+      {
+        "label": "PRD-专项390.md已删除 · 查看来源记录",
+        "left": 36,
+        "right": 359,
+        "top": 404.890625,
+        "bottom": 461.890625
+      },
+      {
+        "label": "取消",
+        "left": 71,
+        "right": 123,
+        "top": 708.390625,
+        "bottom": 752.390625
+      },
+      {
+        "label": "确认撤回整套",
+        "left": 131,
+        "right": 235,
+        "top": 708.390625,
+        "bottom": 752.390625
+      },
+      {
+        "label": "01-改名秘密_d1354d3b-ec56-4f94-8fe1-72a294939104.md最近写入：迭代 01 · 可整套撤回",
+        "left": 48,
+        "right": 273,
+        "top": 779.890625,
+        "bottom": 836.890625
+      },
+      {
+        "label": "加入当前上下文：issues/iteration-1/01-改名秘密_d1354d3b-ec56-4f94-8fe1-72a294939104.md",
+        "left": 281,
+        "right": 359,
+        "top": 786.390625,
+        "bottom": 830.390625
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "restore-retry",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 312,
+        "right": 378,
+        "top": 9.5,
+        "bottom": 53.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 13,
+        "right": 104,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 104,
+        "right": 195,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 195,
+        "right": 286,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "04任务拆分进行中",
+        "left": 286,
+        "right": 377,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "对话",
+        "left": 13,
+        "right": 120.046875,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "阶段会话 1",
+        "left": 120.046875,
+        "right": 227.109375,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "文件与上下文 0",
+        "left": 227.109375,
+        "right": 377,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "关闭文件区",
+        "left": 317,
+        "right": 361,
+        "top": 211,
+        "bottom": 255
+      },
+      {
+        "label": "项目文件树4",
+        "left": 29,
+        "right": 195,
+        "top": 277,
+        "bottom": 321
+      },
+      {
+        "label": "当前上下文0",
+        "left": 195,
+        "right": 361,
+        "top": 277,
+        "bottom": 321
+      },
+      {
+        "label": "本轮写入",
+        "left": 29,
+        "right": 195,
+        "top": 321,
+        "bottom": 365
+      },
+      {
+        "label": "PRD-专项390.md已删除 · 查看来源记录",
+        "left": 36,
+        "right": 359,
+        "top": 404.890625,
+        "bottom": 461.890625
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "restore-complete",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 312,
+        "right": 378,
+        "top": 9.5,
+        "bottom": 53.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 13,
+        "right": 104,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 104,
+        "right": 195,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 195,
+        "right": 286,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "04任务拆分进行中",
+        "left": 286,
+        "right": 377,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "对话",
+        "left": 13,
+        "right": 120.046875,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "阶段会话 1",
+        "left": 120.046875,
+        "right": 227.109375,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "文件与上下文 0",
+        "left": 227.109375,
+        "right": 377,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "关闭文件区",
+        "left": 317,
+        "right": 361,
+        "top": 211,
+        "bottom": 255
+      },
+      {
+        "label": "项目文件树4",
+        "left": 29,
+        "right": 195,
+        "top": 277,
+        "bottom": 321
+      },
+      {
+        "label": "当前上下文0",
+        "left": 195,
+        "right": 361,
+        "top": 277,
+        "bottom": 321
+      },
+      {
+        "label": "本轮写入",
+        "left": 29,
+        "right": 195,
+        "top": 321,
+        "bottom": 365
+      },
+      {
+        "label": "PRD-专项390.md已删除 · 查看来源记录",
+        "left": 36,
+        "right": 359,
+        "top": 381.890625,
+        "bottom": 438.890625
+      },
+      {
+        "label": "撤回上次任务修改",
+        "left": 54,
+        "right": 168,
+        "top": 582.390625,
+        "bottom": 626.390625
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "restored-open-file",
+    "controls": [
+      {
+        "label": "关闭预览",
+        "left": 330,
+        "right": 374,
+        "top": 20,
+        "bottom": 64
+      },
+      {
+        "label": "正文预览",
+        "left": 16,
+        "right": 72,
+        "top": 91.296875,
+        "bottom": 135.296875
+      },
+      {
+        "label": "文件详情与来源",
+        "left": 90,
+        "right": 185,
+        "top": 91.296875,
+        "bottom": 135.296875
+      },
+      {
+        "label": "编辑正文",
+        "left": 16,
+        "right": 94,
+        "top": 787,
+        "bottom": 831
+      },
+      {
+        "label": "下载 issues/iteration-1/01-data-model.md",
+        "left": 102,
+        "right": 238.859375,
+        "top": 787,
+        "bottom": 831
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "other-readonly",
+    "controls": [
+      {
+        "label": "关闭预览",
+        "left": 330,
+        "right": 374,
+        "top": 20,
+        "bottom": 64
+      },
+      {
+        "label": "正文预览",
+        "left": 16,
+        "right": 72,
+        "top": 91.296875,
+        "bottom": 135.296875
+      },
+      {
+        "label": "文件详情与来源",
+        "left": 90,
+        "right": 185,
+        "top": 91.296875,
+        "bottom": 135.296875
+      },
+      {
+        "label": "迭代 01 · 首轮文件来源更名",
+        "left": 116,
+        "right": 285.640625,
+        "top": 277.875,
+        "bottom": 303.0625
+      },
+      {
+        "label": "迭代 01 · 首轮文件来源更名",
+        "left": 116,
+        "right": 285.640625,
+        "top": 425.21875,
+        "bottom": 450.40625
+      },
+      {
+        "label": "迭代 01 · 首轮文件来源更名",
+        "left": 16,
+        "right": 161.40625,
+        "top": 681.5625,
+        "bottom": 703.15625
+      },
+      {
+        "label": "迭代 01 · 首轮文件来源更名",
+        "left": 16,
+        "right": 161.40625,
+        "top": 796.328125,
+        "bottom": 817.921875
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "manual-editor",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 312,
+        "right": 378,
+        "top": 9.5,
+        "bottom": 53.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 13,
+        "right": 104,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 104,
+        "right": 195,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 195,
+        "right": 286,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "04任务拆分进行中",
+        "left": 286,
+        "right": 377,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "对话",
+        "left": 13,
+        "right": 120.046875,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "阶段会话 1",
+        "left": 120.046875,
+        "right": 227.109375,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "文件与上下文 1",
+        "left": 227.109375,
+        "right": 377,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "完成本阶段",
+        "left": 284,
+        "right": 359,
+        "top": 200.5,
+        "bottom": 244.5
+      },
+      {
+        "label": "复制消息",
+        "left": 265,
+        "right": 309,
+        "top": 273.4375,
+        "bottom": 317.4375
+      },
+      {
+        "label": "修改并重新发送",
+        "left": 313,
+        "right": 357,
+        "top": 273.4375,
+        "bottom": 317.4375
+      },
+      {
+        "label": "# 03 — 完整任务\n\n**What to build:** 用户可以完成任务与权限核对 d1354d3b-ec56-4f94-8fe1-72a294939104\n\n**Blocked by:** ",
+        "left": 49,
+        "right": 341,
+        "top": 298.71875,
+        "bottom": 478.71875
+      },
+      {
+        "label": "新增 issue",
+        "left": 47,
+        "right": 119.171875,
+        "top": 483.3125,
+        "bottom": 527.3125
+      },
+      {
+        "label": "取消",
+        "left": 159,
+        "right": 205,
+        "top": 582.3125,
+        "bottom": 626.3125
+      },
+      {
+        "label": "生成整套待确认候选",
+        "left": 213,
+        "right": 343,
+        "top": 582.3125,
+        "bottom": 626.3125
+      },
+      {
+        "label": "当前上下文 · 1 个文件",
+        "left": 31,
+        "right": 144.640625,
+        "top": 643.40625,
+        "bottom": 687.40625
+      },
+      {
+        "label": "输入消息",
+        "left": 31,
+        "right": 359,
+        "top": 691.40625,
+        "bottom": 767
+      },
+      {
+        "label": "发送消息",
+        "left": 263,
+        "right": 359,
+        "top": 775,
+        "bottom": 819
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "mixed-candidate",
+    "controls": [
+      {
+        "label": "返回迭代管理",
+        "left": 312,
+        "right": 378,
+        "top": 9.5,
+        "bottom": 53.5
+      },
+      {
+        "label": "01需求分析进行中",
+        "left": 13,
+        "right": 104,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "02原型设计进行中",
+        "left": 104,
+        "right": 195,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "03PRD进行中",
+        "left": 195,
+        "right": 286,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "04任务拆分进行中",
+        "left": 286,
+        "right": 377,
+        "top": 73,
+        "bottom": 131
+      },
+      {
+        "label": "对话",
+        "left": 13,
+        "right": 120.046875,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "阶段会话 1",
+        "left": 120.046875,
+        "right": 227.109375,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "文件与上下文 1",
+        "left": 227.109375,
+        "right": 377,
+        "top": 141,
+        "bottom": 185
+      },
+      {
+        "label": "完成本阶段",
+        "left": 284,
+        "right": 359,
+        "top": 200.5,
+        "bottom": 244.5
+      },
+      {
+        "label": "收起正文",
+        "left": 100.609375,
+        "right": 152.609375,
+        "top": 390.578125,
+        "bottom": 434.578125
+      },
+      {
+        "label": "手动提出整套任务",
+        "left": 47,
+        "right": 165,
+        "top": 582.40625,
+        "bottom": 626.40625
+      },
+      {
+        "label": "当前上下文 · 1 个文件",
+        "left": 31,
+        "right": 144.640625,
+        "top": 643.40625,
+        "bottom": 687.40625
+      },
+      {
+        "label": "输入消息",
+        "left": 31,
+        "right": 359,
+        "top": 691.40625,
+        "bottom": 767
+      },
+      {
+        "label": "发送消息",
+        "left": 263,
+        "right": 359,
+        "top": 775,
+        "bottom": 819
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "session-delete-failure-retry",
+    "controls": [
+      {
+        "label": "取消",
+        "left": 36,
+        "right": 354,
+        "top": 673.875,
+        "bottom": 716.875
+      },
+      {
+        "label": "确认删除会话",
+        "left": 36,
+        "right": 354,
+        "top": 621.2456665039062,
+        "bottom": 664.2456665039062
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "iteration-delete-failure-retry",
+    "controls": [
+      {
+        "label": "取消",
+        "left": 36,
+        "right": 354,
+        "top": 697.26806640625,
+        "bottom": 740.26806640625
+      },
+      {
+        "label": "确认删除迭代",
+        "left": 36,
+        "right": 354,
+        "top": 645.2612915039062,
+        "bottom": 688.2612915039062
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "readonly-source",
+    "controls": [
+      {
+        "label": "关闭预览",
+        "left": 336,
+        "right": 374,
+        "top": 20,
+        "bottom": 58
+      },
+      {
+        "label": "正文预览",
+        "left": 16,
+        "right": 72,
+        "top": 88.9375,
+        "bottom": 132.9375
+      },
+      {
+        "label": "文件详情与来源",
+        "left": 90,
+        "right": 185,
+        "top": 88.9375,
+        "bottom": 132.9375
+      }
+    ]
+  },
+  {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "name": "readonly-html",
+    "controls": [
+      {
+        "label": "03-新增秘密_d1354d3b-ec56-4f94-8fe1-72a294939104.md已删除 · 查看来源记录",
+        "left": 40,
+        "right": 374,
+        "top": -5.109375,
+        "bottom": 35.390625
+      },
+      {
+        "label": "04-新增秘密_d1354d3b-ec56-4f94-8fe1-72a294939104.md已删除 · 查看来源记录",
+        "left": 40,
+        "right": 374,
+        "top": 36.390625,
+        "bottom": 76.890625
+      },
+      {
+        "label": "01-本轮独立任务.md最近写入：迭代 02（已删除） · 只读归档",
+        "left": 40,
+        "right": 374,
+        "top": 123.890625,
+        "bottom": 164.390625
+      },
+      {
+        "label": "HTML 快照 · 第 1 版2026/10/2 12:49:51",
+        "left": 17,
+        "right": 162,
+        "top": 315.578125,
+        "bottom": 383.578125
+      },
+      {
+        "label": "新窗口打开",
+        "left": 222.46875,
+        "right": 287.46875,
+        "top": 406.078125,
+        "bottom": 438.078125
+      },
+      {
+        "label": "下载 HTML",
+        "left": 295.46875,
+        "right": 364,
+        "top": 406.078125,
+        "bottom": 438.078125
+      }
+    ]
+  }
+]
