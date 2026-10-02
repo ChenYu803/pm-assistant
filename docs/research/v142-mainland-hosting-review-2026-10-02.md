@@ -2,6 +2,22 @@
 
 研究日期：2026-10-02。用途：个人面试作品、少量免费试用；用户确认 v1.41 已全部完成。本轮只评估发布路线，不购买、部署、迁移数据库或进行网络实测。外部事实仅采用官方来源；方案取舍另标为判断。
 
+## 最新用户取舍与 Supabase 数量参考
+
+用户在初次复评后明确先试海外，不等待大陆备案，也不购买高价国内资源。朋友的美国服务器 + Cloudflare 实测访问较快作为候选路线证据；下方大陆路线为先前比较，不再作为当前默认推进方向。
+
+Supabase Free 的关键可量化边界：低活跃七天可能暂停、500 MB 数据库、共享 CPU / 最多约 0.5 GB 内存、每月 5 GB 非缓存 egress。数据库超过 500 MB 会进入只读模式，消息与文件新增等写入会失败；这不是“用七天后收费”的试用期，持续有实际使用的项目并不因上线满七天必然暂停。[价格页](https://supabase.com/pricing)、[上线清单](https://supabase.com/docs/guides/deployment/going-into-prod)、[数据库大小](https://supabase.com/docs/guides/platform/database-size)、[计算资源](https://supabase.com/docs/guides/platform/compute-and-disk)
+
+容量示例仅作算术参考，未测本站实际平均行大小：假设一轮用户消息 + AI 回复合计 50 KB，10 人每人累计 100 轮约 50 MB，10 人每人累计 500 轮约 250 MB，20 人每人累计 500 轮约 500 MB。均未计索引、文件当前正文/旧版、候选、HTML 快照及来源记录等开销，所以最后一项不可理解为安全容量。空库后记录真实增长率，300 MB 预警是本项目建议，非平台额度。
+
+时间示例：假设全站每天新增 100 轮、每轮 50 KB，纯消息约 5 MB/天，60 天约 300 MB；真实可用时间因上述其他数据会缩短。5 GB egress 若平均每次业务操作从 Supabase 向应用返回 1 MB，约对应 5,000 次该类操作；保存量和读流量不能混算，反复读取长历史/上下文可能让流量比容量更早触顶。该 1 MB 是例子，不是本站测量值。
+
+Free 不提供套餐中的每日自动备份，官方建议定期自行导出并离站保存。[备份说明](https://supabase.com/docs/guides/platform/backups) 免费 Auth 的 50,000 MAU 是认证计费额度，不是数据库并发/业务容量保证；如继续保留 NextAuth，不能拿此额度作为站点承载依据。
+
+应用与数据库尽量同区，Supabase 仅由应用服务端访问，可减少浏览器直连另一海外服务的依赖；Cloudflare 默认不缓存 HTML/JSON，登录及写入等动态链路仍需回源，不能缓存混有私人数据的 API 响应来换取速度。[Cloudflare 默认缓存行为](https://developers.cloudflare.com/cache/concepts/default-cache-behavior/)、[Supabase 数据库连接](https://supabase.com/docs/guides/database/connecting-to-postgres)
+
+若实际选择美国 VPS 而非 Vercel，可在资源允许时同机部署已有 MySQL，免去独立云数据库订阅费和 PostgreSQL 迁移，但须维护系统、数据库和异机备份；若选择 Vercel 托管，则不能在函数环境运行常驻 MySQL。这是备选建议，不改变此前 Supabase 方向。
+
 ## 结论
 
 **判断：Vercel + Supabase + 阿里云域名技术上可行，但“大陆面试官能顺畅打开并完成操作”不能由这套组合或免费额度保证。** 应分别回答容量、网络和改造成本三个问题。少量演示可能远未用满免费额度，却仍因跨境网络、空闲暂停或单次生成时限而演示失败。
