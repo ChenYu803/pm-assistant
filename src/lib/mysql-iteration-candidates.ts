@@ -6,6 +6,23 @@ import { validCandidateFilename, type MarkdownCandidateStage } from "@/lib/markd
 import { getMysqlPool } from "@/lib/mysql";
 
 const FILE_BLOCK = /^%%%FILE_BEGIN%%%[ \t]*([^\r\n]+)\r?\n([\s\S]*?)^%%%FILE_END%%%[ \t]*$/gm;
+const PRD_CHAPTERS = ["概念", "Out of Scope", "页面清单", "实体级数据模型", "用户流程 + 验收标准", "文案基调"];
+
+/** 只接受按顺序齐全且每章有正文的六章 PRD；候选不替 Agent 补写内容。 */
+export function validPrdStructure(content: string) {
+  const headings = [...content.matchAll(/^##[ \t]+(\d+)\.[ \t]+([^\r\n]+)[ \t]*$/gm)];
+  if (headings.length !== PRD_CHAPTERS.length) return false;
+  return headings.every((match, index) => {
+    const next = headings[index + 1]?.index ?? content.length;
+    const body = content.slice(match.index! + match[0].length, next).replace(/<!--[\s\S]*?-->/g, "");
+    return Number(match[1]) === index + 1 && match[2].trim() === PRD_CHAPTERS[index]
+      && body.split(/\r?\n/).some((line) => {
+        const value = line.trim();
+        return value.length > 0 && !/^#{1,6}\s/.test(value) && !/^[-*_]{3,}$/.test(value)
+          && !/^\|?[\s|:-]+\|?$/.test(value);
+      });
+  });
+}
 
 export function extractMarkdownCandidate(answer: string, stage: MarkdownCandidateStage) {
   const matches = [...answer.matchAll(FILE_BLOCK)];
@@ -13,7 +30,7 @@ export function extractMarkdownCandidate(answer: string, stage: MarkdownCandidat
   if (formal.length !== 1) return null;
   const match = formal[0];
   const content = match[2].replace(/^\r?\n/, "").replace(/\r?\n$/, "");
-  if (!content.trim() || !validateFileSize(content).ok) return null;
+  if (!content.trim() || !validateFileSize(content).ok || (stage === "prd" && !validPrdStructure(content))) return null;
   return { suggestedFilename: match[1].trim(), content };
 }
 
@@ -81,7 +98,7 @@ export async function decideMarkdownCandidate(input: {
       [input.candidateId, input.sessionId, input.iterationId],
     );
     const candidate = rows[0];
-    const stage: MarkdownCandidateStage | null = candidate?.stage === "requirements" ? "analysis" : candidate?.stage === "prototype" ? "prototype" : null;
+    const stage: MarkdownCandidateStage | null = candidate?.stage === "requirements" ? "analysis" : candidate?.stage === "prototype" ? "prototype" : candidate?.stage === "prd" ? "prd" : null;
     if (!candidate || !stage) { await connection.rollback(); return { kind: "not-found" as const }; }
     if (candidate.status !== "pending") { await connection.rollback(); return { kind: "decided" as const }; }
     if (input.action === "discard") {
@@ -93,6 +110,7 @@ export async function decideMarkdownCandidate(input: {
       return { kind: "discarded" as const };
     }
     if (!validCandidateFilename(input.filename, stage)) { await connection.rollback(); return { kind: "invalid-filename" as const, stage }; }
+    if (stage === "prd" && !validPrdStructure(candidate.content)) { await connection.rollback(); return { kind: "invalid-structure" as const }; }
     const size = validateFileSize(candidate.content);
     if (!size.ok) { await connection.rollback(); return { kind: "too-large" as const }; }
     const [existingRows] = await connection.query<Array<RowDataPacket & {

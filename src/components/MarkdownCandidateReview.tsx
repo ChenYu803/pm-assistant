@@ -29,7 +29,7 @@ export default function MarkdownCandidateReview({ candidate, stage, iterationId,
   const status = settled ?? candidate.status;
   const operation = files.some((file) => file.filename === filename) ? "overwrite" : "create";
   const pending = status === "pending";
-  const branch = stage === "prototype" ? "原型" : "需求分析";
+  const branch = stage === "prototype" ? "原型" : stage === "prd" ? "PRD" : "需求分析";
 
   async function decide(action: "write" | "discard") {
     if (working || !pending || (action === "write" && !validCandidateFilename(filename, stage))) return;

@@ -235,7 +235,7 @@ function replayResponse(agentType: AgentType | undefined, messages: AIMessage[])
         "",
         "## 6. 文案基调",
         "轻松、直接、口语化。",
-        "%%%FILE_BEGIN%%% prd.md",
+        iterationWorkbench ? "%%%FILE_BEGIN%%% PRD-在线点餐.md" : "%%%FILE_BEGIN%%% prd.md",
         "# 在线点餐 - MVP PRD",
         "",
         "## 1. 概念",
