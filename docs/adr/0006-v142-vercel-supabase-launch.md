@@ -1,6 +1,6 @@
 # v1.42 采用 Vercel、Supabase 与阿里云域名上线
 
-Status: accepted（平台方向；实施范围待讨论）
+Status: superseded by ADR-0007（2026-10-10；以下保留原决策的历史记录）
 
 2026-09-27，产品经理决定暂停 v1.41 后续迭代，以快速、低成本上线为 v1.42 的目标：Vercel 承载应用，Supabase PostgreSQL 作为本轮上线数据库，域名通过阿里云购买。MySQL 相关代码保留供未来使用；本决策调整 ADR-0005 对后续上线版本的数据库方向，不改写 v1.3 的历史事实。
 
