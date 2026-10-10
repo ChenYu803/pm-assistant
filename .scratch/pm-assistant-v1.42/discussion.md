@@ -3,6 +3,14 @@
 状态：讨论中，尚未形成 ready-for-agent 规格或实现票。
 日期：2026-09-27。
 
+## 2026-10-10 当前前沿：海外 VPS 试做手册与 RackNerd 候选
+
+用户愿意先按海外 VPS + 同机 MySQL 路线试做，本轮要求一份可阅读的指导手册并评估截图套餐。手册见 `docs/deploy-overseas-vps-guide.md`，套餐官方核验见 `docs/research/racknerd-vps-evaluation-2026-10-08.md`。这是当前试做方向；下方 Vercel/Supabase 决策保留为此前记录，不据此继续 PostgreSQL 迁移，正式平台 ADR 和发布规格尚待试验结果收敛。
+
+截图为 RackNerd 2 vCPU / 2 GB / 35 GB SSD / 35.99 美元年付，当前选纽约。可作为紧凑演示配置候选，不承诺容量或大陆速度；默认不退款，不能视作可退款年付试用。机房选项、加价及迁机条件未核实，需用户在实际购物车确认。建议先用自己的宽带和手机流量比较官方纽约、洛杉矶、圣何塞测试入口，白天及晚高峰记录，不等待朋友套餐信息。
+
+部署阶段须保留本机数据、使用全新云端 MySQL，处理已验收 MySQL 9.7.2 版本约束、Linux 构建、HTTPS、登录、离机备份和长生成。先 DNS-only，再比较 Cloudflare；免费代理不保证香港节点，125 秒读取超时与现有累计完整回复后返回 JSON 的生成仍是实施约束。本轮只交付文档，没有购买、连接服务器、部署、改库或运行真实模型。下一步是购买前网络比较与用户机房选择。
+
 ## 2026-10-02 当前问题：同机 MySQL 与 Cloudflare 实操路线
 
 用户对海外 VPS 同机运行 MySQL 感兴趣，要求解释 CDN、美国服务器 + Cloudflare 的合理性，并比较大陆访问便利度；尚未最终选择 VPS 商家、套餐、机房或撤销 Supabase 平台 ADR。新研究见 `docs/research/v142-overseas-mysql-cloudflare-routes.md`。
