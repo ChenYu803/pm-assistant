@@ -3,6 +3,14 @@
 状态：讨论中，尚未形成 ready-for-agent 规格或实现票。
 日期：2026-09-27。
 
+## 2026-10-10 内存优先：Docker 用途与首发建议
+
+用户担心宝塔常驻内存，并询问 Docker 是否必需。当前建议按省资源、少组件优先，保持 Ubuntu 24.04 LTS，首发直接运行 Node.js/Next.js、MySQL 与网站入口，暂不装宝塔或 Docker；这是建议，非已执行部署。宝塔主要提供可视化管理，需要额外资源，但未测版本/插件不能给固定占用或认定 4 GB 无法容纳。4 GB 对外部模型调用、少量面试展示是合理候选，容量仍需生产环境实测，尤其关注数据库缓存和构建峰值。
+
+Docker Engine 是在 Linux 上管理容器的工具，将应用和依赖打包并隔离运行，方便重建/迁移和协调版本；容器共享宿主内核，不是每个容器再装一套完整虚拟机系统。网站和数据库的自身内存仍需付出，Docker 也有额外管理开销，默认容器无资源上限，不会自动给每个站点划定配额；需要显式配置。Docker 不强制搭配宝塔，可在 Ubuntu 后装，云服务器无需 Docker Desktop。未来多应用依赖冲突或部署复现需求明确时再评估容器化，数据库需独立持久化和备份，镜像/配置管理亦有工作成本。
+
+官方依据：[容器概念](https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container)、[Docker 概览](https://docs.docker.com/get-started/docker-overview)、[容器资源限制](https://docs.docker.com/engine/containers/resource_constraints)。本轮仅解释、核对与记录，未装软件、测试容量、部署或调用模型。
+
 ## 2026-10-10 镜像追问：宝塔面板与系统镜像的管理差异
 
 用户询问能否改选宝塔 Linux 面板，尚未确认切换；已接受选择仍为广州与 Ubuntu 24.04 LTS。腾讯云提供宝塔应用镜像，含底层 Linux 系统、面板及初始化配置，版本以购买页为准；宝塔是浏览器管理后台，不是独立操作系统，也不是 Linux 桌面。纯系统镜像更常通过 SSH/命令管理；宝塔可可视化管理文件、站点、数据库、证书和资源，但仍可使用 SSH；预装 Docker 镜像侧重容器运行而非网页后台。
