@@ -3,6 +3,10 @@
 状态：讨论中，尚未形成 ready-for-agent 规格或实现票。
 日期：2026-09-27。
 
+## 2026-10-10 品牌不限定 PM：新主选 IdeaStage
+
+用户提出未来产品可能服务任何有 AI 开发需求的人，认可 Stage 并要求换掉 PM。品牌主选调整为 **IdeaStage** / `ideastage.cn`，保留 Idea（想法）与 Stage（现场/阶段）的表达，替代 PMStage 域名目标；中文页面名暂保留，不把可能转型当作当前规格变更。本轮 CNNIC WHOIS 对 ideastage.cn 返回 No matching record，最终注册与费用仍待注册商确认；公开检索仅初筛，未声称唯一名称。已更新 CONTEXT 与品牌说明，未买域名、改页面或部署。当前 v1.42 仍围绕既有入职体验与实践路线准备首发。
+
 ## 2026-10-10 服务器已付款，正式英文名与域名确定
 
 用户确认服务器已付款，并授权直接确定域名与正式英文名。选定 **PMStage** 与 `pmstage.cn`，中文展示名沿用“AI 产品现场”，内部 PM Assistant 暂不变；依据 PM 与工作现场/阶段实践的含义及七字母拼写，覆盖入职体验与四环成果实践。已写入 `CONTEXT.md` 与 `docs/product-brand.md`，服务器 ADR 更新已付款事实，尚未远程部署。

@@ -12,7 +12,7 @@
 
 | Decision | Resolution | Rationale |
 |---|---|---|
-| 对外英文品牌与域名（2026-10-10） | 正式英文名为 **PMStage**，中文展示名沿用“AI 产品现场”；主域名选定 `pmstage.cn`，待注册。仓库内部名 PM Assistant 保留 | 用户授权定名；PM 指产品经理，Stage 呼应现场与阶段实践，英文名与域名一致。CNNIC WHOIS 本轮返回无匹配记录，最终注册状态及费用以注册商订单为准；查询证据见 `docs/product-brand.md` |
+| 对外英文品牌与域名（2026-10-10） | 用户要求保留 Stage、移除 PM 限制，英文名与域名主选调整为 **IdeaStage** / `ideastage.cn`，待注册；PMStage 方案被取代。现有中文展示名“AI 产品现场”和内部名 PM Assistant 暂保留 | 用户提出未来可能服务任何有 AI 开发需求的人；Idea 表达想法，Stage 呼应现场与阶段实践。品牌预留转型空间不改变当前 v1.42 功能范围。CNNIC WHOIS 本轮返回无匹配记录，最终注册状态及费用以注册商订单为准；查询证据见 `docs/product-brand.md` |
 | Product form | Website | User-facing, accessible to non-technical PMs |
 | Agent role | The website IS the chat interface | Users talk to specialized agents directly in the browser |
 | File storage | Server-side, per-user project spaces | Auto-archiving, zero-friction handoff between agents; downloads also available |
