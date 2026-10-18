@@ -1,0 +1,15 @@
+[Unit]
+Description=IdeaStage 加密数据库与配置备份
+After=mysql.service
+
+[Service]
+Type=oneshot
+User=root
+Group=ideastage-backup
+WorkingDirectory=/srv/ideastage/current
+EnvironmentFile=/etc/ideastage/runtime.env
+ExecStart=/usr/bin/flock -n /run/lock/ideastage-maintenance /usr/bin/node --import tsx scripts/production-backup.ts backup --env /etc/ideastage/runtime.env --key /etc/ideastage/backup.key --out /var/backups/ideastage --source /srv/ideastage/current
+UMask=0077
+Nice=10
+PrivateTmp=true
+NoNewPrivileges=true

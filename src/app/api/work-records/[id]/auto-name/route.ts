@@ -41,6 +41,7 @@ export async function POST(
     }
 
     const name = await autoNameMysqlWorkRecord(tab.id, workRecord.id, {
+      userId,
       testName,
       forceFailureForTest: failureInjected,
     });

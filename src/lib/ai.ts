@@ -1,9 +1,11 @@
 import OpenAI from "openai";
 import type { AgentType } from "@/lib/agent-constants";
+import { reserveAIRequest } from "@/lib/mysql-ai-budget";
 
 export type AIMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam;
 
 type AIRequest = {
+  userId?: string;
   agentType?: AgentType;
   messages: AIMessage[];
   maxTokens: number;
@@ -20,9 +22,7 @@ type ReplayChunk = {
  * 开发环境默认使用固定回放，避免测试意外消耗 API 额度。
  * 真实调用必须显式设置 AI_MODE=live。
  */
-export const AI_MODE =
-  process.env.AI_MODE ??
-  (process.env.NODE_ENV === "production" ? "live" : "replay");
+export const AI_MODE = process.env.AI_MODE ?? "replay";
 export const AI_MODEL = process.env.AI_MODEL ?? "deepseek-v4-flash";
 
 export function isLiveAI(): boolean {
@@ -41,6 +41,8 @@ export function createAIClient(): OpenAI {
   return new OpenAI({
     apiKey: process.env.AI_API_KEY,
     baseURL: process.env.AI_BASE_URL || "https://api.deepseek.com",
+    // 一次额度对应一次供应商请求，避免 SDK 隐式重试绕过每日次数限制。
+    maxRetries: 0,
   });
 }
 
@@ -378,6 +380,7 @@ function replayStream(
 }
 
 export async function createAIStream({
+  userId,
   agentType,
   messages,
   maxTokens,
@@ -388,6 +391,7 @@ export async function createAIStream({
   if (!isLiveAI()) {
     return replayStream(replayResponse(agentType, messages), replayDelayMs, signal);
   }
+  await reserveAIRequest(userId);
   return createAIClient().chat.completions.create(
     { model: AI_MODEL, max_tokens: maxTokens, messages, stream: true },
     { timeout: timeoutMs, signal }
@@ -395,17 +399,20 @@ export async function createAIStream({
 }
 
 export async function createAICompletion({
+  userId,
   agentType,
   messages,
   maxTokens,
   timeoutMs,
+  signal,
 }: AIRequest): Promise<string> {
   if (!isLiveAI()) {
     return replayResponse(agentType, messages);
   }
+  await reserveAIRequest(userId);
   const response = await createAIClient().chat.completions.create(
     { model: AI_MODEL, max_tokens: maxTokens, messages, stream: false },
-    { timeout: timeoutMs }
+    { timeout: timeoutMs, signal }
   );
   return response.choices[0]?.message?.content?.trim() ?? "";
 }

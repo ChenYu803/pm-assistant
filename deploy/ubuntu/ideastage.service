@@ -1,0 +1,30 @@
+[Unit]
+Description=IdeaStage 网站（单实例）
+After=network.target mysql.service
+Wants=mysql.service
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=ideastage
+Group=ideastage
+WorkingDirectory=/srv/ideastage/current
+EnvironmentFile=/etc/ideastage/runtime.env
+# Node 24 安装至 /usr/bin；实际路径不同时修改此文件，不依赖交互 shell/nvm。
+ExecStartPre=/usr/bin/node --import tsx scripts/production-check.ts --database --recover
+ExecStart=/usr/bin/node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3000
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=45
+KillMode=control-group
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

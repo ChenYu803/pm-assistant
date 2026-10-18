@@ -254,12 +254,16 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
   }
   const assistant = started.assistant;
   const userMessage = started.userMessage;
-
+  const generation = registerGeneration(assistant.id);
+  const abortGeneration = () => generation.abort();
+  request.signal.addEventListener("abort", abortGeneration, { once: true });
+  if (request.signal.aborted) abortGeneration();
+  let heartbeat: ReturnType<typeof setInterval> | undefined;
   const stream = new ReadableStream({
     async start(controller) {
       let fullContent = "";
       let operationFinished = false;
-      const generation = registerGeneration(assistant.id);
+      heartbeat = setInterval(() => send(controller, "heartbeat", {}), 15_000);
       send(controller, "start", {
         ...messageJson(assistant),
         ...(userMessage ? { userMessageId: userMessage.id } : {}),
@@ -269,7 +273,7 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
       try {
         const failureMode = process.env.NODE_ENV !== "production" ? request.headers.get("x-pm-verify-force-error") : null;
         if (failureMode === "zero-token") throw new Error("回放强制零 token 失败");
-        const stream = await createAIStream({ agentType: tab.agent_type, maxTokens: 32768, messages, timeoutMs: 600_000, signal: generation.signal, replayDelayMs: process.env.NODE_ENV !== "production" && request.headers.get("x-pm-verify-stream-delay") === "1" ? 300 : undefined });
+        const stream = await createAIStream({ userId, agentType: tab.agent_type, maxTokens: 32768, messages, timeoutMs: 600_000, signal: generation.signal, replayDelayMs: process.env.NODE_ENV !== "production" && request.headers.get("x-pm-verify-stream-delay") === "1" ? 300 : undefined });
         for await (const chunk of stream) {
           if (generation.signal.aborted) throw new MysqlGenerationInterruptedError();
           const delta = chunk.choices[0]?.delta?.content;
@@ -332,10 +336,17 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
         const tabVersion = operationFinished ? undefined : freezeFailure?.tabVersion ?? await failMysqlTabOperation(operation, errorMessage);
         send(controller, "error", { message: errorMessage, interrupted, ...messageJson(latest ?? assistant), ...(userMessage ? { userMessageId: userMessage.id } : {}), ...(isFreeze ? { freezeStatus: "failed", freezeMessageId: assistant.id, freezeError: errorMessage } : {}), ...(tabVersion === undefined ? {} : { tabVersion }) });
       } finally {
+        if (heartbeat) clearInterval(heartbeat);
+        request.signal.removeEventListener("abort", abortGeneration);
         releaseGeneration(assistant.id, generation);
         close(controller);
       }
     },
+    cancel() {
+      if (heartbeat) clearInterval(heartbeat);
+      request.signal.removeEventListener("abort", abortGeneration);
+      abortGeneration();
+    },
   });
-  return new Response(stream, { headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", Connection: "keep-alive", "X-Accel-Buffering": "no" } });
+  return new Response(stream, { headers: { "Content-Type": "text/event-stream", "Cache-Control": "private, no-store, no-cache, no-transform", "X-Accel-Buffering": "no" } });
 }

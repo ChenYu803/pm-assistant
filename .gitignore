@@ -34,6 +34,14 @@ yarn-error.log*
 .env*
 !.env.example
 
+# 生产配置与加密备份使用仓库外目录；防止临时复制后误提交。
+runtime.env
+maintenance.env
+restore-admin.env
+backup.key
+*.isb
+*.isb.sha256
+
 # vercel
 .vercel
 

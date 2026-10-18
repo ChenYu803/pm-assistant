@@ -2,11 +2,13 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { createMysqlUser, findMysqlUserByEmail, normalizeEmail } from "@/lib/mysql-account-workspace";
 import { mysqlUnavailableMessage } from "@/lib/mysql";
+import { validRegistrationInvite } from "@/lib/launch-policy";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { email, password } = body;
+    if (!validRegistrationInvite(body.inviteCode)) return NextResponse.json({ error: "邀请码无效，请核对收到的邀请码。" }, { status: 403 });
 
     // Validate email format
     if (!email || typeof email !== "string") {

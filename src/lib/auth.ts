@@ -46,6 +46,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const pathname = nextUrl.pathname;
+      if (pathname === "/api/health") return true;
 
       // Allow public auth API routes (register, login, session)
       if (pathname.startsWith("/api/auth")) {

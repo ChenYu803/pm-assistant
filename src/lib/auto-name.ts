@@ -6,6 +6,7 @@ import {
 } from "@/lib/mysql-conversation";
 
 interface AutoNameOptions {
+  userId?: string;
   testName?: string;
   forceFailureForTest?: boolean;
 }
@@ -29,6 +30,7 @@ export async function autoNameMysqlWorkRecord(
       )
       .join("\n");
     let name = await createAICompletion({
+      userId: options.userId,
       maxTokens: 50,
       messages: [
         {

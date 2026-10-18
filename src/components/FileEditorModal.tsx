@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { readGenerationResult } from "@/lib/generation-result-client";
 import {
   Dialog,
   DialogContent,
@@ -33,31 +34,33 @@ export default function FileEditorModal({
   const [isPolishing, setIsPolishing] = useState(false);
   const [polishedContent, setPolishedContent] = useState<string | null>(null);
   const [polishError, setPolishError] = useState("");
+  const polishController = useRef<AbortController | null>(null);
+  useEffect(() => () => polishController.current?.abort(), []);
 
   async function handlePolish() {
     if (!polishTarget || !content.trim()) return;
     setIsPolishing(true);
     setPolishError("");
+    const controller = new AbortController();
+    polishController.current = controller;
     try {
       const res = await fetch(
         `/api/projects/${polishTarget.projectId}/files/${polishTarget.fileId}/polish`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
           body: JSON.stringify({ content }),
+          signal: controller.signal,
         }
       );
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "AI 润色失败");
-      }
-      const data = await res.json();
-      setPolishedContent(data.polished);
+      const data = await readGenerationResult(res);
+      setPolishedContent(data.polished ?? null);
     } catch (err) {
       setPolishError(
         err instanceof Error ? err.message : "AI 润色失败"
       );
     } finally {
+      if (polishController.current === controller) polishController.current = null;
       setIsPolishing(false);
     }
   }

@@ -400,7 +400,7 @@ export async function generateMysqlIterationMessage(input: {
       "SELECT id FROM iteration_session_messages WHERE id = ? AND status = 'generating'", [assistantId]);
     if (generation.signal.aborted) throw new Error("生成已停止");
     if (!active.length) return stoppedResult();
-    const stream = await createAIStream({ agentType: prompt.agentType, maxTokens: 32768, messages: [{ role: "system", content: prompt.prompt }, ...history], timeoutMs: 600_000, signal: generation.signal, replayDelayMs: input.replayDelayMs });
+    const stream = await createAIStream({ userId: input.userId, agentType: prompt.agentType, maxTokens: 32768, messages: [{ role: "system", content: prompt.prompt }, ...history], timeoutMs: 600_000, signal: generation.signal, replayDelayMs: input.replayDelayMs });
     partialFlushTimer = setInterval(() => { void flushPartial().catch(() => undefined); }, 500);
     for await (const chunk of stream) {
       if (generation.signal.aborted) throw new Error("生成已停止");

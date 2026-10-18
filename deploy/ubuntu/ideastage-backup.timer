@@ -1,0 +1,11 @@
+[Unit]
+Description=IdeaStage 每日北京时间 03:00 备份
+
+[Timer]
+OnCalendar=*-*-* 03:00:00 Asia/Shanghai
+Persistent=true
+RandomizedDelaySec=300
+Unit=ideastage-backup.service
+
+[Install]
+WantedBy=timers.target

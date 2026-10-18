@@ -445,6 +445,18 @@ export const MYSQL_MIGRATIONS = [
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
     ],
   },
+  {
+    id: "0022_v142_ai_daily_usage",
+    checksum: "ec67497a1ad5258579c5799b25ae96e34c02a30e8864bfaa582216e93247a921",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS ai_daily_usage (
+        usage_day DATE NOT NULL,
+        subject VARCHAR(36) NOT NULL,
+        request_count INT UNSIGNED NOT NULL DEFAULT 0,
+        PRIMARY KEY (usage_day, subject)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+    ],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {
