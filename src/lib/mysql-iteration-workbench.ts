@@ -296,7 +296,7 @@ export async function buildMysqlIterationPrompt(iterationId: string, sessionId: 
 }
 
 export async function generateMysqlIterationMessage(input: {
-  iterationId: string; sessionId: string; userId: string; content?: string; regenerateMessageId?: string; editMessageId?: string; replayDelayMs?: number; forceSnapshotFailure?: boolean;
+  iterationId: string; sessionId: string; userId: string; content?: string; regenerateMessageId?: string; editMessageId?: string; replayDelayMs?: number; forceSnapshotFailure?: boolean; signal?: AbortSignal; onContentChunk?: (content: string, messageId: string) => void;
 }) {
   const session = await findOwnedIterationSession(input.iterationId, input.sessionId, input.userId);
   if (!session) return { kind: "not-found" as const };
@@ -367,24 +367,50 @@ export async function generateMysqlIterationMessage(input: {
     await reservation.commit();
   } catch (error) { await reservation.rollback(); throw error; } finally { reservation.release(); }
   const generation = registerGeneration(assistantId);
+  const abortGeneration = () => generation.abort();
+  input.signal?.addEventListener("abort", abortGeneration, { once: true });
+  if (input.signal?.aborted) abortGeneration();
   async function stoppedResult() {
     if (editTarget || regenerateTarget) {
       await pool.execute<ResultSetHeader>(
-        "DELETE FROM iteration_session_messages WHERE id = ? AND session_id = ? AND status = 'failed' AND error_message = '生成已停止'",
+        "DELETE FROM iteration_session_messages WHERE id = ? AND session_id = ? AND (status = 'generating' OR (status = 'failed' AND error_message = '生成已停止'))",
         [assistantId, input.sessionId]);
     }
     return { kind: "generation-stopped" as const };
   }
+  let answer = "";
+  let partialWrite = Promise.resolve();
+  let persistedLength = 0;
+  let partialFlushTimer: ReturnType<typeof setInterval> | undefined;
+  const flushPartial = () => {
+    if (answer.length <= persistedLength) return partialWrite;
+    const snapshot = answer;
+    partialWrite = partialWrite.then(async () => {
+      if (snapshot.length <= persistedLength) return;
+      await pool.execute<ResultSetHeader>(
+        "UPDATE iteration_session_messages SET content = ? WHERE id = ? AND session_id = ? AND status = 'generating'",
+        [snapshot, assistantId, input.sessionId],
+      );
+      persistedLength = snapshot.length;
+    });
+    return partialWrite;
+  };
   try {
     const [active] = await pool.query<Array<RowDataPacket & { id: string }>>(
       "SELECT id FROM iteration_session_messages WHERE id = ? AND status = 'generating'", [assistantId]);
-    if (!active.length || generation.signal.aborted) return stoppedResult();
+    if (generation.signal.aborted) throw new Error("生成已停止");
+    if (!active.length) return stoppedResult();
     const stream = await createAIStream({ agentType: prompt.agentType, maxTokens: 32768, messages: [{ role: "system", content: prompt.prompt }, ...history], timeoutMs: 600_000, signal: generation.signal, replayDelayMs: input.replayDelayMs });
-    let answer = "";
+    partialFlushTimer = setInterval(() => { void flushPartial().catch(() => undefined); }, 500);
     for await (const chunk of stream) {
       if (generation.signal.aborted) throw new Error("生成已停止");
-      answer += chunk.choices[0]?.delta?.content ?? "";
+      const content = chunk.choices[0]?.delta?.content ?? "";
+      if (!content) continue;
+      answer += content;
+      input.onContentChunk?.(content, assistantId);
     }
+    if (partialFlushTimer) clearInterval(partialFlushTimer);
+    await flushPartial();
     const prototypeHtml = session.stage === "prototype" ? extractPrototypeHtml(answer) : { kind: "none" as const };
     if (prototypeHtml.kind === "invalid") throw new Error(prototypeHtml.error);
     const connection = await pool.getConnection();
@@ -397,6 +423,7 @@ export async function generateMysqlIterationMessage(input: {
         "SELECT id FROM iteration_session_messages WHERE id = ? AND session_id = ? AND status = 'generating'", [assistantId, input.sessionId]);
       if (!activeRows.length || generation.signal.aborted) {
         await connection.rollback();
+        if (generation.signal.aborted) throw new Error("生成已停止");
         return stoppedResult();
       }
       if (editTarget) {
@@ -421,14 +448,19 @@ export async function generateMysqlIterationMessage(input: {
     } catch (error) { await connection.rollback(); throw error; } finally { connection.release(); }
     return { kind: "generated" as const, userMessage, assistantMessage: { id: assistantId, role: "assistant" as const, content: answer, status: "completed", errorMessage: null, createdAt } };
   } catch (error) {
+    if (partialFlushTimer) clearInterval(partialFlushTimer);
+    await partialWrite.catch(() => undefined);
     const stopped = generation.signal.aborted;
     const message = stopped ? "生成已停止" : error instanceof Error ? error.message : "Agent 生成失败";
     if (!editTarget && !regenerateTarget) {
-      await pool.execute<ResultSetHeader>("UPDATE iteration_session_messages SET status = 'failed', error_message = ? WHERE id = ? AND session_id = ? AND status = 'generating'", [message, assistantId, input.sessionId]);
+      await pool.execute<ResultSetHeader>("UPDATE iteration_session_messages SET content = ?, status = 'failed', error_message = ? WHERE id = ? AND session_id = ? AND (status = 'generating' OR (status = 'failed' AND error_message = '生成已停止'))", [answer, message, assistantId, input.sessionId]);
       await pool.execute<ResultSetHeader>("UPDATE iteration_sessions SET updated_at = ? WHERE id = ?", [new Date(), input.sessionId]);
-    } else if (!stopped) await pool.execute<ResultSetHeader>("DELETE FROM iteration_session_messages WHERE id = ? AND session_id = ? AND status = 'generating'", [assistantId, input.sessionId]);
+    } else if (stopped) {
+      await pool.execute<ResultSetHeader>("UPDATE iteration_session_messages SET content = ? WHERE id = ? AND session_id = ? AND status = 'failed' AND error_message = '生成已停止'", [answer, assistantId, input.sessionId]);
+    } else await pool.execute<ResultSetHeader>("DELETE FROM iteration_session_messages WHERE id = ? AND session_id = ? AND status = 'generating'", [assistantId, input.sessionId]);
     return stopped ? stoppedResult() : { kind: "generation-failed" as const, error: message, userMessage, assistantMessageId: assistantId };
   } finally {
+    input.signal?.removeEventListener("abort", abortGeneration);
     releaseGeneration(assistantId, generation);
   }
 }

@@ -11,8 +11,8 @@ import nextEnv from "@next/env";
 import { initializeMysql } from "../src/lib/mysql-bootstrap.ts";
 import { getMysqlAdminConfig, getMysqlConnectionOptions } from "../src/lib/mysql-config.ts";
 
-export async function runIsolatedReplay({ slug, title, scenarioScript, captureProvider = false }) {
-  if (!/^[a-z][a-z0-9-]*$/.test(slug) || !/^scripts\/verify-v141-[a-z0-9-]+-scenario\.mjs$/.test(scenarioScript)) {
+export async function runIsolatedReplay({ slug, title, scenarioScript, captureProvider = false, expectedWorkflows = 2 }) {
+  if (!/^[a-z][a-z0-9-]*$/.test(slug) || !/^scripts\/verify-v14[12]-[a-z0-9-]+-scenario\.mjs$/.test(scenarioScript)) {
     throw new Error("非法专项标识或场景路径");
   }
   nextEnv.loadEnvConfig(process.cwd());
@@ -171,7 +171,7 @@ export async function runIsolatedReplay({ slug, title, scenarioScript, capturePr
     }
     pass += summary.pass;
     fail += summary.fail;
-    check("连续浏览器回放完整结束", exitCode === 0 && summary.fail === 0 && summary.workflows?.length === 2);
+    check("连续浏览器回放完整结束", exitCode === 0 && summary.fail === 0 && summary.workflows?.length === expectedWorkflows);
   } catch (error) {
     if (!error.counted) fail++;
     console.error(`❌ ${title}未通过：${sanitize(error.message)}`);

@@ -53,6 +53,8 @@
 
 ## 协议三处耦合点现状快照
 
+- **v1.42 #01 新工作台流式生成**：发送、重新生成与消息 PATCH 编辑使用 `Accept: text/event-stream` 选择 SSE；不携带该头的 JSON 调用保持原状态码和结构。`iteration-generation-stream.ts` 每 15 秒发送 `heartbeat`，正文使用 `token {content,messageId}`，终态使用 `result {status,body}`（流已开始后业务状态放在事件中）；响应禁止缓存/转换并设置 `X-Accel-Buffering: no`。取消响应或请求中止向生成控制器传递 AbortSignal，预先中止的信号也必须识别。`mysql-iteration-workbench.ts` 每 500ms 串行保存部分正文且仍标记 generating；完整回复、候选和原型快照仍只在原有成功事务中提交。普通发送停止/断线保留 failed 部分正文；编辑/重生成失败或取消清理临时回复、保留旧成功事实。前端以真实消息 ID 和累计正文合并切换会话后的恢复，正在本页接收流时不以轮询覆盖实时内容；其他页面/刷新后以数据库轮询恢复，并在生成状态结束时对账终态。改动须回归 `verify-v142-generation-stream.mjs` 与生命周期脚本；涉及正式候选或快照事务时再回归对应 v1.41 专项。应用侧 replay 不证明 nginx/Cloudflare 端到端转发，部署时仍须验收真实长请求。
+
 - **v1.41 #17 产品迭代删除**：`deleteMysqlProductIteration` 按项目 → 迭代 → 全部阶段会话使用 `FOR UPDATE NOWAIT`，生成检查必须使用当前读；`iterations/[id]` DELETE 的 `generating` / `writing` 对应 409，阻止和失败不得清理候选或显示成功。同事务先显式删除本轮消息及其候选，再删除迭代父行级联其他过程，避免本机多级级联实测的消息残留；保留项目文件/唯一旧版、任务文件夹/唯一旧集合、HTML 快照和项目级来源。任务归属和文件来源通过迭代是否存续显示只读归档/已删除占位。`projects.next_iteration_number > 1` 是不可回退的迭代使用事实，旧文件写入、整套任务、HTML 保存和旧上下文入口必须在项目锁内拒绝绕过，不能以当前迭代列表为空恢复旧权限。`IterationDeleteDialog.tsx` 只在提交成功后清理本轮会话选择并刷新文件目录，项目文件视图提供只读 Markdown 与全部 HTML 快照浏览。变更须回归 `verify-v141-iteration-deletion.mjs`、会话删除、生命周期、来源、任务归属/整套提交/撤回、手动上下文和快照专项。
 
 - **v1.41 项目删除清理**：`deleteMysqlProjectCascade` 在项目锁内先锁定全部产品迭代，显式清理新工作台消息并删除迭代，再清理旧 tabs、项目文件、HTML 和项目父行；避免多级级联的消息残留。全部步骤同事务，故障回滚须同时恢复新工作台过程和项目级资产；回归项目级联与迭代删除专项。

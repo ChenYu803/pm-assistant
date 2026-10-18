@@ -20,6 +20,7 @@
     "verify:v141-deletion-failure-replay": "tsx scripts/verify-v141-deletion-failure-replay.mjs",
     "verify:v141-quality-visual-gate": "tsx scripts/verify-v141-quality-visual-gate.mjs",
     "verify:v141-release-gate": "tsx scripts/verify-v141-release-gate.mjs",
+    "verify:v142-generation-stream": "tsx scripts/verify-v142-generation-stream.mjs",
     "verify:v141-markdown-progress": "tsx scripts/verify-v141-markdown-progress.mjs",
     "verify:v141-project-file-tree": "tsx scripts/verify-v141-project-file-tree.mjs",
     "verify:v141-task-folder-ownership": "tsx scripts/verify-v141-task-folder-ownership.mjs",

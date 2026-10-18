@@ -102,6 +102,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
   const activeView = useRef<{ stage: StageKey; sessionId: string | null }>({ stage: "analysis", sessionId: null });
   const sendingIds = useRef(new Set<string>());
   const stoppedIds = useRef(new Set<string>());
+  const liveReplies = useRef(new Map<string, { id: string; content: string }>());
   const creatingSessionRef = useRef(false);
 
   const currentInfo = stageInfo.find((stage) => stage.key === currentStage) ?? stageInfo[0];
@@ -125,6 +126,53 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
     const body = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(body.error || "请求未完成，请重试。");
     return body;
+  }, []);
+
+  const streamGeneration = useCallback(async (url: string, init: RequestInit, sessionId: string) => {
+    const response = await fetch(url, { ...init, headers: { Accept: "text/event-stream", ...(init.headers ?? {}) } });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body.error || "请求未完成，请重试。");
+    }
+    if (!response.body) throw new Error("生成响应不可读取，请重试。");
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    type StreamResult = { status: number; body: { error?: string; messages?: Message[]; assistantMessage?: Message; userMessage?: Message } };
+    const result = { current: null as StreamResult | null };
+    const applyEvent = (event: string, data: string) => {
+      const payload = JSON.parse(data) as { content?: string; messageId?: string; status?: number; body?: StreamResult["body"] };
+      const content = payload.content;
+      if (event === "token" && typeof content === "string" && content && typeof payload.messageId === "string") {
+        const reply = { id: payload.messageId, content: (liveReplies.current.get(sessionId)?.content ?? "") + content };
+        liveReplies.current.set(sessionId, reply);
+        if (activeView.current.sessionId !== sessionId || stoppedIds.current.has(sessionId)) return;
+        messageVersion.current += 1;
+        setMessages((previous) => {
+          const existing = previous.find((message) => message.id === reply.id);
+          if (existing) return previous.map((message) => message.id === reply.id ? { ...message, content: reply.content } : message);
+          return [...previous, { id: reply.id, role: "assistant", content: reply.content, status: "generating" }];
+        });
+      }
+      if (event === "result" && typeof payload.status === "number" && payload.body) result.current = { status: payload.status, body: payload.body };
+    };
+    while (true) {
+      const chunk = await reader.read();
+      buffer += decoder.decode(chunk.value ?? new Uint8Array(), { stream: !chunk.done });
+      let boundary = buffer.indexOf("\n\n");
+      while (boundary >= 0) {
+        const block = buffer.slice(0, boundary);
+        buffer = buffer.slice(boundary + 2);
+        const event = block.match(/^event:\s*(.+)$/m)?.[1] ?? "message";
+        const data = block.match(/^data:\s*(.+)$/m)?.[1];
+        if (data) applyEvent(event, data);
+        boundary = buffer.indexOf("\n\n");
+      }
+      if (chunk.done) break;
+    }
+    if (!result.current) throw new Error("生成响应未完成，请刷新会话后重试。");
+    if (result.current.status >= 400) throw new Error(result.current.body.error || "请求未完成，请重试。");
+    return result.current.body;
   }, []);
 
   const refreshCandidateState = useCallback(async (sessionId: string, stage: StageKey) => {
@@ -206,7 +254,13 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
         request(`${base}/stages/${currentStage}/sessions/${sessionId}/context`),
       ]);
       if (requestSequence !== loadSequence.current || activeView.current.sessionId !== sessionId || activeView.current.stage !== currentStage) return;
-      if (startedAtMessageVersion === messageVersion.current) setMessages(history.messages);
+      const liveReply = liveReplies.current.get(sessionId);
+      if (liveReply) {
+        // 切回会话时以真实消息 ID 合并，保留历史且不重复追加数据库中的部分正文。
+        const restored = (history.messages as Message[]).map((message) => message.id === liveReply.id && message.status === "generating" ? { ...message, content: liveReply.content } : message);
+        if (!restored.some((message) => message.id === liveReply.id)) restored.push({ ...liveReply, role: "assistant", status: "generating" });
+        setMessages(restored);
+      } else if (startedAtMessageVersion === messageVersion.current) setMessages(history.messages);
       setContextBySession((previous) => ({ ...previous, [sessionId]: context.fileIds }));
     } catch (caught) {
       if (requestSequence === loadSequence.current) {
@@ -217,6 +271,26 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
       if (requestSequence === loadSequence.current) setMessagesLoading(false);
     }
   }, [base, currentStage, request]);
+
+  useEffect(() => {
+    if (!activeSessionId || messagesLoading) return;
+    let inFlight = false;
+    const refresh = async () => {
+      if (inFlight || sendingIds.current.has(activeSessionId)) return;
+      inFlight = true;
+      const startedAtMessageVersion = messageVersion.current;
+      try {
+        const history = await request(`${base}/stages/${currentStage}/sessions/${activeSessionId}/messages`);
+        if (activeView.current.sessionId === activeSessionId && activeView.current.stage === currentStage && startedAtMessageVersion === messageVersion.current) setMessages(history.messages);
+      } catch { /* 流式连接负责即时反馈；轮询失败时保留当前内容并等待下一次对账。 */ }
+      finally { inFlight = false; }
+    };
+    // 服务端生成状态结束时也读取一次，避免刷新后的页面停留在最后一次部分正文。
+    void refresh();
+    if (!sessionGenerating) return;
+    const timer = window.setInterval(() => { void refresh(); }, 1000);
+    return () => window.clearInterval(timer);
+  }, [activeSessionId, base, currentStage, messagesLoading, request, sessionGenerating]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => { void loadMessages(activeSessionId); }, 0);
@@ -394,9 +468,9 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
     try {
       let latestMessages: Message[] = [];
       if (editMessageId) {
-        await request(`${base}/sessions/${sessionId}/messages/${editMessageId}`, {
+        await streamGeneration(`${base}/sessions/${sessionId}/messages/${editMessageId}`, {
           method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: content.trim() }),
-        });
+        }, sessionId);
         const history = await request(`${base}/stages/${stage}/sessions/${sessionId}/messages`);
         latestMessages = history.messages;
         if (activeView.current.stage === stage && activeView.current.sessionId === sessionId) {
@@ -404,14 +478,14 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
           setMessages(history.messages);
         }
       } else {
-        const result = await request(`${base}/stages/${stage}/sessions/${sessionId}/messages`, {
+        const result = await streamGeneration(`${base}/stages/${stage}/sessions/${sessionId}/messages`, {
           method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...(content.trim() ? { content: content.trim() } : {}), ...(regenerateMessageId ? { regenerateMessageId } : {}) }),
-        });
-        latestMessages = result.messages;
+        }, sessionId);
+        latestMessages = result.messages ?? [];
         if (activeView.current.stage === stage && activeView.current.sessionId === sessionId) {
           messageVersion.current += 1;
-          setMessages(result.messages);
+          setMessages(result.messages ?? []);
         }
       }
       if (!editMessageId && !regenerateMessageId) setDrafts((previous) => ({ ...previous, [sessionId]: "" }));
@@ -432,11 +506,14 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
         if (activeView.current.stage === stage) setSessions((previous) => previous.map(updateSession));
       }
     } catch (caught) {
-      if (!stoppedIds.current.has(sessionId) && activeView.current.stage === stage && activeView.current.sessionId === sessionId) {
+      liveReplies.current.delete(sessionId);
+      const generationStopped = caught instanceof Error && caught.message === "生成已停止";
+      if (!stoppedIds.current.has(sessionId) && !generationStopped && activeView.current.stage === stage && activeView.current.sessionId === sessionId) {
         setError(caught instanceof Error ? caught.message : "消息发送失败。");
-        await loadMessages(sessionId).catch(() => undefined);
       }
+      if (activeView.current.stage === stage && activeView.current.sessionId === sessionId) await loadMessages(sessionId).catch(() => undefined);
     } finally {
+      liveReplies.current.delete(sessionId);
       sendingIds.current.delete(sessionId);
       setSendingSessionIds([...sendingIds.current]);
       await refreshStageFacts().catch(() => undefined);
