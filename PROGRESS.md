@@ -6,6 +6,14 @@
 
 ## 当前阶段
 
+### 2026-10-20：腾讯云 Ubuntu 实例上线部署进行中
+
+目标主机 `101.33.79.30`，Ubuntu Server 24.04.4 LTS；SSH 登录用户为 `ubuntu`。MySQL Community Server 已安装并确认运行，实际版本为 9.7.4，监听 `127.0.0.1:3306`；MySQL root 密码由用户在服务器设置，严禁记录在仓库。Node.js 24、Git、nginx、OpenSSL、Certbot 已安装。项目尚未拉取/构建，网站库尚未初始化，域名解析、HTTPS、systemd、备份及真实模型请求仍未验收。
+
+部署手册规定使用独立 Linux 系统账号 `ideastage` 运行网站。2026-10-20 创建并核验完成：账号/同名组 UID/GID 均为 112，home 为 `/srv/ideastage`，shell 为 `/usr/sbin/nologin`；`ubuntu` 已加入 `ideastage` 和 `ideastage-backup` 组。目录权限为 `/srv/ideastage` 与 `releases` `root:root 755`、`/etc/ideastage` `root:root 700`、`/var/backups/ideastage` `root:ideastage-backup 750`。
+
+上线数据库选择 MySQL 9.7 LTS：目标机已装 9.7.4，本机完整基线为 9.7.2；更新应用版本门禁、生产模板、备份元数据和活动部署手册，使生产指定 9.7 系列并保留对其他系列的拒绝。本机初始化 8/8、生产准备 60/60、备份恢复工具 51/51，`npx tsc --noEmit` 与 `npm run build` 通过；这些数据库实测均使用本机 9.7.2，目标机 9.7.4 仍须真实初始化、生产检查及恢复工具验收。接下来准备固定发布源码；当前工作区包含其他既存修改/未跟踪文件，不得整体提交或部署未审查内容。不得把 MySQL root 凭据放进网站运行配置。
+
 ### 2026-10-18：v1.42 #02 无需服务器的上线准备完成
 
 用户选择首次邀请码注册与每账号每日 AI 次数限制。已完成生产默认 invite 的服务端校验、注册表单；真实供应商调用统一按北京时间事务占用账号/站点日额度（默认 10/100，可配置，失败/停止不返还，SDK 不隐式重试，replay 不计）。额度不是金额硬上限，聊天、编辑/重生成、润色和旧自动命名共享次数。新增 0022 迁移，未迁移或写入日常库。
