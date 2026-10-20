@@ -12,7 +12,7 @@ export function productionConfigurationErrors(env: NodeJS.ProcessEnv) {
   secret("MYSQL_PASSWORD", 24);
   try { getMysqlAppConfig(env); } catch { errors.push("MySQL 应用连接字段不完整或不合法；网站不能使用 root"); }
   if (env.MYSQL_HOST !== "127.0.0.1") errors.push("当前单机方案 MYSQL_HOST 应为 127.0.0.1");
-  if (env.MYSQL_REQUIRED_VERSION !== "9.7.2") errors.push("MYSQL_REQUIRED_VERSION 应为已验收的 9.7.2");
+  if (env.MYSQL_REQUIRED_VERSION !== "9.7") errors.push("MYSQL_REQUIRED_VERSION 应设置为 9.7（MySQL 9.7 LTS 系列）");
   try {
     const url = new URL(env.AUTH_URL ?? "");
     if (url.protocol !== "https:" || url.pathname !== "/" || url.search || url.hash || url.username || url.password || !url.hostname.includes(".") || url.hostname.endsWith(".invalid")) throw new Error();

@@ -18,7 +18,19 @@ export interface MysqlAdminConfig {
 export type MysqlMigrationConfig = MysqlAppConfig;
 
 export function getMysqlRequiredVersion(env: Env = process.env): string {
-  return env.MYSQL_REQUIRED_VERSION?.trim() || VERIFIED_MYSQL_VERSION;
+  const requiredVersion = env.MYSQL_REQUIRED_VERSION?.trim() || SUPPORTED_MYSQL_SERIES;
+  if (!/^9\.7(?:\.\d+)?$/.test(requiredVersion)) {
+    throw new MysqlConfigurationError("当前上线仅支持 MySQL 9.7 LTS 系列，MYSQL_REQUIRED_VERSION 应为 9.7 或 9.7.x");
+  }
+  return requiredVersion;
+}
+
+export function mysqlVersionMatchesRequired(version: string, requiredVersion: string): boolean {
+  if (!/^9\.7(?:\.\d+)?$/.test(requiredVersion)) return false;
+  const actual = version.match(/^(\d+\.\d+(?:\.\d+)?)/)?.[1];
+  if (!actual) return false;
+  const actualParts = actual.split(".");
+  return requiredVersion.split(".").every((part, index) => actualParts[index] === part);
 }
 
 /** 迁移脚本使用已有数据库和一次性迁移账号，不创建或轮换运行时应用账号。 */
@@ -71,7 +83,7 @@ const RESERVED_DATABASES = new Set([
   "performance_schema",
   "sys",
 ]);
-const VERIFIED_MYSQL_VERSION = "9.7.2";
+const SUPPORTED_MYSQL_SERIES = "9.7";
 
 function required(env: Env, name: string) {
   const value = env[name]?.trim();
@@ -129,10 +141,7 @@ export function getMysqlAdminConfig(env: Env = process.env): MysqlAdminConfig {
   if (user === app.user) {
     throw new MysqlConfigurationError("MYSQL_ADMIN_USER 不能与 MYSQL_USER 相同；初始化和网站必须使用不同身份");
   }
-  const requiredVersion = env.MYSQL_REQUIRED_VERSION?.trim() || VERIFIED_MYSQL_VERSION;
-  if (requiredVersion !== VERIFIED_MYSQL_VERSION) {
-    throw new MysqlConfigurationError(`MYSQL_REQUIRED_VERSION 当前只能是已验证的 ${VERIFIED_MYSQL_VERSION}`);
-  }
+  const requiredVersion = getMysqlRequiredVersion(env);
 
   return {
     host: env.MYSQL_ADMIN_HOST?.trim() || app.host,

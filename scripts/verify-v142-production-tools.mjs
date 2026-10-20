@@ -15,7 +15,7 @@ const output = await mkdtemp(join(tmpdir(), "v142-production-tools-evidence-"));
 const fixture = await mkdtemp(join(tmpdir(), "v142-production-tools-fixture-"));
 const suffix = randomBytes(8).toString("hex");
 const database = `v142_backup_${suffix}`;
-const env = { ...process.env, MYSQL_DATABASE: database, MYSQL_USER: `v142_backup_${suffix}`, MYSQL_PASSWORD: randomBytes(24).toString("hex"), MYSQL_REQUIRED_VERSION: "9.7.2" };
+const env = { ...process.env, MYSQL_DATABASE: database, MYSQL_USER: `v142_backup_${suffix}`, MYSQL_PASSWORD: randomBytes(24).toString("hex"), MYSQL_REQUIRED_VERSION: "9.7" };
 const account = `${mysql.escape(env.MYSQL_USER)}@${mysql.escape(env.MYSQL_APP_HOST || "localhost")}`;
 const secrets = [env.MYSQL_PASSWORD, env.MYSQL_ADMIN_PASSWORD, process.env.MYSQL_PASSWORD, process.env.AUTH_SECRET, process.env.AI_API_KEY].filter(Boolean);
 const sanitize = (value) => secrets.reduce((text, secret) => text.replaceAll(secret, "<已隐藏>"), String(value));

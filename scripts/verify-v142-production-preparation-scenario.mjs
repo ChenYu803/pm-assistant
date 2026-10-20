@@ -63,11 +63,11 @@ try {
 
   const validEnv = {
     NODE_ENV: "production", MYSQL_HOST: "127.0.0.1", MYSQL_PORT: "3306", MYSQL_DATABASE: "isolated_fixture", MYSQL_USER: "isolated_app",
-    MYSQL_PASSWORD: randomBytes(24).toString("hex"), AUTH_SECRET: randomBytes(32).toString("hex"), MYSQL_REQUIRED_VERSION: "9.7.2",
+    MYSQL_PASSWORD: randomBytes(24).toString("hex"), AUTH_SECRET: randomBytes(32).toString("hex"), MYSQL_REQUIRED_VERSION: "9.7",
     AUTH_URL: "https://ideastage.top", AUTH_TRUST_HOST: "true", AI_MODE: "replay", REGISTRATION_MODE: "invite", REGISTRATION_INVITE_CODE: randomBytes(24).toString("hex"),
   };
   check("完整生产配置可离线通过预检", productionConfigurationErrors(validEnv).length === 0);
-  for (const patch of [{ MYSQL_USER: "root" }, { AUTH_URL: "http://ideastage.top" }, { AUTH_SECRET: "short" }, { AI_MODE: "live" }, { REGISTRATION_INVITE_CODE: "short" }, { AI_DAILY_USER_LIMIT: "0" }, { MYSQL_ADMIN_PASSWORD: "maintenance-secret" }]) {
+  for (const patch of [{ MYSQL_USER: "root" }, { MYSQL_REQUIRED_VERSION: "8.4" }, { AUTH_URL: "http://ideastage.top" }, { AUTH_SECRET: "short" }, { AI_MODE: "live" }, { REGISTRATION_INVITE_CODE: "short" }, { AI_DAILY_USER_LIMIT: "0" }, { MYSQL_ADMIN_PASSWORD: "maintenance-secret" }]) {
     const errors = productionConfigurationErrors({ ...validEnv, ...patch });
     check(`拒绝非法生产配置 ${Object.keys(patch)[0]} 且不泄露秘密`, errors.length > 0 && !errors.join(" ").includes(validEnv.MYSQL_PASSWORD) && !errors.join(" ").includes("maintenance-secret"));
   }

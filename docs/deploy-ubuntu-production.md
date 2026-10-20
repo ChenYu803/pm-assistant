@@ -1,6 +1,6 @@
 # IdeaStage v1.42：香港 Ubuntu 单机部署与恢复
 
-当前路线：Ubuntu 24.04 x64、Node.js 24 LTS、MySQL 9.7.2、nginx、一个 Next.js 进程，域名 `ideastage.top`。配置和工具已在仓库准备；服务器、Linux 服务加载、证书、Cloudflare 和真实模型尚未验收。本文替代旧 Render/美国 VPS 示例作为本次部署入口，不迁移本机开发数据。
+当前路线：Ubuntu 24.04 x64、Node.js 24 LTS、MySQL 9.7 LTS、nginx、一个 Next.js 进程，域名 `ideastage.top`。本机完整验证基线为 MySQL 9.7.2；腾讯云目标机已安装 Oracle 仓库的 MySQL 9.7.4，目标机专项验收仍待执行。配置和工具已在仓库准备；服务器应用、Linux 服务加载、证书、Cloudflare 和真实模型尚未验收。本文替代旧 Render/美国 VPS 示例作为本次部署入口，不迁移本机开发数据。
 
 ## 1. 开始前拿到的信息
 
@@ -11,7 +11,7 @@
 
 SSH 登录后先核对系统、磁盘挂载、剩余空间、时区与公网连通性。100 人在线只是预期，本轮没有容量证明。安全组/防火墙仅开放实际 SSH 端口与 80/443，3306/3000 不对公网开放。MySQL 监听 127.0.0.1，确认重启后数据目录仍在持久磁盘。
 
-安装 Node.js 24 LTS、Git、nginx、tar、OpenSSL、certbot 和 **MySQL 官方仓库的 9.7.2** 服务端/客户端。不要把 Ubuntu 默认 MySQL 当成同一版本；APT 源和签名按官方当日说明配置，先用 `apt-cache policy mysql-community-server` 确认可选版本。版本升级另做验证，不在上线时顺带升级。
+安装 Node.js 24 LTS、Git、nginx、tar、OpenSSL、certbot 和 **MySQL 官方仓库的 9.7 LTS** 服务端/客户端。`MYSQL_REQUIRED_VERSION=9.7` 表示接受 9.7 系列补丁版本，不接受其他主/次系列；上线验收必须记录目标机 `SELECT VERSION()` 的完整实际结果。不要把 Ubuntu 默认 MySQL 当成同一版本；APT 源和签名按官方当日说明配置，先用 `apt-cache policy mysql-community-server` 确认可选版本。
 
 ```bash
 node --version
@@ -22,7 +22,7 @@ nginx -v
 sudo mysql -e 'SELECT VERSION();'
 ```
 
-Node 应为 24.x，数据库实际版本为 9.7.2。服务模板使用 `/usr/bin/node`，若 `command -v node` 不同，修改两个 service 的绝对路径；不要依赖 nvm 的交互 shell。软件获取依据见 [上线核查](research/launch-prerequisites-2026-10-17.md)。
+Node 应为 24.x，数据库应为 MySQL 9.7 LTS 系列。服务模板使用 `/usr/bin/node`，若 `command -v node` 不同，修改两个 service 的绝对路径；不要依赖 nvm 的交互 shell。软件获取依据见 [上线核查](research/launch-prerequisites-2026-10-17.md)。
 
 ## 2. 目录、发行版与外置配置
 
@@ -194,7 +194,7 @@ sudo node --import tsx scripts/production-backup.ts restore-test --env /私有�
 sudo node --import tsx scripts/production-backup.ts extract --file /恢复目录/备份.isb --key /私有目录/backup.key --destination /私有目录/本次全新恢复目录
 ```
 
-restore-admin.env 从 runtime.env 的 MySQL 应用连接字段复制（解析配置时需要 MYSQL_HOST/PORT/DATABASE/USER/PASSWORD），再加入 MYSQL_ADMIN_HOST/PORT/USER/PASSWORD 和 MYSQL_REQUIRED_VERSION=9.7.2，仅用于独立恢复，不给网站加载。工具实际只以管理员连接创建随机恢复库，不写入所填的应用库。工具报告随机库名、表数和各表行数；不带 `--cleanup-test` 时保留该库，便于进一步验收。仅检查行数不等于产品恢复成功。
+restore-admin.env 从 runtime.env 的 MySQL 应用连接字段复制（解析配置时需要 MYSQL_HOST/PORT/DATABASE/USER/PASSWORD），再加入 MYSQL_ADMIN_HOST/PORT/USER/PASSWORD 和 MYSQL_REQUIRED_VERSION=9.7，仅用于独立恢复，不给网站加载。工具实际只以管理员连接创建随机恢复库，不写入所填的应用库。工具报告随机库名、表数和各表行数；不带 `--cleanup-test` 时保留该库，便于进一步验收。仅检查行数不等于产品恢复成功。
 
 灾难恢复在隔离机器/端口复建相同版本，解包 source.tar 并重新 `npm ci --include=dev`/build（归档不含 node_modules/.next，也不含 Git 目录；优先根据 metadata.commit 从仓库重新 clone）。重建专用应用账号并只授权已恢复的随机库，将私有 runtime.env 中 MYSQL_DATABASE 指向该库，轮换泄露/失效的密钥，再以独立实例和域名检查旧账号登录、项目/文件正文、聊天、HTML 快照、生成恢复。配置/SQL 明文不要进入网盘同步目录。
 

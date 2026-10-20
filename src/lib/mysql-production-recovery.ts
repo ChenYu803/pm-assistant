@@ -1,11 +1,13 @@
 import type { Pool, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { MYSQL_MIGRATIONS } from "@/lib/mysql-bootstrap";
+import { mysqlVersionMatchesRequired } from "@/lib/mysql-config";
 
 export async function checkProductionDatabase(pool: Pool) {
   const [versions] = await pool.query<Array<RowDataPacket & { version: string }>>("SELECT VERSION() AS version");
-  if (!/^9\.7\.2(?:-|$)/.test(versions[0].version)) throw new Error("生产数据库版本与已验收的 MySQL 9.7.2 不一致");
+  if (!mysqlVersionMatchesRequired(versions[0].version, "9.7")) throw new Error("生产数据库必须使用 MySQL 9.7 LTS 系列");
   const [rows] = await pool.query<Array<RowDataPacket & { id: string; checksum: string }>>("SELECT id, checksum FROM schema_migrations");
   if (!MYSQL_MIGRATIONS.every((migration) => rows.some((row) => row.id === migration.id && row.checksum === migration.checksum))) throw new Error("数据库迁移未完成或校验不符，请先执行维护迁移");
+  return versions[0].version;
 }
 
 /** 仅由 systemd 单实例启动前执行；必须先停旧实例，禁止作为在线修复接口调用。 */

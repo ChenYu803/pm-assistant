@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { randomBytes } from "node:crypto";
 import mysql from "mysql2/promise";
 import { explicitProductionEnv } from "./production-env";
-import { getMysqlAppConfig, getMysqlConnectionOptions, getMysqlAdminConfig } from "../src/lib/mysql-config";
+import { getMysqlAppConfig, getMysqlConnectionOptions, getMysqlAdminConfig, mysqlVersionMatchesRequired } from "../src/lib/mysql-config";
 import { encryptBackup, decryptBackup, fileSha256 } from "./backup-crypto";
 import { checkProductionDatabase } from "../src/lib/mysql-production-recovery";
 
@@ -55,7 +55,8 @@ async function main() {
       if (dirty) throw new Error("部署源码存在未提交改动，无法保证备份代码与运行版本一致");
       const commit = await run("git", ["rev-parse", "HEAD"], { cwd: source });
       const pool = mysql.createPool(getMysqlConnectionOptions(config));
-      try { await checkProductionDatabase(pool); } finally { await pool.end(); }
+      let mysqlVersion: string;
+      try { mysqlVersion = await checkProductionDatabase(pool); } finally { await pool.end(); }
       const client = join(temp, "mysql.cnf");
       await mysqlClientConfig(client, env);
       await run("mysqldump", [`--defaults-extra-file=${client}`, "--single-transaction", "--quick", "--skip-lock-tables", "--no-tablespaces", "--set-gtid-purged=OFF", "--column-statistics=0", "--hex-blob", config.database], { output: join(temp, "database.sql") });
@@ -64,7 +65,7 @@ async function main() {
       if (envIndex < 0) throw new Error("备份必须显式指定 --env 生产配置文件");
       await copyFile(resolve(option("--env")), join(temp, "runtime.env"));
       await run("git", ["archive", "--format=tar", "HEAD"], { cwd: source, output: join(temp, "source.tar") });
-      await writeFile(join(temp, "metadata.json"), JSON.stringify({ format: 1, createdAt: new Date().toISOString(), commit, database: config.database, node: process.version, mysql: "9.7.2", note: "仅包含项目库，系统账号在恢复时重建；当前无额外上传目录" }, null, 2));
+      await writeFile(join(temp, "metadata.json"), JSON.stringify({ format: 1, createdAt: new Date().toISOString(), commit, database: config.database, node: process.version, mysql: mysqlVersion, note: "仅包含项目库，系统账号在恢复时重建；当前无额外上传目录" }, null, 2));
       // 维护凭据和加密密钥不入包；只归档明确的四个文件。
       await run("tar", ["-czf", join(temp, "bundle.tar.gz"), "-C", temp, "database.sql", "runtime.env", "metadata.json", "source.tar"]);
       const name = `${new Date().toISOString().replace(/[:.]/g, "-")}-${randomBytes(4).toString("hex")}.isb`;
@@ -118,7 +119,7 @@ async function main() {
     let created = false;
     try {
       const [version] = await connection.query<Array<mysql.RowDataPacket & { version: string }>>("SELECT VERSION() AS version");
-      if (!version[0].version.startsWith("9.7.2")) throw new Error("恢复工具需要匹配的 MySQL 9.7.2");
+      if (!mysqlVersionMatchesRequired(version[0].version, "9.7")) throw new Error("恢复工具需要 MySQL 9.7 LTS 系列");
       await connection.query(`CREATE DATABASE \`${database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci`);
       created = true;
       const client = join(temp, "restore.cnf");

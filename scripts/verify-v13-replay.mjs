@@ -91,7 +91,7 @@ async function assertMysqlAndSchema() {
     adminConnection = await mysql.createConnection({ host: admin.host, port: admin.port, user: admin.user, password: admin.password });
     const [versionRows] = await adminConnection.query("SELECT VERSION() AS version");
     const version = versionRows[0]?.version ?? "未知";
-    if (!String(version).startsWith("9.7.2")) fail(`MySQL 版本不兼容：实际 ${version}，需要 9.7.2 LTS`, "MySQL");
+    if (!/^9\.7\.\d+/.test(String(version))) fail(`MySQL 版本不兼容：实际 ${version}，需要 MySQL 9.7 LTS`, "MySQL");
 
     appConnection = await mysql.createConnection({ host: app.host, port: app.port, user: app.user, password: app.password, database: app.database });
     const [migrationRows] = await appConnection.query("SELECT id, checksum FROM schema_migrations ORDER BY id");

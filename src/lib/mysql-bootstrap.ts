@@ -6,6 +6,7 @@ import {
   getMysqlMigrationConfig,
   getMysqlConnectionOptions,
   getMysqlRequiredVersion,
+  mysqlVersionMatchesRequired,
   type MysqlAdminConfig,
   type MysqlAppConfig,
 } from "@/lib/mysql-config";
@@ -495,20 +496,10 @@ export function isAllowedApplicationGrant(grant: string, database: string) {
   );
 }
 
-function versionIsSupported(version: string, requiredVersion: string) {
-  const actual = version.match(/^(\d+\.\d+(?:\.\d+)?)/)?.[1];
-  if (!actual) return false;
-  const actualParts = actual.split(".");
-  return requiredVersion.split(",").some((requirement) => {
-    const requiredParts = requirement.split(".");
-    return requiredParts.every((part, index) => actualParts[index] === part);
-  });
-}
-
 async function assertServerVersion(connection: Connection, config: Pick<MysqlAdminConfig, "requiredVersion">) {
   const [rows] = await connection.query<Array<RowDataPacket & { version: string }>>("SELECT VERSION() AS version");
   const version = rows[0]?.version;
-  if (!version || !versionIsSupported(version, config.requiredVersion)) {
+  if (!version || !mysqlVersionMatchesRequired(version, config.requiredVersion)) {
     throw new Error(`MySQL 版本不满足要求：实际 ${version ?? "未知"}，需要 ${config.requiredVersion} 系列`);
   }
   return version;

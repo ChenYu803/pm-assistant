@@ -8,7 +8,7 @@ if (process.env.AI_MODE !== "replay") {
   process.exit(1);
 }
 
-const { getMysqlAdminConfig, getMysqlAppConfig, MysqlConfigurationError } = await import("../src/lib/mysql-config.ts");
+const { getMysqlAdminConfig, getMysqlAppConfig, MysqlConfigurationError, mysqlVersionMatchesRequired } = await import("../src/lib/mysql-config.ts");
 const { initializeMysql, isAllowedApplicationGrant, MYSQL_MIGRATIONS } = await import("../src/lib/mysql-bootstrap.ts");
 
 let pass = 0;
@@ -25,6 +25,10 @@ function check(name, condition, detail = "") {
 }
 
 async function main() {
+  check("版本边界接受本机已验收的 MySQL 9.7.2", mysqlVersionMatchesRequired("9.7.2", "9.7"));
+  check("版本边界接受目标机 MySQL 9.7.4 补丁版本", mysqlVersionMatchesRequired("9.7.4", "9.7"));
+  check("版本边界拒绝其他系列及 MariaDB", !mysqlVersionMatchesRequired("8.4.7", "9.7") && !mysqlVersionMatchesRequired("10.11.6-MariaDB", "9.7"));
+  check("不允许把运行门禁改成未支持的 8.4", !mysqlVersionMatchesRequired("8.4.7", "8.4"));
   let adminConnection;
   try {
     const app = getMysqlAppConfig();
@@ -61,7 +65,7 @@ async function main() {
 
     const migrationMap = new Map(migrations.map((migration) => [migration.id, migration.checksum]));
     const complete = MYSQL_MIGRATIONS.every((migration) => migrationMap.get(migration.id) === migration.checksum);
-    check("初始化通过精确 MySQL 版本校验", first.serverVersion.startsWith("9.7.2"));
+    check("初始化通过 MySQL 9.7 LTS 系列校验", /^9\.7\.\d+/.test(first.serverVersion));
     check(
       "重复初始化保持幂等",
       beforeRows.length < MYSQL_MIGRATIONS.length
