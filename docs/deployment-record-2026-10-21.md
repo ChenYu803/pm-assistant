@@ -34,16 +34,19 @@
 | `/var/backups/ideastage` | `root:ideastage-backup`，0750 | 让备份组读取加密包；目录存在不等于已有备份 |
 | 发行代码目录 | 已给出收口为 `root:ideastage`、移除组写及其他用户权限的命令 | 用户反馈无输出/无报错，尚未取得最新权限回执 |
 | 发行目录 `.next/cache` | 已给出归 `ideastage:ideastage`、0700 的命令 | 只给网站缓存写权限；同上 |
-| `runtime.env` 与 `maintenance.env` | 计划均为 `/etc/ideastage/` 下 root 管理的 0600 文件 | `runtime.env` 权限及三项随机值已只读核验；用户确认 `maintenance.env` 权限为 0600、`MYSQL_ADMIN_USER=ideastage_bootstrap` 且管理员密码为有效 64 位十六进制值；引导密码已保存至 KeePassXC 并验证可读，迁移字段仍是模板值 |
+| `runtime.env` 与 `maintenance.env` | `/etc/ideastage/` 下 root 管理的 0600 文件 | `runtime.env` 三个运行凭据已存 KeePassXC 并验证可读。`maintenance.env` 当前使用独立迁移账号，权限 0600；临时引导账号及其密码已删除/清除 |
 
 ## 部署选择与已做验证
 
 - 以成功上线为目标，允许调整项目或数据库。用户举例 MySQL 8.0 不构成版本指定。选择 9.7 LTS 是为对齐目标机已安装补丁版和本机已验证系列；生产门禁使用 `MYSQL_REQUIRED_VERSION=9.7`，详见 v1.42 #03 工单。
-- 网站计划用专用 MySQL 账号 `ideastage_app`，维护操作用独立凭据；这样网站无需 root/建表权限。Linux 的 `ideastage` 与 MySQL 的 `ideastage_app` 是不同系统里的账号。云端专用数据库账号尚未确认创建。
+- 网站使用专用 MySQL 账号 `ideastage_app`，维护迁移使用独立账号 `ideastage_migration`；这样网站无需 root/建表权限。Linux 的 `ideastage` 与 MySQL 的 `ideastage_app` 是不同系统里的账号。
 - 使用单个 Next.js 进程；先以 replay 验证网站与持久化，再显式配置 live，避免把固定回放当成真实模型。计划和配置不等于服务已经启动。
 - 服务器 `npm ci --include=dev` 安装完成，输出为 445 个包，出现开发依赖告警和安装脚本警告；不执行强制自动升级。此前本机生产 audit 与完整 audit 边界见生产验证文档。
 - 用户贴出的 `env NODE_ENV=production AI_MODE=replay NEXT_TELEMETRY_DISABLED=1 npm run build` 输出：Next.js 16.3.8，编译、TypeScript、页面收集与 16/16 静态页生成均成功。这证明构建通过，不证明网站可访问、数据库或 HTTPS 已就绪。
-- 目标机 SSH 终端于 2026-10-21 通过 `sudo mysql -u root -p -NBe 'SELECT VERSION();'` 返回 `9.7.4`，证明目标机实际版本属于选定的 9.7 LTS 系列。无密码方式 `sudo mysql -NBe 'SELECT VERSION();'` 返回 1045，后续 MySQL root 连接须提供密码。目标机真实初始化、生产检查及备份恢复仍待执行。
+- 目标机 SSH 终端于 2026-10-21 通过密码连接返回 MySQL `9.7.4`；root 密码与用户指定值相同，未执行重复轮换。只读检查发现数据库已有 22 项迁移/22 张表，`ideastage_app` 原先只有无权限的 USAGE，导致应用账号访问被拒；使用 root 将其限定授权为 `ideastage.*` 上 SELECT/INSERT/UPDATE/DELETE 后，生产数据库检查通过。
+- 目标机 `production-db.ts --initialize` 幂等初始化通过（新增迁移：否），`production-db.ts` 仅迁移入口和 `production-check.ts --database` 均通过。新建并验证 `ideastage_migration` 的项目库范围结构权限与连接后，已删除临时 `ideastage_bootstrap` 并从 `maintenance.env` 清除其密码；`maintenance.env` 当前仍为 0600。服务器根密码已单独保存到 KeePassXC 条目“MySQL root”，原“MySQL 引导账号”条目保持不变；新的迁移账号条目也已保存。
+- 已为 32 字节备份密钥建立 KeePassXC 独立条目，并以 0600 写入 `/etc/ideastage/backup.key`。每日备份 systemd service/timer 已安装并启用；首次服务器加密包于 2026-10-21 生成。Windows 脚本已将备份拉取至 `D:\Backups\IdeaStage`，索引 SHA-256 核验通过；服务器 inspect 解密/完整性检查通过，随机隔离库恢复出 22 张表并核对行数后由工具清理。此恢复验收没有覆盖正式库，也没有证明业务数据已存在；当前 users 为 0。
+- 本地 KeePassXC 命令行读取密钥后，Windows 临时目录密钥文件的辅助命令被自动审查拦截；随后在服务器使用受限密钥完成 inspect 和隔离恢复，恢复验收通过。Windows 副本通过索引 SHA-256 校验；解密验收使用服务器保存的同一密钥与服务器原包。
 - 本机 MySQL 9.7.2 的初始化 8/8、生产准备 60/60、备份工具 51/51 及类型/构建验证此前通过；证据入口见工单和验证文档。
 
 ### 发行目录与真实提交核对结果
@@ -59,11 +62,11 @@
 | 重要内容 | 原件/计划位置 | 当前状态 | 还要做什么 |
 |---|---|---|---|
 | SSH 私钥 | Windows `TheFirst.pem`，路径见上文 | 原件位置由用户确认；第二份副本未核验 | 在用户控制的另一个安全位置保存副本，确保仍能使用 |
-| MySQL root 密码 | 用户自行设置 | 值未知，是否另存未确认 | 用户存入个人密码管理器等安全位置；无需提供给 Agent |
+| MySQL root 密码 | KeePassXC “IdeaStage MySQL root” | 当前值已由用户提供并验证可登录；同值已单独写入此条目，私下回读与服务器当前值匹配。由于 root 原本已是用户指定值，没有轮换 | 不用于网站运行；root 丢失时只能重设 |
 | 网站登录密钥、应用数据库密码、邀请码 | `/etc/ideastage/runtime.env` | 2026-10-21 用户确认生成命令成功；随后只读检查确认文件权限为 0600，三个字段均为 64 位十六进制值，未显示真实内容 | 用户已将三项值保存进本地 KeePassXC 保险箱，并确认关闭后重新打开仍可读取；数据库初始化前置的运行凭据副本已完成 |
-| 引导/迁移账号凭据 | `/etc/ideastage/maintenance.env` | 模板安装无报错；真实填写未确认 | 填写后另存安全副本；引导账号删除后同步清除失效秘密 |
-| 备份解密密钥 | 计划 `/etc/ideastage/backup.key` | 尚未确认生成 | 生成后独立保存服务器之外的副本，与加密包分开保管 |
-| 云端业务数据库 | 计划数据库 `ideastage` | 尚未初始化，没有已验收的业务数据库备份 | 初始化后导出加密，实际下载并在隔离库恢复验证 |
+| 引导/迁移账号凭据 | `/etc/ideastage/maintenance.env` | 临时引导账号已删除，密码已从文件清除；迁移账号凭据保存在 KeePassXC 独立条目，服务器文件权限 0600 |
+| 备份解密密钥 | `/etc/ideastage/backup.key` | 已生成 32 字节密钥，服务器文件权限 0600；独立 KeePassXC 条目已保存 |
+| 云端业务数据库 | MySQL `ideastage` | 已有 22 张表及 22 项迁移，业务 users 为 0；首次加密备份已在本机拉取并通过随机隔离库恢复演练 | 继续保持每日备份，按周及重大更新把加密包另存网盘；目前没有用户业务数据 |
 | 本机唯一测试账号相关数据 | 本机开发 MySQL，用户称有迁移价值 | 本轮没有迁移、删除或备份证明；不能写成“无价值数据” | 本机删除/重装/迁移前核对并备份；当前路线为云端新库，不自动导入 |
 | 已部署源码、锁文件与版本依据 | Git + 目标机发行目录 | 发行目录内 Git HEAD 已与本地记录的完整提交一致；较新的部署文档仅在本地仓库，服务器发行版未证明包含它们 | 保留准确版本和可恢复源码；新文档尚未取得服务器副本证明 |
 | nginx/systemd/域名等实际配置 | 项目有模板，目标机应用尚未验收 | 模板不是实际生效配置 | 配置生效后记录实际版本，变更后的文件加入安全副本 |
@@ -71,7 +74,7 @@
 
 完整备份工具当前打包数据库、`runtime.env`、源码与元数据；维护配置、SSH 私钥、root 密码、MySQL 系统账号和备份密钥不在包内。具体字段和私下找回入口以 [凭据说明](deployment-credentials-guide.md) 为准。
 
-**截至 2026-10-21，用户已在 Windows 安装 KeePassXC 2.7.12，创建本地保险箱并确认测试记录保存后可关闭、重新打开。** 用户确认服务器生成命令成功，后续只读检查确认三个运行凭据均已写入 `/etc/ideastage/runtime.env` 且权限为 0600；用户随后将三项值录入 KeePassXC，并确认关闭后重开仍可读取，运行凭据已有服务器外的可读副本。用户也未完成实际复制私钥、保存 root 密码、导出数据库或下载配置备份。文档写好、Git 提交、服务器文件留存、异地副本和恢复通过，是不同的完成状态。
+**截至 2026-10-21，用户已在 Windows 安装 KeePassXC 2.7.12，创建本地保险箱并确认可重开。** 运行凭据、root 密码、迁移账号密码和备份解密密钥均有独立保险箱条目；引导账号条目保留为历史凭据记录，但服务器端账号与密码已退役。SSH 私钥第二份副本尚未核验，备份加密包尚未上传百度网盘。文档记录、Git 提交、服务器留存、异地副本和恢复通过仍是不同状态。
 
 ## 长期文档与下一步
 
@@ -80,4 +83,4 @@
 - 当前任务：`.scratch/pm-assistant-v1.42/issues/03-mysql-97-lts-patch-compatibility.md`；本机生产证据：`docs/verification/v142-production-preparation.md`。
 - 临时交接：`C:\Users\Administrator\AppData\Local\Temp\IdeaStage-deployment-handoff-2026-10-21.md`，供换窗口使用。长期事实与清单以项目中的本文及上述专题文件为准。
 
-已核对目标机发行目录内的 Git HEAD；MySQL `SELECT VERSION()` 实测为 9.7.4，管理员密码登录成功，无密码登录失败。runtime.env 三个运行凭据已生成、权限 0600，并在 KeePassXC 验证可读。maintenance.env 中 `ideastage_bootstrap` 管理员用户名/密码已回读验证，权限为 0600；引导密码也已保存至 KeePassXC 并验证可读，迁移字段仍为模板值。下一步创建受限引导账号、初始化全新云库及生产检查；备份恢复、DNS/HTTPS、systemd、真实 AI 与 Cloudflare 均待验收。后续在本文追加日期、变化、证据与备份结果，`PROGRESS.md` 只更新短进度和入口。
+已核对目标机发行目录内的 Git HEAD；MySQL `SELECT VERSION()` 实测为 9.7.4。目标库幂等初始化、生产数据库检查、迁移账号连接、每日加密备份、Windows 下载哈希核对、解密检查及随机库恢复均通过；临时引导账号已清理。备份恢复证据不代表网站已运行：nginx active、`ideastage` inactive，`ideastage.top` 当前无 IPv4 解析。DNS/HTTPS、网站服务及用户体验验收仍待完成；异地网盘副本和 SSH 私钥副本仍待用户整理。后续在本文追加日期、变化、证据与备份结果，`PROGRESS.md` 只更新短进度和入口。
