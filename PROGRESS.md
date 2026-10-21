@@ -8,7 +8,7 @@
 
 ### 2026-10-20：腾讯云 Ubuntu 实例上线部署进行中
 
-截至 2026-10-21：目标机 MySQL 9.7.4 初始化及生产数据库检查通过，22 项迁移/22 张表完整；`ideastage_app` 仅获项目库日常读写权限，独立迁移账号已验证可连接，临时引导账号已删除。首次加密备份已生成、下载到 Windows 并校验，随机隔离库恢复演练通过且测试库已清理。MySQL root 凭据已存为独立 KeePassXC 条目；root 原本已是用户指定值，因此未轮换。nginx active，但 `ideastage` 服务 inactive、域名无 IPv4 解析；DNS/HTTPS、网站启动与真实功能验收仍待完成。
+截至 2026-10-21：目标机 MySQL 9.7.4 初始化及生产数据库检查通过，22 项迁移/22 张表完整；`ideastage_app` 仅获项目库日常读写权限，独立迁移账号已验证可连接，临时引导账号已删除。首次加密备份已生成、下载到 Windows 并校验，随机隔离库恢复演练通过且测试库已清理。网站 systemd 单实例服务已启用，应用本机 health 返回 200；nginx HTTP 按设计返回 503，等待 DNS 与 HTTPS 证书。MySQL root 凭据已存为独立 KeePassXC 条目；root 原本已是用户指定值，因此未轮换。域名目前无 IPv4 解析，公网、DNS/HTTPS、真实功能和 live 验收仍待完成。
 
 详细主机/账号/版本、操作结果与逐项备份状态统一见 [部署记录与备份清单](docs/deployment-record-2026-10-21.md)，不在本文件存放备份资料。部署会话必读 [上线部署纪律](docs/agents/production-deployment-discipline.md)，凭据用途与命令见 [凭据说明](docs/deployment-credentials-guide.md)。换窗口交接已保存于 Windows 临时目录。
 

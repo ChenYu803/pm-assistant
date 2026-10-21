@@ -46,6 +46,7 @@
 - 目标机 SSH 终端于 2026-10-21 通过密码连接返回 MySQL `9.7.4`；root 密码与用户指定值相同，未执行重复轮换。只读检查发现数据库已有 22 项迁移/22 张表，`ideastage_app` 原先只有无权限的 USAGE，导致应用账号访问被拒；使用 root 将其限定授权为 `ideastage.*` 上 SELECT/INSERT/UPDATE/DELETE 后，生产数据库检查通过。
 - 目标机 `production-db.ts --initialize` 幂等初始化通过（新增迁移：否），`production-db.ts` 仅迁移入口和 `production-check.ts --database` 均通过。新建并验证 `ideastage_migration` 的项目库范围结构权限与连接后，已删除临时 `ideastage_bootstrap` 并从 `maintenance.env` 清除其密码；`maintenance.env` 当前仍为 0600。服务器根密码已单独保存到 KeePassXC 条目“MySQL root”，原“MySQL 引导账号”条目保持不变；新的迁移账号条目也已保存。
 - 已为 32 字节备份密钥建立 KeePassXC 独立条目，并以 0600 写入 `/etc/ideastage/backup.key`。每日备份 systemd service/timer 已安装并启用；首次服务器加密包于 2026-10-21 生成。Windows 脚本已将备份拉取至 `D:\Backups\IdeaStage`，索引 SHA-256 核验通过；服务器 inspect 解密/完整性检查通过，随机隔离库恢复出 22 张表并核对行数后由工具清理。此恢复验收没有覆盖正式库，也没有证明业务数据已存在；当前 users 为 0。
+- 网站 systemd 单实例 service 已安装、设为开机启动并运行；启动前 `production-check.ts --database --recover` 成功。应用仅监听本机 `127.0.0.1:3000`，`http://127.0.0.1:3000/api/health` 返回 200。nginx HTTP 引导配置已安装并通过 `nginx -t`，域名 Host 的 HTTP 返回 503，符合签发证书前不开放登录的模板行为。域名仍无 IPv4 DNS 解析，HTTPS 证书及公网入口尚未验收。
 - 本地 KeePassXC 命令行读取密钥后，Windows 临时目录密钥文件的辅助命令被自动审查拦截；随后在服务器使用受限密钥完成 inspect 和隔离恢复，恢复验收通过。Windows 副本通过索引 SHA-256 校验；解密验收使用服务器保存的同一密钥与服务器原包。
 - 本机 MySQL 9.7.2 的初始化 8/8、生产准备 60/60、备份工具 51/51 及类型/构建验证此前通过；证据入口见工单和验证文档。
 
@@ -69,7 +70,7 @@
 | 云端业务数据库 | MySQL `ideastage` | 已有 22 张表及 22 项迁移，业务 users 为 0；首次加密备份已在本机拉取并通过随机隔离库恢复演练 | 继续保持每日备份，按周及重大更新把加密包另存网盘；目前没有用户业务数据 |
 | 本机唯一测试账号相关数据 | 本机开发 MySQL，用户称有迁移价值 | 本轮没有迁移、删除或备份证明；不能写成“无价值数据” | 本机删除/重装/迁移前核对并备份；当前路线为云端新库，不自动导入 |
 | 已部署源码、锁文件与版本依据 | Git + 目标机发行目录 | 发行目录内 Git HEAD 已与本地记录的完整提交一致；较新的部署文档仅在本地仓库，服务器发行版未证明包含它们 | 保留准确版本和可恢复源码；新文档尚未取得服务器副本证明 |
-| nginx/systemd/域名等实际配置 | 项目有模板，目标机应用尚未验收 | 模板不是实际生效配置 | 配置生效后记录实际版本，变更后的文件加入安全副本 |
+| nginx/systemd/域名等实际配置 | systemd 网站及备份 service/timer 已安装；nginx HTTP 引导已安装 | 网站和备份 timer active；nginx 配置检查通过。HTTP 对 `ideastage.top` 返回 503，应用 localhost health 200 | 配置域名 A 记录并签发 HTTPS 证书，再安装 HTTPS nginx 配置，完成公网 health/登录/业务验收 |
 | 部署文档与操作记录 | 项目 `docs/` 和 Git | 已有本地文件与提交；本次尚无独立远端副本证明 | 按授权推送或另做项目资料副本；临时交接不能作为唯一长期资料 |
 
 完整备份工具当前打包数据库、`runtime.env`、源码与元数据；维护配置、SSH 私钥、root 密码、MySQL 系统账号和备份密钥不在包内。具体字段和私下找回入口以 [凭据说明](deployment-credentials-guide.md) 为准。
@@ -83,4 +84,4 @@
 - 当前任务：`.scratch/pm-assistant-v1.42/issues/03-mysql-97-lts-patch-compatibility.md`；本机生产证据：`docs/verification/v142-production-preparation.md`。
 - 临时交接：`C:\Users\Administrator\AppData\Local\Temp\IdeaStage-deployment-handoff-2026-10-21.md`，供换窗口使用。长期事实与清单以项目中的本文及上述专题文件为准。
 
-已核对目标机发行目录内的 Git HEAD；MySQL `SELECT VERSION()` 实测为 9.7.4。目标库幂等初始化、生产数据库检查、迁移账号连接、每日加密备份、Windows 下载哈希核对、解密检查及随机库恢复均通过；临时引导账号已清理。备份恢复证据不代表网站已运行：nginx active、`ideastage` inactive，`ideastage.top` 当前无 IPv4 解析。DNS/HTTPS、网站服务及用户体验验收仍待完成；异地网盘副本和 SSH 私钥副本仍待用户整理。后续在本文追加日期、变化、证据与备份结果，`PROGRESS.md` 只更新短进度和入口。
+已核对目标机发行目录内的 Git HEAD；MySQL `SELECT VERSION()` 实测为 9.7.4。目标库幂等初始化、生产数据库检查、迁移账号连接、每日加密备份、Windows 下载哈希核对、解密检查及随机库恢复均通过；临时引导账号已清理。网站 systemd 单实例已启动，启动前恢复检查成功，本机 health 200；nginx HTTP 引导返回 503。域名 `ideastage.top` 当前无 IPv4 解析，HTTPS、公网登录/业务及真实 AI 尚未验收；异地网盘副本和 SSH 私钥副本仍待用户整理。后续在本文追加日期、变化、证据与备份结果，`PROGRESS.md` 只更新短进度和入口。
