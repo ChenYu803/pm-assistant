@@ -1,5 +1,7 @@
 # IdeaStage v1.42：香港 Ubuntu 单机部署与恢复
 
+执行部署前必读 [上线部署纪律](agents/production-deployment-discipline.md)，其中规定重要信息留痕、凭据异地保存和恢复验证要求。
+
 当前路线：Ubuntu 24.04 x64、Node.js 24 LTS、MySQL 9.7 LTS、nginx、一个 Next.js 进程，域名 `ideastage.top`。本机完整验证基线为 MySQL 9.7.2；腾讯云目标机已安装 Oracle 仓库的 MySQL 9.7.4，目标机专项验收仍待执行。配置和工具已在仓库准备；服务器应用、Linux 服务加载、证书、Cloudflare 和真实模型尚未验收。本文替代旧 Render/美国 VPS 示例作为本次部署入口，不迁移本机开发数据。
 
 ## 1. 开始前拿到的信息

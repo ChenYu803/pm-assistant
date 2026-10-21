@@ -10,6 +10,8 @@
 | 5 | ticket 中“产品经理在 Agent 开始前提供”列出的输入 | 仅在 ticket 明确要求时读取原型/素材；写“无新增输入”则直接实现 |
 | 6 | `spec.md` 相关章节 | 需求总纲（目的驱动：ticket 引用到的部分） |
 
+部署、凭据配置、数据库迁移或备份恢复会话：另必读 `docs/agents/production-deployment-discipline.md`，按其要求解释操作、记录重要信息并验证安全副本。
+
 6 之后按需读核心源码与 `scripts/verify-*.mjs` 头尾（风格参考：命名 `verify-<主题>.mjs`、中文注释、✅/❌ 计数、`process.exit(fail>0?1:0)`）。
 
 ## 改动风险分级与验证策略
