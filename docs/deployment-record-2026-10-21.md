@@ -34,7 +34,7 @@
 | `/var/backups/ideastage` | `root:ideastage-backup`，0750 | 让备份组读取加密包；目录存在不等于已有备份 |
 | 发行代码目录 | 已给出收口为 `root:ideastage`、移除组写及其他用户权限的命令 | 用户反馈无输出/无报错，尚未取得最新权限回执 |
 | 发行目录 `.next/cache` | 已给出归 `ideastage:ideastage`、0700 的命令 | 只给网站缓存写权限；同上 |
-| `runtime.env` 与 `maintenance.env` | 计划均为 `/etc/ideastage/` 下 root 管理的 0600 文件 | `runtime.env` 权限及三项随机值已只读核验；用户于 2026-10-21 确认 `maintenance.env` 权限为 0600，随后成功生成 `ideastage_bootstrap` 管理密码；该凭据的 KeePassXC 副本及文件回读检查待完成 |
+| `runtime.env` 与 `maintenance.env` | 计划均为 `/etc/ideastage/` 下 root 管理的 0600 文件 | `runtime.env` 权限及三项随机值已只读核验；用户确认 `maintenance.env` 权限为 0600、`MYSQL_ADMIN_USER=ideastage_bootstrap` 且管理员密码为有效 64 位十六进制值；迁移字段仍是模板值。引导密码的 KeePassXC 副本待完成 |
 
 ## 部署选择与已做验证
 
@@ -80,4 +80,4 @@
 - 当前任务：`.scratch/pm-assistant-v1.42/issues/03-mysql-97-lts-patch-compatibility.md`；本机生产证据：`docs/verification/v142-production-preparation.md`。
 - 临时交接：`C:\Users\Administrator\AppData\Local\Temp\IdeaStage-deployment-handoff-2026-10-21.md`，供换窗口使用。长期事实与清单以项目中的本文及上述专题文件为准。
 
-已核对目标机发行目录内的 Git HEAD；MySQL `SELECT VERSION()` 实测为 9.7.4，管理员密码登录成功，无密码登录失败。runtime.env 三个运行凭据已生成、权限 0600，并在 KeePassXC 验证可读。用户刚成功生成 maintenance.env 的临时 `ideastage_bootstrap` 密码；回读和 KeePassXC 副本验证待完成。随后创建受限引导账号、初始化全新云库及生产检查；备份恢复、DNS/HTTPS、systemd、真实 AI 与 Cloudflare 均待验收。后续在本文追加日期、变化、证据与备份结果，`PROGRESS.md` 只更新短进度和入口。
+已核对目标机发行目录内的 Git HEAD；MySQL `SELECT VERSION()` 实测为 9.7.4，管理员密码登录成功，无密码登录失败。runtime.env 三个运行凭据已生成、权限 0600，并在 KeePassXC 验证可读。maintenance.env 中 `ideastage_bootstrap` 管理员用户名/密码已回读验证，权限为 0600，迁移字段仍为模板值；引导密码的 KeePassXC 副本待完成。随后创建受限引导账号、初始化全新云库及生产检查；备份恢复、DNS/HTTPS、systemd、真实 AI 与 Cloudflare 均待验收。后续在本文追加日期、变化、证据与备份结果，`PROGRESS.md` 只更新短进度和入口。
