@@ -34,7 +34,7 @@
 | `/var/backups/ideastage` | `root:ideastage-backup`，0750 | 让备份组读取加密包；目录存在不等于已有备份 |
 | 发行代码目录 | 已给出收口为 `root:ideastage`、移除组写及其他用户权限的命令 | 用户反馈无输出/无报错，尚未取得最新权限回执 |
 | 发行目录 `.next/cache` | 已给出归 `ideastage:ideastage`、0700 的命令 | 只给网站缓存写权限；同上 |
-| `runtime.env` 与 `maintenance.env` | 计划均为 `/etc/ideastage/` 下 root 管理的 0600 文件 | `runtime.env` 权限及三项随机值已只读核验；`maintenance.env` 的当前权限和字段状态尚未核对 |
+| `runtime.env` 与 `maintenance.env` | 计划均为 `/etc/ideastage/` 下 root 管理的 0600 文件 | `runtime.env` 权限及三项随机值已只读核验；用户于 2026-10-21 确认 `maintenance.env` 权限为 0600，管理员和迁移字段仍为模板默认值 |
 
 ## 部署选择与已做验证
 
