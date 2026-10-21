@@ -9,6 +9,7 @@
 - 项目总纪律：根目录 `AGENTS.md`。
 - 阅读与调试纪律：`docs/agents/implement-context-hygiene.md`；上下文阈值以 `AGENTS.md` 为准。
 - 当前状态：根目录 `PROGRESS.md`。
+- 实际部署资料与备份清单：`docs/deployment-record-2026-10-21.md`；详细事实保存在此，`PROGRESS.md` 仅留短进度和入口。
 - 操作主线：`docs/deploy-ubuntu-production.md`。
 - 凭据用途、字段、生成命令及找回入口：`docs/deployment-credentials-guide.md`。
 - 历史实现与验收依据：当前任务引用的 `.scratch/pm-assistant-v1.42/issues/` 工单及 `docs/verification/` 文件。
