@@ -34,7 +34,7 @@
 | `/var/backups/ideastage` | `root:ideastage-backup`，0750 | 让备份组读取加密包；目录存在不等于已有备份 |
 | 发行代码目录 | 已给出收口为 `root:ideastage`、移除组写及其他用户权限的命令 | 用户反馈无输出/无报错，尚未取得最新权限回执 |
 | 发行目录 `.next/cache` | 已给出归 `ideastage:ideastage`、0700 的命令 | 只给网站缓存写权限；同上 |
-| `runtime.env` 与 `maintenance.env` | 计划均为 `/etc/ideastage/` 下 root 管理的 0600 文件 | `runtime.env` 权限及三项随机值已只读核验；用户于 2026-10-21 确认 `maintenance.env` 权限为 0600，管理员和迁移字段仍为模板默认值 |
+| `runtime.env` 与 `maintenance.env` | 计划均为 `/etc/ideastage/` 下 root 管理的 0600 文件 | `runtime.env` 权限及三项随机值已只读核验；用户于 2026-10-21 确认 `maintenance.env` 权限为 0600，随后成功生成 `ideastage_bootstrap` 管理密码；该凭据的 KeePassXC 副本及文件回读检查待完成 |
 
 ## 部署选择与已做验证
 
@@ -43,7 +43,8 @@
 - 使用单个 Next.js 进程；先以 replay 验证网站与持久化，再显式配置 live，避免把固定回放当成真实模型。计划和配置不等于服务已经启动。
 - 服务器 `npm ci --include=dev` 安装完成，输出为 445 个包，出现开发依赖告警和安装脚本警告；不执行强制自动升级。此前本机生产 audit 与完整 audit 边界见生产验证文档。
 - 用户贴出的 `env NODE_ENV=production AI_MODE=replay NEXT_TELEMETRY_DISABLED=1 npm run build` 输出：Next.js 16.3.8，编译、TypeScript、页面收集与 16/16 静态页生成均成功。这证明构建通过，不证明网站可访问、数据库或 HTTPS 已就绪。
-- 本机 MySQL 9.7.2 的初始化 8/8、生产准备 60/60、备份工具 51/51 及类型/构建验证此前通过；证据入口见工单和验证文档。目标机 9.7.4 的真实初始化/检查/恢复仍待执行。
+- 目标机 SSH 终端于 2026-10-21 通过 `sudo mysql -u root -p -NBe 'SELECT VERSION();'` 返回 `9.7.4`，证明目标机实际版本属于选定的 9.7 LTS 系列。无密码方式 `sudo mysql -NBe 'SELECT VERSION();'` 返回 1045，后续 MySQL root 连接须提供密码。目标机真实初始化、生产检查及备份恢复仍待执行。
+- 本机 MySQL 9.7.2 的初始化 8/8、生产准备 60/60、备份工具 51/51 及类型/构建验证此前通过；证据入口见工单和验证文档。
 
 ### 发行目录与真实提交核对结果
 
@@ -79,4 +80,4 @@
 - 当前任务：`.scratch/pm-assistant-v1.42/issues/03-mysql-97-lts-patch-compatibility.md`；本机生产证据：`docs/verification/v142-production-preparation.md`。
 - 临时交接：`C:\Users\Administrator\AppData\Local\Temp\IdeaStage-deployment-handoff-2026-10-21.md`，供换窗口使用。长期事实与清单以项目中的本文及上述专题文件为准。
 
-已核对目标机发行目录内的 Git HEAD；runtime.env 已生成三个运行凭据并经只读检查确认权限 0600、值格式有效。用户将三项值保存到 KeePassXC 并确认关闭后重开仍可读取。运行凭据安全副本前置已完成；下一步核对维护配置并初始化全新云库。DNS/HTTPS、systemd、真实 AI、Cloudflare、每日备份/电脑拉取/网盘及隔离恢复均待验收。后续在本文追加日期、变化、证据与备份结果，`PROGRESS.md` 只更新短进度和入口。
+已核对目标机发行目录内的 Git HEAD；MySQL `SELECT VERSION()` 实测为 9.7.4，管理员密码登录成功，无密码登录失败。runtime.env 三个运行凭据已生成、权限 0600，并在 KeePassXC 验证可读。用户刚成功生成 maintenance.env 的临时 `ideastage_bootstrap` 密码；回读和 KeePassXC 副本验证待完成。随后创建受限引导账号、初始化全新云库及生产检查；备份恢复、DNS/HTTPS、systemd、真实 AI 与 Cloudflare 均待验收。后续在本文追加日期、变化、证据与备份结果，`PROGRESS.md` 只更新短进度和入口。
