@@ -12,6 +12,8 @@
 
 用户已确认处理认证品牌断层、前置游客进度重置提醒、反馈扫描性，并采用克制的章节转场与操作反馈；票据 `.scratch/pm-assistant-v1.43/issues/01-visual-continuity-and-motion.md` 已 resolved。认证页新增品牌一致的纸色双栏/移动单栏壳层，登录注册文案改为“AI 产品现场”；简报开始动作旁明确刷新/重开会清空本次作答；场景反馈把“下一步项目动作”前置，完整依据改为可键盘访问的原生 details 展开；答题选项、章节标题、反馈、工作台 toast 使用短促状态动效并保留 reduced-motion 静止终态。保留既有认证流程、游客不持久化规则、题目内容和工作台业务行为，不调用真实模型或写入线上数据。`npx tsc --noEmit`、改动文件定向 ESLint、`git diff --check`、Playwright 1440/390、reduced-motion 检查通过；截图与 detector 结果在 `.scratch/pm-assistant-v1.43/evidence/after/`。detector 仍有字体/引用 warning，按评估中的误报和既有体系复用处理，不作为阻断。下一前沿是用户实际查看上线版本并决定是否需要进一步调整字体或结果页信息密度。
 
+后续反馈控件修正：场景判断依据折叠控件改为整行显著按钮，依据收起时显示“展开判断依据与答案”，展开后显示“收起判断依据与答案”，箭头同步旋转；原生 details 键盘交互保留。1440px/390px 实测开合、文案同步、无水平溢出通过；TypeScript、定向 ESLint、detector 和 diff 检查通过。
+
 ### 2026-10-20：腾讯云 Ubuntu 实例上线部署进行中
 
 截至 2026-10-21：目标机 MySQL 9.7.4 初始化及生产数据库检查通过，22 项迁移/22 张表完整；`ideastage_app` 仅获项目库日常读写权限，独立迁移账号已验证可连接，临时引导账号已删除。首次加密备份已生成、下载到 Windows 并校验，随机隔离库恢复演练通过且测试库已清理。网站 systemd 单实例服务已启用，应用本机 health 返回 200；nginx HTTP 按设计返回 503，等待 DNS 与 HTTPS 证书。MySQL root 凭据已存为独立 KeePassXC 条目；root 原本已是用户指定值，因此未轮换。域名目前无 IPv4 解析，公网、DNS/HTTPS、真实功能和 live 验收仍待完成。
