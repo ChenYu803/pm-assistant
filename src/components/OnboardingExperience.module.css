@@ -101,7 +101,7 @@
 .questionHelp { margin: 0 0 26px; color: var(--ink-mute); font: 14px/1.5 Inter, system-ui, sans-serif; }
 .questionConcept { margin: 0 0 12px; color: var(--coral); font: 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; }
 .options { display: grid; gap: 9px; }
-.option { position: relative; display: flex; align-items: center; gap: 16px; min-height: 64px; padding: 15px 18px; border: 1px solid var(--line); background: transparent; text-align: left; transition: background .18s, border-color .18s, transform .18s; }
+.option { position: relative; display: flex; align-items: center; justify-content: flex-start; gap: 16px; min-height: 64px; padding: 15px 18px; border: 1px solid var(--line); background: transparent; text-align: left; transition: background .18s, border-color .18s, transform .18s; }
 .options .option { opacity: 0; transform: translateX(38px); }
 .options.revealVisible .option { animation: optionIn .42s cubic-bezier(.16, 1, .3, 1) both; animation-delay: calc(var(--option-index) * 65ms); }
 .options.motionComplete .option,
@@ -115,7 +115,7 @@
 .optionCopy span { display: block; margin-top: 3px; color: var(--ink-mute); font: 13px/1.4 Inter, system-ui, sans-serif; }
 .submitRow { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 24px; }
 .submitNote { color: var(--ink-mute); font: 12px/1.45 Inter, system-ui, sans-serif; }
-.scenePrimary { min-height: 50px; padding: 0 22px; border: 1px solid var(--coral); background: var(--coral); color: var(--ink); font: 800 14px/1 Inter, system-ui, sans-serif; transition: background .18s, transform .18s; }
+.scenePrimary { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 22px; border: 1px solid var(--coral); background: var(--coral); color: var(--ink); text-align: center; font: 800 14px/1.25 Inter, system-ui, sans-serif; transition: background .18s, transform .18s; }
 .scenePrimary:disabled { opacity: .4; cursor: not-allowed; transform: none; }
 .scenePrimary:disabled:hover { background: var(--coral); transform: none; }
 .scenePrimary:hover { background: var(--bone); transform: translateY(-3px); }

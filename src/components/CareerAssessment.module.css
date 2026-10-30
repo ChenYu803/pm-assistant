@@ -21,3 +21,5 @@
   .questionIntro>p,.reviewHeading>p{font-size:15px}
   .reviewKicker{font-size:13px;line-height:1.45}
 }
+
+.option{justify-content:flex-start;text-align:left}

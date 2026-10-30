@@ -91,6 +91,21 @@
     color: var(--foreground);
     font-family: var(--font-app-sans);
   }
+
+  /* 统一按钮的文字盒对齐；列表和菜单按钮保留自己的左对齐语义。 */
+  button {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.25;
+    text-align: center;
+  }
+
+  button:where(.session-row, .demo-session, .project-workspace-select, .project-workspace-menu-action) {
+    display: block;
+    text-align: left;
+  }
 }
 
 /* v1.41 #01: 产品迭代入口沿用 AI 产品现场的纸色、墨黑与珊瑚色视觉基线。 */
