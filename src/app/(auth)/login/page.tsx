@@ -54,7 +54,7 @@ function LoginForm() {
     <div className="flex flex-1 items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <h1 className="mb-8 text-center text-2xl font-bold">
-          登录 PM Assistant
+          登录 AI 产品现场
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">

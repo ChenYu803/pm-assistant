@@ -1,0 +1,67 @@
+[
+  {
+    "name": "home",
+    "url": "http://127.0.0.1:3000/",
+    "title": "PM Assistant",
+    "preflight": {
+      "mutable": true
+    },
+    "detectorConsole": [
+      "%c[impeccable] 3 anti-patterns found color: oklch(84% 0.19 80.46); font-weight: bold"
+    ],
+    "screenshot": "home.png",
+    "visibleHumanPage": false
+  },
+  {
+    "name": "home-mobile",
+    "url": "http://127.0.0.1:3000/",
+    "title": "PM Assistant",
+    "preflight": {
+      "mutable": true
+    },
+    "detectorConsole": [
+      "%c[impeccable] 6 anti-patterns found color: oklch(84% 0.19 80.46); font-weight: bold"
+    ],
+    "screenshot": "home-mobile.png",
+    "visibleHumanPage": false
+  },
+  {
+    "name": "login",
+    "url": "http://127.0.0.1:3000/login",
+    "title": "PM Assistant",
+    "preflight": {
+      "mutable": true
+    },
+    "detectorConsole": [
+      "%c[impeccable] No anti-patterns found. color: #22c55e; font-weight: bold"
+    ],
+    "screenshot": "login.png",
+    "visibleHumanPage": false
+  },
+  {
+    "name": "register",
+    "url": "http://127.0.0.1:3000/register",
+    "title": "PM Assistant",
+    "preflight": {
+      "mutable": true
+    },
+    "detectorConsole": [
+      "%c[impeccable] No anti-patterns found. color: #22c55e; font-weight: bold"
+    ],
+    "screenshot": "register.png",
+    "visibleHumanPage": false
+  },
+  {
+    "name": "projects",
+    "url": "http://127.0.0.1:3000/login?callbackUrl=%2Fprojects",
+    "title": "PM Assistant",
+    "preflight": {
+      "mutable": true
+    },
+    "detectorConsole": [
+      "%c[impeccable] No anti-patterns found. color: #22c55e; font-weight: bold"
+    ],
+    "screenshot": "projects.png",
+    "visibleHumanPage": false
+  }
+]

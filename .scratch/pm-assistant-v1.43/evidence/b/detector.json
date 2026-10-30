@@ -1,0 +1,144 @@
+[
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card — the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "D:\\Project\\4.Project\\Agent2\\src\\app\\globals.css",
+    "line": 180,
+    "snippet": ".iteration-toast — inset box-shadow 3px stripe (left)",
+    "importedBy": [
+      "layout.tsx"
+    ]
+  },
+  {
+    "antipattern": "overused-font",
+    "name": "Overused font",
+    "description": "Inter, Roboto, Fraunces, Geist, Plus Jakarta Sans, and Space Grotesk are used on so many sites they no longer feel distinctive. Each new wave of AI-generated UIs converges on the same handful of faces. Choose a face that gives your interface personality.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "D:\\Project\\4.Project\\Agent2\\src\\components\\CareerAssessment.module.css",
+    "line": 1,
+    "snippet": "font-family:Inter",
+    "importedBy": [
+      "CareerAssessment.tsx"
+    ]
+  },
+  {
+    "antipattern": "overused-font",
+    "name": "Overused font",
+    "description": "Inter, Roboto, Fraunces, Geist, Plus Jakarta Sans, and Space Grotesk are used on so many sites they no longer feel distinctive. Each new wave of AI-generated UIs converges on the same handful of faces. Choose a face that gives your interface personality.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "D:\\Project\\4.Project\\Agent2\\src\\components\\LandingPage.module.css",
+    "line": 1,
+    "snippet": "Google Fonts: inter",
+    "importedBy": [
+      "LandingPage.tsx"
+    ]
+  },
+  {
+    "antipattern": "side-tab",
+    "name": "Side-tab accent border",
+    "description": "Thick colored border on one side of a card — the most recognizable tell of AI-generated UIs. Use a subtler accent or remove it entirely.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "D:\\Project\\4.Project\\Agent2\\src\\components\\MarkdownRenderer.tsx",
+    "line": 21,
+    "snippet": "border-l-2"
+  },
+  {
+    "antipattern": "overused-font",
+    "name": "Overused font",
+    "description": "Inter, Roboto, Fraunces, Geist, Plus Jakarta Sans, and Space Grotesk are used on so many sites they no longer feel distinctive. Each new wave of AI-generated UIs converges on the same handful of faces. Choose a face that gives your interface personality.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "D:\\Project\\4.Project\\Agent2\\src\\components\\OnboardingExperience.module.css",
+    "line": 14,
+    "snippet": "font-family: Inter",
+    "importedBy": [
+      "FirstWorkScene.tsx",
+      "OnboardingBrief.tsx",
+      "WorkScenes.tsx"
+    ]
+  },
+  {
+    "antipattern": "overused-font",
+    "name": "Overused font",
+    "description": "Inter, Roboto, Fraunces, Geist, Plus Jakarta Sans, and Space Grotesk are used on so many sites they no longer feel distinctive. Each new wave of AI-generated UIs converges on the same handful of faces. Choose a face that gives your interface personality.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "D:\\Project\\4.Project\\Agent2\\src\\components\\ProfilePage.module.css",
+    "line": 15,
+    "snippet": "font-family: Inter",
+    "importedBy": [
+      "ProfilePage.tsx"
+    ]
+  },
+  {
+    "antipattern": "overused-font",
+    "name": "Overused font",
+    "description": "Inter, Roboto, Fraunces, Geist, Plus Jakarta Sans, and Space Grotesk are used on so many sites they no longer feel distinctive. Each new wave of AI-generated UIs converges on the same handful of faces. Choose a face that gives your interface personality.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "D:\\Project\\4.Project\\Agent2\\src\\components\\ProfilePage.module.css",
+    "line": 20,
+    "snippet": "font-family: \"Inter",
+    "importedBy": [
+      "ProfilePage.tsx"
+    ]
+  },
+  {
+    "antipattern": "overused-font",
+    "name": "Overused font",
+    "description": "Inter, Roboto, Fraunces, Geist, Plus Jakarta Sans, and Space Grotesk are used on so many sites they no longer feel distinctive. Each new wave of AI-generated UIs converges on the same handful of faces. Choose a face that gives your interface personality.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "D:\\Project\\4.Project\\Agent2\\src\\components\\ProfilePage.module.css",
+    "line": 34,
+    "snippet": "font-family: \"Inter",
+    "importedBy": [
+      "ProfilePage.tsx"
+    ]
+  },
+  {
+    "antipattern": "overused-font",
+    "name": "Overused font",
+    "description": "Inter, Roboto, Fraunces, Geist, Plus Jakarta Sans, and Space Grotesk are used on so many sites they no longer feel distinctive. Each new wave of AI-generated UIs converges on the same handful of faces. Choose a face that gives your interface personality.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "D:\\Project\\4.Project\\Agent2\\src\\components\\ProfilePage.module.css",
+    "line": 41,
+    "snippet": "font-family: \"Inter",
+    "importedBy": [
+      "ProfilePage.tsx"
+    ]
+  },
+  {
+    "antipattern": "overused-font",
+    "name": "Overused font",
+    "description": "Inter, Roboto, Fraunces, Geist, Plus Jakarta Sans, and Space Grotesk are used on so many sites they no longer feel distinctive. Each new wave of AI-generated UIs converges on the same handful of faces. Choose a face that gives your interface personality.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "D:\\Project\\4.Project\\Agent2\\src\\components\\ProfilePage.module.css",
+    "line": 55,
+    "snippet": "font-family: \"Inter",
+    "importedBy": [
+      "ProfilePage.tsx"
+    ]
+  },
+  {
+    "antipattern": "overused-font",
+    "name": "Overused font",
+    "description": "Inter, Roboto, Fraunces, Geist, Plus Jakarta Sans, and Space Grotesk are used on so many sites they no longer feel distinctive. Each new wave of AI-generated UIs converges on the same handful of faces. Choose a face that gives your interface personality.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "D:\\Project\\4.Project\\Agent2\\src\\components\\ProfilePage.module.css",
+    "line": 1,
+    "snippet": "Google Fonts: inter",
+    "importedBy": [
+      "ProfilePage.tsx"
+    ]
+  }
+]

@@ -5,8 +5,8 @@ import "./globals.css";
 import "./workbench-quality.css";
 
 export const metadata: Metadata = {
-  title: "PM Assistant",
-  description: "AI 驱动产品经理工作流助手",
+  title: "AI 产品现场",
+  description: "AI 产品经理入职体验与产品实践",
 };
 
 export default function RootLayout({

@@ -58,7 +58,7 @@ export default function OnboardingBrief() {
         </section>
         <section className={styles.briefSection} data-od-id="mission-start">
           <div className={`${styles.container} ${styles.briefAction} ${styles.reveal}`}>
-            <div><p className={styles.eyebrow}>YOUR FIRST MOVE</p><h2>准备好就<br /><em>开始工作。</em></h2><p>无需注册。你的体验会从当前浏览器继续，选择只影响当下的反馈，不会改变任务路线。</p></div>
+            <div><p className={styles.eyebrow}>YOUR FIRST MOVE</p><h2>准备好就<br /><em>开始工作。</em></h2><p>无需注册。你的体验会从当前浏览器继续，选择只影响当下的反馈，不会改变任务路线。</p><p className={styles.progressResetNote}>刷新或重新打开标签页，会清空本次作答。</p></div>
             <Link className={styles.primary} href="/onboarding/scenes?scene=1" data-od-id="enter-first-scene">进入第一个工作场景<span className={styles.arrow} aria-hidden="true" /></Link>
           </div>
         </section>
