@@ -115,7 +115,7 @@
 .optionCopy span { display: block; margin-top: 3px; color: var(--ink-mute); font: 13px/1.4 Inter, system-ui, sans-serif; }
 .submitRow { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 24px; }
 .submitNote { color: var(--ink-mute); font: 12px/1.45 Inter, system-ui, sans-serif; }
-.scenePrimary { display: inline-flex; align-items: center; justify-content: center; min-height: 50px; padding: 0 22px; border: 1px solid var(--coral); background: var(--coral); color: var(--ink); text-align: center; font: 800 14px/1.25 Inter, system-ui, sans-serif; transition: background .18s, transform .18s; }
+.scenePrimary { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; min-height: 50px; padding: 0 22px; border: 1px solid var(--coral); background: var(--coral); color: var(--ink); text-align: center; white-space: nowrap; font: 800 14px/1.25 Inter, system-ui, sans-serif; transition: background .18s, transform .18s; }
 .scenePrimary:disabled { opacity: .4; cursor: not-allowed; transform: none; }
 .scenePrimary:disabled:hover { background: var(--coral); transform: none; }
 .scenePrimary:hover { background: var(--bone); transform: translateY(-3px); }
