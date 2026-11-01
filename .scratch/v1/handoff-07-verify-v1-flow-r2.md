@@ -1,8 +1,8 @@
 # Handoff R2 — 07 四环全流程验证（verify-v1-flow）
 
 > 交接日期：2026-08-10。本会话 132k+ 触发止损交接（用户确认等 run6 后台完成后交接）。
-> 新会话入口：`/implement @.scratch/pm-assistant-v1/issues/07-verify-v1-flow.md @.scratch/pm-assistant-v1/handoff-07-verify-v1-flow-r2.md`
-> 上一份交接：`.scratch/pm-assistant-v1/handoff-07-verify-v1-flow.md`（可作背景，勿重读全文）
+> 新会话入口：`/implement @.scratch/v1/issues/07-verify-v1-flow.md @.scratch/v1/handoff-07-verify-v1-flow-r2.md`
+> 上一份交接：`.scratch/v1/handoff-07-verify-v1-flow.md`（可作背景，勿重读全文）
 
 ## 一句话现状
 
@@ -17,7 +17,7 @@
 - **排除项附理由断言对齐 03**（整段扫 `不做|排除…因为|理由|（|—`，鲁棒加粗格式）——`verify-v1-flow.mjs` 环1
 - **splitProtoBlocks：normTitle 编号归一化 + 排除项段跳过**（`## 一、页面清单`/`## 排除项（不做）`）——`verify-v1-flow.mjs` splitProtoBlocks 附近。**注意：仍缺「依赖与外部假设」类杂项段处理 = run6 失败根因，见下**
 - dev server 本会话重启过（干净），当前运行中 localhost:3000
-- **未提交**：工作区含上述全部代码改动（route.ts + verify-v1-flow.mjs）+ `.scratch/pm-assistant-v1/` 下诊断工具（未跟踪）
+- **未提交**：工作区含上述全部代码改动（route.ts + verify-v1-flow.mjs）+ `.scratch/v1/` 下诊断工具（未跟踪）
 
 ## 运行结果摘要（6 轮）
 
@@ -29,7 +29,7 @@
 | run5 | 80✅ 2❌ | 零转换×2：`## 一、页面清单` 编号破坏流程分类 → 已修 |
 | run6 | 80✅ 2❌ | 见下（概念版 + 分类第三变体） |
 
-**关键结论**：零转换断言在**全部 5 轮**（handoff 轮 + run2/4/5/6）的真实失败均为**脚本分类伪影**，PRD Agent 真实违约一次未发生。离线验证工具已就绪：`.scratch/pm-assistant-v1/check-zeroconv.mjs <runX-files>` + `dump-run5-files.mjs <skip>`（skip=0 最新轮），run2-files/run4-files/run5-files/runX-files 已含各轮文件。
+**关键结论**：零转换断言在**全部 5 轮**（handoff 轮 + run2/4/5/6）的真实失败均为**脚本分类伪影**，PRD Agent 真实违约一次未发生。离线验证工具已就绪：`.scratch/v1/check-zeroconv.mjs <runX-files>` + `dump-run5-files.mjs <skip>`（skip=0 最新轮），run2-files/run4-files/run5-files/runX-files 已含各轮文件。
 
 ## run6 两个失败（根因已定位，勿重查）
 
@@ -50,7 +50,7 @@
 3. verify-401 规范跑法（下）
 4. `/code-review` 审查全部改动（含 route.ts 超时、断言修改）
 5. 更新 ticket 07：勾选清单 + `## Comments` 实施记录（**Status 行保持 ready-for-agent**——01-06 均未改 Status，勾选+记录即惯例）；提交（Co-Authored-By: Claude Fable 5）。「数据断言」勾选项各轮已实质全绿（协议标记落库/文件树/changelog 头）
-6. 清理 `.scratch/pm-assistant-v1/` 诊断工具（dump-run5-files.mjs / check-zeroconv.mjs / run*-files / verify-v1-flow-run*.log 按需留删）
+6. 清理 `.scratch/v1/` 诊断工具（dump-run5-files.mjs / check-zeroconv.mjs / run*-files / verify-v1-flow-run*.log 按需留删）
 
 ## verify-401 规范跑法（前置条件特殊！脚本头有注明）
 

@@ -3,7 +3,7 @@ import { chromium } from "playwright-core";
 import { mkdir, writeFile } from "node:fs/promises";
 
 const browser = await chromium.launch({ executablePath: "D:/DevCache/ms-playwright/chromium-1243/chrome-win64/chrome.exe" });
-const evidence = ".scratch/pm-assistant-v1.43/evidence/landing";
+const evidence = ".scratch/v1.43/evidence/landing";
 await mkdir(evidence, { recursive: true });
 let pass = 0, fail = 0;
 const measurements = [];

@@ -4,7 +4,7 @@
 
 ## 文件位置与职责
 
-- 每个新 feature 在 `.scratch/<feature-slug>/model-routing.md` 生成一份参考文件。
+- 每个新版本在 `.scratch/<版本号>/model-routing.md` 生成一份参考文件。
 - `spec.md` 和各 ticket 仍是产品事实与实现范围的唯一来源；模型路由文件不重复 PRD，不改变验收标准。
 - 路由文件是推荐，不是强制。用户指定模型时服从用户；实现过程出现升级条件时，按本文档处理。
 - 历史 feature 没有这份文件时不回填旧票。只有新运行的 `/to-tickets` 产物必须包含它。
@@ -37,7 +37,7 @@
 
 1. 为每一张 ticket 逐项应用“判定顺序”，记录具体证据（例如“跨前端/API”“依赖 02 和 05”“有固定 replay”）。
 2. 为每张 ticket 指定 `Risk`、`Primary model`、`Why`、`Verification` 和 `Escalate when`。
-3. 生成 `.scratch/<feature-slug>/model-routing.md`，覆盖全部 ticket，编号和文件名与 `issues/` 完全一致。
+3. 生成 `.scratch/<版本号>/model-routing.md`，覆盖全部 ticket，编号和文件名与 `issues/` 完全一致。
 4. 在文件末尾给出整体成本观察：Sol 使用在哪些高杠杆票，哪些票可由 Luna/Terra 承担；相对成本只做粗估，不伪装成精确 token 预算。
 
 完成标准：每张 ticket 恰好出现一次；每个推荐都有 ticket 内证据；每个推荐都有验证方式和升级条件；用户不读源码也能据表选择模型。
@@ -55,9 +55,9 @@
 ## 路由文件模板
 
 ```md
-# 模型调用参考：<feature-name>
+# 模型调用参考：<版本号>
 
-生成依据：`.scratch/<feature-slug>/spec.md`
+生成依据：`.scratch/<版本号>/spec.md`
 成本假设：Luna=1，Terra=10，Sol=25（相对成本）
 
 ## 总体建议

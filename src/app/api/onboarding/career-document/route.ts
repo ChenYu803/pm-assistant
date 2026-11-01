@@ -8,7 +8,7 @@ import { CAREER_DOCUMENT_FILENAME } from "@/lib/career-document";
 const CAREER_DOCUMENT_SOURCE = path.join(
   process.cwd(),
   ".scratch",
-  "pm-assistant-v1.4",
+  "v1.4",
   "career-document.md",
 );
 

@@ -48,7 +48,7 @@
 
 ## 范围与证据边界
 
-本评估人工浏览 `.scratch/pm-assistant-v1.43/evidence/a/` 中首页、简报、场景 01–07、答题反馈、测评、登录和注册的已捕获桌面/手机图，以及已捕获的桌面测评结果图；并补充浏览 `evidence/private/workbench-desktop.png`、`workbench-mobile.png`、`projects-desktop.png`、`profile-mobile.png`。截图覆盖 1440×900 桌面与 390×844 手机；结合 `PRODUCT.md` 的用户、任务、品牌与游客进度约束，以及 `LandingPage`、`OnboardingBrief`、`FirstWorkScene`、`WorkScenes`、`CareerAssessment`、认证、项目、工作台和个人页组件源码核对行为语义。
+本评估人工浏览 `.scratch/v1.43/evidence/a/` 中首页、简报、场景 01–07、答题反馈、测评、登录和注册的已捕获桌面/手机图，以及已捕获的桌面测评结果图；并补充浏览 `evidence/private/workbench-desktop.png`、`workbench-mobile.png`、`projects-desktop.png`、`profile-mobile.png`。截图覆盖 1440×900 桌面与 390×844 手机；结合 `PRODUCT.md` 的用户、任务、品牌与游客进度约束，以及 `LandingPage`、`OnboardingBrief`、`FirstWorkScene`、`WorkScenes`、`CareerAssessment`、认证、项目、工作台和个人页组件源码核对行为语义。
 
 只检查了已有截图与源码，没有再次打开浏览器，也没有运行交互、键盘/读屏、性能、网络故障或真实认证测试。因此，本报告不声称这些运行态已验证。私有工作台截图来自本地临时测试账号；账号与项目已由父 Agent 清理。未读取 Assessment B 或 detector 结果，也未生成 snapshot/storage。
 

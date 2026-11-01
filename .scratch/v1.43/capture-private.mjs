@@ -6,7 +6,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 nextEnv.loadEnvConfig(process.cwd(), true);
 if (!['localhost', '127.0.0.1', '::1'].includes(process.env.MYSQL_HOST)) throw new Error('仅允许本机数据库');
 const { getMysqlPool, closeMysqlPoolForTests } = await import('../../src/lib/mysql.ts').catch(() => import('../../../src/lib/mysql.ts'));
-const out = '.scratch/pm-assistant-v1.43/evidence/private';
+const out = '.scratch/v1.43/evidence/private';
 await mkdir(out, { recursive: true });
 const browser = await chromium.launch({ channel: 'msedge', headless: true });
 const context = await browser.newContext({ viewport: { width:1440, height:900 }, reducedMotion:'reduce' });

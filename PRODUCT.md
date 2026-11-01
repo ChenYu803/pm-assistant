@@ -75,12 +75,12 @@ v1.4 的硬性成功结果是：用户完成十道固定职业认知测试并看
 
 ## Evidence on Hand
 
-- 产品领域上下文：CONTEXT.md
+- 产品领域上下文：GLOSSARY.md
 - 产品进度与交接：PROGRESS.md
-- 当前 v1.4 规格：.scratch/pm-assistant-v1.4/spec.md
-- 当前 v1.4 tickets：.scratch/pm-assistant-v1.4/issues/
-- v1.0 与 v1.1 规格：.scratch/pm-assistant-v1.1/spec.md
-- v1.1 tickets：.scratch/pm-assistant-v1.1/issues/
+- 当前 v1.4 规格：.scratch/v1.4/spec.md
+- 当前 v1.4 tickets：.scratch/v1.4/issues/
+- v1.0 与 v1.1 规格：.scratch/v1.1/spec.md
+- v1.1 tickets：.scratch/v1.1/issues/
 - 架构决策：docs/adr/
 - 当前网站实现：src/
 

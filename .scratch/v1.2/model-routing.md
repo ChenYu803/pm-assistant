@@ -1,6 +1,6 @@
 # 模型调用参考：PM Assistant v1.2
 
-生成依据：`.scratch/pm-assistant-v1.2/spec.md`
+生成依据：`.scratch/v1.2/spec.md`
 
 成本假设：Luna=1，Terra=10，Sol=25（相对成本）
 

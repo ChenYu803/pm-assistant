@@ -12,7 +12,7 @@
 |---|---|
 | 只学**风格**（注释语言/命名/输出格式/退出码） | 只读文件头 ~30 行 + 尾部 ~20 行（`Read` 带 `offset`/`limit`，或 `head`/`tail`） |
 | 只找**几个点**（协议标记/常量/函数位置） | 精准 grep + `-n` 行号；命中行够了就别读全文 |
-| **完整理解**（spec、当前 ticket、CONTEXT.md） | 才读全文 |
+| **完整理解**（spec、当前 ticket、GLOSSARY.md） | 才读全文 |
 
 ## 会话止损线（铁律，来自 03 教训）
 
@@ -40,9 +40,9 @@
 ## 项目文件地图
 
 ### 实现输入（值得读）
-- `.scratch/<feature-slug>/spec.md` — 需求总纲，唯一必须通读的文档
-- `.scratch/<feature-slug>/issues/NN-<slug>.md` — 当前 ticket，唯一必须通读的 ticket（依赖看 `Blocked by:` 行）
-- `CONTEXT.md`、`docs/adr/`（当前 ticket 引用到的部分）
+- `.scratch/<版本号>/spec.md` — 需求总纲，唯一必须通读的文档
+- `.scratch/<版本号>/issues/NN-<slug>.md` — 当前 ticket，唯一必须通读的 ticket（依赖看 `Blocked by:` 行）
+- `GLOSSARY.md`、`docs/adr/`（当前 ticket 引用到的部分）
 - 核心源码：`src/lib/agent-prompts.ts`、`src/app/api/tabs/[id]/chat/route.ts`、`src/components/ChatArea.tsx`
 
 ### 风格参考（只读头尾）

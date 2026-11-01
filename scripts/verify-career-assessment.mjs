@@ -8,7 +8,7 @@ import path from "node:path";
 const BASE = process.env.APP_BASE_URL ?? "http://localhost:3000";
 const DOCUMENT_PATH = "/api/onboarding/career-document";
 const DOCUMENT_FILENAME = "AI产品经理职业认知-v1.0.md";
-const expectedDocument = await readFile(path.join(process.cwd(), ".scratch", "pm-assistant-v1.4", "career-document.md"));
+const expectedDocument = await readFile(path.join(process.cwd(), ".scratch", "v1.4", "career-document.md"));
 const hash = (content) => createHash("sha256").update(content).digest("hex");
 let pass = 0;
 let fail = 0;

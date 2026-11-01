@@ -1,35 +1,21 @@
 # Domain Docs
 
-How the engineering skills should consume this repo's domain documentation when exploring the codebase.
+工程 skills 探索代码前，按任务相关性读取：
 
-## Before exploring, read these
+- 根目录 `GLOSSARY.md`；若存在 `GLOSSARY-MAP.md`，按 map 读取相关上下文的 glossary。
+- `docs/adr/` 中与当前任务相关的 ADR；多上下文仓库还应检查 `src/<context>/docs/adr/`。
 
-- **`CONTEXT.md`** at the repo root — the project's ubiquitous language glossary and domain overview.
-- **`docs/adr/`** — read ADRs that touch the area you're about to work in.
+文件不存在时继续，不必额外提示。领域术语或决策确定后，再通过 domain-modeling 补充相应文档。
 
-If any of these files don't exist, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. The `/domain-modeling` skill creates them lazily when terms or decisions actually get resolved.
+## 目录结构
 
-## File structure
+本仓库采用单一上下文：
 
-Single-context repo:
-
-```
+```text
 /
-├── CONTEXT.md
+├── GLOSSARY.md
 ├── docs/adr/
-│   ├── 0001-event-sourced-orders.md
-│   └── 0002-postgres-for-write-model.md
 └── src/
 ```
 
-## Use the glossary's vocabulary
-
-When your output names a domain concept (in an issue title, a refactor proposal, a hypothesis, a test name), use the term as defined in `CONTEXT.md`. Don't drift to synonyms the glossary explicitly avoids.
-
-If the concept you need isn't in the glossary yet, that's a signal — either you're inventing language the project doesn't use (reconsider) or there's a real gap (note it for `/domain-modeling`).
-
-## Flag ADR conflicts
-
-If your output contradicts an existing ADR, surface it explicitly rather than silently overriding:
-
-> _Contradicts ADR-0007 (event-sourced orders) — but worth reopening because…_
+输出领域概念时沿用 glossary 中的词汇；若缺少必要术语，记录为待补充项。若方案与现存 ADR 冲突，明确指出冲突。

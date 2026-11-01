@@ -1,22 +1,30 @@
 # PROGRESS.md - 项目状态与交接
 
 > 本文件是 implement Agent 的单点交接摘要。每次会话开始必读，结束必更新。
-> 具体产品决策见 `CONTEXT.md`，规格见对应 `.scratch/<feature>/spec.md`，票状态以对应 `issues/` 文件为准。
+> 具体产品决策见 `GLOSSARY.md`，规格见对应 `.scratch/<版本号>/spec.md`，票状态以对应 `issues/` 文件为准。
 > 本文件只记录当前状态、下一步和仍会影响工作的事实，不重复规格和票的完整内容。
 
 ## 当前阶段
+
+### 2026-11-01：更新工程 skills 配置与版本目录
+
+保留 Local Markdown tracker；spec 与 issue 统一使用 `.scratch/<版本号>/spec.md`、`.scratch/<版本号>/issues/<NN>-<slug>.md`。已将 v1、v1.1、v1.2、v1.3、v1.4、v1.41、v1.42、v1.43 共 8 个目录去掉 `pm-assistant-` 前缀，保留 MVP 与早期讨论目录。同步现有路径引用，包括学习笔记下载接口与两处验证脚本的输入路径；历史票仅更新路径引用。
+
+根目录领域文档迁移为 `GLOSSARY.md`，正文保持原样；更新三个 `docs/agents/` 配置文件与 `AGENTS.md` 入口，保留五个默认 triage 状态，区分 triage 与执行状态。现行维护文档改用新名称，历史交付记录中的旧名称保留。
+
+验证：419 个迁移文件逐一核对通过，GLOSSARY 正文与学习笔记内容保持不变；旧版本路径残留为 0，配置入口检查通过，两个相关脚本语法检查、npx tsc --noEmit 与 git diff --check 均通过。当前产品阶段仍为 v1.43；后续按新目录定位任务。工作区既有页面、认证、部署等改动保留，本次仅提交配置与路径迁移；未推送。
 
 ### 2026-10-30：v1.43 首页深色与交付物动效
 
 用户新授权 landing page 动效与所有底面去白，覆盖早先仅克制状态动效的首页范围限制；04 号票已 resolved。首页统一墨黑/暖炭/珊瑚色，移除批量淡入上移、外层全局纹理和远程字体 CSS；首屏成果文件台支持鼠标纵深、按钮/键盘/触屏切换，实践区随原生滚动接力归档四份交付物，反滚可逆。移动端、矮屏、减弱动画与无 JS 呈完整静态序列；不新增动效依赖、不改认证/业务路由。
 
-定向浏览器 58/58：320/375/390/414/768/1440 无横向溢出和白/近白底面，真实 pointer/wheel/tap、键盘、四阶段和反向进度、正文/入口/路由隔离通过。TypeScript、定向 ESLint、生产构建和 diff 通过，设计检测器无发现；截图与读数见 `.scratch/pm-assistant-v1.43/evidence/landing/`，验证入口 `verify-landing-motion.mjs`。本机 Chromium 结果不代表实体手机或 Safari/Firefox 性能；当前版仍在 3000、旧版对照在 3001，未部署或推送。保留工作区原有未提交内容，下一步由用户实际查看首页手感。
+定向浏览器 58/58：320/375/390/414/768/1440 无横向溢出和白/近白底面，真实 pointer/wheel/tap、键盘、四阶段和反向进度、正文/入口/路由隔离通过。TypeScript、定向 ESLint、生产构建和 diff 通过，设计检测器无发现；截图与读数见 `.scratch/v1.43/evidence/landing/`，验证入口 `verify-landing-motion.mjs`。本机 Chromium 结果不代表实体手机或 Safari/Firefox 性能；当前版仍在 3000、旧版对照在 3001，未部署或推送。保留工作区原有未提交内容，下一步由用户实际查看首页手感。
 
 ### 2026-10-30：v1.43 视觉连续性与克制动效完成
 
-已按 `impeccable critique` 检查首页、入职体验简报、6 个工作场景及其反馈、职业认知测试/结果、登录注册、项目列表、迭代创建、工作台和个人主页。设计评估 30/40（75%，Good）；主要优点是暖纸、墨黑、珊瑚与场景化入职体验形成了产品辨识度，工作台保留任务优先的安静密度。首要缺口是认证页使用内部名称 PM Assistant 且品牌视觉脱节；游客刷新重置提醒偏后；场景反馈和复盘较长。detector 为 11 条 warning（9 字体、2 侧边强调），其中 ProfilePage fallback 与 Markdown blockquote 有误报；人工视觉和 B 浏览器输出不支持将 detector 警告等同为品质缺陷。完整合并报告及截图/检测证据暂存 `.scratch/pm-assistant-v1.43/`；本轮未改产品 UI、未调用模型、未写入线上数据。建议优先收口认证一致性、进度边界和反馈扫描性，再采用低幅度的“成果接力”交互动效、节制的关键内容分段揭示与工作台状态切换。实施 ticket、动效覆盖面和视觉改版范围待用户确认。
+已按 `impeccable critique` 检查首页、入职体验简报、6 个工作场景及其反馈、职业认知测试/结果、登录注册、项目列表、迭代创建、工作台和个人主页。设计评估 30/40（75%，Good）；主要优点是暖纸、墨黑、珊瑚与场景化入职体验形成了产品辨识度，工作台保留任务优先的安静密度。首要缺口是认证页使用内部名称 PM Assistant 且品牌视觉脱节；游客刷新重置提醒偏后；场景反馈和复盘较长。detector 为 11 条 warning（9 字体、2 侧边强调），其中 ProfilePage fallback 与 Markdown blockquote 有误报；人工视觉和 B 浏览器输出不支持将 detector 警告等同为品质缺陷。完整合并报告及截图/检测证据暂存 `.scratch/v1.43/`；本轮未改产品 UI、未调用模型、未写入线上数据。建议优先收口认证一致性、进度边界和反馈扫描性，再采用低幅度的“成果接力”交互动效、节制的关键内容分段揭示与工作台状态切换。实施 ticket、动效覆盖面和视觉改版范围待用户确认。
 
-用户已确认处理认证品牌断层、前置游客进度重置提醒、反馈扫描性，并采用克制的章节转场与操作反馈；票据 `.scratch/pm-assistant-v1.43/issues/01-visual-continuity-and-motion.md` 已 resolved。认证页新增品牌一致的纸色双栏/移动单栏壳层，登录注册文案改为“AI 产品现场”；简报开始动作旁明确刷新/重开会清空本次作答；场景反馈把“下一步项目动作”前置，完整依据改为可键盘访问的原生 details 展开；答题选项、章节标题、反馈、工作台 toast 使用短促状态动效并保留 reduced-motion 静止终态。保留既有认证流程、游客不持久化规则、题目内容和工作台业务行为，不调用真实模型或写入线上数据。`npx tsc --noEmit`、改动文件定向 ESLint、`git diff --check`、Playwright 1440/390、reduced-motion 检查通过；截图与 detector 结果在 `.scratch/pm-assistant-v1.43/evidence/after/`。detector 仍有字体/引用 warning，按评估中的误报和既有体系复用处理，不作为阻断。下一前沿是用户实际查看上线版本并决定是否需要进一步调整字体或结果页信息密度。
+用户已确认处理认证品牌断层、前置游客进度重置提醒、反馈扫描性，并采用克制的章节转场与操作反馈；票据 `.scratch/v1.43/issues/01-visual-continuity-and-motion.md` 已 resolved。认证页新增品牌一致的纸色双栏/移动单栏壳层，登录注册文案改为“AI 产品现场”；简报开始动作旁明确刷新/重开会清空本次作答；场景反馈把“下一步项目动作”前置，完整依据改为可键盘访问的原生 details 展开；答题选项、章节标题、反馈、工作台 toast 使用短促状态动效并保留 reduced-motion 静止终态。保留既有认证流程、游客不持久化规则、题目内容和工作台业务行为，不调用真实模型或写入线上数据。`npx tsc --noEmit`、改动文件定向 ESLint、`git diff --check`、Playwright 1440/390、reduced-motion 检查通过；截图与 detector 结果在 `.scratch/v1.43/evidence/after/`。detector 仍有字体/引用 warning，按评估中的误报和既有体系复用处理，不作为阻断。下一前沿是用户实际查看上线版本并决定是否需要进一步调整字体或结果页信息密度。
 
 后续反馈控件修正：场景判断依据折叠控件改为整行显著按钮，依据收起时显示“展开判断依据与答案”，展开后显示“收起判断依据与答案”，箭头同步旋转；原生 details 键盘交互保留。1440px/390px 实测开合、文案同步、无水平溢出通过；TypeScript、定向 ESLint、detector 和 diff 检查通过。
 
@@ -40,7 +48,7 @@ Next/eslint-config-next 升至同系列 16.3.8 并更新兼容间接依赖，生
 
 ### 2026-10-18：v1.42 #01 流式生成代码准备完成，外部部署仍待验收
 
-用户确认新工作台“生成时逐步显示”。已完成 `.scratch/pm-assistant-v1.42/issues/01-cloudflare-generation-stream.md`：发送、消息 PATCH 编辑和重新生成使用 SSE，15 秒心跳、禁止缓存/转换及代理缓冲；真实消息 ID 合并累计正文，切换会话不重复，刷新后的页面读取数据库进度及终态。服务端每 500ms 串行保存 generating 部分正文，完整消息/候选/HTML 快照继续在原成功事务提交。普通发送停止/断线保留 failed 部分正文，编辑/重生成中止清理临时回复并保留旧成功事实；预先中止信号与实际 HTTP 断开已处理。旧 JSON API 的 HTTP 200 与结构保持兼容。
+用户确认新工作台“生成时逐步显示”。已完成 `.scratch/v1.42/issues/01-cloudflare-generation-stream.md`：发送、消息 PATCH 编辑和重新生成使用 SSE，15 秒心跳、禁止缓存/转换及代理缓冲；真实消息 ID 合并累计正文，切换会话不重复，刷新后的页面读取数据库进度及终态。服务端每 500ms 串行保存 generating 部分正文，完整消息/候选/HTML 快照继续在原成功事务提交。普通发送停止/断线保留 failed 部分正文，编辑/重生成中止清理临时回复并保留旧成功事实；预先中止信号与实际 HTTP 断开已处理。旧 JSON API 的 HTTP 200 与结构保持兼容。
 
 最终验证：`verify:v142-generation-stream` 23/23，原生命周期通过临时隔离 harness 回归 63/63（业务 56/56），生产构建、`npx tsc --noEmit` 和定向 ESLint 通过。证据与边界见 `docs/verification/v142-generation-stream.md`，协议快照已更新；随机测试库/账号/服务和临时 harness 均清理。验证曾发现 JSON 状态码误改为 201，已修复后由原断言重验；隔离副本位于 `.next`，生产构建会清理它，构建与隔离回放必须顺序运行，受并行构建干扰的未进入业务场景运行不作为验收结果。
 
@@ -123,13 +131,13 @@ Next/eslint-config-next 升至同系列 16.3.8 并更新兼容间接依赖，生
 
 用户确认 v1.41 全部完成；以 01—24 及最终 MySQL/replay 发布闸记录为当前事实，以下早期“暂停/仅完成部分票”叙述保留为历史。v1.42 当前先评估 Vercel + Supabase + 阿里云域名是否适合中国大陆主要用户，暂不推进 Q7—Q9 或迁移实现。免费容量对少量面试演示预计足够，但 Vercel 官方不保证大陆访问、自定义域名不改变承载位置，Supabase 免费项目闲置一周暂停，现有 600 秒生成与 Hobby 300 秒时限仍需适配。
 
-已核查官方资料及当前数据层，研究见 `docs/research/v142-mainland-hosting-review-2026-10-02.md`，讨论最新前沿见 `.scratch/pm-assistant-v1.42/discussion.md`。建议将保留 MySQL 的香港/大陆云服务器纳入比较，尚未替用户改变原平台决策。未购买资源、未部署、未换库、未运行真实模型或构建回放；本轮仅研究与文档检查。下一步在部署取舍确定后再继续访问与模型费用边界讨论。
+已核查官方资料及当前数据层，研究见 `docs/research/v142-mainland-hosting-review-2026-10-02.md`，讨论最新前沿见 `.scratch/v1.42/discussion.md`。建议将保留 MySQL 的香港/大陆云服务器纳入比较，尚未替用户改变原平台决策。未购买资源、未部署、未换库、未运行真实模型或构建回放；本轮仅研究与文档检查。下一步在部署取舍确定后再继续访问与模型费用边界讨论。
 
 ### v1.42 上线讨论（2026-09-27，当前优先）
 
 产品经理已明确暂停 v1.41 后续迭代，改为以 Vercel + Supabase PostgreSQL + 阿里云域名快速低成本上线的 v1.42。首发用途为个人面试展示和免费试用，主要保留入职体验并补齐最小四环成果闭环；平台选免费套餐方向，域名倾向低价 `.cn`。Supabase 全新数据库首发，不迁移任何现有账号或业务数据，本机 MySQL 数据原样保留；保留 MySQL 实现及初始化脚本，v1.42 只对 PostgreSQL 发布验收，未来切回作为独立任务。v1.41 的 01—05 已完成事实保留；用户随后分别单独指定执行 06—09 号票，其余票仍未恢复，下方“下一前沿为 06”等均为此前历史记录。
 
-本轮使用 grill-with-docs（grilling + domain-modeling）讨论范围，已确定决策记入 `docs/adr/0006-v142-vercel-supabase-launch.md`，决策树与待答问题位于 `.scratch/pm-assistant-v1.42/discussion.md`。当前前沿为演示/试用访问边界、真实模型费用和最小成果功能清单；用户询问日期问题的目的，已解释其仅用于固定面试期限下的范围取舍，尚无硬期限。域名首推 `pmstage.cn`，未确认可注册或购买。尚无 v1.42 实现票，不执行数据库迁移或部署。新工作台候选交付已在v1.41接齐并通过MySQL/replay最终发布闸；v1.42 PostgreSQL仍须独立实现和验收，不能把换库完成视为产品发布完成。本轮为纯文档记录，不运行构建、回放或真实模型验证。
+本轮使用 grill-with-docs（grilling + domain-modeling）讨论范围，已确定决策记入 `docs/adr/0006-v142-vercel-supabase-launch.md`，决策树与待答问题位于 `.scratch/v1.42/discussion.md`。当前前沿为演示/试用访问边界、真实模型费用和最小成果功能清单；用户询问日期问题的目的，已解释其仅用于固定面试期限下的范围取舍，尚无硬期限。域名首推 `pmstage.cn`，未确认可注册或购买。尚无 v1.42 实现票，不执行数据库迁移或部署。新工作台候选交付已在v1.41接齐并通过MySQL/replay最终发布闸；v1.42 PostgreSQL仍须独立实现和验收，不能把换库完成视为产品发布完成。本轮为纯文档记录，不运行构建、回放或真实模型验证。
 
 2026-09-27：补齐账号个人主页：已登录首页右上角改为“个人主页”，`/profile` 提供昵称编辑、只读邮箱、按原有至少 6 位规则修改密码和退出后返回首页。MySQL 迁移 `0012_account_nickname` 为既有账号新增可空昵称，旧账号初始显示未设置；认证边界与密码校验在服务端完成。`verify:account-profile` 14/14、`verify:mysql-init` 4/4 通过，桌面及 390px 截图已检查；`verify:account-project-workspace` 13/14，唯一失败为旧 `/workspace` 刷新恢复选中 tab 的既有路径断言，本次未改动该路径。v1.41 下一前沿仍为 06 号票；部署现有数据库时须先执行新迁移。
 
@@ -199,7 +207,7 @@ Next/eslint-config-next 升至同系列 16.3.8 并更新兼容间接依赖，生
 
 v1.41 将重铸认证后的四环实践工作台，同时解决现有流程难用和视觉粗糙的问题。领域模型已经收敛为“项目拥有唯一文件树，产品迭代组织目标、四环状态和阶段会话”：需求分析、原型、PRD 和任务拆分文件均属于项目，用户通过上下文文件区域决定当前会话可以读取哪些正文。
 
-`.scratch/pm-assistant-v1.41/spec.md` 已按 grilling 结论发布为 `ready-for-agent`，覆盖产品迭代身份与目标、四环一级导航、阶段状态和多会话、项目文件树、手动上下文、候选确认、纯 Markdown、内容修订与一次撤回、永久来源记录、任务拆分整套更新、删除语义、响应式工作台和视觉责任边界。v1.41 按全新数据库验收，不迁移或兼容旧数据；本次规格阶段未清空数据库。
+`.scratch/v1.41/spec.md` 已按 grilling 结论发布为 `ready-for-agent`，覆盖产品迭代身份与目标、四环一级导航、阶段状态和多会话、项目文件树、手动上下文、候选确认、纯 Markdown、内容修订与一次撤回、永久来源记录、任务拆分整套更新、删除语义、响应式工作台和视觉责任边界。v1.41 按全新数据库验收，不迁移或兼容旧数据；本次规格阶段未清空数据库。
 
 2026-09-24：按产品经理澄清，02 号票交付完整工作台骨架，不限于四环导航。已接入独立三栏/移动纵向工作台、四环与迭代级阶段位置、软提示、空阶段显式建会话、只读 10/3/3 演示会话、真实 Agent replay 聊天、消息复制/原位编辑/重生成、项目文件树和会话级上下文。MySQL migration 0011 建立阶段/会话/消息/上下文存储；外部 `tickets` 映射存储 `tasks`。编辑/重生成成功后事务替换历史，失败保留原记录；会话生成和删除通过会话行锁互斥。`verify:v141-iteration-lifecycle` 覆盖 45 条浏览器/API/MySQL 断言全部通过，含 390px 文件区开合；`npx tsc --noEmit`、`npm run lint`、`npm run build` 通过（lint 仅有既有 `ChatArea.tsx` hook warning）。阶段“完成/重新打开”触发语义、候选交付及文件修订等仍由后续票定义，本次未代替后续票实现。
 
@@ -214,9 +222,9 @@ v1.41 将重铸认证后的四环实践工作台，同时解决现有流程难�
 
 2026-09-27：项目页左上角品牌从页内 `#top` 跳转改为首页 `/`。已登录浏览器从 `/projects` 点击品牌可到首页，根路径返回首页内容；类型检查与项目列表组件 lint 通过。下一前沿仍为 06 号票。
 
-实现前需要产品经理按 ticket 提供关键主流程原型或明确复用已有视觉来源。原型负责关键视觉层级、布局、控件和特殊交互，spec 负责行为、权限和数据事实；普通加载、失败、禁用、无特殊要求的移动端适配和技术实现由 Agent 按已确认方向补齐。两者在关键决策处冲突时必须在实现前显式处理，不能由 implement Agent 自行猜测。新增 `.scratch/pm-assistant-v1.41/v1.41-prototype-inputs.md` 作为 v1.41 专属的逐票原型交付清单，新增 `docs/agents/v1.41-implement-prototype-contract.md` 作为 v1.41 专属的 Implement Agent 开工检查和阻塞纪律；v1.41 最终验收票会删除后者并从 AGENTS.md 移除对应开工步骤。当前 01 号票已实现并收口：项目详情页接入产品迭代列表、创建/编辑抽屉、目标填写/暂不填写风险确认、稳定编号和工作区占位页；产品迭代使用独立 `product_iterations` 表，迁移 `0009_v141_product_iterations_reset` 清理旧版本数据库内容，不回填或兼容旧 `work_records` 数据。项目行锁保证编号单调递增，工作区占位页校验用户与项目归属。专项回放 `verify:v141-iteration-lifecycle` 已 14/14 通过，类型检查、lint、MySQL 初始化验证通过；本次视觉回合将 `/projects` 重做为原型的 topline + 项目 rail + 迭代摘要/六列列表，补齐项目与迭代菜单、移动端 640px 布局和抽屉/risk token，并用桌面/移动截图逐项核对；`npx impeccable detect --json` 返回空结果。其余票仍等待对应输入。
+实现前需要产品经理按 ticket 提供关键主流程原型或明确复用已有视觉来源。原型负责关键视觉层级、布局、控件和特殊交互，spec 负责行为、权限和数据事实；普通加载、失败、禁用、无特殊要求的移动端适配和技术实现由 Agent 按已确认方向补齐。两者在关键决策处冲突时必须在实现前显式处理，不能由 implement Agent 自行猜测。新增 `.scratch/v1.41/v1.41-prototype-inputs.md` 作为 v1.41 专属的逐票原型交付清单，新增 `docs/agents/v1.41-implement-prototype-contract.md` 作为 v1.41 专属的 Implement Agent 开工检查和阻塞纪律；v1.41 最终验收票会删除后者并从 AGENTS.md 移除对应开工步骤。当前 01 号票已实现并收口：项目详情页接入产品迭代列表、创建/编辑抽屉、目标填写/暂不填写风险确认、稳定编号和工作区占位页；产品迭代使用独立 `product_iterations` 表，迁移 `0009_v141_product_iterations_reset` 清理旧版本数据库内容，不回填或兼容旧 `work_records` 数据。项目行锁保证编号单调递增，工作区占位页校验用户与项目归属。专项回放 `verify:v141-iteration-lifecycle` 已 14/14 通过，类型检查、lint、MySQL 初始化验证通过；本次视觉回合将 `/projects` 重做为原型的 topline + 项目 rail + 迭代摘要/六列列表，补齐项目与迭代菜单、移动端 640px 布局和抽屉/risk token，并用桌面/移动截图逐项核对；`npx impeccable detect --json` 返回空结果。其余票仍等待对应输入。
 
-实现前需要产品经理按 ticket 提供关键主流程原型或明确复用已有视觉来源。原型负责关键视觉层级、布局、控件和特殊交互，spec 负责行为、权限和数据事实；普通加载、失败、禁用、无特殊要求的移动端适配和技术实现由 Agent 按已确认方向补齐。两者在关键决策处冲突时必须在实现前显式处理，不能由 implement Agent 自行猜测。新增 `.scratch/pm-assistant-v1.41/v1.41-prototype-inputs.md` 作为 v1.41 专属的逐票原型交付清单，新增 `docs/agents/v1.41-implement-prototype-contract.md` 作为 v1.41 专属的 Implement Agent 开工检查和阻塞纪律；v1.41 最终验收票会删除后者并从 AGENTS.md 移除对应开工步骤。当前 01 号票已实现并收口：项目详情页接入产品迭代列表、创建/编辑抽屉、目标填写/暂不填写风险确认、稳定编号和工作区占位页；产品迭代使用独立 `product_iterations` 表，迁移 `0009_v141_product_iterations_reset` 清理旧版本数据库内容，不回填或兼容旧 `work_records` 数据。项目行锁保证编号单调递增，工作区占位页校验用户与项目归属。专项回放 `verify:v141-iteration-lifecycle` 已 14/14 通过，类型检查、lint、MySQL 初始化验证通过；本次视觉回合将 `/projects` 重做为原型的 topline + 项目 rail + 迭代摘要/六列列表，补齐项目与迭代菜单、移动端 640px 布局和抽屉/risk token，并用桌面/移动截图逐项核对；`npx impeccable detect --json` 返回空结果。随后根据产品经理澄清，`/projects/[id]` 不再提供独立项目详情界面，而是临时重定向至唯一项目入口 `/projects`；迭代列表组件已移除仅供旧详情页使用的侧栏，旧工作区返回链接也改回 `/projects`。此前旧卡片式 `/projects` 列表已由 `c32671c` 改写为新版壳层，历史记录保留在 Git 中，不另做历史重写。其余票仍等待对应输入。
+实现前需要产品经理按 ticket 提供关键主流程原型或明确复用已有视觉来源。原型负责关键视觉层级、布局、控件和特殊交互，spec 负责行为、权限和数据事实；普通加载、失败、禁用、无特殊要求的移动端适配和技术实现由 Agent 按已确认方向补齐。两者在关键决策处冲突时必须在实现前显式处理，不能由 implement Agent 自行猜测。新增 `.scratch/v1.41/v1.41-prototype-inputs.md` 作为 v1.41 专属的逐票原型交付清单，新增 `docs/agents/v1.41-implement-prototype-contract.md` 作为 v1.41 专属的 Implement Agent 开工检查和阻塞纪律；v1.41 最终验收票会删除后者并从 AGENTS.md 移除对应开工步骤。当前 01 号票已实现并收口：项目详情页接入产品迭代列表、创建/编辑抽屉、目标填写/暂不填写风险确认、稳定编号和工作区占位页；产品迭代使用独立 `product_iterations` 表，迁移 `0009_v141_product_iterations_reset` 清理旧版本数据库内容，不回填或兼容旧 `work_records` 数据。项目行锁保证编号单调递增，工作区占位页校验用户与项目归属。专项回放 `verify:v141-iteration-lifecycle` 已 14/14 通过，类型检查、lint、MySQL 初始化验证通过；本次视觉回合将 `/projects` 重做为原型的 topline + 项目 rail + 迭代摘要/六列列表，补齐项目与迭代菜单、移动端 640px 布局和抽屉/risk token，并用桌面/移动截图逐项核对；`npx impeccable detect --json` 返回空结果。随后根据产品经理澄清，`/projects/[id]` 不再提供独立项目详情界面，而是临时重定向至唯一项目入口 `/projects`；迭代列表组件已移除仅供旧详情页使用的侧栏，旧工作区返回链接也改回 `/projects`。此前旧卡片式 `/projects` 列表已由 `c32671c` 改写为新版壳层，历史记录保留在 Git 中，不另做历史重写。其余票仍等待对应输入。
 
 本轮补齐 01 号票遗漏的“删除产品迭代”：菜单打开原型范围确认弹窗；确认后使用用户归属校验和项目行锁事务物理删除 MySQL `product_iterations` 目标行，取消或失败不从列表移除，稳定编号计数不回退。现有 schema 不存在迭代级聊天/草稿关联表，旧聊天亦不关联新迭代；删除只影响迭代行，项目文件及项目级变更记录不动。`verify:v141-iteration-lifecycle` 扩展覆盖弹窗取消、确认删除、MySQL 行不存在、项目文件/变更计数不变、相邻迭代保留及编号不复用。工作区中已有的 config/deploy 变更与未跟踪 HTML/PNG 均为用户改动，本轮保留不处理。
 
@@ -315,7 +323,7 @@ v1.3 不迁移旧 MongoDB 数据，不提供 MongoDB 回退，不新增用户可
 | v1.41 #03 阶段会话隔离 | `verify:v141-iteration-lifecycle` 56/56 通过；类型检查、组件 lint、build 通过；桌面/390px 空会话截图已检查；未调用真实模型 |
 | v1.3 综合 MySQL replay | 尚未运行，等待应用连接凭据和完整环境 |
 | v1.3 四环人工冒烟 | 尚未运行 |
-| v1.4 文档交付 | `PRODUCT.md`、spec、6 张 tickets、`CONTEXT.md` 和 `PROGRESS.md` 已按“无任务地图、无持久恢复、统一入口”收口；#04 十题测试文案已补齐至 `.scratch/pm-assistant-v1.4/assessment-content.md`；#05 已收敛为认证后的精炼学习笔记直接下载；`git diff --cached --check` 通过 |
+| v1.4 文档交付 | `PRODUCT.md`、spec、6 张 tickets、`CONTEXT.md` 和 `PROGRESS.md` 已按“无任务地图、无持久恢复、统一入口”收口；#04 十题测试文案已补齐至 `.scratch/v1.4/assessment-content.md`；#05 已收敛为认证后的精炼学习笔记直接下载；`git diff --cached --check` 通过 |
 | v1.4 #02 入职开场 | `/onboarding/brief`、`/onboarding/scenes?scene=1` 已实现；游客公开访问，四项全选后才可继续；第一个场景已按最新 HTML 原型同步题目/反馈双栏、固定反馈槽位、滚动显现与选项错峰入场、提交反馈和继续按钮动效；提交不自动滚动，刷新重置，浏览器冒烟覆盖桌面入口、反馈状态、刷新重置和 390px 移动布局 |
 | v1.4 #03 工作场景原型 | `work-scenes.html` 已完成场景 02-06、10 个判断、正确/错误反馈、返回与唯一顺序推进、场景 06 测试入口；默认 A 变体及 B/C 结构变体已完成桌面与 390px 移动截图复核；场景简报已提升为主叙事区；场景 01-06 均使用滚动进入视口后一次性显现的 session 动效，选项从右向左以 1.05s / 160ms 错峰节奏进入，答题重绘不会重播已完成动效；选择题 session 预留固定反馈槽位和继续动作槽位，桌面端题目与反馈左右并列、继续按钮位于右侧底部，移动端自动堆叠；提交后题目与选项保持静态，仅反馈和继续按钮执行入场动效，提交路径不再包含任何平滑滚动；同场景下一题在原 session 内淡出/淡入替换且不滚动页面，最后一题跨场景仍回到顶部；已播放的底部 mentor/session 在重渲染时使用 `motion-static` 保持可见，不会因提交第一题重新播放；反馈槽位使用 `overflow-anchor: none` 防止布局变化触发浏览器滚动锚定；场景 01 进度统一为 `01 / 06`，进入场景 02 使用 `entry=1` 首访标记并强制注册新场景滚动动效；保留 reduced-motion 与 IntersectionObserver 不可用时的可见性兜底；未调用 LLM |
 | v1.4 #03 工作场景实现 | 已接入 `/onboarding/scenes?scene=2..6`；固定场景 02-06、10 个四选一判断、预编排正确/错误反馈、连续推进和已体验场景回看均由 `WorkScenes` 承载；生产只采用原型 A 的结构，不实现 B/C 变体；场景 02-06 的答案和提交状态仅保留在当前页面内，刷新或重新打开后重置；底部“已体验场景”链接在本次打开期间以内存记录维持，不写入浏览器持久存储，场景 01 继续沿用 #02 的内存状态；回看场景 02-06 时不再恢复旧答案，但仍可通过本次打开期间的记录进入已体验场景；不创建游客服务器用户、项目、工作记录或进度数据；错误选择不改变顺序；场景 06 最后一题导向 `/onboarding/assessment`（由 #04 实现）；不限制手动输入 `scene` 查询参数；本次补齐场景 02-06 的 IntersectionObserver 滚动显现、选项错峰入场、反馈淡入、题目淡出/淡入切换、继续按钮显隐和 `entry=1` 首访重播，并修正应用滚动容器适配；同时仅对场景 02-06 扩展题目+反馈布局、统一动作按钮尺寸并恢复 02-06 的前辈语录与场景导航，901–1100px 自动堆叠反馈栏避免截断；场景根节点按实际内容高度布局，黑色导航作为页面底端且不额外拉长；“下一步项目动作”放入反馈四格右下位置，动作按钮不再强制上移覆盖反馈文字；首个 session 的动效在首次绘制前完成初始化，避免字段闪现后消失再重播。刷新重置是最终产品行为，不再由后续票增加恢复能力。 |
@@ -331,7 +339,7 @@ v1.3 不迁移旧 MongoDB 数据，不提供 MongoDB 回退，不新增用户可
 - 题目重点覆盖传统 PM 基础、用 AI 提升 PM 工作效率、发现 AI 能满足的有效市场需求、能力评测、人机协作和岗位责任；Vibe Coding 仅用一题说明超级个体的进阶位置。
 - 已补齐测试开始、答题中、提交、结果、逐题解析、直接重测、无限重试、全对额外祝贺，以及游客/已登录用户完成后的认证分流文案；提交即完成测试，不设置及格线，分数不拦截精炼学习笔记下载。
   - 文案明确测试只记录本次固定题目的作答情况，不推断职业能力、职业适配度或求职意愿；`assessment.html` 已接入正式页面。
-- #05 固定职业认知正文与下载交付均已完成：`.scratch/pm-assistant-v1.4/career-document.md` 定为 v1.0、UTF-8 Markdown，覆盖定义、工作方式、相邻岗位、AI 提效与价值、人机协作、可靠性、交付物、Vibe Coding 和入职体验回顾；认证保护、已登录直接下载、游客认证后自动下载和稳定文件名均已接入，不制作 `career-document.html`。
+- #05 固定职业认知正文与下载交付均已完成：`.scratch/v1.4/career-document.md` 定为 v1.0、UTF-8 Markdown，覆盖定义、工作方式、相邻岗位、AI 提效与价值、人机协作、可靠性、交付物、Vibe Coding 和入职体验回顾；认证保护、已登录直接下载、游客认证后自动下载和稳定文件名均已接入，不制作 `career-document.html`。
 
 ## 约束与坑
 
@@ -379,10 +387,10 @@ v1.3 不迁移旧 MongoDB 数据，不提供 MongoDB 回退，不新增用户可
 
 ## 文档地图
 
-- 产品决策与领域词汇：`CONTEXT.md`
-- 当前规范：`.scratch/pm-assistant-v1.41/spec.md`
-- 当前实现票：`.scratch/pm-assistant-v1.41/issues/01-` 至 `24-` 共24张，全部resolved；10号实现已收口提交，24号最终发布闸通过，结论与证据见 `docs/verification/v141-release-gate.md`
-- v1.4 历史规范与票：`.scratch/pm-assistant-v1.4/spec.md`、`.scratch/pm-assistant-v1.4/issues/`
-- v1.3 历史规范：`.scratch/pm-assistant-v1.3/spec.md`
-- 实现纪律与协议快照：`AGENTS.md`、`docs/agents/implement-context-hygiene.md`；v1.41历史产品输入清单：`.scratch/pm-assistant-v1.41/v1.41-prototype-inputs.md`；版本专属临时纪律已在24号通过后退役，后续按当前票据判断输入
+- 产品决策与领域词汇：`GLOSSARY.md`
+- 当前规范：`.scratch/v1.41/spec.md`
+- 当前实现票：`.scratch/v1.41/issues/01-` 至 `24-` 共24张，全部resolved；10号实现已收口提交，24号最终发布闸通过，结论与证据见 `docs/verification/v141-release-gate.md`
+- v1.4 历史规范与票：`.scratch/v1.4/spec.md`、`.scratch/v1.4/issues/`
+- v1.3 历史规范：`.scratch/v1.3/spec.md`
+- 实现纪律与协议快照：`AGENTS.md`、`docs/agents/implement-context-hygiene.md`；v1.41历史产品输入清单：`.scratch/v1.41/v1.41-prototype-inputs.md`；版本专属临时纪律已在24号通过后退役，后续按当前票据判断输入
 - 架构决策：`docs/adr/`

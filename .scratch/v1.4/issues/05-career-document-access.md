@@ -9,7 +9,7 @@
 ## 产品经理在 Agent 开始前提供
 
 - 已完成的 `assessment.html` / 测试结果页原型作为入口视觉基准；本票不需要新增 `career-document.html`。
-- 固定文件正文、最终文件名、版本和下载格式。当前固定文件为 `.scratch/pm-assistant-v1.4/career-document.md`，下载文件名为 `AI产品经理职业认知-v1.0.md`，格式为 UTF-8 Markdown。
+- 固定文件正文、最终文件名、版本和下载格式。当前固定文件为 `.scratch/v1.4/career-document.md`，下载文件名为 `AI产品经理职业认知-v1.0.md`，格式为 UTF-8 Markdown。
 - 入口文案确认：按钮使用“获取精炼学习笔记”；已登录用户点击后直接下载，未登录用户点击后进入注册/登录页，认证成功后立即下载。
 
 ## Agent 负责

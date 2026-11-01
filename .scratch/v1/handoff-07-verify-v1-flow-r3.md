@@ -1,9 +1,9 @@
 # Handoff R3 — 07 四环全流程验证（已全量通过，转入人工验收）
 
 > 交接日期：2026-08-11。07 全量验证完成，7 个 issues 全部收尾；用户将人工体验 v1 四环，边体验边修发现的问题。
-> 新会话入口：`/implement @.scratch/pm-assistant-v1/issues/07-verify-v1-flow.md`（或直接对话——07 已勾选完成，工作模式转为「报问题 → 判定 → 修复」）
-> 上一份交接：`.scratch/pm-assistant-v1/handoff-07-verify-v1-flow-r2.md`（六轮调试史，可作背景，勿重读全文）
-> 人工验收指南：`.scratch/pm-assistant-v1/acceptance-guide.md`（本次会话产出，验收时对照）
+> 新会话入口：`/implement @.scratch/v1/issues/07-verify-v1-flow.md`（或直接对话——07 已勾选完成，工作模式转为「报问题 → 判定 → 修复」）
+> 上一份交接：`.scratch/v1/handoff-07-verify-v1-flow-r2.md`（六轮调试史，可作背景，勿重读全文）
+> 人工验收指南：`.scratch/v1/acceptance-guide.md`（本次会话产出，验收时对照）
 
 ## 一句话现状
 

@@ -12,7 +12,7 @@
 - 实际部署资料与备份清单：`docs/deployment-record-2026-10-21.md`；详细事实保存在此，`PROGRESS.md` 仅留短进度和入口。
 - 操作主线：`docs/deploy-ubuntu-production.md`。
 - 凭据用途、字段、生成命令及找回入口：`docs/deployment-credentials-guide.md`。
-- 历史实现与验收依据：当前任务引用的 `.scratch/pm-assistant-v1.42/issues/` 工单及 `docs/verification/` 文件。
+- 历史实现与验收依据：当前任务引用的 `.scratch/v1.42/issues/` 工单及 `docs/verification/` 文件。
 
 完成标准：能说明当前操作要解决什么、前置条件是否成立、哪些状态仍待用户反馈。历史文档中的地域、版本或进度与实际主机冲突时，先核实并更新活动记录。
 

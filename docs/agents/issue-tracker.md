@@ -1,30 +1,26 @@
-# Issue tracker: Local Markdown
+# Issue tracker：Local Markdown
 
-Issues and specs (you may know a spec as a PRD) for this repo live as markdown files in `.scratch/`.
+本仓库当前版本的 spec 与 issue 以 Markdown 文件保存在 `.scratch/<版本号>/`。
 
-## Conventions
+## 目录约定
 
-- One feature per directory: `.scratch/<feature-slug>/`
-- The spec is `.scratch/<feature-slug>/spec.md`
-- Implementation issues are one file per ticket at `.scratch/<feature-slug>/issues/<NN>-<slug>.md`, numbered from `01` — never a single combined tickets file
-- Triage state is recorded as a `Status:` line near the top of each issue file (see `triage-labels.md` for the role strings)
-- Comments and conversation history append to the bottom of the file under a `## Comments` heading
+- 每个产品版本使用一个目录，例如 `.scratch/v1.0/`。
+- 版本 spec 位于 `.scratch/<版本号>/spec.md`。
+- 实现票据各自独立，位于 `.scratch/<版本号>/issues/<NN>-<slug>.md`，从 `01` 编号。
+- 票号只在所属版本内唯一；只有票号时，按 `PROGRESS.md` 的当前版本定位。版本不明确或有歧义时，先确认版本。
+- 票据状态写在顶部的 `Status:` 行；triage 状态词汇见 `triage-labels.md`。`claimed` / `resolved` 是执行状态，不属于 triage 标签。
+- 评论和会话记录追加在 `## Comments` 下方。
 
-## When a skill says "publish to the issue tracker"
+## 发布与读取
 
-Create a new file under `.scratch/<feature-slug>/` (creating the directory if needed).
+- 发布当前版本的 spec 或 issue 时，写入对应版本目录。
+- 读取票据时优先使用用户提供的完整路径；只给票号时按上述版本规则定位。
 
-## When a skill says "fetch the relevant ticket"
+## Wayfinding
 
-Read the file at the referenced path. The user will normally pass the path or the issue number directly.
-
-## Wayfinding operations
-
-Used by `/wayfinder`. The **map** is a file with one **child** file per ticket.
-
-- **Map**: `.scratch/<effort>/map.md` — the Notes / Decisions-so-far / Fog body.
-- **Child ticket**: `.scratch/<effort>/issues/NN-<slug>.md`, numbered from `01`, with the question in the body. A `Type:` line records the ticket type (`research`/`prototype`/`grilling`/`task`); a `Status:` line records `claimed`/`resolved`.
-- **Blocking**: a `Blocked by: NN, NN` line near the top. A ticket is unblocked when every file it lists is `resolved`.
-- **Frontier**: scan `.scratch/<effort>/issues/` for files that are open, unblocked, and unclaimed; first by number wins.
-- **Claim**: set `Status: claimed` and save before any work.
-- **Resolve**: append the answer under an `## Answer` heading, set `Status: resolved`, then append a context pointer (gist + link) to the map's Decisions-so-far in `map.md`.
+- Map：`.scratch/<版本号>/map.md`，记录 Notes / Decisions-so-far / Fog。
+- Child ticket：`.scratch/<版本号>/issues/<NN>-<slug>.md`，`Type:` 记录类型（`research` / `prototype` / `grilling` / `task`），`Status:` 记录 `claimed` / `resolved`。
+- 阻塞关系写在 `Blocked by:` 行；所有阻塞票据均为 `resolved` 后才可开始。
+- Frontier：按编号选择首个未完成、未认领且未阻塞的票据。
+- Claim 时先将 `Status:` 设为 `claimed` 并保存，再开始工作。
+- Resolve 时在 `## Answer` 记录答案，将状态设为 `resolved`，并将上下文摘要和链接追加到 map 的 Decisions-so-far。

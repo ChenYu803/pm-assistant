@@ -1,7 +1,7 @@
 import { chromium } from 'playwright-core';
 import { mkdir } from 'node:fs/promises';
 const base = 'http://127.0.0.1:3001';
-const out = '.scratch/pm-assistant-v1.43/evidence/after';
+const out = '.scratch/v1.43/evidence/after';
 await mkdir(out, { recursive:true });
 const browser = await chromium.launch({ channel:'msedge', headless:true });
 const errors = [];

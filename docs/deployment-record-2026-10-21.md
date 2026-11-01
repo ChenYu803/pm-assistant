@@ -81,7 +81,7 @@
 
 - 执行纪律：[上线部署纪律](agents/production-deployment-discipline.md)；项目总入口：根目录 `AGENTS.md`。
 - 命令与发布验收：[正式部署手册](deploy-ubuntu-production.md)；随机值原命令与用途：[凭据说明](deployment-credentials-guide.md)。
-- 当前任务：`.scratch/pm-assistant-v1.42/issues/03-mysql-97-lts-patch-compatibility.md`；本机生产证据：`docs/verification/v142-production-preparation.md`。
+- 当前任务：`.scratch/v1.42/issues/03-mysql-97-lts-patch-compatibility.md`；本机生产证据：`docs/verification/v142-production-preparation.md`。
 - 临时交接：`C:\Users\Administrator\AppData\Local\Temp\IdeaStage-deployment-handoff-2026-10-21.md`，供换窗口使用。长期事实与清单以项目中的本文及上述专题文件为准。
 
 已核对目标机发行目录内的 Git HEAD；MySQL `SELECT VERSION()` 实测为 9.7.4。目标库幂等初始化、生产数据库检查、迁移账号连接、每日加密备份、Windows 下载哈希核对、解密检查及随机库恢复均通过；临时引导账号已清理。网站 systemd 单实例已启动，启动前恢复检查成功，本机 health 200；nginx HTTP 引导返回 503。域名 `ideastage.top` 当前无 IPv4 解析，HTTPS、公网登录/业务及真实 AI 尚未验收；异地网盘副本和 SSH 私钥副本仍待用户整理。后续在本文追加日期、变化、证据与备份结果，`PROGRESS.md` 只更新短进度和入口。

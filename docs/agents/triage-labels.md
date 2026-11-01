@@ -1,13 +1,13 @@
 # Triage Labels
 
-The skills speak in terms of five canonical triage roles. This file maps those roles to the actual label strings used in this repo's issue tracker.
+下表将工程 skills 的五种标准 triage 角色映射到本仓库本地 Markdown issue 的 `Status:` 值。
 
-| Label in mattpocock/skills | Status in our issues       | Meaning                                  |
-| -------------------------- | -------------------------- | ---------------------------------------- |
-| `needs-triage`             | `needs-triage`             | Maintainer needs to evaluate this issue  |
-| `needs-info`               | `needs-info`               | Waiting on reporter for more information |
-| `ready-for-agent`          | `ready-for-agent`          | Fully specified, ready for an AFK agent  |
-| `ready-for-human`          | `ready-for-human`          | Requires human implementation            |
-| `wontfix`                  | `wontfix`                  | Will not be actioned                     |
+| Skill role | 本仓库状态值 | 含义 |
+| --- | --- | --- |
+| `needs-triage` | `needs-triage` | 等待维护者评估 |
+| `needs-info` | `needs-info` | 等待报告者补充信息 |
+| `ready-for-agent` | `ready-for-agent` | 规格完整，可交由 Agent 执行 |
+| `ready-for-human` | `ready-for-human` | 需要人工实现 |
+| `wontfix` | `wontfix` | 不予处理 |
 
-When a skill mentions a role (e.g. "apply the AFK-ready triage label"), use the corresponding status string from this table. Since this repo uses local markdown issues, apply the status as a `Status: <value>` line near the top of the issue file.
+skill 提及 triage role 时，使用对应状态值，并将其写入 issue 顶部的 `Status:` 行。

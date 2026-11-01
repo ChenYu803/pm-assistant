@@ -1,7 +1,7 @@
 # Handoff — 07 四环全流程验证（verify-v1-flow）
 
 > 交接日期：2026-08-10。本会话已达 138k tokens 触发止损交接。
-> 新会话入口：`/implement @.scratch/pm-assistant-v1/issues/07-verify-v1-flow.md @.scratch/pm-assistant-v1/handoff-07-verify-v1-flow.md`
+> 新会话入口：`/implement @.scratch/v1/issues/07-verify-v1-flow.md @.scratch/v1/handoff-07-verify-v1-flow.md`
 
 ## 一句话现状
 
@@ -10,7 +10,7 @@
 ## 已完成（引用证据，勿重复通读）
 
 - **脚本**：`scripts/verify-v1-flow.mjs`（已提交 `03503d4`，工作区干净）——四环串联：注册→项目→需求分析→原型→PRD→任务拆分，每环真实对话 + 结构/数据断言；轮数上限 `MAX_ROUNDS = {ra:10, pt:8, prd:10, ts:6}`（用户已确认）；每环断言块末尾有回复快照变量 `raReplies/ptReplies/prdReplies/tsReplies`（供对话纪律统计，勿删）；第四环弹窗处理「确认 1 个 + 拒绝其余」
-- **运行日志**：`.scratch/pm-assistant-v1/verify-v1-flow-partial.log`（本轮运行到第 4 环开头被终止，前 3 环结果见下）
+- **运行日志**：`.scratch/v1/verify-v1-flow-partial.log`（本轮运行到第 4 环开头被终止，前 3 环结果见下）
 - **提交历史**：`6c781bb`(初版) → `03503d4`(subagent 调试修复) → `f941de5`(日志)
 
 ## 运行结果摘要（来自 partial 日志）

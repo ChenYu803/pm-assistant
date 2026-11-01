@@ -16,7 +16,7 @@ export type AssessmentQuestion = {
   wrongFeedback: string;
 };
 
-// 题目来自 .scratch/pm-assistant-v1.4/assessment-content.md，固定不调用模型生成。
+// 题目来自 .scratch/v1.4/assessment-content.md，固定不调用模型生成。
 export const assessmentQuestions: AssessmentQuestion[] = [
   {
     "number": "01",

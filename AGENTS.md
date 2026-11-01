@@ -6,7 +6,7 @@
 | 1 | 本文件 | 风险分级 + 会话纪律 + 阈值（自包含） |
 | 2 | `docs/agents/implement-context-hygiene.md` | 阅读纪律 + 协议耦合点快照（其中 120k/150k 阈值已废弃，以本文件为准） |
 | 3 | `PROGRESS.md` | 单点真相：当前阶段 / 本次任务 / 坑（**开始必读，结束必写**） |
-| 4 | 当前 ticket（`.scratch/<feature-slug>/issues/NN-<slug>.md`） | 任务定义 + AC + Blocked by（`Status:` 行记录 claimed/resolved） |
+| 4 | 当前 ticket（`.scratch/<版本号>/issues/NN-<slug>.md`） | 任务定义 + AC + Blocked by（`Status:` 行记录 claimed/resolved） |
 | 5 | ticket 中“产品经理在 Agent 开始前提供”列出的输入 | 仅在 ticket 明确要求时读取原型/素材；写“无新增输入”则直接实现 |
 | 6 | `spec.md` 相关章节 | 需求总纲（目的驱动：ticket 引用到的部分） |
 
@@ -45,7 +45,7 @@
 
 ## 项目文件地图
 
-- **实现输入**：`PROGRESS.md`、当前 ticket、`spec.md`、`CONTEXT.md`、`docs/adr/`（ticket 引用到的部分）
+- **实现输入**：`PROGRESS.md`、当前 ticket、`spec.md`、`GLOSSARY.md`、`docs/adr/`（ticket 引用到的部分）
 - **风格参考**（只读头尾）：`scripts/verify-*.mjs`
 - **历史文件**（默认不读）：`.scratch/pm-assistant-mvp/`（旧 MVP，已交付）、`.scratch/prd-structure/`（更早方案讨论）、非当前 ticket 的其他 issue——**历史票保持原样，不更新**
 - **协议耦合点快照**：`docs/agents/implement-context-hygiene.md` 末尾（行号仅供参考，动手前 grep 验证，勿盲信）
@@ -55,6 +55,20 @@
 1. 更新 `PROGRESS.md`（已完成成果 + frontier 推进 + 新踩的坑）
 2. 涉及协议改动的，更新协议耦合点快照
 3. `git add -A && git commit`（信息清晰：票号 + 要点）；push 前经用户确认
+
+## Agent skills
+
+### Issue tracker
+
+当前版本的 spec 与 issue 存放在 `.scratch/<版本号>/`。见 `docs/agents/issue-tracker.md`。
+
+### Triage labels
+
+本地 issue 通过 `Status:` 使用五个默认值：`needs-triage`、`needs-info`、`ready-for-agent`、`ready-for-human`、`wontfix`。见 `docs/agents/triage-labels.md`。
+
+### Domain docs
+
+单一上下文：从根目录 `GLOSSARY.md` 和相关 `docs/adr/` 读取领域约定。见 `docs/agents/domain.md`。
 
 <!-- BEGIN:nextjs-agent-rules -->
 
