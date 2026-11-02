@@ -1,5 +1,5 @@
 import { getMysqlAppConfig } from "@/lib/mysql-config";
-import { positiveSetting, registrationMode } from "@/lib/launch-policy";
+import { positiveSetting } from "@/lib/launch-policy";
 
 /** 仅返回字段名和修复建议，不包含秘密值。可离线运行，不连接数据库。 */
 export function productionConfigurationErrors(env: NodeJS.ProcessEnv) {
@@ -24,7 +24,9 @@ export function productionConfigurationErrors(env: NodeJS.ProcessEnv) {
     try { if (new URL(env.AI_BASE_URL ?? "").protocol !== "https:") throw new Error(); } catch { errors.push("AI_BASE_URL 需为 HTTPS API 地址"); }
     if (!env.AI_MODEL?.trim()) errors.push("AI_MODEL 不可为空");
   }
-  try { if (registrationMode(env) === "invite") secret("REGISTRATION_INVITE_CODE", 16); } catch { errors.push("REGISTRATION_MODE 需为 invite 或 open"); }
+  secret("RESEND_API_KEY", 16);
+  if (!env.EMAIL_FROM || /[\r\n]/.test(env.EMAIL_FROM) || !/^[^<>]*<?[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+>?$/.test(env.EMAIL_FROM.trim())) errors.push("EMAIL_FROM 需为事务邮件服务已验证的发信身份");
+  if (Object.keys(env).some(name => name.startsWith("V144_EMAIL_TEST_") && env[name])) errors.push("生产环境禁止邮件替身和测试时钟配置");
   for (const name of ["AI_DAILY_USER_LIMIT", "AI_DAILY_SITE_LIMIT"]) {
     try { positiveSetting(name, name.includes("USER") ? 10 : 100, env); } catch { errors.push(`${name} 需为正整数`); }
   }

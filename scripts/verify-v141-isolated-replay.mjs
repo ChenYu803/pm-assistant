@@ -8,10 +8,12 @@ import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import mysql from "mysql2/promise";
 import nextEnv from "@next/env";
+import { seedLegacyEmailUpgrade } from "./verify-email-upgrade-fixture.mjs";
+import { startEmailFixture } from "./verify-email-fixture.mjs";
 import { initializeMysql } from "../src/lib/mysql-bootstrap.ts";
 import { getMysqlAdminConfig, getMysqlConnectionOptions } from "../src/lib/mysql-config.ts";
 
-export async function runIsolatedReplay({ slug, title, scenarioScript, captureProvider = false, providerFixtureUrl, expectedWorkflows = 2 }) {
+export async function runIsolatedReplay({ slug, title, scenarioScript, captureProvider = false, providerFixtureUrl, expectedWorkflows = 2, seedLegacyAuth = false, emailBoundary = true }) {
   if (!/^[a-z][a-z0-9-]*$/.test(slug) || !/^scripts\/verify-v14[124]-[a-z0-9-]+-scenario\.mjs$/.test(scenarioScript)) {
     throw new Error("非法专项标识或场景路径");
   }
@@ -40,6 +42,7 @@ export async function runIsolatedReplay({ slug, title, scenarioScript, capturePr
     V141_REPLAY_OUTPUT_DIR: outputDir,
     V141_REPLAY_DEPENDENCY_ROOT: process.cwd(),
   };
+  let emailFixture;
   let admin;
   let appConnection;
   let server;
@@ -107,6 +110,10 @@ export async function runIsolatedReplay({ slug, title, scenarioScript, capturePr
     accountCreated = true;
     const [before] = await admin.query("SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = ?", [database]);
     check("从没有任何表的独立空库开始", before.length === 0);
+    if (seedLegacyAuth) {
+      Object.assign(env, await seedLegacyEmailUpgrade(admin, database));
+      secrets.push(env.V144_LEGACY_PASSWORD);
+    }
     const initialized = await initializeMysql(env);
     const repeated = await initializeMysql(env);
     check("当前 schema 可从零初始化且重复初始化不重复迁移", initialized.migrationApplied && !repeated.migrationApplied);
@@ -118,7 +125,13 @@ export async function runIsolatedReplay({ slug, title, scenarioScript, capturePr
       const [rows] = await appConnection.query(`SELECT COUNT(*) AS count FROM \`${name.replaceAll("`", "``")}\``);
       initialCounts[name] = Number(rows[0].count);
     }
-    check("注册前全部业务表为空", Object.keys(initialCounts).length > 0 && Object.values(initialCounts).every((count) => count === 0));
+    if (seedLegacyAuth) {
+      check("增量升级只保留准备好的旧账号、项目和资料", Object.entries(initialCounts).every(([name, count]) => count === (["users", "projects", "project_files"].includes(name) ? 1 : 0)));
+      const [legacy] = await appConnection.execute("SELECT email_verified_at FROM users WHERE email = ?", [env.V144_LEGACY_EMAIL]);
+      check("旧账号未被虚构为已验证邮箱", legacy.length === 1 && legacy[0].email_verified_at === null);
+    } else {
+      check("注册前全部业务表为空", Object.keys(initialCounts).length > 0 && Object.values(initialCounts).every((count) => count === 0));
+    }
     await writeFile(join(outputDir, "empty-database.json"), JSON.stringify({ database, serverVersion: initialized.serverVersion, initialCounts }, null, 2));
 
     // 当前 Next dev 按项目目录互斥；复制当前正式输入，不停日常服务，也不复制密钥。
@@ -154,7 +167,18 @@ export async function runIsolatedReplay({ slug, title, scenarioScript, capturePr
         observation: "仅隔离源码副本增加同步只读参数记录；不替换 prompt、输入或 replay 回复",
       }, null, 2));
     }
+    // 每次回放自有邮件边界，禁止继承本机真实供应商配置。
+    delete env.V144_EMAIL_TEST_URL;
+    delete env.V144_EMAIL_TEST_TOKEN;
+    if (emailBoundary) {
+      emailFixture = await startEmailFixture();
+      env.V144_EMAIL_TEST_URL = emailFixture.url;
+      env.V144_EMAIL_TEST_TOKEN = emailFixture.token;
+      secrets.push(emailFixture.token);
+    }
     const serviceEnv = { ...env };
+    delete serviceEnv.RESEND_API_KEY;
+    delete serviceEnv.EMAIL_FROM;
     if (providerFixtureUrl) {
       serviceEnv.AI_MODE = "live";
       serviceEnv.AI_BASE_URL = providerFixtureUrl;
@@ -189,6 +213,9 @@ export async function runIsolatedReplay({ slug, title, scenarioScript, capturePr
   } finally {
     for (const child of [scenario, server]) {
       try { await stop(child); } catch (error) { fail++; console.error(`❌ 服务清理失败：${sanitize(error.message)}`); }
+    }
+    if (emailFixture) {
+      try { await emailFixture.close(); } catch { fail++; console.error("❌ 隔离邮件边界清理失败"); }
     }
     // 递归删除前验证绝对路径：只允许本次随机命名的 .next 直属子目录。
     if (workspaceCreated && dirname(buildDir) === resolve(".next") && /^v141_replay_[a-f0-9]{16}$/.test(database)) {

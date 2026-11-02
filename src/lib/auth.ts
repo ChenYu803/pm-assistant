@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { findMysqlUserByEmail, normalizeEmail } from "@/lib/mysql-account-workspace";
+import { authClientAddress, limitAuthRequest } from "@/lib/auth-rate-limit";
 import { safeCallbackUrl } from "@/lib/safe-callback";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -12,14 +13,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: "邮箱", type: "email" },
         password: { label: "密码", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
+        if (typeof credentials.email !== "string" || typeof credentials.password !== "string" || credentials.email.length > 320) return null;
+        // 旧版允许超过 bcrypt 72 字节的新密码；登录保持兼容，新注册/重置单独限制。
         const email = normalizeEmail(credentials.email as string);
         const password = credentials.password as string;
+        try {
+          await limitAuthRequest("login-ip:" + authClientAddress(request), 60, 900);
+        } catch { return null; }
         const user = await findMysqlUserByEmail(email);
+        try {
+          // 历史邮箱排序规则可匹配重音变体，账号额度统一绑定稳定 ID。
+          await limitAuthRequest(user ? "login-user:" + user.id : "login-email:" + email, 20, 900);
+        } catch { return null; }
         if (!user) {
           return null;
         }
@@ -72,7 +82,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
 
       // Allow login/register pages
-      if (pathname === "/login" || pathname === "/register") {
+      if (pathname === "/login" || pathname === "/register" || pathname === "/forgot-password") {
         if (isLoggedIn) {
           return Response.redirect(new URL(safeCallbackUrl(nextUrl.searchParams.get("callbackUrl"), "/projects"), nextUrl));
         }

@@ -1,3 +1,4 @@
+import { latestEmailCode } from "./verify-email-fixture.mjs";
 // 隔离正式应用中验证注册门禁；直接调用真实 MySQL 事务验证预算和启动恢复。
 import { chromium } from "playwright-core";
 import mysql from "mysql2/promise";
@@ -35,7 +36,7 @@ try {
   const email = `invite-${randomUUID()}@test.local`;
   for (const inviteCode of [undefined, "wrong-code"]) {
     const response = await fetch(`${base}/api/auth/register`, json({ email, password: "verify-pass-1234", inviteCode }));
-    check(`${inviteCode ? "错误" : "缺少"}邀请码在服务端返回 403 且未创建账号`, response.status === 403 && (await rows("SELECT id FROM users WHERE email = ?", [email])).length === 0);
+    check(`${inviteCode ? "错误" : "缺少"}邀请码不能绕过邮箱验证码且未创建账号`, response.status === 400 && (await rows("SELECT id FROM users WHERE email = ?", [email])).length === 0);
   }
   await assertPlaywrightAvailable(chromium, { channel: "msedge" });
   browser = await chromium.launch({ channel: "msedge", headless: true });
@@ -43,31 +44,38 @@ try {
   page.setDefaultTimeout(45_000);
   page.setDefaultNavigationTimeout(45_000);
   await page.goto(`${base}/register`);
-  check("邀请模式注册页面显示邀请码控件", await page.locator("#inviteCode").isVisible());
+  check("旧邀请配置不再要求注册邀请码", await page.locator("#inviteCode").count() === 0);
   await page.fill("#email", email);
   await page.fill("#password", "verify-pass-1234");
   await page.fill("#confirmPassword", "verify-pass-1234");
-  await page.fill("#inviteCode", process.env.REGISTRATION_INVITE_CODE);
-  check("桌面注册表单邀请码可见且无横向溢出", await page.locator("#inviteCode").isVisible() && await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
-  await page.screenshot({ path: join(output, "invited-registration-desktop.png"), fullPage: true });
+  const [emailCodeResponse] = await Promise.all([
+    page.waitForResponse(response => new URL(response.url()).pathname === "/api/auth/email-code" && response.request().method() === "POST"),
+    page.getByRole("button", { name: "获取验证码", exact: true }).click(),
+  ]);
+  // 先确认真实发码响应；失败直接报告状态，避免误判为界面 status 等待超时。
+  if (emailCodeResponse.status() !== 200) throw new Error("浏览器注册发码失败，HTTP " + emailCodeResponse.status());
+  await page.getByRole("status").filter({ hasText: /验证码已发送/ }).waitFor();
+  await page.fill("#emailCode", await latestEmailCode(email));
+  check("桌面注册表单验证码可见且无横向溢出", await page.locator("#emailCode").isVisible() && await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+  await page.screenshot({ path: join(output, "invited-registration-desktop.png"), fullPage: true, mask: [page.locator('#emailCode, input[type="password"], input[type="email"]')] });
   await page.setViewportSize({ width: 390, height: 844 });
-  check("390px 注册表单邀请码可见且无横向溢出", await page.locator("#inviteCode").isVisible() && await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
-  await page.screenshot({ path: join(output, "invited-registration-mobile.png"), fullPage: true });
+  check("390px 注册表单验证码可见且无横向溢出", await page.locator("#emailCode").isVisible() && await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+  await page.screenshot({ path: join(output, "invited-registration-mobile.png"), fullPage: true, mask: [page.locator('#emailCode, input[type="password"], input[type="email"]')] });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.locator('form button[type="submit"]').click();
   await page.waitForURL((url) => url.pathname === "/projects");
   const session = await (await page.request.get(`${base}/api/auth/session`)).json();
   const userId = session.user?.id;
-  check("正确邀请码通过真实 UI 注册并自动登录", Boolean(userId) && (await rows("SELECT id FROM users WHERE email = ?", [email]))[0]?.id === userId);
+  check("邮箱验证码通过真实 UI 注册并自动登录", Boolean(userId) && (await rows("SELECT id FROM users WHERE email = ?", [email]))[0]?.id === userId);
   workflows.push("invitation-register-login");
 
   const validEnv = {
     NODE_ENV: "production", MYSQL_HOST: "127.0.0.1", MYSQL_PORT: "3306", MYSQL_DATABASE: "isolated_fixture", MYSQL_USER: "isolated_app",
     MYSQL_PASSWORD: randomBytes(24).toString("hex"), AUTH_SECRET: randomBytes(32).toString("hex"), MYSQL_REQUIRED_VERSION: "9.7",
-    AUTH_URL: "https://ideastage.top", AUTH_TRUST_HOST: "true", AI_MODE: "replay", REGISTRATION_MODE: "invite", REGISTRATION_INVITE_CODE: randomBytes(24).toString("hex"),
+    AUTH_URL: "https://ideastage.top", AUTH_TRUST_HOST: "true", AI_MODE: "replay", RESEND_API_KEY: randomBytes(24).toString("hex"), EMAIL_FROM: "AI 产品现场 <verify@ideastage.top>",
   };
   check("完整生产配置可离线通过预检", productionConfigurationErrors(validEnv).length === 0);
-  for (const patch of [{ MYSQL_USER: "root" }, { MYSQL_REQUIRED_VERSION: "8.4" }, { AUTH_URL: "http://ideastage.top" }, { AUTH_SECRET: "short" }, { AI_MODE: "live" }, { REGISTRATION_INVITE_CODE: "short" }, { AI_DAILY_USER_LIMIT: "0" }, { MYSQL_ADMIN_PASSWORD: "maintenance-secret" }]) {
+  for (const patch of [{ MYSQL_USER: "root" }, { MYSQL_REQUIRED_VERSION: "8.4" }, { AUTH_URL: "http://ideastage.top" }, { AUTH_SECRET: "short" }, { AI_MODE: "live" }, { RESEND_API_KEY: "" }, { EMAIL_FROM: "" }, { V144_EMAIL_TEST_URL: "http://127.0.0.1:1234" }, { AI_DAILY_USER_LIMIT: "0" }, { MYSQL_ADMIN_PASSWORD: "maintenance-secret" }]) {
     const errors = productionConfigurationErrors({ ...validEnv, ...patch });
     check(`拒绝非法生产配置 ${Object.keys(patch)[0]} 且不泄露秘密`, errors.length > 0 && !errors.join(" ").includes(validEnv.MYSQL_PASSWORD) && !errors.join(" ").includes("maintenance-secret"));
   }

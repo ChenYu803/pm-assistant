@@ -465,6 +465,24 @@ export const MYSQL_MIGRATIONS = [
       "ALTER TABLE iteration_sessions ADD COLUMN title_manually_set BOOLEAN NOT NULL DEFAULT FALSE",
     ],
   },
+  {
+    id: "0024_v144_email_verification",
+    checksum: "176d458c0e091675e4ef4e4449aae246ce8dfbd3086d8cbe2c0ed4837ef58554",
+    statements: [
+      `ALTER TABLE users ADD COLUMN email_verified_at DATETIME(3) NULL`,
+      `CREATE TABLE IF NOT EXISTS email_verifications (
+ email VARCHAR(320) NOT NULL, purpose VARCHAR(20) NOT NULL,
+ code_digest CHAR(64) NULL, expires_at DATETIME(3) NOT NULL,
+ sent_at DATETIME(3) NOT NULL, attempts INT UNSIGNED NOT NULL DEFAULT 0,
+ state VARCHAR(16) NOT NULL, PRIMARY KEY(email, purpose)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci`,
+      `CREATE TABLE IF NOT EXISTS auth_rate_limits (
+ bucket CHAR(64) NOT NULL PRIMARY KEY, window_start BIGINT NOT NULL,
+ request_count INT UNSIGNED NOT NULL, expires_at DATETIME(3) NOT NULL,
+ KEY auth_rate_expiry (expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+    ],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {

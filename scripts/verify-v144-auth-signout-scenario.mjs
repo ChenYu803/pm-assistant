@@ -1,3 +1,4 @@
+import { requestRegistrationCode, latestEmailCode } from "./verify-email-fixture.mjs";
 // v1.44：真实认证 HTTP 与浏览器退出回归；仅由随机空库 launcher 启动。
 import { chromium, request } from "playwright-core";
 import { randomUUID } from "node:crypto";
@@ -19,7 +20,7 @@ try {
   // 先用串行 HTTP 重现；不依赖页面加载或客户端并发。
   const client = await request.newContext({ baseURL: base, timeout: 120_000 });
   const email = "verify-signout-" + randomUUID() + "@test.local";
-  check("独立账号注册成功", (await client.post("/api/auth/register", { data: { email, password } })).status() === 201);
+  check("独立账号注册成功", (await client.post("/api/auth/register", { data: { email, password, code: await requestRegistrationCode(client, email) } })).status() === 201);
   const csrf = (await (await client.get("/api/auth/csrf")).json()).csrfToken;
   const login = await client.post("/api/auth/callback/credentials", { form: { email, password, csrfToken: csrf, callbackUrl: base + "/projects" }, headers: { "X-Auth-Return-Redirect": "1" } });
   check("正式 Credentials 登录建立 session", login.ok() && (await session(client))?.user?.email === email);
@@ -39,6 +40,14 @@ try {
     await page.fill("#email", browserEmail);
     await page.locator('input[type="password"]').nth(0).fill(password);
     await page.locator('input[type="password"]').nth(1).fill(password);
+    const [emailCodeResponse] = await Promise.all([
+      page.waitForResponse(response => new URL(response.url()).pathname === "/api/auth/email-code" && response.request().method() === "POST"),
+      page.getByRole("button", { name: "获取验证码", exact: true }).click(),
+    ]);
+    // 先确认真实发码响应；失败直接报告状态，避免误判为界面 status 等待超时。
+    if (emailCodeResponse.status() !== 200) throw new Error("浏览器注册发码失败，HTTP " + emailCodeResponse.status());
+    await page.getByRole("status").filter({ hasText: /验证码已发送/ }).waitFor();
+    await page.fill("#emailCode", await latestEmailCode(browserEmail));
     await page.locator('form button[type="submit"]').click();
     await page.waitForURL(url => url.pathname === "/projects");
     check(width + "px 注册进入项目页", (await session(page.request))?.user?.email === browserEmail);

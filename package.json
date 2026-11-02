@@ -60,7 +60,11 @@
     "verify:career-assessment": "node scripts/verify-career-assessment.mjs",
     "verify:onboarding-experience": "node scripts/verify-onboarding-experience.mjs",
     "verify:file-protocol-snapshots": "tsx scripts/verify-file-protocol-snapshots.mjs",
-    "verify:protocols": "tsx scripts/verify-protocols.mjs"
+    "verify:protocols": "tsx scripts/verify-protocols.mjs",
+    "verify:v144-email-auth": "tsx scripts/verify-v144-email-auth.mjs",
+    "verify:v144-email-unconfigured": "tsx scripts/verify-v144-email-unconfigured.mjs",
+    "verify:v144-auth-limits": "tsx scripts/verify-v144-auth-limits.mjs",
+    "verify:v144-auth-signout": "tsx scripts/verify-v144-auth-signout.mjs"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "1.1.13",

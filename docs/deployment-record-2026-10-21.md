@@ -13,6 +13,12 @@
 | 操作纪律与下一步 | 解释后执行、记录与备份规则、未完成项 | `docs/agents/production-deployment-discipline.md` 与本文 |
 | 真实凭据与业务数据 | SSH 私钥、root 密码、运行/维护配置、备份密钥、数据库 | 见下方备份清单；不把真实值抄入本文 |
 
+## 2026-11-02 邮件配置只读核实
+
+- 用当前记录的 D:/SSH_pem/IdeaStage_SSH_2026.pem 对既有主机只读检查 runtime.env，权限仍为0600。Resend/SMTP/SES/Postmark/SendGrid相关字段均未配置；未显示真实值、未修改服务器、未发真实邮件。
+- 本地旧 SSH 别名和凭据说明的 Downloads/TheFirst.pem 已不存在，当前密钥入口以本记录为准。
+- v1.44 #02 提供邮箱认证实现与Resend适配，但真实发信身份、域名/凭据、注册/找回收件证据尚缺。生产准备需补邮件配置并刷新安全副本，见 [邮箱认证验收](verification/v144-email-auth.md)。
+
 ## 基础设施与访问
 
 - 域名：`ideastage.top`；服务器公网 IPv4：`101.33.79.30`。

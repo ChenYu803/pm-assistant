@@ -101,6 +101,7 @@ function LoginForm() {
           </Button>
         </form>
 
+        <p className="mt-4 text-right text-sm"><Link href="/forgot-password" className="underline">忘记密码？</Link></p>
         <p className="mt-6 text-center text-sm text-muted-foreground">
           还没有账号？{" "}
           <Link

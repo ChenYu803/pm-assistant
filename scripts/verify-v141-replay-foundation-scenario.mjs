@@ -1,3 +1,4 @@
+import { latestEmailCode } from "./verify-email-fixture.mjs";
 // v1.41 #19：独立空 MySQL 库内的基础业务回放；由 launcher 提供环境并回收库。
 // 唯一文件 fixture 只验证非空上下文和项目共享目录，不冒充用户确认后的产品产出。
 import { chromium } from "playwright-core";
@@ -109,6 +110,14 @@ try {
     await page.fill("#email", email);
     await page.locator('input[type="password"]').first().fill(password);
     await page.locator('input[type="password"]').nth(1).fill(password);
+    const [emailCodeResponse] = await Promise.all([
+      page.waitForResponse(response => new URL(response.url()).pathname === "/api/auth/email-code" && response.request().method() === "POST"),
+      page.getByRole("button", { name: "获取验证码", exact: true }).click(),
+    ]);
+    // 先确认真实发码响应；失败直接报告状态，避免误判为界面 status 等待超时。
+    if (emailCodeResponse.status() !== 200) throw new Error("浏览器注册发码失败，HTTP " + emailCodeResponse.status());
+    await page.getByRole("status").filter({ hasText: /验证码已发送/ }).waitFor();
+    await page.fill("#emailCode", await latestEmailCode(email));
     await mutation(page, "/api/auth/register", () => page.locator('form button[type="submit"]').click(), 201);
     await page.waitForURL((url) => url.pathname === "/projects");
     check(`${prefix} 正式注册成功进入项目页`, (await api(page, "/api/auth/session"))?.user?.email === email);

@@ -1,5 +1,8 @@
 # IdeaStage 部署凭据：用途、保存与找回
 
+> 2026-11-02 更新：当前 SSH 私钥以部署记录的 D:/SSH_pem/IdeaStage_SSH_2026.pem 为准，旧 Downloads 路径已不存在。v1.44 正常注册不再使用下文历史 REGISTRATION_INVITE_CODE；新增 RESEND_API_KEY 与 EMAIL_FROM，当前线上均未配置。邮件配置与收信验收见 [邮箱认证记录](verification/v144-email-auth.md)。下方原始配置生成命令不可在已有配置上重跑。
+
+
 更新日期：2026-10-21。本文是项目内的持久记录，不依赖聊天历史。真实密码不填写在本文或 Git 中。
 
 本次主机、账号、操作证据及逐项备份状态统一记录在 [部署记录与备份清单](deployment-record-2026-10-21.md)；本文提供凭据的用途与操作参考。

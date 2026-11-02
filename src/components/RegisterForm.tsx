@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { navigateAfterAuthentication } from "@/lib/auth-navigation";
+import EmailCodeField from "@/components/EmailCodeField";
 import { safeCallbackUrl } from "@/lib/safe-callback";
 
-function RegisterForm({ inviteRequired }: { inviteRequired: boolean }) {
+function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const candidate = searchParams.get("callbackUrl");
@@ -18,7 +19,7 @@ function RegisterForm({ inviteRequired }: { inviteRequired: boolean }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [inviteCode, setInviteCode] = useState("");
+  const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -26,7 +27,7 @@ function RegisterForm({ inviteRequired }: { inviteRequired: boolean }) {
     e.preventDefault();
     setError("");
 
-    if (!email || !password || !confirmPassword || (inviteRequired && !inviteCode.trim())) {
+    if (!email || !password || !confirmPassword || !code.trim()) {
       setError("请填写所有字段");
       return;
     }
@@ -47,7 +48,7 @@ function RegisterForm({ inviteRequired }: { inviteRequired: boolean }) {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, inviteCode }),
+        body: JSON.stringify({ email, password, code }),
       });
 
       const data = await res.json();
@@ -92,7 +93,7 @@ function RegisterForm({ inviteRequired }: { inviteRequired: boolean }) {
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { setEmail(e.target.value); setCode(""); }}
               placeholder="you@example.com"
               autoComplete="email"
             />
@@ -132,11 +133,8 @@ function RegisterForm({ inviteRequired }: { inviteRequired: boolean }) {
             </p>
           )}
 
-          {inviteRequired && <div>
-            <Label htmlFor="inviteCode" className="mb-1 block">邀请码</Label>
-            <Input id="inviteCode" type="password" value={inviteCode} onChange={(e) => setInviteCode(e.target.value)} maxLength={256} autoComplete="off" aria-describedby="invite-note" required />
-            <p id="invite-note" className="mt-1 text-sm text-muted-foreground">当前为邀请体验，请填写收到的邀请码。</p>
-          </div>}
+          <EmailCodeField email={email} purpose="register" value={code} onChange={setCode} />
+          <p className="text-sm text-muted-foreground">无需邀请码即可注册。新账号初始积分为零。</p>
 
           <Button
             type="submit"
@@ -161,6 +159,6 @@ function RegisterForm({ inviteRequired }: { inviteRequired: boolean }) {
   );
 }
 
-export default function RegistrationForm({ inviteRequired }: { inviteRequired: boolean }) {
-  return <Suspense fallback={<div className="flex flex-1 items-center justify-center px-4">加载中...</div>}><RegisterForm inviteRequired={inviteRequired} /></Suspense>;
+export default function RegistrationForm() {
+  return <Suspense fallback={<div className="flex flex-1 items-center justify-center px-4">加载中...</div>}><RegisterForm /></Suspense>;
 }

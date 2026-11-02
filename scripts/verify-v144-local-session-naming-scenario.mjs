@@ -3,6 +3,7 @@ import { chromium } from "playwright-core";
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { assertPlaywrightAvailable } from "./verify-mysql-fixtures.mjs";
+import { requestRegistrationCode } from "./verify-email-fixture.mjs";
 const base = process.env.BASE_URL;
 const output = process.env.V141_REPLAY_OUTPUT_DIR;
 const provider = process.env.V144_PROVIDER_ORIGIN;
@@ -53,6 +54,7 @@ try {
   await page.fill('#email', 'verify-v144-name-' + Date.now() + '@test.local');
   await page.locator('input[type="password"]').first().fill('verify-pass-1234');
   await page.locator('input[type="password"]').nth(1).fill('verify-pass-1234');
+  await page.fill('#emailCode', await requestRegistrationCode(page.request, await page.inputValue('#email')));
   await page.locator('form button[type="submit"]').click();
   await page.waitForURL((url) => url.pathname === '/projects');
   const project = await api('/api/projects', { name: '默认会话命名验证' });
@@ -175,6 +177,7 @@ try {
     await outsider.fill('#email', 'verify-v144-outsider-' + Date.now() + '@test.local');
     await outsider.locator('input[type="password"]').first().fill('verify-pass-1234');
     await outsider.locator('input[type="password"]').nth(1).fill('verify-pass-1234');
+    await outsider.fill('#emailCode', await requestRegistrationCode(outsider.request, await outsider.inputValue('#email')));
     await outsider.locator('form button[type="submit"]').click();
     await outsider.waitForURL((url) => url.pathname === '/projects');
     const denied = await outsider.request.patch(base + sessionsPath() + '/sessions/' + id, { data: { title: '越权名称' } });
