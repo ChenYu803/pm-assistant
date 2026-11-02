@@ -1,0 +1,130 @@
+/* 全站统一顶栏。视觉与 landing 首屏导航一致：近黑底、发丝分隔线、珊瑚色圆形标识。 */
+.header {
+  --nav-ground: #171713;
+  --nav-line: #45463a;
+  --nav-type: #e9dfc8;
+  --nav-muted: #b1ab98;
+  --nav-accent: #ed6f5c;
+  position: relative;
+  z-index: 30;
+  flex: none;
+  background: var(--nav-ground);
+  border-bottom: 1px solid var(--nav-line);
+  color: var(--nav-type);
+  font-family: var(--font-app-sans);
+}
+
+.inner {
+  display: flex;
+  width: min(1360px, calc(100% - 112px));
+  min-height: 76px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  margin-inline: auto;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--nav-type);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.brandMark {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid var(--nav-accent);
+  border-radius: 50%;
+  color: var(--nav-accent);
+  font: 20px/1 Georgia, "Times New Roman", serif;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.link {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  color: var(--nav-muted);
+  font-size: 13px;
+  text-decoration: none;
+  transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease;
+}
+
+.link:hover {
+  color: var(--nav-type);
+  border-color: var(--nav-line);
+}
+
+.link[data-active="true"] {
+  border-color: var(--nav-line);
+  color: var(--nav-type);
+  background: #22231d;
+}
+
+.enter {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  padding: 0 18px;
+  border: 1px solid var(--nav-accent);
+  background: var(--nav-accent);
+  color: #171713;
+  font-size: 13px;
+  font-weight: 650;
+  text-decoration: none;
+  transition: background-color 180ms ease, border-color 180ms ease;
+}
+
+.enter:hover {
+  background: #da8770;
+  border-color: #da8770;
+}
+
+.pending {
+  display: block;
+  width: 96px;
+  height: 40px;
+}
+
+.brand:focus-visible,
+.link:focus-visible,
+.enter:focus-visible {
+  outline: 2px solid var(--nav-accent);
+  outline-offset: 3px;
+}
+
+@media (max-width: 900px) {
+  .inner {
+    width: calc(100% - 48px);
+    min-height: 64px;
+  }
+}
+
+@media (max-width: 520px) {
+  .inner {
+    width: calc(100% - 32px);
+    gap: 12px;
+  }
+
+  .brand {
+    font-size: 14px;
+  }
+
+  .link {
+    padding: 0 10px;
+  }
+}

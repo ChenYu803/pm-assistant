@@ -622,8 +622,6 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
     <div className="workbench-shell">
       <header className="workbench-header">
         <div className="workbench-identity">
-          <span className="workbench-brand"><span className="workbench-mark">A</span><span>AI 产品现场</span></span>
-          <span className="workbench-divider" aria-hidden="true" />
           <div className="workbench-project"><strong title={iteration.display_name}>{iteration.display_name}</strong><span>{toast ? <span className="workbench-feedback" role="status" title={toast}>{toast}</span> : <><span title={project.name}>{project.name}</span><b>{`产品迭代 ${String(iteration.iteration_number).padStart(2, "0")}`}</b></>}</span></div>
         </div>
         <div className="workbench-header-actions">{!contextOpen && <button className="workbench-quiet-button file-toggle" type="button" onClick={openContextPanel} aria-expanded="false" aria-controls="workbench-files"><Icon name="panel"/>展开文件区</button>}<Link href="/projects" className="workbench-back">返回迭代管理</Link></div>
@@ -646,7 +644,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
       </nav>
       {loading ? <div className="workbench-loading" role="status" aria-label="正在加载工作台"><div/><div/><div/></div> : !workbenchReady ? <div className="workbench-unavailable"><h2>工作台未能加载</h2><p>请重新加载后继续，项目成果不会受影响。</p></div> : <div className={`workbench-grid ${contextOpen ? "" : "context-collapsed"}`} data-compact-view={compactView}>
         <aside className="workbench-sessions" id="workbench-sessions" aria-label="阶段会话">
-          <div className="sessions-heading"><h2>阶段会话</h2><button className="new-session-button" type="button" disabled={creatingSession || contextUpdating} onClick={() => void createSession()} aria-label="新建会话" title="新建会话"><Icon name="plus"/></button></div>
+          <div className="sessions-heading"><h2>阶段会话</h2><button className="new-session-button" type="button" disabled={creatingSession || contextUpdating} onClick={() => void createSession()} aria-label="新建会话" title="新建会话"><Icon name="plus"/><span className="new-session-label">新建会话</span></button></div>
           {sessions.length ? <div className="real-session-list">{sessions.map((session) => <div className="session-list-item" key={session.id}>
             <button className="session-row" data-session-id={session.id} type="button" title={session.title} disabled={contextUpdating} aria-current={activeSessionId === session.id ? "page" : undefined} onClick={() => void chooseSession(session)}><strong className={namingStyles.sessionTitle}>{session.title}</strong><small>{generatingSessionIds.includes(session.id) || sendingSessionIds.includes(session.id) ? "生成中 · " : session.title === "新会话" ? "尚无消息 · " : ""}{session.updatedAt ? new Date(session.updatedAt).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }) : ""}</small></button>
             <button className="session-delete-button" type="button" disabled={contextUpdating || creatingSession || stageUpdating} aria-label={`删除会话：${session.title}`} title={`删除会话：${session.title}`} onClick={() => setDeletingSession({ session, stage: currentStage })}><Icon name="trash" /></button>
@@ -676,7 +674,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
           </div> : null}
           <div className="workbench-message-list" ref={messageList} aria-live="polite">
             {selectedDemo ? <div className="demo-warning">这是只读样例会话，不会保存到你的阶段会话。</div> : null}
-            {!activeSession && !selectedDemo ? <div className="stage-empty"><div><h3>从你想解决的问题开始。</h3><p>{currentInfo.hint}</p><button type="button" disabled={creatingSession || contextUpdating} onClick={() => void createSession()}>开始本阶段工作</button></div></div> : null}
+            {!activeSession && !selectedDemo ? <div className="stage-empty"><div><h3>从你想解决的问题开始。</h3><p>{currentInfo.hint}</p><button type="button" disabled={creatingSession || contextUpdating} onClick={() => void createSession()}>新建会话，开始这一阶段</button></div></div> : null}
             {activeSession && messagesLoading ? <p className="session-loading" role="status">正在打开会话…</p> : null}
             {activeSession && messagesFailed ? <div className="stage-empty session-start"><h3>会话内容未能加载</h3><p>消息与上下文尚未读取，请重试后继续。</p><button type="button" onClick={() => { setError(""); void loadMessages(activeSessionId); }}>重新加载会话</button></div> : null}
             {activeSession && !messagesLoading && !messagesFailed && messages.length === 0 ? <div className="stage-empty session-start"><h3>这个会话还没有消息</h3><p>{currentInfo.hint}</p></div> : null}

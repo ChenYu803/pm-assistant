@@ -63,6 +63,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return true;
       }
 
+      // 一次性首屏原型（本地演示），生产环境不暴露。
+      if (
+        process.env.NODE_ENV !== "production" &&
+        pathname.startsWith("/prototype")
+      ) {
+        return true;
+      }
+
       // Allow login/register pages
       if (pathname === "/login" || pathname === "/register") {
         if (isLoggedIn) {

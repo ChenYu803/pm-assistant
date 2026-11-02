@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: pm-assistant
+    runtime: node
+    region: singapore
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: 22.16.0
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: AUTH_URL
+        sync: false
+      - key: AUTH_TRUST_HOST
+        value: "true"
+      - key: MYSQL_HOST
+        sync: false
+      - key: MYSQL_PORT
+        value: "3306"
+      - key: MYSQL_DATABASE
+        sync: false
+      - key: MYSQL_USER
+        sync: false
+      - key: MYSQL_PASSWORD
+        sync: false
+      - key: MYSQL_REQUIRED_VERSION
+        value: "8"
+      - key: MYSQL_CONNECTION_LIMIT
+        value: "3"
+      - key: MYSQL_SSL
+        value: "false"
+      - key: MYSQL_SSL_CA
+        sync: false
+      - key: AI_MODE
+        value: replay
+      - key: AI_API_KEY
+        sync: false
+      - key: AI_BASE_URL
+        value: https://api.deepseek.com
+      - key: AI_MODEL
+        value: deepseek-v4-flash

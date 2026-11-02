@@ -1,20 +1,8 @@
-import Link from "next/link";
 import styles from "./auth.module.css";
 
 export default function AuthLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <div className={styles.page}>
-      <div className={styles.topline}>
-        <span>AI PRODUCT FIELD / ACCOUNT</span>
-        <span>AI 产品经理入职体验 · 产品实践</span>
-      </div>
-      <header className={styles.header}>
-        <Link className={styles.brand} href="/" aria-label="AI 产品现场首页">
-          <span className={styles.brandMark} aria-hidden="true">A</span>
-          <span>AI 产品现场</span>
-        </Link>
-        <Link className={styles.returnLink} href="/">返回首页</Link>
-      </header>
       <div className={styles.layout}>
         <aside className={styles.story}>
           <p className={styles.eyebrow}>AI PRODUCT FIELD</p>

@@ -1,0 +1,7 @@
+
+D:\Project\4.Project\Agent2\src\proxy.ts
+  5:28  warning  '_request' is defined but never used  @typescript-eslint/no-unused-vars
+  5:51  warning  '_event' is defined but never used    @typescript-eslint/no-unused-vars
+
+✖ 2 problems (0 errors, 2 warnings)
+

@@ -1,0 +1,97 @@
+{
+  "stylesheets": [
+    "http://localhost:3000/_next/static/chunks/src_1_1gz8t._.css",
+    "(inline)"
+  ],
+  "hardcodedAccentRendered": {
+    "textHits": [
+      {
+        "tag": "BUTTON",
+        "cls": "task-folder-create",
+        "text": "为本迭代建立任务文件夹",
+        "fontSize": "12px"
+      }
+    ],
+    "borderOrBgHits": []
+  },
+  "mutedRendered": [
+    {
+      "key": "SMALL | 11px/400",
+      "count": 4
+    },
+    {
+      "key": "SPAN | 11px/400",
+      "count": 3
+    },
+    {
+      "key": "workbench-stage | 16px/400",
+      "count": 3
+    },
+    {
+      "key": "stage-title | 14px/650",
+      "count": 3
+    },
+    {
+      "key": "stage-status | 12px/400",
+      "count": 3
+    },
+    {
+      "key": "project-tree-empty | 12px/400",
+      "count": 3
+    },
+    {
+      "key": "BUTTON | 12px/400",
+      "count": 2
+    },
+    {
+      "key": "SiteNav-module__VSfUAq__link | 13px/400",
+      "count": 1
+    },
+    {
+      "key": "SPAN | 12px/400",
+      "count": 1
+    },
+    {
+      "key": "workbench-header-actions | 12px/400",
+      "count": 1
+    },
+    {
+      "key": "workbench-back | 12px/400",
+      "count": 1
+    },
+    {
+      "key": "P | 14px/400",
+      "count": 1
+    },
+    {
+      "key": "context-guidance | 12px/400",
+      "count": 1
+    }
+  ],
+  "placeholders": [
+    {
+      "tag": "TEXTAREA",
+      "cls": "",
+      "placeholderAttr": "开始本阶段工作后即可发送消息",
+      "color": "rgb(233, 223, 200)",
+      "bg": "rgb(30, 31, 25)",
+      "phColor": "rgb(139, 133, 116)",
+      "phOpacity": "1",
+      "fontSize": "14px"
+    }
+  ],
+  "disabledComposite": {
+    "rawColor": "rgb(233, 223, 200)",
+    "rawBg": "rgb(38, 39, 32)",
+    "opacity": "0.48",
+    "textOverOwnBgComposite": "rgb(132, 127, 113)",
+    "bgOverPageComposite": "rgb(30, 31, 25)",
+    "pageBg": "rgb(23, 23, 19)"
+  },
+  "stageBarContainer": {
+    "parentCls": "workbench-stage-nav",
+    "grandParentCls": "workbench-stage-area",
+    "parentTag": "NAV",
+    "childCount": 4
+  }
+}

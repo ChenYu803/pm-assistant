@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import ProductIterationList from "@/components/ProductIterationList";
 
 interface Project {
@@ -135,8 +134,7 @@ export default function ProjectList() {
     <div className="project-workspace-app">
       <div className="project-workspace-shell">
         <aside className="project-workspace-rail" aria-label="我的项目">
-          <Link className="project-workspace-brand" href="/"><span className="project-workspace-mark">A</span><span>AI 产品现场</span></Link>
-          <div className="project-workspace-heading"><p className="project-workspace-eyebrow">PROJECTS / WORKSPACE</p><h1>我的项目</h1><p>选择一个项目，管理产品迭代与项目文件。</p></div>
+          <div className="project-workspace-heading"><h1>我的项目</h1><p>选择一个项目，管理产品迭代与项目文件。</p></div>
           <button className="project-workspace-create" type="button" onClick={openCreate}>新建一个项目</button>
           {error && <p className="project-workspace-error" role="alert">{error}</p>}
           <div className="project-workspace-list" role="list" aria-label="项目列表">

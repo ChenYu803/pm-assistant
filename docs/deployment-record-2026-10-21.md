@@ -1,4 +1,4 @@
-# IdeaStage 部署记录与备份清单（截至 2026-10-21）
+# IdeaStage 部署记录与备份清单（基础记录截至 2026-10-21，状态更新至 2026-10-25）
 
 本文件保存本次部署会话中需要长期留存的事实、决策、操作结果和备份缺口，作为后续更新的记录入口。`PROGRESS.md` 仅保留当前进度与本文链接。本文不含真实密码或私钥，也不代表已经完成实际数据备份。
 
@@ -18,10 +18,22 @@
 - 域名：`ideastage.top`；服务器公网 IPv4：`101.33.79.30`。
 - 目标系统：Ubuntu Server 24.04 LTS 64 位；此前用户反馈系统为 24.04.4 LTS，更新重启后内核为 `6.8.0-147-generic`。这里保存会话确认结果，不代表本轮重新探测。
 - SSH 用户：`ubuntu`；按此前配置使用 22 端口，密钥登录已成功。用户已核对腾讯云终端与本地主机指纹一致；指纹具体值未在可用文本中记录，日后需要时从可信云控制台复核，不凭空补写。
-- SSH 私钥由用户保存于 Windows `C:\Users\Administrator\Downloads\TheFirst.pem`；未读取正文，未核验第二份安全副本。
+- SSH 私钥现由用户保存于 Windows `D:\SSH_pem\IdeaStage_SSH_2026.pem`；2026-10-25 已用该密钥成功登录。未读取正文，未核验第二份安全副本。
 - 用户确认云防火墙开启四条规则；此前选择为 SSH 22、HTTP 80、HTTPS 443、Ping，实际规则仍以控制台为准。用户因代理出口 IP 变化，选择不限制 22 的固定来源 IP。
 - 软件已按会话反馈安装：Node.js 24、Git、nginx、OpenSSL、Certbot、MySQL Community Server 9.7.4。MySQL 已确认运行并监听 `127.0.0.1:3306`；网站端口与数据库不对公网开放。
 - 云实例最终地域以控制台为准；活动手册标题中的“香港”和旧交接中的地域不作为实机证明。
+
+### 2026-10-25 只读状态刷新
+
+- 用户确认当前为腾讯云香港服务器，用于部署 IdeaStage 网站及同机 MySQL；此前 SSH 私钥遗失后，已在腾讯云重新创建并绑定新密钥，Windows 私钥路径为 `D:\SSH_pem\IdeaStage_SSH_2026.pem`，本次 SSH 密钥登录成功。
+- 本日稍后签发 HTTPS 证书之前，`systemctl is-active` 实测 `ideastage`、`nginx`、`mysql`、`ideastage-backup.timer` 均为 `active`。`http://127.0.0.1:3000/api/health` 返回 HTTP 200 和 `{"status":"ok"}`；nginx 对 `Host: ideastage.top` 的 HTTP 请求返回 503，符合当时未签发 HTTPS 的引导配置；`nginx -t` 通过。HTTPS 签发后的状态见下方发布记录。
+- 备份 timer 于 2026-10-25 03:02（北京时间）成功生成 `2026-10-24T19-02-26-063Z-34ed640a.isb`，大小 6,106,132 bytes，元数据 commit 为 `77c76768a6ad1d6a9bcc02389bfc08ba465b6345`。服务器端配套 SHA-256 校验通过。2026-10-25 12:34（北京时间）已用 `scripts/Pull-IdeaStageBackup.ps1` 拉取到 Windows `D:\Backups\IdeaStage`；本机文件大小 6,106,132 bytes，SHA-256 `05705a9d744ee70e90b827a9ffc832a334085a040e7e1662b2d75fbb447bbd76` 与服务器索引及 `.sha256` 一致，`last-pull.json` 已更新。备份仍为加密包，未解密或恢复；百度网盘副本尚未确认。
+- DNS 与权威性：用户已将腾讯云域名 nameserver 改为 Cloudflare 分配值。Cloudflare 权威服务器 `108.162.194.190` 与 Google DNS `8.8.8.8` 均返回 NS `sonia.ns.cloudflare.com` / `wilson.ns.cloudflare.com`；根域 A 返回 `101.33.79.30`。Cloudflare 中 A 记录状态仍为 DNS-only，解析直达源站；Cloudflare 代理/CDN尚未开启。
+- 2026-10-25 HTTPS 发布：Certbot 2.9.0 使用 webroot 成功签发 `ideastage.top` Let's Encrypt 证书，有效期至 2027-01-23，注册时未提供提醒邮箱；自动续期 timer 已由 Certbot 配置，因此没有到期邮件提醒。nginx HTTPS 模板与代理 snippet 已安装，`nginx -t` 通过并 reload；HTTP 返回 301 到 HTTPS。公网 DNS 解析路径访问 `https://ideastage.top/api/health` 返回 HTTP 200 `{"status":"ok"}`，TLS 证书链校验通过，响应含 `X-Accel-Buffering: no`。`/etc/letsencrypt/renewal-hooks/deploy/ideastage-nginx` 为 root:root 0755，内容先测 `nginx -t` 再 reload；手动执行成功，`certbot renew --dry-run` 的 staging 续期演练成功。
+- Cloudflare 源站准备：从 `https://www.cloudflare.com/ips-v4` 和 `/ips-v6` 读取当前官方网段后，在服务器新增 `/etc/nginx/conf.d/zz-cloudflare-real-ip.conf`，只信任这些 CIDR 的 `CF-Connecting-IP`；实际访客 IP 将用于 nginx 日志和按 IP 限流。nginx real-IP 模块存在，配置测试与 reload 通过。公网直连时附带伪造 `CF-Connecting-IP: 203.0.113.123`，访问日志仍记录实际连接地址 `120.229.205.198`，证明非 Cloudflare 来源不能伪造访客 IP。启用代理后若官方网段变化，须更新配置并 reload。
+- 2026-10-25 Cloudflare 代理验证：用户已启用根域 A 记录代理。Cloudflare 权威 DNS `108.162.194.190` 与 Google DNS `8.8.8.8` 均返回边缘 IP `104.21.75.78` / `172.67.217.143`。显式请求边缘 IP 并保留 `ideastage.top` TLS SNI/Host，首页、`/login`、`/api/health` 均返回 200，含 `Server: cloudflare`、`CF-Ray`；API 返回 `Cache-Control: no-store` / `cf-cache-status: DYNAMIC`，首页和登录页 `cf-cache-status: DYNAMIC`，没有从边缘缓存。nginx 日志对应边缘请求记录真实访客 IP `120.229.205.198`，非伪造的 `CF-Connecting-IP`。此证据证明配置路径已代理，不证明该访客 IP 属于用户内陆网络。
+- DNS/本机请求路径复核：清除 Windows DNS 缓存后，本机递归 DNS `120.196.165.24` / `192.168.247.6`、Cloudflare 权威 DNS 与 Google DNS 均返回边缘 IP `104.21.75.78` / `172.67.217.143`。正常 `Invoke-WebRequest` 得到 `Server: cloudflare`、`CF-Ray`、health 200 和 `cf-cache-status: DYNAMIC`。此前 `curl --noproxy "*"` 是显式绕过系统代理的直连测试，命中源站且没有 CF-Ray；不能用该命令代表普通浏览器流量。显式指定 Cloudflare 边缘地址的 TLS/HTTP 也通过。
+- 下一步：由用户在内陆网络验收登录/持久化及超过 125 秒的 SSE 心跳。Cloudflare API health、首页/登录页基础响应已测，API 为 no-store，抽测页面均为 DYNAMIC；真实长生成、SSE 缓冲、登录数据隔离仍未验收。若启用了自定义缓存规则，确保绕过 `/api/*`、`/login*`、`/register*`、`/projects*`、`/work-records*`，不缓存或转换 SSE。当前外部请求证明代理可工作，但未从 Cloudflare 控制台独立读取 Full (strict) 模式设置。
 
 ## 账号、目录与权限
 

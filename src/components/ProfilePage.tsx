@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import Link from "next/link";
 import { signOut } from "next-auth/react";
 import styles from "./ProfilePage.module.css";
 
@@ -79,12 +78,6 @@ export default function ProfilePage({ email, initialNickname }: { email: string;
 
   return (
     <div className={styles.shell}>
-      <header className={styles.header}>
-        <div className={styles.headerInner}>
-          <Link className={styles.brand} href="/"><span className={styles.brandMark}>A</span>AI 产品现场</Link>
-          <Link className={styles.backLink} href="/">返回首页 <span aria-hidden="true">↗</span></Link>
-        </div>
-      </header>
       <div className={styles.content}>
         <div className={styles.heading}>
           <span className={styles.kicker}>ACCOUNT / 个人设置</span>

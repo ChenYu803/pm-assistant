@@ -1,0 +1,85 @@
+{
+  "env": {
+    "devicePixelRatio": 1.0000000149011612,
+    "htmlZoom": "1",
+    "bodyZoom": "1",
+    "scale": "1",
+    "rootFontSize": "16px",
+    "innerWidth": 1440
+  },
+  "borders": {
+    "stageNav": {
+      "sel": ".workbench-stage-nav",
+      "top": "0.8px",
+      "right": "0.8px",
+      "bottom": "0.8px",
+      "left": "0.8px",
+      "style": "solid",
+      "color": "rgba(233, 223, 200, 0.16)"
+    },
+    "contextRail": {
+      "sel": ".workbench-context",
+      "top": "0px",
+      "right": "0px",
+      "bottom": "0px",
+      "left": "0.8px",
+      "style": "solid",
+      "color": "rgba(233, 223, 200, 0.16)"
+    },
+    "sessionsRail": {
+      "sel": ".workbench-sessions",
+      "top": "0px",
+      "right": "0px",
+      "bottom": "0px",
+      "left": "0px",
+      "style": "solid",
+      "color": "rgba(233, 223, 200, 0.14)"
+    },
+    "conversation": {
+      "sel": ".workbench-conversation",
+      "top": "0px",
+      "right": "0px",
+      "bottom": "0px",
+      "left": "0px",
+      "style": "solid",
+      "color": "rgba(233, 223, 200, 0.14)"
+    },
+    "textarea": {
+      "sel": ".workbench-composer textarea",
+      "top": "0.8px",
+      "right": "0.8px",
+      "bottom": "0.8px",
+      "left": "0.8px",
+      "style": "solid",
+      "color": "rgba(233, 223, 200, 0.26)"
+    },
+    "gridGap": {
+      "columnGap": "normal",
+      "rowGap": "normal",
+      "cols": "232px 799.2px 344px",
+      "bg": "rgb(30, 31, 25)"
+    },
+    "composer": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "borderTop": "0.8px rgba(233, 223, 200, 0.16)"
+    }
+  },
+  "corals": [
+    {
+      "key": "rgb(237, 111, 92) :: B 12px",
+      "count": 1
+    },
+    {
+      "key": "rgb(237, 111, 92) :: stage-index 11px",
+      "count": 1
+    },
+    {
+      "key": "rgb(237, 111, 92) :: composer-context-button 12px",
+      "count": 1
+    },
+    {
+      "key": "rgb(215, 106, 82) :: task-folder-create 12px",
+      "count": 1
+    }
+  ]
+}

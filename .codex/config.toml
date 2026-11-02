@@ -1,1 +1,4 @@
 sandbox_mode = "danger-full-access"
+approval_policy = "never"
+[projects.'D:\Project\4.Project\Agent2']
+trust_level = "trusted"

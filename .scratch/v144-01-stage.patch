@@ -1,0 +1,156 @@
+diff --git a/PROGRESS.md b/PROGRESS.md
+index dd0ac01..e19cfe6 100644
+--- a/PROGRESS.md
++++ b/PROGRESS.md
+@@ -8,5 +8,15 @@
+ 
++### 2026-11-02：v1.44 #01 默认会话本地命名完成
++
++已完成 `.scratch/v1.44/issues/01-local-session-naming.md`（L2）：首条用户原文前 10 个字素簇在消息事务中成为默认名，保留空格、标点与组合 Unicode；人工改名有独立标记，生成完成不再写名称。新工作台支持原位改名，旧模型命名路由和后台触发已撤除，历史名称不变。追加迁移 `0023_v144_session_manual_title`，未修改历史迁移。
++
++命名专项 94/94，四流程完成；供应商 HTTP 替身观察到 31 次流式主回复、非流式 0 次，旧入口两轮发送仅两次请求；相邻 SSE 专项 23/23。typegen、tsc、生产构建通过，定向 ESLint 无 error（既有 warning 1 条）；桌面/390px 检查及双轴审查完成，审查发现的空格 CSS 优先级和测试 HTTP 状态码问题均修复并复核关闭。基础回放未完整通过：9 通过、3 失败，退出接口已返回 200，等待导航后仍观察到认证、后续登录等待失败；Cookie 刷新/清除竞争仅是未证实方向，尚未归因；不以命名/SSE 专项代替完整生命周期结论。验收边界及证据见 [验证记录](docs/verification/v144-local-session-naming.md)。
++
++验证仅用随机隔离库、正式浏览器/API 与本机 HTTP 模型替身；测试库、账号与隔离源码副本均已清理。未调用真实模型、未操作日常/生产库、未部署或推送。冷编译注册页曾耗时 38–52 秒，相邻测试仅调高导航超时至 120 秒；SSE 不用 response.finished() 判断业务终态，改查供应商到达、界面终态与持久结果。删除路由后需清理对应陈旧 Next 生成类型再 typegen。工作区原有改动保留，本票按开工快照隔离提交。
++
++下一前沿为 #02 邮箱验证码注册与密码找回，#03 管理员入口可独立推进；本次不自动开始下一票。生产应用新增迁移仍需按后续发布票执行备份与发布验证。
++
+ ### 2026-11-02：v1.44 正式票已发布，待认领实现
+ 
+-用户确认 v1.43 视觉迭代收尾、网站已上线；本版开展邮箱验证码注册、真实 API 与积分/人工充值、最小运营后台及生产更新。v1.44 规格已发布且保持 ready-for-agent，包含 76 条用户故事。本轮用户已确认 14 票的粒度与依赖；按 to-tickets 发布 `.scratch/v1.44/issues/` 下 01–14 一票一文件，状态均为 ready-for-agent，拆票方案已补齐正式票链接。尚未认领或修改业务代码。
++用户确认 v1.43 视觉迭代收尾、网站已上线；本版开展邮箱验证码注册、真实 API 与积分/人工充值、最小运营后台及生产更新。v1.44 规格已发布且保持 ready-for-agent，包含 76 条用户故事。本轮用户已确认 14 票的粒度与依赖；按 to-tickets 发布 `.scratch/v1.44/issues/` 下 01–14 一票一文件，发布时状态均为 ready-for-agent，拆票方案已补齐正式票链接；当前 #01 已完成，其余票按依赖推进。
+ 
+@@ -28,5 +38,5 @@
+ 
+-已维护 GLOSSARY 已确认术语；不新建 grilling.md。用户明确采纳先预留、后按实际用量结算：按完整输入的保守费用及受约束的最大输出费用计算预留，取得可靠供应商 usage 后结算、释放剩余。按操作类型设置合理输出上限，避免过量预留；不得悄悄降低长文上限造成截断，不能将字符估算冒充精确 token 上界。具体技术实现由 Agent 处理。用户本轮明确采纳最后三项体验规则：待核对期间保留该笔预留，其他可用积分照常使用；可靠用量核实后结算，超过已定 24 小时则免单并释放，明确故障免单立即释放。不同会话允许并行、每次分别预留并共享账号余额，同一会话同时只允许一次生成；余额不足只拦截新增调用，工作台冻结积分为账号全部未结算预留的合计，重复提交不得重复执行或扣费。每条 AI 回复及润色结果附近展示本次预留、实际消耗或待核对/免单状态，正常调用不增加逐次确认弹窗，详细流水仍在个人中心。当前产品决策前沿已空，grilling 已收口；规格和 14 张正式票已完成，下一步从无阻塞且未认领的票开始实施；初始可启动项为 01 默认命名、02 邮箱验证、03 管理员入口。邮件实际投递、供应商可靠计量、账本并发与异常恢复、生产配置及发布保护属于实施核验事项。测试方案以浏览器与应用 HTTP/API 为主要入口，仅在邮件和供应商边界提供受限测试替身；时间控制限于隔离环境，真实邮件与官方 API 另做小规模核验。测试边界沿用已发布规格。尚未开始业务实现，不继续展开法律或长期经营方案。
++已维护 GLOSSARY 已确认术语；不新建 grilling.md。用户明确采纳先预留、后按实际用量结算：按完整输入的保守费用及受约束的最大输出费用计算预留，取得可靠供应商 usage 后结算、释放剩余。按操作类型设置合理输出上限，避免过量预留；不得悄悄降低长文上限造成截断，不能将字符估算冒充精确 token 上界。具体技术实现由 Agent 处理。用户本轮明确采纳最后三项体验规则：待核对期间保留该笔预留，其他可用积分照常使用；可靠用量核实后结算，超过已定 24 小时则免单并释放，明确故障免单立即释放。不同会话允许并行、每次分别预留并共享账号余额，同一会话同时只允许一次生成；余额不足只拦截新增调用，工作台冻结积分为账号全部未结算预留的合计，重复提交不得重复执行或扣费。每条 AI 回复及润色结果附近展示本次预留、实际消耗或待核对/免单状态，正常调用不增加逐次确认弹窗，详细流水仍在个人中心。当前产品决策前沿已空，grilling 已收口；规格和 14 张正式票已完成，下一步从无阻塞且未认领的票开始实施；初始可启动项为 01 默认命名、02 邮箱验证、03 管理员入口；当前 01 已完成，下一前沿为 02，03 可独立推进。邮件实际投递、供应商可靠计量、账本并发与异常恢复、生产配置及发布保护属于实施核验事项。测试方案以浏览器与应用 HTTP/API 为主要入口，仅在邮件和供应商边界提供受限测试替身；时间控制限于隔离环境，真实邮件与官方 API 另做小规模核验。测试边界沿用已发布规格。发布规格时尚未开始业务实现；当前 01 已完成，不继续展开法律或长期经营方案。
+ 
+-代码核查：当前 live 下聊天、润色和旧版自动命名均有真实 API 成本，命名新规则尚未实施；当前封装只回传文本，未保存供应商 usage，已有每日请求次数限制不足以按金额结算。未发现支付订单、邮箱验证、应用管理员授权模块。
++发布规格时的代码核查：live 下聊天、润色和旧版自动命名均有真实 API 成本；当前 #01 已撤除命名模型调用，当前封装只回传文本，未保存供应商 usage，已有每日请求次数限制不足以按金额结算。未发现支付订单、邮箱验证、应用管理员授权模块。
+ 
+@@ -36,5 +46,5 @@
+ 
+-当前实施前沿（均未认领）：
++当前实施前沿（#01 已完成，#02/#03 未认领）：
+ 
+-- [01：默认命名](.scratch/v1.44/issues/01-local-session-naming.md)
++- [01：默认命名（已完成）](.scratch/v1.44/issues/01-local-session-naming.md)
+ - [02：邮箱验证码注册与密码找回](.scratch/v1.44/issues/02-email-verification-auth.md)
+diff --git a/package.json b/package.json
+index 9518784..2655ba1 100644
+--- a/package.json
++++ b/package.json
+@@ -50,2 +50,3 @@
+     "verify:mysql-ui-fixes": "tsx scripts/verify-fixes.mjs",
++    "verify:v144-local-session-naming": "tsx scripts/verify-v144-local-session-naming.mjs",
+     "verify:mysql-auto-naming": "tsx scripts/verify-conditional-auto-naming.mjs",
+diff --git a/src/components/ProductIterationWorkbench.tsx b/src/components/ProductIterationWorkbench.tsx
+index aae9e09..fd588a8 100644
+--- a/src/components/ProductIterationWorkbench.tsx
++++ b/src/components/ProductIterationWorkbench.tsx
+@@ -4,2 +4,3 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+ import Link from "next/link";
++import namingStyles from "./SessionNaming.module.css";
+ import { getWorkbenchFileStage } from "@/lib/workbench-file-branch";
+@@ -95,2 +96,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
+   const [editValue, setEditValue] = useState("");
++  const [renamingSession, setRenamingSession] = useState<{ id: string; stage: StageKey; title: string } | null>(null);
++  const [savingSessionName, setSavingSessionName] = useState(false);
++  const [sessionNameError, setSessionNameError] = useState("");
++  const sessionNamesVersion = useRef(0);
++  const renameSessionButton = useRef<HTMLButtonElement>(null);
+   const [demoId, setDemoId] = useState<string | null>(null);
+@@ -223,7 +229,16 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
+   const refreshStageFacts = useCallback(async () => {
++    const startedAtNamesVersion = sessionNamesVersion.current;
+     const state = await request(`${base}/workbench`);
++    // 旧请求的名称结果不能覆盖刚保存的人工名称。
++    const canUpdateNames = startedAtNamesVersion === sessionNamesVersion.current;
++    const updateSessions = (previous: Session[], actual: Session[]) => previous.map((session) => {
++      const latest = actual.find((item) => item.id === session.id);
++      return canUpdateNames && latest ? { ...session, title: latest.title, updatedAt: latest.updatedAt } : session;
++    });
+     setStages((previous) => previous.map((entry) => {
+       const actual = state.stages.find((stage: Stage) => stage.key === entry.key);
+-      return actual ? { ...entry, status: actual.status, generatingSessionIds: actual.generatingSessionIds } : entry;
++      return actual ? { ...entry, status: actual.status, generatingSessionIds: actual.generatingSessionIds, sessions: updateSessions(entry.sessions, actual.sessions) } : entry;
+     }));
++    const activeStage = state.stages.find((stage: Stage) => stage.key === activeView.current.stage);
++    if (activeStage) setSessions((previous) => updateSessions(previous, activeStage.sessions));
+     return state;
+@@ -237,6 +252,6 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
+   useEffect(() => {
+-    if (!stages.some((stage) => stage.generatingSessionIds.length > 0)) return;
++    if (!sendingSessionIds.length && !stages.some((stage) => stage.generatingSessionIds.length > 0)) return;
+     const timer = window.setInterval(() => { void refreshStageFacts().catch(() => undefined); }, 2000);
+     return () => window.clearInterval(timer);
+-  }, [refreshStageFacts, stages]);
++  }, [refreshStageFacts, stages, sendingSessionIds]);
+ 
+@@ -459,2 +474,27 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
+ 
++  function closeSessionRename() {
++    const targetId = renamingSession?.id;
++    setRenamingSession(null);
++    window.requestAnimationFrame(() => { if (activeView.current.sessionId === targetId) renameSessionButton.current?.focus(); });
++  }
++
++  async function saveSessionName() {
++    if (!renamingSession || savingSessionName || !renamingSession.title.trim()) return;
++    const target = renamingSession;
++    setSavingSessionName(true);
++    setSessionNameError("");
++    try {
++      const updated = await request(`${base}/sessions/${target.id}`, {
++        method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: target.title }),
++      });
++      sessionNamesVersion.current += 1;
++      const update = (session: Session) => session.id === target.id ? { ...session, title: updated.title, updatedAt: updated.updated_at } : session;
++      setStages((previous) => previous.map((stage) => stage.key === target.stage ? { ...stage, sessions: stage.sessions.map(update) } : stage));
++      if (activeView.current.stage === target.stage) setSessions((previous) => previous.map(update));
++      closeSessionRename();
++      showToast("会话名称已保存");
++    } catch (caught) { setSessionNameError(caught instanceof Error ? caught.message : "改名未完成，请重试。"); }
++    finally { setSavingSessionName(false); }
++  }
++
+   async function sendMessage(content: string, editMessageId?: string, regenerateMessageId?: string) {
+@@ -471,3 +511,3 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
+         await streamGeneration(`${base}/sessions/${sessionId}/messages/${editMessageId}`, {
+-          method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: content.trim() }),
++          method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content }),
+         }, sessionId);
+@@ -482,3 +522,3 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
+           method: "POST", headers: { "Content-Type": "application/json" },
+-          body: JSON.stringify({ ...(content.trim() ? { content: content.trim() } : {}), ...(regenerateMessageId ? { regenerateMessageId } : {}) }),
++          body: JSON.stringify({ ...(content.trim() ? { content } : {}), ...(regenerateMessageId ? { regenerateMessageId } : {}) }),
+         }, sessionId);
+@@ -501,8 +541,3 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
+       if (activeView.current.stage === stage && activeView.current.sessionId === sessionId) { setEditingId(null); setEditValue(""); }
+-      const updated = await request(`${base}/sessions/${sessionId}`).catch(() => null);
+-      if (updated) {
+-        const updateSession = (session: Session) => session.id === sessionId ? { ...session, title: updated.title, updatedAt: updated.updated_at } : session;
+-        setStages((previous) => previous.map((entry) => entry.key === stage ? { ...entry, sessions: entry.sessions.map(updateSession) } : entry));
+-        if (activeView.current.stage === stage) setSessions((previous) => previous.map(updateSession));
+-      }
++
+     } catch (caught) {
+@@ -613,3 +648,3 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
+           {sessions.length ? <div className="real-session-list">{sessions.map((session) => <div className="session-list-item" key={session.id}>
+-            <button className="session-row" data-session-id={session.id} type="button" title={session.title} disabled={contextUpdating} aria-current={activeSessionId === session.id ? "page" : undefined} onClick={() => void chooseSession(session)}><strong>{session.title}</strong><small>{generatingSessionIds.includes(session.id) || sendingSessionIds.includes(session.id) ? "生成中 · " : session.title === "新会话" ? "尚无消息 · " : ""}{session.updatedAt ? new Date(session.updatedAt).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }) : ""}</small></button>
++            <button className="session-row" data-session-id={session.id} type="button" title={session.title} disabled={contextUpdating} aria-current={activeSessionId === session.id ? "page" : undefined} onClick={() => void chooseSession(session)}><strong className={namingStyles.sessionTitle}>{session.title}</strong><small>{generatingSessionIds.includes(session.id) || sendingSessionIds.includes(session.id) ? "生成中 · " : session.title === "新会话" ? "尚无消息 · " : ""}{session.updatedAt ? new Date(session.updatedAt).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }) : ""}</small></button>
+             <button className="session-delete-button" type="button" disabled={contextUpdating || creatingSession || stageUpdating} aria-label={`删除会话：${session.title}`} title={`删除会话：${session.title}`} onClick={() => setDeletingSession({ session, stage: currentStage })}><Icon name="trash" /></button>
+@@ -621,3 +656,13 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
+         <section className="workbench-conversation" id="workbench-conversation" aria-labelledby="conversation-title">
+-          <div className="conversation-heading"><div className="conversation-identity"><h2 id="conversation-title" title={activeSession?.title ?? selectedDemo?.title ?? currentInfo.label}>{activeSession?.title ?? selectedDemo?.title ?? currentInfo.label}</h2></div>
++          <div className="conversation-heading"><div className={`conversation-identity ${namingStyles.identity}`}>
++            {renamingSession?.id === activeSessionId && renamingSession?.stage === currentStage && !selectedDemo ? <form className={namingStyles.renameForm} onSubmit={(event) => { event.preventDefault(); void saveSessionName(); }}>
++              <h2 id="conversation-title" className={namingStyles.srOnly}>修改会话名称</h2>
++              <input autoFocus aria-label="会话名称" maxLength={80} value={renamingSession.title} disabled={savingSessionName} onChange={(event) => setRenamingSession({ ...renamingSession, title: event.target.value })} onKeyDown={(event) => { if (event.key === "Escape" && !savingSessionName) { event.preventDefault(); closeSessionRename(); } }} />
++              <button type="submit" disabled={savingSessionName || !renamingSession.title.trim()}>{savingSessionName ? "保存中…" : "保存名称"}</button>
++              <button type="button" disabled={savingSessionName} onClick={closeSessionRename}>取消改名</button>
++              {sessionNameError ? <p className={namingStyles.error} role="alert">{sessionNameError}</p> : null}
++            </form> : <div className={namingStyles.titleRow}><h2 id="conversation-title" title={activeSession?.title ?? selectedDemo?.title ?? currentInfo.label}>{activeSession?.title ?? selectedDemo?.title ?? currentInfo.label}</h2>
++              {activeSession && !selectedDemo ? <button ref={renameSessionButton} type="button" aria-label="修改会话名称" title="修改会话名称" onClick={() => { setRenamingSession({ id: activeSession.id, stage: currentStage, title: activeSession.title }); setSessionNameError(""); }}><Icon name="edit" /></button> : null}
++            </div>}
++          </div>
+             {!selectedDemo && currentStatus === "in_progress" && currentStageState?.sessions.length ? <button className="stage-complete-button" type="button" disabled={stageUpdating || Boolean(stageGenerating)} aria-describedby={stageGenerating ? "stage-generation-note" : undefined} onClick={() => void completeStage()}>完成本阶段</button> : null}

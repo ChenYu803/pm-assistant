@@ -1,0 +1,409 @@
+# 当前未提交改动清单
+
+时间：2026-11-02，认证跟进本地提交 7b5d1aa 之后。
+
+已跟踪改动 44 项（修改 25、删除 19）；未跟踪 350 项。本轮已提交命名与认证修复；剩余包含原有视觉/部署/资料整理及本轮未提交调试日志。暂存区为空，未 push。
+
+## 已跟踪
+
+```text
+ M .codex/config.toml
+ D .scratch/v1/acceptance-guide.md
+ D .scratch/v1/dev-server.log
+ D .scratch/v1/handoff-07-verify-v1-flow-r2.md
+ D .scratch/v1/handoff-07-verify-v1-flow-r3.md
+ D .scratch/v1/handoff-07-verify-v1-flow.md
+ D .scratch/v1/issues/01-verify-protocols.md
+ D .scratch/v1/issues/02-agent-type-infrastructure.md
+ D .scratch/v1/issues/03-requirement-analyst-discipline.md
+ D .scratch/v1/issues/04-prototype-agent.md
+ D .scratch/v1/issues/05-prd-six-section-refactor.md
+ D .scratch/v1/issues/06-ticket-splitter-agent.md
+ D .scratch/v1/issues/07-verify-v1-flow.md
+ D .scratch/v1/runX-files/issues_01-shangjia-fabu.md
+ D .scratch/v1/runX-files/prd.md
+ D .scratch/v1/runX-files/原型.md
+ D ".scratch/v1/runX-files/概念版（MVP-PRD #1）.md"
+ D .scratch/v1/runX-files/需求分析.md
+ D .scratch/v1/spec.md
+ M AGENTS.md
+ M PROGRESS.md
+ M docs/deployment-record-2026-10-21.md
+ M package.json
+ M src/app/(auth)/auth.module.css
+ M src/app/(auth)/layout.tsx
+ M src/app/globals.css
+ M src/app/layout.tsx
+ M src/app/workbench-quality.css
+ M src/components/CareerAssessment.module.css
+ M src/components/CareerAssessment.tsx
+ M src/components/FirstWorkScene.tsx
+ M src/components/LandingPage.module.css
+ M src/components/LandingPage.tsx
+ D src/components/Navbar.tsx
+ M src/components/OnboardingBrief.tsx
+ M src/components/OnboardingExperience.module.css
+ M src/components/ProductIterationList.tsx
+ M src/components/ProductIterationWorkbench.tsx
+ M src/components/ProfilePage.module.css
+ M src/components/ProfilePage.tsx
+ M src/components/ProjectList.tsx
+ M src/components/WorkScenes.tsx
+ M src/lib/auth.ts
+ M tsconfig.json
+```
+
+## 未跟踪
+
+```text
+?? .impeccable/critique/2026-10-31T05-41-06Z__src-components-productiterationworkbench-tsx.md
+?? .impeccable/review/file-history-desktop.png
+?? .impeccable/review/file-history-mobile.png
+?? .impeccable/review/file-revisions-desktop.png
+?? .impeccable/review/file-revisions-mobile.png
+?? .impeccable/review/file-writes-desktop.png
+?? .impeccable/review/first-file-candidate-desktop.png
+?? .impeccable/review/first-file-candidate-mobile.png
+?? .impeccable/review/iteration-archive-desktop.png
+?? .impeccable/review/iteration-archive-mobile.png
+?? .impeccable/review/iteration-delete-desktop.png
+?? .impeccable/review/iteration-delete-mobile.png
+?? .impeccable/review/prd-candidate-desktop.png
+?? .impeccable/review/prd-candidate-mobile.png
+?? .impeccable/review/project-file-preview-mobile.png
+?? .impeccable/review/project-file-tree-desktop.png
+?? .impeccable/review/prototype-markdown-candidate-desktop.png
+?? .impeccable/review/prototype-markdown-candidate-mobile.png
+?? .impeccable/review/prototype-snapshot-desktop.png
+?? .impeccable/review/prototype-snapshot-mobile.png
+?? .impeccable/review/session-delete-desktop.png
+?? .impeccable/review/session-delete-mobile.png
+?? .impeccable/review/stage-generating-desktop.png
+?? .impeccable/review/stage-generating-mobile.png
+?? .impeccable/review/stage-generating-selected-mobile.png
+?? .impeccable/review/stage-sessions-desktop.png
+?? .impeccable/review/stage-sessions-mobile.png
+?? .impeccable/review/stage-status-desktop.png
+?? .impeccable/review/stage-status-mobile.png
+?? .impeccable/review/task-manual-desktop.png
+?? .impeccable/review/task-manual-mobile.png
+?? .impeccable/review/task-set-desktop.png
+?? .impeccable/review/task-set-mobile.png
+?? .impeccable/review/task-undo-confirm-desktop.png
+?? .impeccable/review/task-undo-confirm-mobile.png
+?? .impeccable/review/task-undo-result-desktop.png
+?? .impeccable/review/task-undo-result-mobile.png
+?? .impeccable/review/workspace-integration-desktop.png
+?? .impeccable/review/workspace-integration-files-desktop.png
+?? .impeccable/review/workspace-integration-files-mobile.png
+?? .impeccable/review/workspace-integration-landscape.png
+?? .impeccable/review/workspace-integration-mobile.png
+?? .node-version
+?? .scratch/02-final-desktop.png
+?? .scratch/02-final-mobile.png
+?? .scratch/02-message-actions-mobile.png
+?? .scratch/02-polish-final-mobile.png
+?? .scratch/profile-desktop.png
+?? .scratch/profile-mobile-bottom.png
+?? .scratch/profile-mobile.png
+?? .scratch/quality-markdown.log
+?? .scratch/scene1-submit-final.png
+?? .scratch/v1.0/acceptance-guide.md
+?? .scratch/v1.0/dev-server.log
+?? .scratch/v1.0/handoff-07-verify-v1-flow-r2.md
+?? .scratch/v1.0/handoff-07-verify-v1-flow-r3.md
+?? .scratch/v1.0/handoff-07-verify-v1-flow.md
+?? .scratch/v1.0/issues/01-verify-protocols.md
+?? .scratch/v1.0/issues/02-agent-type-infrastructure.md
+?? .scratch/v1.0/issues/03-requirement-analyst-discipline.md
+?? .scratch/v1.0/issues/04-prototype-agent.md
+?? .scratch/v1.0/issues/05-prd-six-section-refactor.md
+?? .scratch/v1.0/issues/06-ticket-splitter-agent.md
+?? .scratch/v1.0/issues/07-verify-v1-flow.md
+?? .scratch/v1.0/runX-files/issues_01-shangjia-fabu.md
+?? .scratch/v1.0/runX-files/prd.md
+?? .scratch/v1.0/runX-files/原型.md
+?? ".scratch/v1.0/runX-files/概念版（MVP-PRD #1）.md"
+?? .scratch/v1.0/runX-files/需求分析.md
+?? .scratch/v1.0/spec.md
+?? .scratch/v1.41/prototypes/01-project-shell-low-fi.html
+?? .scratch/v1.43/A-brief.png
+?? .scratch/v1.43/A-capture.mjs
+?? .scratch/v1.43/A-contrast.mjs
+?? .scratch/v1.43/A-landing.png
+?? .scratch/v1.43/A-login.png
+?? .scratch/v1.43/A-menu.png
+?? .scratch/v1.43/A-probe.mjs
+?? .scratch/v1.43/A-probe2.mjs
+?? .scratch/v1.43/A-probe3.mjs
+?? .scratch/v1.43/A-probe4.mjs
+?? .scratch/v1.43/A-probe5.mjs
+?? .scratch/v1.43/A-proj-hover.png
+?? .scratch/v1.43/A-projectdetail.png
+?? .scratch/v1.43/A-projects-1440.png
+?? .scratch/v1.43/A-projects-390.png
+?? .scratch/v1.43/A-projects-fresh.png
+?? .scratch/v1.43/A-register.png
+?? .scratch/v1.43/A-wb-1440.png
+?? .scratch/v1.43/A-wb-390.png
+?? .scratch/v1.43/A-wb-drawer.png
+?? .scratch/v1.43/A-wb-focus.png
+?? .scratch/v1.43/A-wb-hover.png
+?? .scratch/v1.43/B-login-1440.png
+?? .scratch/v1.43/B-login-390.png
+?? .scratch/v1.43/B-overlay-full-1440.png
+?? .scratch/v1.43/B-projects-1440.png
+?? .scratch/v1.43/B-projects-390.png
+?? .scratch/v1.43/B-workbench-1440-final.png
+?? .scratch/v1.43/B-workbench-1440.png
+?? .scratch/v1.43/B-workbench-closed-1440.png
+?? .scratch/v1.43/B-workbench-closed-390.png
+?? .scratch/v1.43/B-workbench-full-1440.png
+?? .scratch/v1.43/B-workbench-overlay-1440.png
+?? .scratch/v1.43/assessment-result-cta-member.png
+?? .scratch/v1.43/assessment-result-cta.png
+?? .scratch/v1.43/audit-assessment-1440.png
+?? .scratch/v1.43/audit-assessment-390.png
+?? .scratch/v1.43/audit-assessment.png
+?? .scratch/v1.43/audit-brief-1440.png
+?? .scratch/v1.43/audit-brief-390.png
+?? .scratch/v1.43/audit-brief.png
+?? .scratch/v1.43/audit-contrast.mjs
+?? .scratch/v1.43/audit-landing-1440.png
+?? .scratch/v1.43/audit-landing-390.png
+?? .scratch/v1.43/audit-landing.png
+?? .scratch/v1.43/audit-login-1440.png
+?? .scratch/v1.43/audit-login-390.png
+?? .scratch/v1.43/audit-login.png
+?? .scratch/v1.43/audit-profile-1440.png
+?? .scratch/v1.43/audit-profile-390.png
+?? .scratch/v1.43/audit-profile.png
+?? .scratch/v1.43/audit-project-detail-1440.png
+?? .scratch/v1.43/audit-project-detail-390.png
+?? .scratch/v1.43/audit-project-detail.png
+?? .scratch/v1.43/audit-projects-1440.png
+?? .scratch/v1.43/audit-projects-390.png
+?? .scratch/v1.43/audit-projects.png
+?? .scratch/v1.43/audit-register-1440.png
+?? .scratch/v1.43/audit-register-390.png
+?? .scratch/v1.43/audit-register.png
+?? .scratch/v1.43/audit-scenes-1440.png
+?? .scratch/v1.43/audit-scenes-390.png
+?? .scratch/v1.43/audit-scenes.png
+?? .scratch/v1.43/audit-workbench-1440.png
+?? .scratch/v1.43/audit-workbench-390.png
+?? .scratch/v1.43/audit-workbench.png
+?? .scratch/v1.43/auth-state.json
+?? .scratch/v1.43/check-practice.mjs
+?? .scratch/v1.43/clip-stage.mjs
+?? .scratch/v1.43/cmp-after-assessment.png
+?? .scratch/v1.43/cmp-after-brief.png
+?? .scratch/v1.43/cmp-after-projects.png
+?? .scratch/v1.43/cmp-after-workbench.png
+?? .scratch/v1.43/cmp-before-assessment.png
+?? .scratch/v1.43/cmp-before-brief.png
+?? .scratch/v1.43/cmp-before-projects.png
+?? .scratch/v1.43/cmp-before-workbench.png
+?? .scratch/v1.43/compare-assessment.png
+?? .scratch/v1.43/compare-brief.png
+?? .scratch/v1.43/compare-projects.png
+?? .scratch/v1.43/compare-workbench.png
+?? .scratch/v1.43/contrast.mjs
+?? .scratch/v1.43/cull-edge.mjs
+?? .scratch/v1.43/dark-brief.png
+?? .scratch/v1.43/dark-dialog.png
+?? .scratch/v1.43/dark-iter-dialog.png
+?? .scratch/v1.43/dark-iter-drawer.png
+?? .scratch/v1.43/dark-login.png
+?? .scratch/v1.43/dark-projects.png
+?? .scratch/v1.43/dark-projects2.png
+?? .scratch/v1.43/dark-register.png
+?? .scratch/v1.43/dark-workbench.png
+?? .scratch/v1.43/dark-workbench2.png
+?? .scratch/v1.43/dark2-assessment.png
+?? .scratch/v1.43/dark2-profile.png
+?? .scratch/v1.43/dark2-projects.png
+?? .scratch/v1.43/dark2-scenes.png
+?? .scratch/v1.43/deliver-landing-desk.png
+?? .scratch/v1.43/deliver-landing-mob.png
+?? .scratch/v1.43/deliver-projects-desk.png
+?? .scratch/v1.43/deliver-projects-mob.png
+?? .scratch/v1.43/deliver-workbench-desk.png
+?? .scratch/v1.43/deliver-workbench-mob.png
+?? .scratch/v1.43/detect-src_app_onboarding_brief_page.tsx.err
+?? .scratch/v1.43/detect-src_app_onboarding_brief_page.tsx.json
+?? .scratch/v1.43/detect-src_components_ProjectList.tsx.err
+?? .scratch/v1.43/detect-src_components_ProjectList.tsx.json
+?? .scratch/v1.43/detect-src_components_SiteNav.tsx.err
+?? .scratch/v1.43/detect-src_components_SiteNav.tsx.json
+?? .scratch/v1.43/detect-workbench.err
+?? .scratch/v1.43/detect-workbench.json
+?? .scratch/v1.43/detector-sanity.tsx
+?? .scratch/v1.43/drop-variants.mjs
+?? .scratch/v1.43/final-desk-assessment.png
+?? .scratch/v1.43/final-desk-landing.png
+?? .scratch/v1.43/final-desk-login.png
+?? .scratch/v1.43/final-hero-desktop.png
+?? .scratch/v1.43/final-hero-face3.png
+?? .scratch/v1.43/final-mob-assessment.png
+?? .scratch/v1.43/final-mob-landing.png
+?? .scratch/v1.43/final-mob-login.png
+?? .scratch/v1.43/final-shots.mjs
+?? .scratch/v1.43/fix-css-head.mjs
+?? .scratch/v1.43/fix-indent.mjs
+?? .scratch/v1.43/fix-projects.png
+?? .scratch/v1.43/fix-workbench.png
+?? .scratch/v1.43/git-after.txt
+?? .scratch/v1.43/git-before.txt
+?? .scratch/v1.43/hero-cloth-01-rest.png
+?? .scratch/v1.43/hero-cloth-02-intro.png
+?? .scratch/v1.43/hero-cloth-02-push.png
+?? .scratch/v1.43/hero-cloth-03-hover.png
+?? .scratch/v1.43/hero-cloth-03-mobile.png
+?? .scratch/v1.43/hero-cloth-04-sweep.png
+?? .scratch/v1.43/hero-cloth-05-mobile.png
+?? .scratch/v1.43/hero-cloth-shot.mjs
+?? .scratch/v1.43/hero-turn-01-rest.png
+?? .scratch/v1.43/hero-turn-02-mid-drag.png
+?? .scratch/v1.43/hero-turn-03-snapped-face2.png
+?? .scratch/v1.43/hero-turn-04-index-face4.png
+?? .scratch/v1.43/hero-turn-05-mobile.png
+?? .scratch/v1.43/hero-turn-10-auto.png
+?? .scratch/v1.43/hero-turn-11-drag100.png
+?? .scratch/v1.43/hero-turn-20-auto.png
+?? .scratch/v1.43/hero-turn-21-drag-45.png
+?? .scratch/v1.43/hero-turn-22-dial.png
+?? .scratch/v1.43/hero-turn-23-mobile.png
+?? .scratch/v1.43/hero-turn-24-mobile-top.png
+?? .scratch/v1.43/hero-turn-25-mobile-drum.png
+?? .scratch/v1.43/hero-turn-mobile.mjs
+?? .scratch/v1.43/hero-turn-mobile2.mjs
+?? .scratch/v1.43/hero-turn-shot2.mjs
+?? .scratch/v1.43/hero-turn-verify.mjs
+?? .scratch/v1.43/hero-turntable-shot.mjs
+?? .scratch/v1.43/landing-after-desktop.png
+?? .scratch/v1.43/landing-after-mobile.png
+?? .scratch/v1.43/landing-before.png
+?? .scratch/v1.43/landing-practice.png
+?? .scratch/v1.43/landing-prototype-1-desktop.png
+?? .scratch/v1.43/landing-prototype-1-mobile-top.png
+?? .scratch/v1.43/landing-prototype-2-desktop.png
+?? .scratch/v1.43/landing-prototype-2-mobile-top.png
+?? .scratch/v1.43/landing-prototype-3-desktop.png
+?? .scratch/v1.43/landing-prototype-3-mobile-top.png
+?? .scratch/v1.43/landing-turntable-01-rest.png
+?? .scratch/v1.43/landing-turntable-02-drag.png
+?? .scratch/v1.43/landing-turntable-03-after-drag.png
+?? .scratch/v1.43/landing-turntable-04-practice.png
+?? .scratch/v1.43/landing-turntable-05-mobile.png
+?? .scratch/v1.43/landing-turntable-shot.mjs
+?? .scratch/v1.43/landing-v143-desktop.png
+?? .scratch/v1.43/landing-v143-mobile.png
+?? .scratch/v1.43/make-component.mjs
+?? .scratch/v1.43/make-component2.mjs
+?? .scratch/v1.43/measure-extent.mjs
+?? .scratch/v1.43/measure-sweep.mjs
+?? .scratch/v1.43/menu-hover-fixed.png
+?? .scratch/v1.43/overlay-result.json
+?? .scratch/v1.43/overlay.mjs
+?? .scratch/v1.43/overlay2-result.json
+?? .scratch/v1.43/overlay2.mjs
+?? .scratch/v1.43/patch-css.mjs
+?? .scratch/v1.43/patch-tsx.mjs
+?? .scratch/v1.43/patch2.mjs
+?? .scratch/v1.43/patch3.mjs
+?? .scratch/v1.43/patch4.mjs
+?? .scratch/v1.43/patch5.mjs
+?? .scratch/v1.43/patch6.mjs
+?? .scratch/v1.43/probe-face.mjs
+?? .scratch/v1.43/probe-menu-hover.mjs
+?? .scratch/v1.43/probe-menu2.mjs
+?? .scratch/v1.43/probe-projects.mjs
+?? .scratch/v1.43/probe-result.json
+?? .scratch/v1.43/probe-workbench.mjs
+?? .scratch/v1.43/probe-zones.mjs
+?? .scratch/v1.43/probe2-accent.mjs
+?? .scratch/v1.43/probe2-result.json
+?? .scratch/v1.43/probe3-result.json
+?? .scratch/v1.43/probe3-tokens.mjs
+?? .scratch/v1.43/probe4-borders.mjs
+?? .scratch/v1.43/probe4-result.json
+?? .scratch/v1.43/probe5-tabs.mjs
+?? .scratch/v1.43/prune-css.mjs
+?? .scratch/v1.43/px-check.mjs
+?? .scratch/v1.43/recheck-iter.png
+?? .scratch/v1.43/recheck-proj.png
+?? .scratch/v1.43/shadow-assessment.png
+?? .scratch/v1.43/shadow-brief.png
+?? .scratch/v1.43/shadow-scenes.png
+?? .scratch/v1.43/shot-assessment-result-member.mjs
+?? .scratch/v1.43/shot-assessment-result.mjs
+?? .scratch/v1.43/shot-auth.mjs
+?? .scratch/v1.43/shot-auth2.mjs
+?? .scratch/v1.43/shot-compare.mjs
+?? .scratch/v1.43/shot-dark2.mjs
+?? .scratch/v1.43/shot-deliver.mjs
+?? .scratch/v1.43/shot-final.mjs
+?? .scratch/v1.43/shot-fix.mjs
+?? .scratch/v1.43/shot-fix2.mjs
+?? .scratch/v1.43/shot-shadow.mjs
+?? .scratch/v1.43/shot-wb.mjs
+?? .scratch/v1.43/shot-wb2.mjs
+?? .scratch/v1.43/shot-wb3.mjs
+?? .scratch/v1.43/shot-wb4.mjs
+?? .scratch/v1.43/split-css.mjs
+?? .scratch/v1.43/split-css2.mjs
+?? .scratch/v1.43/stage-css.mjs
+?? .scratch/v1.43/stage-landing-detent.png
+?? .scratch/v1.43/stage-proto-detent.png
+?? .scratch/v1.43/tidy-motion.mjs
+?? .scratch/v1.43/unify-type.py
+?? .scratch/v1.43/verify-landing-turntable.mjs
+?? .scratch/v1.43/verify2.mjs
+?? .scratch/v1.43/which-color.mjs
+?? .scratch/v1.43/wire-landing.mjs
+?? .scratch/v1.43/zone-fix-1440.png
+?? .scratch/v1.43/zone-fix2-1440.png
+?? .scratch/v1.43/zone-fix3-1440.png
+?? .scratch/v144-01-baseline-path.txt
+?? .scratch/v144-01-implementation.patch
+?? .scratch/v144-01-stage.patch
+?? .scratch/v144-auth-build.log
+?? .scratch/v144-auth-eslint.log
+?? .scratch/v144-auth-foundation-final.log
+?? .scratch/v144-auth-signout-final.log
+?? .scratch/v144-auth-signout-green.log
+?? .scratch/v144-auth-signout-red.log
+?? .scratch/v144-auth-typecheck.log
+?? .scratch/v144-local-naming-green.log
+?? .scratch/v144-local-naming-red-2.log
+?? .scratch/v144-local-naming-red.log
+?? .scratch/v144-naming-design-detect.json
+?? .scratch/v144-naming-lint.log
+?? .scratch/v144-production-build.log
+?? .scratch/v144-regression-foundation-green.log
+?? .scratch/v144-regression-foundation.log
+?? .scratch/v144-regression-stream-green.log
+?? .scratch/v144-regression-stream.log
+?? .scratch/v144-typecheck-before.log
+?? .scratch/v144-typecheck-green.log
+?? .scratch/v144-typecheck-implementation.log
+?? .scratch/v144-typegen.log
+?? .scratch/v144-uncommitted-inventory.md
+?? docs/china-mainland-deployment-research.md
+?? docs/deploy-demo.md
+?? docs/research/china-mainland-render-alibaba-cloudflare.md
+?? docs/research/deployment-platform-primer.md
+?? docs/research/vercel-supabase-alicloud-domain.md
+?? render.yaml
+?? scripts/deploy-demo-wizard.sh
+?? scripts/mysql-migrate.ts
+?? src/app/prototype/hero/page.tsx
+?? src/components/HeroTurntable.module.css
+?? src/components/HeroTurntable.tsx
+?? src/components/SiteNav.module.css
+?? src/components/SiteNav.tsx
+?? src/components/landingDeliverables.ts
+?? src/components/prototype/HeroTurntablePrototype.module.css
+?? src/components/prototype/HeroTurntablePrototype.tsx
+```

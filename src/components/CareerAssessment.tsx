@@ -45,6 +45,7 @@ export default function CareerAssessment() {
   const documentHref = isMember
     ? CAREER_DOCUMENT_DOWNLOAD_PATH
     : `/login?callbackUrl=${encodeURIComponent(CAREER_DOCUMENT_DOWNLOAD_PATH)}`;
+  const workflowHref = isMember ? "/projects" : `/login?callbackUrl=${encodeURIComponent("/projects")}`;
 
   useEffect(() => {
     if (view !== "test") return;
@@ -106,11 +107,6 @@ export default function CareerAssessment() {
     <div className={styles.page}>
       {view === "intro" ? (
         <section className={styles.introView}>
-          <div className={styles.topline}><div className={styles.container}><span className={styles.mono}>AI PRODUCT FIELD / ASSESSMENT</span><span>完成体验后，做一次新的判断</span></div></div>
-          <header className={`${styles.nav} ${styles.container}`}>
-            <Link className={styles.brand} href="/onboarding/brief"><span className={styles.brandMark}>A</span><span>AI 产品现场</span></Link>
-            <Link className={styles.navBack} href="/onboarding/brief">返回任务简报<span className={styles.arrow} aria-hidden="true" /></Link>
-          </header>
           <section className={`${styles.container} ${styles.hero}`}>
             <div className={styles.heroCopy}>
               <p className={styles.eyebrow}>AI 产品经理入职体验 · 职业认知测试</p>
@@ -146,11 +142,6 @@ export default function CareerAssessment() {
 
       {view === "test" ? (
         <section className={styles.testView}>
-          <div className={styles.darkTopline}><div className={styles.container}><span className={styles.mono}>AI PRODUCT FIELD / ASSESSMENT</span><span>单页连续作答 · 可随时修改</span></div></div>
-          <header className={`${styles.darkNav} ${styles.container}`}>
-            <Link className={styles.brand} href="/onboarding/brief"><span className={styles.brandMark}>A</span><span>AI 产品现场</span></Link>
-            <span className={styles.navBack}>职业认知测试</span>
-          </header>
           <header className={styles.testHead}><div className={`${styles.container} ${styles.testHeadGrid}`}><span className={`${styles.sectionNumber} ${styles.mono}`}>02 / 03</span><div><p className={styles.eyebrow}>THE ASSESSMENT</p><h2>请选择一个在当前约束下<br /><em>最值得先做的判断。</em></h2><p>这是一份体验回顾，不是职业能力测评。请按题干给出的业务、资源和风险约束作答，十题全部选择后即可提交。</p><div className={styles.testBar}><span className={styles.mono}>第 <b>{answeredCount}</b> / 10 题</span><span className={styles.testBarLine}><span style={{ width: `${answeredCount * 10}%` }} /></span><span className={styles.mono}>完成十题后查看本轮结果</span></div></div></div></header>
           <div className={styles.questionArea}>
             <div className={styles.container}>
@@ -193,7 +184,7 @@ export default function CareerAssessment() {
             const feedback = (isCorrect ? question.correctFeedback : question.wrongFeedback).replace("{selected_option}", selectedText);
             return <article className={styles.reviewItem} key={question.number}><div className={styles.reviewMeta}><span>题目 {question.number} / 10</span><span className={isCorrect ? styles.correct : styles.needsReview}>{isCorrect ? "判断一致" : "值得复盘"}</span></div><p className={styles.reviewKicker}>{question.title} · {question.focus}</p><h3>{question.prompt}</h3><div className={styles.reviewAnswer}><div><strong>你的选择</strong><p>{selectedText}</p></div><div className={styles.correct}><strong>综合最优答案</strong><p>{answerLabel(question, question.correct)}</p></div></div><details className={styles.reviewExpand} open><summary className="disclosure-summary">前辈复盘 · {isCorrect ? question.correctFeedbackTitle : question.wrongFeedbackTitle}<DisclosureIcon /></summary><p>{feedback}</p><p><b>项目动作：</b>{question.projectAction}</p>{question.options.map((option) => <p key={option.letter}><b>{option.letter}：</b>{question.optionAnalyses[option.letter]}</p>)}</details></article>;
           })}</div></div></section>
-          <section className={styles.completion}><div className={`${styles.container} ${styles.completionInner}`}><div><p className={styles.eyebrow}>COMPLETION NOTE</p><h2>{score === assessmentQuestions.length ? "你完成了这次职业认知检查" : "你完成了本轮判断"}</h2>{score === assessmentQuestions.length ? <><p>十题全对，恭喜你完成了本轮全部判断！</p><p className={styles.boundary}>这不是一张职业能力证书，也不代表你已经达到任何岗位标准。</p></> : <><p>你答对了 {score} 题。错题不是结论，而是下一次复盘的线索。你可以先读逐题解析，也可以直接开始新一轮测试。</p><p className={styles.boundary}>重新测试不会覆盖本轮记录，也不限次数。</p></>}<div className={styles.resultActions}><button className={styles.secondary} type="button" onClick={() => setModal("restart")}>重新测试</button><Link className={styles.resultPrimary} href={documentHref}>获取精炼学习笔记<span className={styles.arrow} aria-hidden="true" /></Link></div></div><div className={styles.entryNote}><strong>{isMember ? "下载 AI 产品经理精炼学习笔记" : "登录后下载精炼学习笔记"}</strong><p>{isMember ? "点击后浏览器会立即下载产品预先编写的固定 Markdown 文件。" : "登录或注册成功后，浏览器会立即下载固定的 Markdown 文件。"}</p></div></div></section>
+          <section className={styles.completion}><div className={`${styles.container} ${styles.completionInner}`}><div><p className={styles.eyebrow}>COMPLETION NOTE</p><h2>{score === assessmentQuestions.length ? "你完成了这次职业认知检查" : "你完成了本轮判断"}</h2>{score === assessmentQuestions.length ? <p>十题全对，恭喜你完成了本轮全部判断！</p> : <p>你答对了 {score} 题。错题不是结论，而是下一次复盘的线索。你可以先读逐题解析，也可以直接开始新一轮测试。</p>}<p className={styles.boundary}>千里之行，始于足下，下一步你可以：</p><div className={styles.resultActions}><button className={styles.secondary} type="button" onClick={() => setModal("restart")}>重新测试</button><Link className={styles.resultGhost} href={documentHref}>获取精炼学习笔记</Link><Link className={styles.resultPrimary} href={workflowHref}>尝试真实开发工作流<span className={styles.arrow} aria-hidden="true" /></Link></div></div><div className={styles.entryNotes}><div className={styles.entryNote}><strong>什么是精炼学习笔记？</strong><p>为你总结的 AI 产品经理入门须知</p></div><div className={styles.entryNote}><strong>什么是「真实开发工作流」？</strong><p>为你准备好的产品工作台，即刻开始实践。</p></div></div></div></section>
         </section>
       ) : null}
 

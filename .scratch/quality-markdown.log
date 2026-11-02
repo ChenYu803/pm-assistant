@@ -1,0 +1,1 @@
+{"pass":4,"fail":0,"assertions":[{"name":"HTML 标签只显示为文本","okay":true},{"name":"危险协议没有变成链接","okay":true},{"name":"安全链接保留","okay":true},{"name":"标题、代码和表格保留语义结构","okay":true}]}

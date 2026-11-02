@@ -1,0 +1,429 @@
+{
+  "preflight": {
+    "status": 200,
+    "url": "http://localhost:3000/projects/742e6b94-4638-4c25-80e7-9b66fac56d0b/iterations/019a722c-b732-4281-b785-2df18008f54e",
+    "mutation": {
+      "titleWrite": true,
+      "titleReadBack": "A-preflight",
+      "scriptAppended": true,
+      "scriptRan": true,
+      "domAppended": true
+    },
+    "csp": {
+      "metaHttpEquiv": [],
+      "dataUriScriptExecuted": true
+    }
+  },
+  "palette": {
+    "shellClass": "workbench-grid ",
+    "shellChildren": [
+      {
+        "tag": "ASIDE",
+        "cls": "workbench-sessions",
+        "rect": {
+          "w": 232,
+          "h": 830
+        }
+      },
+      {
+        "tag": "SECTION",
+        "cls": "workbench-conversation",
+        "rect": {
+          "w": 799,
+          "h": 830
+        }
+      },
+      {
+        "tag": "ASIDE",
+        "cls": "workbench-context",
+        "rect": {
+          "w": 344,
+          "h": 830
+        }
+      }
+    ],
+    "zones": {
+      "left": {
+        "selector": ".workbench-sessions",
+        "found": true,
+        "style": {
+          "color": "rgb(233, 223, 200)",
+          "backgroundColor": "rgb(38, 39, 32)",
+          "borderColor": "rgba(233, 223, 200, 0.14)",
+          "borderWidth": "0px",
+          "borderStyle": "solid",
+          "fontFamily": "\"Segoe UI\", \"Microsoft YaHei UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "opacity": "1"
+        }
+      },
+      "middle": {
+        "selector": "workbench-conversation",
+        "found": true,
+        "style": {
+          "color": "rgb(233, 223, 200)",
+          "backgroundColor": "rgb(30, 31, 25)",
+          "borderColor": "rgba(233, 223, 200, 0.14)",
+          "borderWidth": "0px",
+          "borderStyle": "solid",
+          "fontFamily": "\"Segoe UI\", \"Microsoft YaHei UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "opacity": "1"
+        }
+      },
+      "right": {
+        "selector": "workbench-context",
+        "found": true,
+        "style": {
+          "color": "rgb(233, 223, 200)",
+          "backgroundColor": "rgb(38, 39, 32)",
+          "borderColor": "rgba(233, 223, 200, 0.16)",
+          "borderWidth": "0px",
+          "borderStyle": "solid",
+          "fontFamily": "\"Segoe UI\", \"Microsoft YaHei UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+          "fontSize": "16px",
+          "fontWeight": "400",
+          "lineHeight": "24px",
+          "opacity": "1"
+        }
+      }
+    },
+    "stageTabs": [
+      {
+        "selector": "[class*=\"stage\"] button",
+        "count": 5,
+        "samples": [
+          {
+            "text": "01需求分析未开始",
+            "cls": "workbench-stage",
+            "ariaSelected": null,
+            "disabled": false,
+            "style": {
+              "color": "rgb(233, 223, 200)",
+              "backgroundColor": "rgb(38, 39, 32)",
+              "borderColor": "rgb(233, 223, 200)",
+              "borderWidth": "0px",
+              "borderStyle": "none",
+              "fontFamily": "\"Segoe UI\", \"Microsoft YaHei UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+              "fontSize": "16px",
+              "fontWeight": "400",
+              "lineHeight": "20px",
+              "opacity": "1"
+            }
+          },
+          {
+            "text": "02原型设计未开始",
+            "cls": "workbench-stage",
+            "ariaSelected": null,
+            "disabled": false,
+            "style": {
+              "color": "rgb(177, 171, 152)",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderColor": "rgb(177, 171, 152)",
+              "borderWidth": "0px",
+              "borderStyle": "none",
+              "fontFamily": "\"Segoe UI\", \"Microsoft YaHei UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+              "fontSize": "16px",
+              "fontWeight": "400",
+              "lineHeight": "20px",
+              "opacity": "1"
+            }
+          },
+          {
+            "text": "03PRD未开始",
+            "cls": "workbench-stage",
+            "ariaSelected": null,
+            "disabled": false,
+            "style": {
+              "color": "rgb(177, 171, 152)",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderColor": "rgb(177, 171, 152)",
+              "borderWidth": "0px",
+              "borderStyle": "none",
+              "fontFamily": "\"Segoe UI\", \"Microsoft YaHei UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+              "fontSize": "16px",
+              "fontWeight": "400",
+              "lineHeight": "20px",
+              "opacity": "1"
+            }
+          },
+          {
+            "text": "04任务拆分未开始",
+            "cls": "workbench-stage",
+            "ariaSelected": null,
+            "disabled": false,
+            "style": {
+              "color": "rgb(177, 171, 152)",
+              "backgroundColor": "rgba(0, 0, 0, 0)",
+              "borderColor": "rgb(177, 171, 152)",
+              "borderWidth": "0px",
+              "borderStyle": "none",
+              "fontFamily": "\"Segoe UI\", \"Microsoft YaHei UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+              "fontSize": "16px",
+              "fontWeight": "400",
+              "lineHeight": "20px",
+              "opacity": "1"
+            }
+          }
+        ]
+      }
+    ],
+    "stageStatus": [
+      {
+        "cls": "stage-status",
+        "text": "未开始",
+        "style": {
+          "color": "rgb(233, 223, 200)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgba(233, 223, 200, 0.14)",
+          "borderWidth": "0px",
+          "borderStyle": "solid",
+          "fontFamily": "\"Segoe UI\", \"Microsoft YaHei UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "400",
+          "lineHeight": "normal",
+          "opacity": "1"
+        }
+      },
+      {
+        "cls": "stage-status",
+        "text": "未开始",
+        "style": {
+          "color": "rgb(177, 171, 152)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgba(233, 223, 200, 0.14)",
+          "borderWidth": "0px",
+          "borderStyle": "solid",
+          "fontFamily": "\"Segoe UI\", \"Microsoft YaHei UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "400",
+          "lineHeight": "normal",
+          "opacity": "1"
+        }
+      },
+      {
+        "cls": "stage-status",
+        "text": "未开始",
+        "style": {
+          "color": "rgb(177, 171, 152)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgba(233, 223, 200, 0.14)",
+          "borderWidth": "0px",
+          "borderStyle": "solid",
+          "fontFamily": "\"Segoe UI\", \"Microsoft YaHei UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "400",
+          "lineHeight": "normal",
+          "opacity": "1"
+        }
+      },
+      {
+        "cls": "stage-status",
+        "text": "未开始",
+        "style": {
+          "color": "rgb(177, 171, 152)",
+          "backgroundColor": "rgba(0, 0, 0, 0)",
+          "borderColor": "rgba(233, 223, 200, 0.14)",
+          "borderWidth": "0px",
+          "borderStyle": "solid",
+          "fontFamily": "\"Segoe UI\", \"Microsoft YaHei UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "400",
+          "lineHeight": "normal",
+          "opacity": "1"
+        }
+      }
+    ],
+    "textarea": {
+      "selector": ".workbench-composer textarea",
+      "found": true,
+      "style": {
+        "color": "rgb(233, 223, 200)",
+        "backgroundColor": "rgb(30, 31, 25)",
+        "borderColor": "rgba(233, 223, 200, 0.26)",
+        "borderWidth": "0.8px",
+        "borderStyle": "solid",
+        "fontFamily": "\"Segoe UI\", \"Microsoft YaHei UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+        "fontSize": "14px",
+        "fontWeight": "400",
+        "lineHeight": "21.7px",
+        "opacity": "1"
+      },
+      "placeholderPseudo": {
+        "color": "rgb(139, 133, 116)",
+        "backgroundColor": "rgba(0, 0, 0, 0)",
+        "borderColor": "rgb(139, 133, 116)",
+        "borderWidth": "0px",
+        "borderStyle": "none",
+        "fontFamily": "\"Segoe UI\", \"Microsoft YaHei UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+        "fontSize": "14px",
+        "fontWeight": "400",
+        "lineHeight": "21.7px",
+        "opacity": "1"
+      },
+      "placeholderAttr": "开始本阶段工作后即可发送消息"
+    },
+    "disabledButtons": [
+      {
+        "cls": "",
+        "text": "发送消息",
+        "style": {
+          "color": "rgb(233, 223, 200)",
+          "backgroundColor": "rgb(38, 39, 32)",
+          "borderColor": "rgba(233, 223, 200, 0.16)",
+          "borderWidth": "0.8px",
+          "borderStyle": "solid",
+          "fontFamily": "\"Segoe UI\", \"Microsoft YaHei UI\", \"Microsoft YaHei\", \"PingFang SC\", sans-serif",
+          "fontSize": "13px",
+          "fontWeight": "600",
+          "lineHeight": "normal",
+          "opacity": "0.48"
+        },
+        "childColor": null
+      }
+    ],
+    "tokens": {
+      "rootWorkAccent": "",
+      "rootWorkAccentStrong": "",
+      "rootBg": "",
+      "rootSurface": "",
+      "rootText": "",
+      "rootMuted": "",
+      "bodyColor": "rgb(233, 223, 200)",
+      "bodyBackground": "rgb(23, 23, 19)",
+      "htmlColorScheme": "normal"
+    },
+    "workTokenDeclarations": {},
+    "accentResolved": {
+      "probe": "rgb(233, 223, 200)",
+      "elementsUsingAccent": [
+        {
+          "tag": "BODY",
+          "cls": "h-full flex flex-col",
+          "text": "AAI 产品现场迭代管理个人中心暗色验收迭代暗色验收项目产品"
+        },
+        {
+          "tag": "DIV",
+          "cls": "",
+          "text": ""
+        },
+        {
+          "tag": "HEADER",
+          "cls": "SiteNav-module__VSfUAq__header",
+          "text": "AAI 产品现场迭代管理个人中心"
+        },
+        {
+          "tag": "DIV",
+          "cls": "SiteNav-module__VSfUAq__inner",
+          "text": "AAI 产品现场迭代管理个人中心"
+        },
+        {
+          "tag": "A",
+          "cls": "SiteNav-module__VSfUAq__brand",
+          "text": "AAI 产品现场"
+        },
+        {
+          "tag": "SPAN",
+          "cls": "",
+          "text": "AI 产品现场"
+        },
+        {
+          "tag": "NAV",
+          "cls": "SiteNav-module__VSfUAq__actions",
+          "text": "迭代管理个人中心"
+        },
+        {
+          "tag": "A",
+          "cls": "SiteNav-module__VSfUAq__link",
+          "text": "迭代管理"
+        },
+        {
+          "tag": "MAIN",
+          "cls": "flex-1 min-h-0 overflow-y-auto flex flex-col",
+          "text": "暗色验收迭代暗色验收项目产品迭代 01返回迭代管理01需求分"
+        },
+        {
+          "tag": "MAIN",
+          "cls": "iteration-workbench",
+          "text": "暗色验收迭代暗色验收项目产品迭代 01返回迭代管理01需求分"
+        }
+      ]
+    }
+  },
+  "overflow": {
+    "projects": {
+      "status": 200,
+      "at1440": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "bodyScrollWidth": 1440,
+        "innerWidth": 1440,
+        "url": "http://localhost:3000/projects"
+      },
+      "at390": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "bodyScrollWidth": 390,
+        "innerWidth": 390,
+        "url": "http://localhost:3000/projects"
+      }
+    },
+    "workbench": {
+      "status": 200,
+      "at1440": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "bodyScrollWidth": 1440,
+        "innerWidth": 1440,
+        "url": "http://localhost:3000/projects/742e6b94-4638-4c25-80e7-9b66fac56d0b/iterations/019a722c-b732-4281-b785-2df18008f54e"
+      },
+      "at390": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "bodyScrollWidth": 390,
+        "innerWidth": 390,
+        "url": "http://localhost:3000/projects/742e6b94-4638-4c25-80e7-9b66fac56d0b/iterations/019a722c-b732-4281-b785-2df18008f54e"
+      }
+    },
+    "login": {
+      "status": 200,
+      "at1440": {
+        "scrollWidth": 1440,
+        "clientWidth": 1440,
+        "bodyScrollWidth": 1440,
+        "innerWidth": 1440,
+        "url": "http://localhost:3000/login"
+      },
+      "at390": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "bodyScrollWidth": 390,
+        "innerWidth": 390,
+        "url": "http://localhost:3000/login"
+      }
+    }
+  },
+  "errors": [],
+  "consoleSample": [
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "log",
+      "text": "[HMR] connected"
+    },
+    {
+      "type": "log",
+      "text": "[Fast Refresh] rebuilding"
+    },
+    {
+      "type": "log",
+      "text": "[Fast Refresh] done in 351ms"
+    }
+  ]
+}

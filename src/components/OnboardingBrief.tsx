@@ -31,11 +31,6 @@ export default function OnboardingBrief() {
 
   return (
     <div className={`${styles.page} ${styles.briefPage}`}>
-      <div className={styles.topline}><div className={`${styles.container} ${styles.toplineInner}`}><span className={styles.mono}>AI PRODUCT FIELD / ONBOARDING</span><span>一个真实的开始，不需要先注册</span></div></div>
-      <header className={`${styles.nav} ${styles.container}`}>
-        <Link className={styles.brand} href="/"><span className={styles.brandMark} aria-hidden="true">A</span><span>AI 产品现场</span></Link>
-        <Link className={styles.navBack} href="/">返回入口<span className={styles.arrow} aria-hidden="true" /></Link>
-      </header>
       <div className={styles.briefMain}>
         <section className={`${styles.container} ${styles.briefHero}`} data-od-id="mission-hero">
           <div className={styles.heroCopyBlock}>

@@ -1,0 +1,12 @@
+import { chromium } from "playwright-core";
+const browser = await chromium.launch({ executablePath: "D:/DevCache/ms-playwright/chromium-1243/chrome-win64/chrome.exe" });
+const page = await browser.newPage({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1 });
+await page.goto("http://localhost:3000/prototype/hero", { waitUntil: "networkidle" });
+await page.evaluate(() => document.fonts.ready);
+await page.waitForTimeout(1600);
+await page.screenshot({ path: ".scratch/v1.43/hero-turn-24-mobile-top.png" });
+await page.evaluate(() => document.querySelector("[data-turntable]").scrollIntoView({ block: "center" }));
+await page.waitForTimeout(500);
+await page.screenshot({ path: ".scratch/v1.43/hero-turn-25-mobile-drum.png" });
+console.log("overflow", await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth));
+await browser.close();

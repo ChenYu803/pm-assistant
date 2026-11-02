@@ -1,0 +1,1211 @@
+diff --git a/package.json b/package.json
+index 9518784..2655ba1 100644
+--- a/package.json
++++ b/package.json
+@@ -48,6 +48,7 @@
+     "verify:mysql-context-usage": "tsx scripts/verify-context-usage.mjs",
+     "verify:mysql-list-rendering": "tsx scripts/verify-list.mjs",
+     "verify:mysql-ui-fixes": "tsx scripts/verify-fixes.mjs",
++    "verify:v144-local-session-naming": "tsx scripts/verify-v144-local-session-naming.mjs",
+     "verify:mysql-auto-naming": "tsx scripts/verify-conditional-auto-naming.mjs",
+     "verify:a11y": "tsx scripts/verify-a11y.mjs",
+     "verify:agent-types": "tsx scripts/verify-agent-types.mjs",
+diff --git a/scripts/verify-conditional-auto-naming.mjs b/scripts/verify-conditional-auto-naming.mjs
+index 93c7abb..2124d5a 100644
+--- a/scripts/verify-conditional-auto-naming.mjs
++++ b/scripts/verify-conditional-auto-naming.mjs
+@@ -1,256 +1,2 @@
+-// 自动命名只能条件更新，不能覆盖手动命名或其他 tab 的先成功结果。
+-// 用法：AI_MODE=replay AUTO_NAME_TEST_HOOKS=1 npm run verify:mysql-auto-naming
+-import { chromium } from "playwright-core";
+-import { assertReplayEnvironment } from "./verify-mysql-fixtures.mjs";
+-const BASE = process.env.VERIFY_BASE_URL ?? "http://localhost:3000";
+-
+-try {
+-  assertReplayEnvironment();
+-} catch (error) {
+-  console.error(`❌ ${error.message}`);
+-  console.log("\n结果: 0 通过, 1 失败（未运行）");
+-  process.exit(1);
+-}
+-if (process.env.AUTO_NAME_TEST_HOOKS !== "1") {
+-  console.error("❌ #08 验证需要 AUTO_NAME_TEST_HOOKS=1");
+-  process.exit(1);
+-}
+-
+-// 在打开浏览器或发送聊天请求前终止，避免误连 live 服务。
+-let replayMode;
+-try {
+-  const replayResponse = await fetch(`${BASE}/api/verify/replay-mode`, {
+-    cache: "no-store",
+-  });
+-  replayMode = await replayResponse.json();
+-} catch {
+-  console.error("❌ 无法确认服务端 AI_MODE=replay");
+-  process.exit(1);
+-}
+-if (replayMode?.aiMode !== "replay") {
+-  console.error("❌ 服务端不是 AI_MODE=replay，已停止验证");
+-  process.exit(1);
+-}
+-
+-let pass = 0;
+-let fail = 0;
+-const check = (name, ok) => {
+-  if (ok) {
+-    pass += 1;
+-    console.log(`  ✅ ${name}`);
+-  } else {
+-    fail += 1;
+-    console.log(`  ❌ ${name}`);
+-  }
+-};
+-
+-const browser = await chromium.launch({ channel: "msedge", headless: true });
+-const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+-page.setDefaultTimeout(15_000);
+-
+-const api = (pathname, init = {}) =>
+-  page.evaluate(
+-    async ({ requestPath, requestInit }) => {
+-      const response = await fetch(requestPath, requestInit);
+-      const text = await response.text();
+-      let body = null;
+-      try {
+-        body = text ? JSON.parse(text) : null;
+-      } catch {
+-        body = text;
+-      }
+-      return { status: response.status, body };
+-    },
+-    { requestPath: pathname, requestInit: init }
+-  );
+-
+-const json = (body) => ({
+-  method: "POST",
+-  headers: { "Content-Type": "application/json" },
+-  body: JSON.stringify(body),
+-});
+-
+-async function createProject(name) {
+-  return api("/api/projects", json({ name }));
+-}
+-
+-async function createWorkRecord(projectId) {
+-  return api(`/api/projects/${projectId}/work-records`, json({}));
+-}
+-
+-async function createTab(workRecordId) {
+-  return api(
+-    `/api/work-records/${workRecordId}/tabs`,
+-    json({ agent_type: "requirement_analyst" })
+-  );
+-}
+-
+-async function autoName(workRecordId, name, delayMs = 0) {
+-  return api(
+-    "/api/verify/conditional-auto-naming",
+-    json({ workRecordId, name, delayMs })
+-  );
+-}
+-
+-async function manualName(workRecordId, name) {
+-  return api(`/api/work-records/${workRecordId}`, {
+-    method: "PATCH",
+-    headers: { "Content-Type": "application/json" },
+-    body: JSON.stringify({ name }),
+-  });
+-}
+-
+-async function sendReplayChat(tab) {
+-  return api(`/api/tabs/${tab.id}/chat`, {
+-    method: "POST",
+-    headers: { "Content-Type": "application/json" },
+-    body: JSON.stringify({
+-      content: "为自动命名验证补足对话轮次",
+-      expectedVersion: tab.version,
+-      requestId: `auto-name-chat-${Date.now()}`,
+-    }),
+-  });
+-}
+-
+-async function currentTab(workRecordId) {
+-  const tabs = await api(`/api/work-records/${workRecordId}/tabs`);
+-  return { response: tabs, tab: tabs.body?.[0] };
+-}
+-
+-async function requestAutomaticName(workRecordId, tabId, headers = {}) {
+-  return api(`/api/work-records/${workRecordId}/auto-name`, {
+-    method: "POST",
+-    headers: { "Content-Type": "application/json", ...headers },
+-    body: JSON.stringify({ tabId }),
+-  });
+-}
+-
+-try {
+-  const email = `verify-auto-name-${Date.now()}@test.local`;
+-  await page.goto(`${BASE}/register`);
+-  await page.fill("#email", email);
+-  await page.fill('input[type="password"]', "verify-pass-1234");
+-  await page.locator('input[type="password"]').nth(1).fill("verify-pass-1234");
+-  await page.locator('form button[type="submit"]').click();
+-  await page.waitForURL((url) => !url.pathname.includes("/register"));
+-  if (page.url().includes("/login")) {
+-    await page.fill("#email", email);
+-    await page.fill("#password", "verify-pass-1234");
+-    await page.locator('form button[type="submit"]').click();
+-    await page.waitForURL((url) => !url.pathname.includes("/login"));
+-  }
+-
+-  check("服务端确认 AI_MODE=replay", replayMode?.aiMode === "replay");
+-
+-  const project = await createProject(`自动命名验证-${Date.now()}`);
+-  const projectId = project.body?.id;
+-  const concurrentRecord = await createWorkRecord(projectId);
+-  const concurrentRecordId = concurrentRecord.body?.id;
+-  const [tabA, tabB] = await Promise.all([
+-    createTab(concurrentRecordId),
+-    createTab(concurrentRecordId),
+-  ]);
+-  const candidates = ["窗口 A 自动名称", "窗口 B 自动名称"];
+-  const concurrentResults = await Promise.all(
+-    candidates.map((name) => autoName(concurrentRecordId, name))
+-  );
+-  const afterConcurrent = await api(`/api/work-records/${concurrentRecordId}`);
+-  const applied = concurrentResults.filter((result) => result.body?.applied);
+-  check(
+-    "两个 tab 同时自动命名只有一个条件更新成功",
+-    tabA.status === 201 &&
+-      tabB.status === 201 &&
+-      applied.length === 1 &&
+-      candidates.includes(afterConcurrent.body?.name)
+-  );
+-
+-  const manualRecord = await createWorkRecord(projectId);
+-  const manualRecordId = manualRecord.body?.id;
+-  const lateAutomaticName = autoName(manualRecordId, "过期自动名称", 300);
+-  await new Promise((resolve) => setTimeout(resolve, 50));
+-  const manualRename = await manualName(manualRecordId, "用户手动名称");
+-  const lateResult = await lateAutomaticName;
+-  const afterManual = await api(`/api/work-records/${manualRecordId}`);
+-  await page.goto(`${BASE}/workspace/${manualRecordId}`);
+-  await page.getByRole("button", { name: "用户手动名称", exact: true }).waitFor();
+-  const manualNameInWorkspace = await page
+-    .getByRole("button", { name: "用户手动名称", exact: true })
+-    .count();
+-  check(
+-    "手动改名抢先成功后，等待中的自动命名不会覆盖 API 和工作区名称",
+-    manualRename.status === 200 &&
+-      lateResult.status === 200 &&
+-      lateResult.body?.applied === false &&
+-      afterManual.body?.name === "用户手动名称" &&
+-      manualNameInWorkspace > 0
+-  );
+-
+-  const uiRecord = await createWorkRecord(projectId);
+-  const uiRecordId = uiRecord.body?.id;
+-  const uiTab = await createTab(uiRecordId);
+-  const firstUiChat = await sendReplayChat(uiTab.body?.tab);
+-  const refreshedUiTab = await currentTab(uiRecordId);
+-  const secondUiChat = await sendReplayChat(refreshedUiTab.tab);
+-  const successfulAutoName = await requestAutomaticName(
+-    uiRecordId,
+-    uiTab.body?.tab?.id,
+-    { "x-auto-name-test-name": "auto-name-ui" }
+-  );
+-  await page.goto(`${BASE}/workspace/${uiRecordId}`);
+-  const uiTitleLocator = page.locator("nav button").filter({
+-    hasText: "auto-name-ui",
+-  });
+-  await uiTitleLocator.waitFor();
+-  const uiTitle = await uiTitleLocator.count();
+-  check(
+-    "聊天完成后条件自动命名，工作区标题显示实际结果",
+-    firstUiChat.status === 200 &&
+-      typeof firstUiChat.body === "string" &&
+-      firstUiChat.body.includes('"type":"done"') &&
+-      refreshedUiTab.response.status === 200 &&
+-      secondUiChat.status === 200 &&
+-      typeof secondUiChat.body === "string" &&
+-      secondUiChat.body.includes('"type":"done"') &&
+-      successfulAutoName.status === 200 &&
+-      successfulAutoName.body?.name === "auto-name-ui" &&
+-      uiTitle === 1
+-  );
+-
+-  const failureRecord = await createWorkRecord(projectId);
+-  const failureRecordId = failureRecord.body?.id;
+-  const failureTab = await createTab(failureRecordId);
+-  const firstFailureChat = await sendReplayChat(failureTab.body?.tab);
+-  const refreshedFailureTab = await currentTab(failureRecordId);
+-  const secondFailureChat = await sendReplayChat(refreshedFailureTab.tab);
+-  const failedAutoName = await requestAutomaticName(
+-    failureRecordId,
+-    failureTab.body?.tab?.id,
+-    { "x-auto-name-test-failure": "1" }
+-  );
+-  const postFailureTab = await currentTab(failureRecordId);
+-  const chatAfterFailure = await sendReplayChat(postFailureTab.tab);
+-  const renameAfterFailure = await manualName(failureRecordId, "失败后仍可改名");
+-  const afterFailure = await api(`/api/work-records/${failureRecordId}`);
+-  check(
+-    "自动命名内部失败不阻塞聊天和手动改名",
+-    firstFailureChat.status === 200 &&
+-      typeof firstFailureChat.body === "string" &&
+-      firstFailureChat.body.includes('"type":"done"') &&
+-      secondFailureChat.status === 200 &&
+-      typeof secondFailureChat.body === "string" &&
+-      secondFailureChat.body.includes('"type":"done"') &&
+-      failedAutoName.status === 200 &&
+-      failedAutoName.body?.name === null &&
+-      failedAutoName.body?.testFailureInjected === true &&
+-      chatAfterFailure.status === 200 &&
+-      typeof chatAfterFailure.body === "string" &&
+-      chatAfterFailure.body.includes('"type":"done"') &&
+-      renameAfterFailure.status === 200 &&
+-      afterFailure.body?.name === "失败后仍可改名"
+-  );
+-} finally {
+-  await browser.close();
+-}
+-
+-console.log(`\n结果: ${pass} 通过, ${fail} 失败`);
+-process.exit(fail > 0 ? 1 : 0);
++// 兼容旧命令：旧模型命名断言已由 v1.44 本地阶段会话命名与零额外模型请求专项取代。
++import "./verify-v144-local-session-naming.mjs";
+diff --git a/scripts/verify-v141-isolated-replay.mjs b/scripts/verify-v141-isolated-replay.mjs
+index 2e4af2c..3b9fffd 100644
+--- a/scripts/verify-v141-isolated-replay.mjs
++++ b/scripts/verify-v141-isolated-replay.mjs
+@@ -11,10 +11,13 @@ import nextEnv from "@next/env";
+ import { initializeMysql } from "../src/lib/mysql-bootstrap.ts";
+ import { getMysqlAdminConfig, getMysqlConnectionOptions } from "../src/lib/mysql-config.ts";
+ 
+-export async function runIsolatedReplay({ slug, title, scenarioScript, captureProvider = false, expectedWorkflows = 2 }) {
+-  if (!/^[a-z][a-z0-9-]*$/.test(slug) || !/^scripts\/verify-v14[12]-[a-z0-9-]+-scenario\.mjs$/.test(scenarioScript)) {
++export async function runIsolatedReplay({ slug, title, scenarioScript, captureProvider = false, providerFixtureUrl, expectedWorkflows = 2 }) {
++  if (!/^[a-z][a-z0-9-]*$/.test(slug) || !/^scripts\/verify-v14[124]-[a-z0-9-]+-scenario\.mjs$/.test(scenarioScript)) {
+     throw new Error("非法专项标识或场景路径");
+   }
++  if (providerFixtureUrl && !/^http:\/\/127\.0\.0\.1:\d+\/v1$/.test(providerFixtureUrl)) {
++    throw new Error("模型替身只允许本机随机端口 /v1");
++  }
+   nextEnv.loadEnvConfig(process.cwd());
+   let pass = 0;
+   let fail = 0;
+@@ -152,6 +155,14 @@ export async function runIsolatedReplay({ slug, title, scenarioScript, capturePr
+       }, null, 2));
+     }
+     const serviceEnv = { ...env };
++    if (providerFixtureUrl) {
++      serviceEnv.AI_MODE = "live";
++      serviceEnv.AI_BASE_URL = providerFixtureUrl;
++      serviceEnv.AI_API_KEY = "isolated-provider-fixture";
++      serviceEnv.V144_PROVIDER_FIXTURE_URL = providerFixtureUrl;
++      serviceEnv.AI_DAILY_SITE_LIMIT = "200";
++      serviceEnv.AI_DAILY_USER_LIMIT = "100";
++    }
+     // 网站进程不继承维护账号。
+     for (const key of Object.keys(serviceEnv)) if (key.startsWith("MYSQL_ADMIN_") || key.startsWith("MYSQL_MIGRATION_")) delete serviceEnv[key];
+     server = start("scripts/verify-v141-replay-foundation-server.mjs", "server", serviceEnv, projectDir);
+@@ -159,9 +170,9 @@ export async function runIsolatedReplay({ slug, title, scenarioScript, capturePr
+     const modeResponse = await fetch(`${base}/api/verify/replay-mode`, { signal: AbortSignal.timeout(30_000) });
+     if (!modeResponse.ok) throw new Error(`隔离服务 replay 门禁返回 HTTP ${modeResponse.status}，详见 server.log`);
+     const mode = await modeResponse.json();
+-    check("正式服务也确认 replay，发送前拒绝真实模型", modeResponse.ok && mode.aiMode === "replay");
++    check(providerFixtureUrl ? "隔离服务只连接本机 HTTP 模型替身" : "正式服务也确认 replay，发送前拒绝真实模型", modeResponse.ok && mode.aiMode === (providerFixtureUrl ? "live" : "replay"));
+     console.log(`${title}开始；证据目录：${outputDir}`);
+-    scenario = start(scenarioScript, "scenario", { ...serviceEnv, BASE_URL: base });
++    scenario = start(scenarioScript, "scenario", { ...serviceEnv, AI_MODE: "replay", BASE_URL: base });
+     const timer = setTimeout(() => { scenario.kill("SIGKILL"); }, 8 * 60_000);
+     let exitCode;
+     try { [exitCode] = await once(scenario, "exit"); } finally { clearTimeout(timer); }
+diff --git a/scripts/verify-v141-replay-foundation-server.mjs b/scripts/verify-v141-replay-foundation-server.mjs
+index 3766099..6d2c11f 100644
+--- a/scripts/verify-v141-replay-foundation-server.mjs
++++ b/scripts/verify-v141-replay-foundation-server.mjs
+@@ -4,7 +4,11 @@ import { join } from "node:path";
+ import { pathToFileURL } from "node:url";
+ import next from "next";
+ 
+-if (!process.send || process.env.AI_MODE !== "replay" || !/^v141_replay_[a-f0-9]{16}$/.test(process.env.MYSQL_DATABASE ?? "")) {
++const localProviderFixture = process.env.V144_PROVIDER_FIXTURE_URL;
++const safeLocalProvider = process.env.AI_MODE === "live" &&
++  /^http:\/\/127\.0\.0\.1:\d+\/v1$/.test(localProviderFixture ?? "") &&
++  process.env.AI_BASE_URL === localProviderFixture && process.env.AI_API_KEY === "isolated-provider-fixture";
++if (!process.send || (process.env.AI_MODE !== "replay" && !safeLocalProvider) || !/^v141_replay_[a-f0-9]{16}$/.test(process.env.MYSQL_DATABASE ?? "")) {
+   throw new Error("回放服务只能由独立空库入口启动");
+ }
+ 
+diff --git a/scripts/verify-v144-local-session-naming-scenario.mjs b/scripts/verify-v144-local-session-naming-scenario.mjs
+new file mode 100644
+index 0000000..645f392
+--- /dev/null
++++ b/scripts/verify-v144-local-session-naming-scenario.mjs
+@@ -0,0 +1,191 @@
++// 验证入口只使用浏览器和应用 API；模型行为从本机供应商 HTTP 请求观察。
++import { chromium } from "playwright-core";
++import { writeFile } from "node:fs/promises";
++import { join } from "node:path";
++import { assertPlaywrightAvailable } from "./verify-mysql-fixtures.mjs";
++const base = process.env.BASE_URL;
++const output = process.env.V141_REPLAY_OUTPUT_DIR;
++const provider = process.env.V144_PROVIDER_ORIGIN;
++const workflows = [];
++let pass = 0;
++let fail = 0;
++function check(name, okay) { if (okay) { pass++; console.log('✅ ' + name); } else { fail++; throw new Error(name); } }
++if (!base || !output || !/^http:\/\/127\.0\.0\.1:\d+$/.test(provider ?? "") || process.env.AI_MODE !== "replay") throw new Error("只能从隔离启动器运行");
++await assertPlaywrightAvailable(chromium, { channel: "msedge" });
++const browser = await chromium.launch({ channel: "msedge", headless: true });
++const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
++page.setDefaultTimeout(45000);
++page.setDefaultNavigationTimeout(120000);
++async function api(url, body, method = "POST") {
++  const response = await page.request.fetch(base + url, { method, ...(body === undefined ? {} : { data: body }) });
++  const text = await response.text();
++  let resultBody = null;
++  try { resultBody = text ? JSON.parse(text) : null; } catch { resultBody = text; }
++  return { status: response.status(), body: resultBody };
++}
++let projectId;
++let iterationId;
++const sessionsPath = () => '/api/iterations/' + iterationId;
++async function newSession(stage = "analysis") {
++  const result = await api(sessionsPath() + '/stages/' + stage + '/sessions');
++  check("通过 API 创建阶段会话", result.status === 201);
++  return result.body.session.id;
++}
++async function readSession(id) { return (await api(sessionsPath() + '/sessions/' + id, undefined, "GET")).body; }
++async function send(id, content, stage = "analysis") { return api(sessionsPath() + '/stages/' + stage + '/sessions/' + id + '/messages', { content }); }
++async function requests() { return (await fetch(provider + '/requests')).json(); }
++async function until(predicate, message) {
++  const deadline = Date.now() + 15000;
++  while (Date.now() < deadline) { if (await predicate()) return; await new Promise((resolve) => setTimeout(resolve, 100)); }
++  throw new Error(message);
++}
++try {
++  await page.goto(base + '/register');
++  await page.fill('#email', 'verify-v144-name-' + Date.now() + '@test.local');
++  await page.locator('input[type="password"]').first().fill('verify-pass-1234');
++  await page.locator('input[type="password"]').nth(1).fill('verify-pass-1234');
++  await page.locator('form button[type="submit"]').click();
++  await page.waitForURL((url) => url.pathname === '/projects');
++  const project = await api('/api/projects', { name: '默认会话命名验证' });
++  projectId = project.body.id;
++  const iteration = await api('/api/projects/' + projectId + '/iterations', { displayName: '命名验证' });
++  iterationId = iteration.body.id;
++  check('用户注册并创建项目和迭代', project.status === 201 && iteration.status === 201);
++  const id = await newSession();
++  await page.goto(base + '/projects/' + projectId + '/iterations/' + iterationId);
++  await page.locator('[data-session-id="' + id + '"]').click();
++  await page.getByRole('textbox', { name: '输入消息', exact: true }).fill('  Hello, 世界！后续正文');
++  const sent = page.waitForResponse((response) => response.url().endsWith('/messages') && response.request().method() === 'POST');
++  await page.getByRole('button', { name: '发送消息', exact: true }).click();
++  await (await sent).finished();
++  const first = await readSession(id);
++  check('浏览器发送后以原文前十字符命名并保留前导空格和标点', first.title === '  Hello, 世');
++  await page.waitForFunction(() => document.querySelector('#conversation-title')?.textContent === '  Hello, 世');
++  await page.reload();
++  await page.waitForFunction(() => document.querySelector('#conversation-title')?.textContent === '  Hello, 世');
++  check('刷新后会话标题与侧栏名称仍保留原文', await page.locator('[data-session-id="' + id + '"] strong').textContent() === '  Hello, 世');
++  const cases = [
++    ['这是中文提示词用于命名测试', '这是中文提示词用于命'],
++    ['abcdefghijklm', 'abcdefghij'],
++    ['你好！', '你好！'],
++    ['  !?，。abcdef后续', '  !?，。abcd'],
++    ['😀😃😄😁😆😅😂🙂🙃😉后续', '😀😃😄😁😆😅😂🙂🙃😉'],
++    ['👨‍👩‍👧‍👦123456789后续', '👨‍👩‍👧‍👦123456789'],
++    ['é123456789后续', 'é123456789'],
++    ['𠮷123456789后续', '𠮷123456789'],
++    ['          后续正文', '          '],
++    ['新会话', '新会话'],
++  ];
++  for (const [prompt, expected] of cases) {
++    const sessionId = await newSession();
++    const before = (await requests()).length;
++    const sent = await send(sessionId, prompt);
++    check('首条提示词按完整字符命名：' + JSON.stringify(prompt), sent.status === 201 && (await readSession(sessionId)).title === expected);
++    const history = await api(sessionsPath() + '/stages/analysis/sessions/' + sessionId + '/messages', undefined, 'GET');
++    check('保存的首条用户提示词保留原文', history.body.messages.find((message) => message.role === 'user')?.content === prompt);
++    const firstRequests = await requests();
++    check('供应商 HTTP 边界只收到一次主回复请求', firstRequests.length === before + 1 && firstRequests.at(-1).stream === true && firstRequests.at(-1).messages.at(-1).content === prompt);
++    check('后续提示词不反复命名', (await send(sessionId, '这是一条不会改变名称的后续提示词')).status === 201 && (await readSession(sessionId)).title === expected);
++  }
++  for (const stage of ['prototype', 'prd', 'tickets']) {
++    const sessionId = await newSession(stage);
++    check('四环阶段统一使用首条提示词规则：' + stage, (await send(sessionId, '1234567890后续', stage)).status === 201 && (await readSession(sessionId)).title === '1234567890');
++  }
++  const history = await api(sessionsPath() + '/stages/analysis/sessions/' + id + '/messages', undefined, 'GET');
++  const originalUser = history.body.messages.find((message) => message.role === 'user');
++  const edited = await api(sessionsPath() + '/sessions/' + id + '/messages/' + originalUser.id, { content: '编辑首条消息不改名' }, 'PATCH');
++  check('编辑首条消息后保持已经确定的名称', edited.status === 200 && (await readSession(id)).title === '  Hello, 世');
++  const regenerateId = edited.body.assistantMessage.id;
++  check('重新生成后名称不变', (await api(sessionsPath() + '/stages/analysis/sessions/' + id + '/messages', { regenerateMessageId: regenerateId })).status === 201 && (await readSession(id)).title === '  Hello, 世');
++  workflows.push('raw-first-prompt');
++
++  for (const manualTitle of ['已有人工名称', '新会话']) {
++    const sessionId = await newSession();
++    const renamed = await api(sessionsPath() + '/sessions/' + sessionId, { title: manualTitle }, 'PATCH');
++    check('首条消息之前人工命名优先：' + manualTitle, renamed.status === 200 && (await send(sessionId, '不应该覆盖人工名称的第一条消息')).status === 201 && (await readSession(sessionId)).title === manualTitle);
++  }
++  await api(sessionsPath() + '/workbench', { stage: 'analysis', sessionId: id }, 'PATCH');
++  await page.reload();
++  await page.locator('[data-session-id="' + id + '"]').click();
++  await page.getByRole('textbox', { name: '输入消息', exact: true }).fill('本轮回复期间我要手动改名');
++  await fetch(provider + '/hold');
++  const requestCount = (await requests()).length;
++  const generated = page.waitForResponse((response) => response.url().endsWith('/messages') && response.request().method() === 'POST');
++  await page.getByRole('button', { name: '发送消息', exact: true }).click();
++  await until(async () => (await requests()).length === requestCount + 1, '主回复没有到达模型 HTTP 边界');
++  await page.getByRole('button', { name: '修改会话名称', exact: true }).click();
++  await page.getByRole('textbox', { name: '会话名称', exact: true }).fill('生成期间人工名称');
++  const renamedDuring = page.waitForResponse((response) => response.url().endsWith('/sessions/' + id) && response.request().method() === 'PATCH');
++  await page.getByRole('textbox', { name: '会话名称', exact: true }).press('Enter');
++  await (await renamedDuring).finished();
++  await page.waitForFunction(() => document.querySelector('#conversation-title')?.textContent === '生成期间人工名称');
++  check('生成进行中可通过界面保存人工名称', (await readSession(id)).title === '生成期间人工名称');
++  await fetch(provider + '/release');
++  await (await generated).finished();
++  await page.waitForFunction(() => !document.querySelector('button.stop-generation-button'));
++  await page.reload();
++  await page.waitForFunction(() => document.querySelector('#conversation-title')?.textContent === '生成期间人工名称');
++  check('迟到回复和刷新不覆盖生成期间的人工改名', (await readSession(id)).title === '生成期间人工名称');
++  await page.setViewportSize({ width: 390, height: 844 });
++  await page.getByRole('button', { name: '修改会话名称', exact: true }).click();
++  await page.getByRole('textbox', { name: '会话名称', exact: true }).fill('未保存的名称');
++  await page.screenshot({ path: join(output, 'session-rename-mobile.png'), fullPage: true });
++  check('窄屏改名表单无横向溢出', await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
++  await page.getByRole('textbox', { name: '会话名称', exact: true }).press('Escape');
++  check('Escape 取消且焦点回到改名按钮', await page.getByRole('button', { name: '修改会话名称', exact: true }).evaluate((button) => button === document.activeElement) && (await readSession(id)).title === '生成期间人工名称');
++  await page.setViewportSize({ width: 1440, height: 900 });
++  workflows.push('manual-name-race');
++
++  const beforeInvalid = (await requests()).length;
++  check('空白消息被拒绝且没有模型请求', (await send(id, '   ')).status === 400 && (await requests()).length === beforeInvalid);
++  check('空名称被拒绝', (await api(sessionsPath() + '/sessions/' + id, { title: '   ' }, 'PATCH')).status === 400);
++  check('超长人工名称被拒绝', (await api(sessionsPath() + '/sessions/' + id, { title: '名'.repeat(81) }, 'PATCH')).status === 400);
++  const anonymous = await fetch(base + sessionsPath() + '/sessions/' + id, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: '越权名称' }), redirect: 'manual' });
++  check('未登录无法修改会话名称', anonymous.status === 401);
++  const outsider = await browser.newPage();
++  try {
++    await outsider.goto(base + '/register', { timeout: 120000 });
++    await outsider.fill('#email', 'verify-v144-outsider-' + Date.now() + '@test.local');
++    await outsider.locator('input[type="password"]').first().fill('verify-pass-1234');
++    await outsider.locator('input[type="password"]').nth(1).fill('verify-pass-1234');
++    await outsider.locator('form button[type="submit"]').click();
++    await outsider.waitForURL((url) => url.pathname === '/projects');
++    const denied = await outsider.request.patch(base + sessionsPath() + '/sessions/' + id, { data: { title: '越权名称' } });
++    check('其他账号无法改名且原名不变', denied.status() === 404 && (await readSession(id)).title === '生成期间人工名称');
++  } finally { await outsider.close(); }
++  const iterationTwo = await api('/api/projects/' + projectId + '/iterations', { displayName: '归属检查' });
++  check('不能通过其他迭代路径修改会话', (await api('/api/iterations/' + iterationTwo.body.id + '/sessions/' + id, { title: '错误归属' }, 'PATCH')).status === 404);
++  workflows.push('rename-authorization');
++
++  const legacyProject = await api('/api/projects', { name: '已有资料与旧入口检查' });
++  const record = await api('/api/projects/' + legacyProject.body.id + '/work-records', {});
++  const recordId = record.body.id;
++  const tab = await api('/api/work-records/' + recordId + '/tabs', { agent_type: 'requirement_analyst' });
++  check('旧资料仍可创建并打开', record.status === 201 && tab.status === 201);
++  const legacyBefore = (await requests()).length;
++  await page.goto(base + '/workspace/' + recordId);
++  const legacyInput = page.getByPlaceholder('输入消息，Enter 发送，Shift+Enter 换行...');
++  for (const prompt of ['旧入口首条提示词', '旧入口后续提示词']) {
++    await legacyInput.fill(prompt);
++    const reply = page.waitForResponse((response) => response.url().includes('/chat') && response.request().method() === 'POST');
++    await legacyInput.press('Enter');
++    await (await reply).finished();
++    await page.getByRole('button', { name: '发送', exact: true }).waitFor({ state: 'visible' });
++  }
++  const legacyRequests = (await requests()).slice(legacyBefore);
++  check('旧聊天浏览器两次发送只有两次主回复，没有隐藏命名请求', legacyRequests.length === 2 && legacyRequests.every((request) => request.stream === true));
++  check('撤除命名不重命名已有迭代资料', (await api('/api/work-records/' + recordId, undefined, 'GET')).body.name === '未命名');
++  const legacyRename = await api('/api/work-records/' + recordId, { name: '已有资料人工名称' }, 'PATCH');
++  check('旧资料仍可人工改名并持久保存', legacyRename.status === 200 && (await api('/api/work-records/' + recordId, undefined, 'GET')).body.name === '已有资料人工名称');
++  check('旧模型命名 API 与验证后门均已撤除', (await api('/api/work-records/' + recordId + '/auto-name', { tabId: tab.body.id })).status === 404 && (await api('/api/verify/conditional-auto-naming', { workRecordId: recordId, name: '迟到名称' })).status === 404);
++  check('供应商只观察到主回复，没有摘要命名请求', (await requests()).every((request) => request.stream === true));
++  workflows.push('legacy-no-hidden-naming');
++} catch (error) { if (!fail) fail++; console.error('❌ ' + error.message); }
++finally {
++  await page.screenshot({ path: join(output, 'session-naming.png'), fullPage: true }).catch(() => {});
++  await fetch(provider + '/release').catch(() => {});
++  await browser.close();
++  await writeFile(join(output, 'scenario-summary.json'), JSON.stringify({ pass, fail, aiMode: 'replay', workflows }, null, 2));
++  console.log('结果: ' + pass + ' 通过, ' + fail + ' 失败');
++}
++process.exit(fail > 0 ? 1 : 0);
+diff --git a/scripts/verify-v144-local-session-naming.mjs b/scripts/verify-v144-local-session-naming.mjs
+new file mode 100644
+index 0000000..fd4e495
+--- /dev/null
++++ b/scripts/verify-v144-local-session-naming.mjs
+@@ -0,0 +1,45 @@
++// v1.44 #01：独立空库与本机 HTTP 模型替身，不访问真实供应商。
++import { createServer } from "node:http";
++import { writeFile } from "node:fs/promises";
++import { join } from "node:path";
++import { runIsolatedReplay } from "./verify-v141-isolated-replay.mjs";
++
++const requests = [];
++let hold = false;
++const pending = new Set();
++function release() { hold = false; for (const finish of pending) finish(); pending.clear(); }
++const provider = createServer(async (request, response) => {
++  if (request.url === "/requests") { response.setHeader("Content-Type", "application/json"); response.end(JSON.stringify(requests)); return; }
++  if (request.url === "/hold") { hold = true; response.end("ok"); return; }
++  if (request.url === "/release") { release(); response.end("ok"); return; }
++  if (request.url !== "/v1/chat/completions" || request.method !== "POST") { response.writeHead(404).end(); return; }
++  try {
++    let body = "";
++    for await (const chunk of request) body += chunk;
++    const data = JSON.parse(body);
++    requests.push(data);
++    const finish = () => {
++      if (response.destroyed) return;
++      if (data.stream) {
++        response.writeHead(200, { "Content-Type": "text/event-stream" });
++        response.end('data: ' + JSON.stringify({ choices: [{ delta: { content: "已收到，我们继续讨论。" } }] }) + '\n\ndata: [DONE]\n\n');
++      } else {
++        response.setHeader("Content-Type", "application/json");
++        response.end(JSON.stringify({ choices: [{ message: { role: "assistant", content: "旧模型命名不应触发" } }] }));
++      }
++    };
++    if (hold) { pending.add(finish); response.once("close", () => pending.delete(finish)); }
++    else finish();
++  } catch { response.writeHead(400).end(); }
++});
++await new Promise((resolve) => provider.listen(0, "127.0.0.1", resolve));
++const origin = 'http://127.0.0.1:' + provider.address().port;
++process.env.AI_MODE = "replay";
++process.env.REGISTRATION_MODE = "open";
++process.env.V144_PROVIDER_ORIGIN = origin;
++let result;
++try {
++  result = await runIsolatedReplay({ slug: "local-session-naming", title: "v1.44 默认会话命名", scenarioScript: "scripts/verify-v144-local-session-naming-scenario.mjs", providerFixtureUrl: origin + "/v1", expectedWorkflows: 4 });
++  await writeFile(join(result.outputDir, "provider-http-requests.json"), JSON.stringify(requests, null, 2));
++} finally { release(); provider.closeAllConnections(); await new Promise((resolve) => provider.close(resolve)); }
++process.exit(result.fail > 0 ? 1 : 0);
+diff --git a/src/app/api/iterations/[id]/sessions/[sessionId]/route.ts b/src/app/api/iterations/[id]/sessions/[sessionId]/route.ts
+index 0b17a45..954725a 100644
+--- a/src/app/api/iterations/[id]/sessions/[sessionId]/route.ts
++++ b/src/app/api/iterations/[id]/sessions/[sessionId]/route.ts
+@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
+ import { requireAuth } from "@/lib/auth-helper";
+ import { isMysqlId } from "@/lib/identifiers";
+ import { mysqlUnavailableMessage } from "@/lib/mysql";
+-import { deleteMysqlIterationSession, findOwnedIterationSession } from "@/lib/mysql-iteration-workbench";
++import { deleteMysqlIterationSession, findOwnedIterationSession, renameMysqlIterationSession } from "@/lib/mysql-iteration-workbench";
+ 
+ type Context = { params: Promise<{ id: string; sessionId: string }> };
+ 
+@@ -21,6 +21,23 @@ export async function GET(_request: Request, { params }: Context) {
+   }
+ }
+ 
++export async function PATCH(request: Request, { params }: Context) {
++  try {
++    const userId = await requireAuth();
++    if (userId instanceof NextResponse) return userId;
++    const { id, sessionId } = await params;
++    if (!isMysqlId(id) || !isMysqlId(sessionId)) return NextResponse.json({ error: "会话参数无效" }, { status: 400 });
++    const body = await request.json().catch(() => null);
++    const title = typeof body?.title === "string" ? body.title.trim() : "";
++    if (!title || Array.from(title).length > 80) return NextResponse.json({ error: "会话名称需为 1–80 个字符" }, { status: 400 });
++    const session = await renameMysqlIterationSession(id, sessionId, userId, title);
++    return session ? NextResponse.json(session) : NextResponse.json({ error: "会话不存在或无权操作" }, { status: 404 });
++  } catch (error) {
++    console.error("PATCH /api/iterations/[id]/sessions/[sessionId] error:", error);
++    return NextResponse.json({ error: "改名未完成，请重试。" }, { status: 500 });
++  }
++}
++
+ export async function DELETE(_request: Request, { params }: Context) {
+   try {
+     const userId = await requireAuth();
+diff --git a/src/app/api/verify/conditional-auto-naming/route.ts b/src/app/api/verify/conditional-auto-naming/route.ts
+deleted file mode 100644
+index 397d1e7..0000000
+--- a/src/app/api/verify/conditional-auto-naming/route.ts
++++ /dev/null
+@@ -1,45 +0,0 @@
+-import { NextResponse } from "next/server";
+-
+-import { requireAuth } from "@/lib/auth-helper";
+-import { isMysqlId } from "@/lib/identifiers";
+-import { autoNameMysqlWorkRecord } from "@/lib/auto-name";
+-import { findOwnedMysqlConversationTab } from "@/lib/mysql-conversation";
+-import { findOwnedMysqlWorkRecord } from "@/lib/mysql-account-workspace";
+-
+-/** 仅 replay 专项用于控制自动命名完成时点。 */
+-export async function POST(request: Request) {
+-  if (
+-    process.env.NODE_ENV === "production" ||
+-    process.env.AUTO_NAME_TEST_HOOKS !== "1"
+-  )
+-    return NextResponse.json({ error: "资源不存在" }, { status: 404 });
+-  const userId = await requireAuth();
+-  if (userId instanceof NextResponse) return userId;
+-  const body = await request.json().catch(() => null);
+-  const workRecordId =
+-    typeof body?.workRecordId === "string" ? body.workRecordId : "";
+-  const tabId = typeof body?.tabId === "string" ? body.tabId : "";
+-  const name = typeof body?.name === "string" ? body.name.trim() : "";
+-  if (!isMysqlId(workRecordId) || !isMysqlId(tabId) || !name)
+-    return NextResponse.json({ error: "自动命名参数无效" }, { status: 400 });
+-  const [workRecord, tab] = await Promise.all([
+-    findOwnedMysqlWorkRecord(workRecordId, userId),
+-    findOwnedMysqlConversationTab(tabId, userId),
+-  ]);
+-  if (!workRecord || !tab || tab.work_record_id !== workRecord.id)
+-    return NextResponse.json(
+-      { error: "工作记录不存在或无权操作" },
+-      { status: 404 },
+-    );
+-  const delayMs =
+-    Number.isInteger(body?.delayMs) &&
+-    body.delayMs >= 0 &&
+-    body.delayMs <= 1_000
+-      ? body.delayMs
+-      : 0;
+-  if (delayMs) await new Promise((resolve) => setTimeout(resolve, delayMs));
+-  const updated = await autoNameMysqlWorkRecord(tabId, workRecordId, {
+-    testName: name,
+-  });
+-  return NextResponse.json({ applied: Boolean(updated), name: updated });
+-}
+diff --git a/src/app/api/work-records/[id]/auto-name/route.ts b/src/app/api/work-records/[id]/auto-name/route.ts
+deleted file mode 100644
+index 9bac118..0000000
+--- a/src/app/api/work-records/[id]/auto-name/route.ts
++++ /dev/null
+@@ -1,57 +0,0 @@
+-import { NextResponse } from "next/server";
+-import { requireAuth } from "@/lib/auth-helper";
+-import { autoNameMysqlWorkRecord } from "@/lib/auto-name";
+-import { isMysqlId } from "@/lib/identifiers";
+-import { findOwnedMysqlConversationTab } from "@/lib/mysql-conversation";
+-import { findOwnedMysqlWorkRecord } from "@/lib/mysql-account-workspace";
+-
+-/** 聊天完成后由页面单独调用；命名失败不会影响已完成的聊天。 */
+-export async function POST(
+-  request: Request,
+-  { params }: { params: Promise<{ id: string }> },
+-) {
+-  try {
+-    const userId = await requireAuth();
+-    if (userId instanceof NextResponse) return userId;
+-
+-    const { id: workRecordId } = await params;
+-    const body = await request.json().catch(() => null);
+-    const tabId = typeof body?.tabId === "string" ? body.tabId : "";
+-    const testHooksEnabled =
+-      process.env.NODE_ENV !== "production" &&
+-      process.env.AUTO_NAME_TEST_HOOKS === "1";
+-    const testName = testHooksEnabled
+-      ? request.headers.get("x-auto-name-test-name")?.trim().slice(0, 20)
+-      : undefined;
+-    const failureInjected =
+-      testHooksEnabled &&
+-      request.headers.get("x-auto-name-test-failure") === "1";
+-    if (!isMysqlId(workRecordId) || !isMysqlId(tabId)) {
+-      return NextResponse.json({ error: "自动命名参数无效" }, { status: 400 });
+-    }
+-    const [workRecord, tab] = await Promise.all([
+-      findOwnedMysqlWorkRecord(workRecordId, userId),
+-      findOwnedMysqlConversationTab(tabId, userId),
+-    ]);
+-    if (!workRecord || !tab || tab.work_record_id !== workRecord.id) {
+-      return NextResponse.json(
+-        { error: "工作记录或标签页不存在或无权操作" },
+-        { status: 404 },
+-      );
+-    }
+-
+-    const name = await autoNameMysqlWorkRecord(tab.id, workRecord.id, {
+-      userId,
+-      testName,
+-      forceFailureForTest: failureInjected,
+-    });
+-
+-    return NextResponse.json({
+-      name,
+-      ...(testHooksEnabled ? { testFailureInjected: failureInjected } : {}),
+-    });
+-  } catch (error) {
+-    console.error("POST /api/work-records/[id]/auto-name error:", error);
+-    return NextResponse.json({ error: "自动命名失败" }, { status: 500 });
+-  }
+-}
+diff --git a/src/app/workspace/[workRecordId]/page.tsx b/src/app/workspace/[workRecordId]/page.tsx
+index 5eca60a..79fdd9e 100644
+--- a/src/app/workspace/[workRecordId]/page.tsx
++++ b/src/app/workspace/[workRecordId]/page.tsx
+@@ -354,8 +354,7 @@ export default function WorkspacePage() {
+     }
+   }
+ 
+-  /** 顶栏改名：PATCH 后更新本地工作记录名（AI 自动命名只对「未命名」生效，
+-   *  手动改名后不再覆盖——auto-name 服务端判定，此处无需额外处理）。 */
++  /** 顶栏人工改名：保存后同步当前展示名称。 */
+   async function handleRenameRecord(newName: string) {
+     setRenamingRecord(false);
+     const trimmed = newName.trim();
+@@ -756,11 +755,6 @@ export default function WorkspacePage() {
+               projectId={project?.id ?? null}
+               existingFileNames={files.map((f) => f.filename)}
+               filesReady={!filesLoading}
+-              onWorkRecordRenamed={(newName) => {
+-                setWorkRecord((prev) =>
+-                  prev ? { ...prev, name: newName } : prev
+-                );
+-              }}
+               onFileSaved={fetchFiles}
+               onTabVersionChange={(tabId, version) => {
+                 setTabs((prev) =>
+diff --git a/src/components/ChatArea.tsx b/src/components/ChatArea.tsx
+index 7f647c4..5c574a7 100644
+--- a/src/components/ChatArea.tsx
++++ b/src/components/ChatArea.tsx
+@@ -83,7 +83,6 @@ interface ChatAreaProps {
+    *  file markers after this — otherwise a slow file fetch would make us
+    *  re-ask for a write the user already confirmed. */
+   filesReady?: boolean;
+-  onWorkRecordRenamed?: (newName: string) => void;
+   onFileSaved?: () => void; // notify parent to refresh file list
+   onTabVersionChange?: (tabId: string, version: number) => void;
+   onTabConflict?: (tabId: string) => void;
+@@ -495,7 +494,6 @@ function StreamingHtmlPlaceholder() {
+ 
+ export default function ChatArea({
+   tabId,
+-  workRecordId,
+   tabName,
+   tabVersion,
+   freezeStatus,
+@@ -505,7 +503,6 @@ export default function ChatArea({
+   projectId,
+   existingFileNames,
+   filesReady = true,
+-  onWorkRecordRenamed,
+   onFileSaved,
+   onTabVersionChange,
+   onTabConflict,
+@@ -564,30 +561,6 @@ export default function ChatArea({
+   const liveMessageIds = useRef<Set<string>>(new Set());
+   const pendingFileSequence = useRef(0);
+ 
+-  /** 聊天完成后单独请求命名；失败保持静默，不能反过来影响已完成的聊天。 */
+-  const requestAutomaticName = useCallback(
+-    async (completedTabId: string) => {
+-      if (!workRecordId) return;
+-
+-      try {
+-        const res = await fetch(`/api/work-records/${workRecordId}/auto-name`, {
+-          method: "POST",
+-          headers: { "Content-Type": "application/json" },
+-          body: JSON.stringify({ tabId: completedTabId }),
+-        });
+-        if (!res.ok) return;
+-
+-        const data = await res.json().catch(() => ({}));
+-        if (typeof data.name === "string" && data.name) {
+-          onWorkRecordRenamed?.(data.name);
+-        }
+-      } catch {
+-        // 自动命名是辅助结果；网络或命名服务失败时用户仍可继续聊天和手动改名。
+-      }
+-    },
+-    [onWorkRecordRenamed, workRecordId]
+-  );
+-
+   useEffect(() => {
+     freezeStatusRef.current = freezeStatus;
+     freezeMessageIdRef.current = freezeMessageId;
+@@ -1280,9 +1253,7 @@ export default function ChatArea({
+                 });
+               } else {
+                 setTimeout(() => checkAndShowFileDialog(completedMessage), 100);
+-              }
+-              void requestAutomaticName(tabId);
+-              break;
++              }              break;
+             }
+             case "error": {
+               const errMsg = event.message || "请求发生错误";
+diff --git a/src/components/ProductIterationWorkbench.tsx b/src/components/ProductIterationWorkbench.tsx
+index aae9e09..fd588a8 100644
+--- a/src/components/ProductIterationWorkbench.tsx
++++ b/src/components/ProductIterationWorkbench.tsx
+@@ -2,6 +2,7 @@
+ 
+ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+ import Link from "next/link";
++import namingStyles from "./SessionNaming.module.css";
+ import { getWorkbenchFileStage } from "@/lib/workbench-file-branch";
+ import ProjectFileTree, { type ProjectFileEntry } from "@/components/ProjectFileTree";
+ import MarkdownCandidateReview, { type MarkdownCandidate } from "@/components/MarkdownCandidateReview";
+@@ -93,6 +94,11 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
+   const [contextUpdating, setContextUpdating] = useState(false);
+   const [editingId, setEditingId] = useState<string | null>(null);
+   const [editValue, setEditValue] = useState("");
++  const [renamingSession, setRenamingSession] = useState<{ id: string; stage: StageKey; title: string } | null>(null);
++  const [savingSessionName, setSavingSessionName] = useState(false);
++  const [sessionNameError, setSessionNameError] = useState("");
++  const sessionNamesVersion = useRef(0);
++  const renameSessionButton = useRef<HTMLButtonElement>(null);
+   const [demoId, setDemoId] = useState<string | null>(null);
+   const [demoExpanded, setDemoExpanded] = useState(true);
+   const [toast, setToast] = useState("");
+@@ -221,11 +227,20 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
+   }, [base, iteration.id, project.id, request]);
+ 
+   const refreshStageFacts = useCallback(async () => {
++    const startedAtNamesVersion = sessionNamesVersion.current;
+     const state = await request(`${base}/workbench`);
++    // 旧请求的名称结果不能覆盖刚保存的人工名称。
++    const canUpdateNames = startedAtNamesVersion === sessionNamesVersion.current;
++    const updateSessions = (previous: Session[], actual: Session[]) => previous.map((session) => {
++      const latest = actual.find((item) => item.id === session.id);
++      return canUpdateNames && latest ? { ...session, title: latest.title, updatedAt: latest.updatedAt } : session;
++    });
+     setStages((previous) => previous.map((entry) => {
+       const actual = state.stages.find((stage: Stage) => stage.key === entry.key);
+-      return actual ? { ...entry, status: actual.status, generatingSessionIds: actual.generatingSessionIds } : entry;
++      return actual ? { ...entry, status: actual.status, generatingSessionIds: actual.generatingSessionIds, sessions: updateSessions(entry.sessions, actual.sessions) } : entry;
+     }));
++    const activeStage = state.stages.find((stage: Stage) => stage.key === activeView.current.stage);
++    if (activeStage) setSessions((previous) => updateSessions(previous, activeStage.sessions));
+     return state;
+   }, [base, request]);
+ 
+@@ -235,10 +250,10 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
+   }, [loadWorkbench]);
+ 
+   useEffect(() => {
+-    if (!stages.some((stage) => stage.generatingSessionIds.length > 0)) return;
++    if (!sendingSessionIds.length && !stages.some((stage) => stage.generatingSessionIds.length > 0)) return;
+     const timer = window.setInterval(() => { void refreshStageFacts().catch(() => undefined); }, 2000);
+     return () => window.clearInterval(timer);
+-  }, [refreshStageFacts, stages]);
++  }, [refreshStageFacts, stages, sendingSessionIds]);
+ 
+   const loadMessages = useCallback(async (sessionId: string | null) => {
+     const requestSequence = ++loadSequence.current;
+@@ -457,6 +472,31 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
+     finally { setStoppingGeneration(false); }
+   }
+ 
++  function closeSessionRename() {
++    const targetId = renamingSession?.id;
++    setRenamingSession(null);
++    window.requestAnimationFrame(() => { if (activeView.current.sessionId === targetId) renameSessionButton.current?.focus(); });
++  }
++
++  async function saveSessionName() {
++    if (!renamingSession || savingSessionName || !renamingSession.title.trim()) return;
++    const target = renamingSession;
++    setSavingSessionName(true);
++    setSessionNameError("");
++    try {
++      const updated = await request(`${base}/sessions/${target.id}`, {
++        method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: target.title }),
++      });
++      sessionNamesVersion.current += 1;
++      const update = (session: Session) => session.id === target.id ? { ...session, title: updated.title, updatedAt: updated.updated_at } : session;
++      setStages((previous) => previous.map((stage) => stage.key === target.stage ? { ...stage, sessions: stage.sessions.map(update) } : stage));
++      if (activeView.current.stage === target.stage) setSessions((previous) => previous.map(update));
++      closeSessionRename();
++      showToast("会话名称已保存");
++    } catch (caught) { setSessionNameError(caught instanceof Error ? caught.message : "改名未完成，请重试。"); }
++    finally { setSavingSessionName(false); }
++  }
++
+   async function sendMessage(content: string, editMessageId?: string, regenerateMessageId?: string) {
+     if (!activeSessionId || messagesLoading || messagesFailed || currentStatus === "completed" || (!content.trim() && !regenerateMessageId) || sendingIds.current.has(activeSessionId)) return;
+     const sessionId = activeSessionId;
+@@ -469,7 +509,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
+       let latestMessages: Message[] = [];
+       if (editMessageId) {
+         await streamGeneration(`${base}/sessions/${sessionId}/messages/${editMessageId}`, {
+-          method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: content.trim() }),
++          method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content }),
+         }, sessionId);
+         const history = await request(`${base}/stages/${stage}/sessions/${sessionId}/messages`);
+         latestMessages = history.messages;
+@@ -480,7 +520,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
+       } else {
+         const result = await streamGeneration(`${base}/stages/${stage}/sessions/${sessionId}/messages`, {
+           method: "POST", headers: { "Content-Type": "application/json" },
+-          body: JSON.stringify({ ...(content.trim() ? { content: content.trim() } : {}), ...(regenerateMessageId ? { regenerateMessageId } : {}) }),
++          body: JSON.stringify({ ...(content.trim() ? { content } : {}), ...(regenerateMessageId ? { regenerateMessageId } : {}) }),
+         }, sessionId);
+         latestMessages = result.messages ?? [];
+         if (activeView.current.stage === stage && activeView.current.sessionId === sessionId) {
+@@ -499,12 +539,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
+         }
+       }
+       if (activeView.current.stage === stage && activeView.current.sessionId === sessionId) { setEditingId(null); setEditValue(""); }
+-      const updated = await request(`${base}/sessions/${sessionId}`).catch(() => null);
+-      if (updated) {
+-        const updateSession = (session: Session) => session.id === sessionId ? { ...session, title: updated.title, updatedAt: updated.updated_at } : session;
+-        setStages((previous) => previous.map((entry) => entry.key === stage ? { ...entry, sessions: entry.sessions.map(updateSession) } : entry));
+-        if (activeView.current.stage === stage) setSessions((previous) => previous.map(updateSession));
+-      }
++
+     } catch (caught) {
+       liveReplies.current.delete(sessionId);
+       const generationStopped = caught instanceof Error && caught.message === "生成已停止";
+@@ -611,7 +646,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
+         <aside className="workbench-sessions" id="workbench-sessions" aria-label="阶段会话">
+           <div className="sessions-heading"><h2>阶段会话</h2><button className="new-session-button" type="button" disabled={creatingSession || contextUpdating} onClick={() => void createSession()} aria-label="新建会话" title="新建会话"><Icon name="plus"/><span className="new-session-label">新建会话</span></button></div>
+           {sessions.length ? <div className="real-session-list">{sessions.map((session) => <div className="session-list-item" key={session.id}>
+-            <button className="session-row" data-session-id={session.id} type="button" title={session.title} disabled={contextUpdating} aria-current={activeSessionId === session.id ? "page" : undefined} onClick={() => void chooseSession(session)}><strong>{session.title}</strong><small>{generatingSessionIds.includes(session.id) || sendingSessionIds.includes(session.id) ? "生成中 · " : session.title === "新会话" ? "尚无消息 · " : ""}{session.updatedAt ? new Date(session.updatedAt).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }) : ""}</small></button>
++            <button className="session-row" data-session-id={session.id} type="button" title={session.title} disabled={contextUpdating} aria-current={activeSessionId === session.id ? "page" : undefined} onClick={() => void chooseSession(session)}><strong className={namingStyles.sessionTitle}>{session.title}</strong><small>{generatingSessionIds.includes(session.id) || sendingSessionIds.includes(session.id) ? "生成中 · " : session.title === "新会话" ? "尚无消息 · " : ""}{session.updatedAt ? new Date(session.updatedAt).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }) : ""}</small></button>
+             <button className="session-delete-button" type="button" disabled={contextUpdating || creatingSession || stageUpdating} aria-label={`删除会话：${session.title}`} title={`删除会话：${session.title}`} onClick={() => setDeletingSession({ session, stage: currentStage })}><Icon name="trash" /></button>
+           </div>)}</div> : <p className="session-empty">本阶段还没有会话，可新建会话开始。</p>}
+           {demoSessions.length > 0 && currentStage === "analysis" ? <details className="demo-section" open={demoExpanded} onToggle={(event) => setDemoExpanded(event.currentTarget.open)}><summary className="demo-divider disclosure-summary"><span>演示会话</span><small>只读样例</small><DisclosureIcon /></summary>
+@@ -619,7 +654,17 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
+         </aside>
+ 
+         <section className="workbench-conversation" id="workbench-conversation" aria-labelledby="conversation-title">
+-          <div className="conversation-heading"><div className="conversation-identity"><h2 id="conversation-title" title={activeSession?.title ?? selectedDemo?.title ?? currentInfo.label}>{activeSession?.title ?? selectedDemo?.title ?? currentInfo.label}</h2></div>
++          <div className="conversation-heading"><div className={`conversation-identity ${namingStyles.identity}`}>
++            {renamingSession?.id === activeSessionId && renamingSession?.stage === currentStage && !selectedDemo ? <form className={namingStyles.renameForm} onSubmit={(event) => { event.preventDefault(); void saveSessionName(); }}>
++              <h2 id="conversation-title" className={namingStyles.srOnly}>修改会话名称</h2>
++              <input autoFocus aria-label="会话名称" maxLength={80} value={renamingSession.title} disabled={savingSessionName} onChange={(event) => setRenamingSession({ ...renamingSession, title: event.target.value })} onKeyDown={(event) => { if (event.key === "Escape" && !savingSessionName) { event.preventDefault(); closeSessionRename(); } }} />
++              <button type="submit" disabled={savingSessionName || !renamingSession.title.trim()}>{savingSessionName ? "保存中…" : "保存名称"}</button>
++              <button type="button" disabled={savingSessionName} onClick={closeSessionRename}>取消改名</button>
++              {sessionNameError ? <p className={namingStyles.error} role="alert">{sessionNameError}</p> : null}
++            </form> : <div className={namingStyles.titleRow}><h2 id="conversation-title" title={activeSession?.title ?? selectedDemo?.title ?? currentInfo.label}>{activeSession?.title ?? selectedDemo?.title ?? currentInfo.label}</h2>
++              {activeSession && !selectedDemo ? <button ref={renameSessionButton} type="button" aria-label="修改会话名称" title="修改会话名称" onClick={() => { setRenamingSession({ id: activeSession.id, stage: currentStage, title: activeSession.title }); setSessionNameError(""); }}><Icon name="edit" /></button> : null}
++            </div>}
++          </div>
+             {!selectedDemo && currentStatus === "in_progress" && currentStageState?.sessions.length ? <button className="stage-complete-button" type="button" disabled={stageUpdating || Boolean(stageGenerating)} aria-describedby={stageGenerating ? "stage-generation-note" : undefined} onClick={() => void completeStage()}>完成本阶段</button> : null}
+             {!selectedDemo && currentStatus === "completed" ? <button className="stage-reopen-button" type="button" disabled={stageUpdating} onClick={() => void reopenStage()}>重新打开阶段</button> : null}
+           </div>
+diff --git a/src/components/SessionNaming.module.css b/src/components/SessionNaming.module.css
+new file mode 100644
+index 0000000..e1e3b89
+--- /dev/null
++++ b/src/components/SessionNaming.module.css
+@@ -0,0 +1,9 @@
++.identity { flex: 1; }
++.titleRow { display: flex; align-items: center; gap: 8px; min-width: 0; }
++.titleRow h2, .sessionTitle { white-space: pre; }
++.titleRow button svg { display: block; width: 16px; height: 16px; }
++.renameForm { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
++.renameForm input { flex: 1 1 120px; min-width: 0; max-width: 280px; min-height: 36px; padding: 6px 8px; border: 1px solid var(--work-line); background: var(--work-panel); color: var(--work-type); font: 14px var(--font-app-sans); }
++.renameForm input:focus-visible { outline: 2px solid var(--work-coral); outline-offset: 2px; }
++.error { flex-basis: 100%; margin: 0; color: var(--work-type); font-size: 12px; }
++.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+diff --git a/src/components/WorkRecordList.tsx b/src/components/WorkRecordList.tsx
+index 8375508..5725777 100644
+--- a/src/components/WorkRecordList.tsx
++++ b/src/components/WorkRecordList.tsx
+@@ -40,7 +40,7 @@ export default function WorkRecordList({ projectId }: WorkRecordListProps) {
+   const [showCreate, setShowCreate] = useState(false);
+   const [deletingId, setDeletingId] = useState<string | null>(null);
+   const [pendingDelete, setPendingDelete] = useState<WorkRecord | null>(null);
+-  // 创建面板的名称输入（可选，留空 = 「未命名」+ AI 自动命名兜底）
++  // 创建面板的名称输入（可选，留空显示「未命名」，可随时人工改名）
+   const [newName, setNewName] = useState("");
+   // 行内改名的目标记录 id（配合 InlineNameInput 使用）
+   const [renamingId, setRenamingId] = useState<string | null>(null);
+@@ -213,7 +213,7 @@ export default function WorkRecordList({ projectId }: WorkRecordListProps) {
+           {showCreate && (
+             <div className="mb-6 rounded-lg border border-border bg-card p-4">
+               <p className="mb-3 text-sm text-muted-foreground">
+-                输入名称后回车即创建；留空将显示「未命名」，首次对话后由 AI 自动命名（手动命名后 AI 不再覆盖）。
++                输入名称后回车即创建；留空将显示「未命名」，之后可以手动改名。
+               </p>
+               <div className="flex gap-2">
+                 <Input
+diff --git a/src/lib/auto-name.ts b/src/lib/auto-name.ts
+deleted file mode 100644
+index b3cb62d..0000000
+--- a/src/lib/auto-name.ts
++++ /dev/null
+@@ -1,54 +0,0 @@
+-import { createAICompletion, isLiveAI } from "@/lib/ai";
+-import {
+-  applyMysqlAutomaticWorkRecordName,
+-  mysqlConversationForAutoName,
+-  mysqlMessageCount,
+-} from "@/lib/mysql-conversation";
+-
+-interface AutoNameOptions {
+-  userId?: string;
+-  testName?: string;
+-  forceFailureForTest?: boolean;
+-}
+-
+-/** 自动命名只条件更新默认名，迟到结果绝不覆盖手动命名。 */
+-export async function autoNameMysqlWorkRecord(
+-  tabId: string,
+-  workRecordId: string,
+-  options: AutoNameOptions = {},
+-): Promise<string | null> {
+-  try {
+-    if (options.forceFailureForTest) throw new Error("自动命名测试失败");
+-    if ((await mysqlMessageCount(tabId)) < 3) return null;
+-    if (options.testName)
+-      return applyMysqlAutomaticWorkRecordName(workRecordId, options.testName);
+-    if (!isLiveAI()) return null;
+-    const conversation = (await mysqlConversationForAutoName(tabId))
+-      .map(
+-        (message) =>
+-          `${message.role === "user" ? "用户" : "AI"}: ${message.content}`,
+-      )
+-      .join("\n");
+-    let name = await createAICompletion({
+-      userId: options.userId,
+-      maxTokens: 50,
+-      messages: [
+-        {
+-          role: "system",
+-          content:
+-            "你是一个对话摘要助手。根据对话内容生成一个简短的工作记录名称。直接输出名称（≤20个中文字符），不要加引号、不要解释、不要有任何前缀。名称应概括对话的核心主题。",
+-        },
+-        {
+-          role: "user",
+-          content: `基于以下对话，生成一个简短的工作记录名称（≤20字）：\n\n${conversation}`,
+-        },
+-      ],
+-      timeoutMs: 20_000,
+-    });
+-    name = name.replace(/^["'「『]|["'」』]$/g, "").slice(0, 20);
+-    return name ? applyMysqlAutomaticWorkRecordName(workRecordId, name) : null;
+-  } catch (error) {
+-    console.error("autoNameMysqlWorkRecord error:", error);
+-    return null;
+-  }
+-}
+diff --git a/src/lib/mysql-bootstrap.ts b/src/lib/mysql-bootstrap.ts
+index 365b2f0..c10081a 100644
+--- a/src/lib/mysql-bootstrap.ts
++++ b/src/lib/mysql-bootstrap.ts
+@@ -458,6 +458,13 @@ export const MYSQL_MIGRATIONS = [
+       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+     ],
+   },
++  {
++    id: "0023_v144_session_manual_title",
++    checksum: "10de3d5d2d51b09e94c3f88d10affbb06a9e3bf4ff3f2f44ece13864254ca73c",
++    statements: [
++      "ALTER TABLE iteration_sessions ADD COLUMN title_manually_set BOOLEAN NOT NULL DEFAULT FALSE",
++    ],
++  },
+ ] as const;
+ 
+ export interface MysqlInitializationResult {
+diff --git a/src/lib/mysql-conversation.ts b/src/lib/mysql-conversation.ts
+index a04b8e0..4b22263 100644
+--- a/src/lib/mysql-conversation.ts
++++ b/src/lib/mysql-conversation.ts
+@@ -224,28 +224,6 @@ export async function stopMysqlGeneratingMessage(tabId: string, messageId: strin
+   return result.affectedRows === 1 ? getMysqlMessage(messageId) : null;
+ }
+ 
+-export async function applyMysqlAutomaticWorkRecordName(workRecordId: string, name: string): Promise<string | null> {
+-  const [result] = await getMysqlPool().execute<ResultSetHeader>(
+-    "UPDATE work_records SET name = ? WHERE id = ? AND name = '未命名'",
+-    [name, workRecordId]
+-  );
+-  return result.affectedRows === 1 ? name : null;
+-}
+-
+-export async function mysqlMessageCount(tabId: string) {
+-  const [rows] = await getMysqlPool().query<Array<RowDataPacket & { count: number }>>(
+-    "SELECT COUNT(*) AS count FROM messages WHERE tab_id = ?", [tabId]
+-  );
+-  return Number(rows[0]?.count ?? 0);
+-}
+-
+-export async function mysqlConversationForAutoName(tabId: string) {
+-  const [rows] = await getMysqlPool().query<Array<MysqlMessage & RowDataPacket>>(
+-    `SELECT ${MESSAGE_COLUMNS} FROM messages WHERE tab_id = ? ORDER BY timestamp ASC, id ASC LIMIT 20`, [tabId]
+-  );
+-  return rows.map(mapMessage);
+-}
+-
+ export function mysqlAgentType(tab: MysqlConversationTab): AgentType {
+   return tab.agent_type;
+ }
+diff --git a/src/lib/mysql-iteration-workbench.ts b/src/lib/mysql-iteration-workbench.ts
+index fc8299d..b23b293 100644
+--- a/src/lib/mysql-iteration-workbench.ts
++++ b/src/lib/mysql-iteration-workbench.ts
+@@ -27,6 +27,19 @@ const STAGE_AGENT: Record<WorkbenchStage, AgentType> = {
+   prd: "mvp_prd",
+   tickets: "ticket_splitter",
+ };
++const titleSegmenter = new Intl.Segmenter("zh-CN", { granularity: "grapheme" });
++
++/** 按用户看到的字符截取，保留空格、标点、组合字符和 emoji 序列。 */
++function firstPromptTitle(content: string) {
++  let title = "";
++  let count = 0;
++  for (const { segment } of titleSegmenter.segment(content)) {
++    if (count++ === 10) break;
++    title += segment;
++  }
++  return title;
++}
++
+ const stageToStorage = (stage: WorkbenchStage) => stage === "analysis" ? "requirements" : stage === "tickets" ? "tasks" : stage;
+ const stageFromStorage = (stage: string): WorkbenchStage => stage === "requirements" ? "analysis" : stage === "tasks" ? "tickets" : stage as WorkbenchStage;
+ 
+@@ -155,6 +168,21 @@ export async function findOwnedIterationSession(iterationId: string, sessionId:
+   return rows[0] ? { ...rows[0], stage: stageFromStorage(rows[0].stage) } : null;
+ }
+ 
++export async function renameMysqlIterationSession(iterationId: string, sessionId: string, userId: string, title: string) {
++  const connection = await getMysqlPool().getConnection();
++  const updatedAt = new Date();
++  try {
++    await connection.beginTransaction();
++    if (!(await lockOwnedIteration(connection, iterationId, userId))) { await connection.rollback(); return null; }
++    const [result] = await connection.execute<ResultSetHeader>(
++      "UPDATE iteration_sessions SET title = ?, title_manually_set = 1, updated_at = ? WHERE id = ? AND iteration_id = ?",
++      [title, updatedAt, sessionId, iterationId]);
++    if (!result.affectedRows) { await connection.rollback(); return null; }
++    await connection.commit();
++    return { id: sessionId, title, updated_at: updatedAt };
++  } catch (error) { await connection.rollback(); throw error; } finally { connection.release(); }
++}
++
+ export async function deleteMysqlIterationSession(iterationId: string, sessionId: string, userId: string) {
+   const connection = await getMysqlPool().getConnection();
+   try {
+@@ -326,7 +354,7 @@ export async function generateMysqlIterationMessage(input: {
+     if (!input.content?.trim()) return { kind: "empty" as const };
+     const now = new Date();
+     const id = randomUUID();
+-    userMessage = { id, role: "user", content: input.content.trim(), createdAt: now };
++    userMessage = { id, role: "user", content: input.content, createdAt: now };
+   }
+   const prompt = await buildMysqlIterationPrompt(input.iterationId, input.sessionId, input.userId, session.stage);
+   if (!prompt) return { kind: "not-found" as const };
+@@ -361,7 +389,11 @@ export async function generateMysqlIterationMessage(input: {
+       userMessage.createdAt = new Date(Math.max(userMessage.createdAt.valueOf(), latestCreatedAt + 1));
+       createdAt = new Date(Math.max(createdAt.valueOf(), userMessage.createdAt.valueOf() + 1));
+       await reservation.execute<ResultSetHeader>("INSERT INTO iteration_session_messages (id, session_id, role, content, status, created_at) VALUES (?, ?, 'user', ?, 'completed', ?)", [userMessage.id, input.sessionId, userMessage.content, userMessage.createdAt]);
+-      await reservation.execute<ResultSetHeader>("UPDATE iteration_sessions SET title = IF(title = '新会话', ?, title), updated_at = ? WHERE id = ?", [userMessage.content.slice(0, 80), new Date(), input.sessionId]);
++      // 只在首条用户消息落库的事务内确定默认名；人工名称（包括“新会话”）优先。
++      if (!freshMessages.some((message) => message.role === "user")) {
++        await reservation.execute<ResultSetHeader>("UPDATE iteration_sessions SET title = ? WHERE id = ? AND title = '新会话' AND title_manually_set = 0", [firstPromptTitle(userMessage.content), input.sessionId]);
++      }
++      await reservation.execute<ResultSetHeader>("UPDATE iteration_sessions SET updated_at = ? WHERE id = ?", [new Date(), input.sessionId]);
+     } else createdAt = new Date(Math.max(createdAt.valueOf(), latestCreatedAt + 1));
+     await reservation.execute<ResultSetHeader>("INSERT INTO iteration_session_messages (id, session_id, role, content, status, created_at) VALUES (?, ?, 'assistant', '', 'generating', ?)", [assistantId, input.sessionId, createdAt]);
+     await reservation.commit();
+@@ -442,8 +474,7 @@ export async function generateMysqlIterationMessage(input: {
+         messageId: assistantId, content: prototypeHtml.content,
+       });
+       if (prototypeHtml.kind === "valid" && input.forceSnapshotFailure) throw new Error("回放强制 HTML 快照写入失败");
+-      const title = userMessage?.content.slice(0, 80) || "新会话";
+-      await connection.execute<ResultSetHeader>("UPDATE iteration_sessions SET title = IF(title = '新会话', ?, title), updated_at = ? WHERE id = ?", [title, new Date(), input.sessionId]);
++      await connection.execute<ResultSetHeader>("UPDATE iteration_sessions SET updated_at = ? WHERE id = ?", [new Date(), input.sessionId]);
+       await connection.commit();
+     } catch (error) { await connection.rollback(); throw error; } finally { connection.release(); }
+     return { kind: "generated" as const, userMessage, assistantMessage: { id: assistantId, role: "assistant" as const, content: answer, status: "completed", errorMessage: null, createdAt } };

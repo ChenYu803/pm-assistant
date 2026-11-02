@@ -1,0 +1,17 @@
+import { chromium } from "playwright-core";
+const browser = await chromium.launch({ executablePath: "D:/DevCache/ms-playwright/chromium-1243/chrome-win64/chrome.exe" });
+const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+const page = await ctx.newPage();
+const email = `darkcheck${Date.now()}@example.com`;
+await page.goto("http://localhost:3000/register", { waitUntil: "networkidle" });
+await page.fill('input[type="email"]', email);
+const pw = page.locator('input[type="password"]');
+await pw.nth(0).fill("Passw0rd!2026");
+await pw.nth(1).fill("Passw0rd!2026");
+await page.click('button[type="submit"]');
+await page.waitForTimeout(4000);
+console.log("after register url:", page.url());
+await page.screenshot({ path: ".scratch/v1.43/dark-projects.png" });
+console.log("text:", (await page.evaluate(() => document.body.innerText)).slice(0, 200).replace(/\n/g, " | "));
+await ctx.storageState({ path: ".scratch/v1.43/auth-state.json" });
+await browser.close();

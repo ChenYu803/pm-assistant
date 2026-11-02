@@ -1,0 +1,82 @@
+import fs from "node:fs";
+const src = fs.readFileSync("src/components/prototype/HeroTurntablePrototype.tsx", "utf8");
+
+// 1) 取「常量 + 运动学 hook」这一段（到 export default 之前）
+const cut = src.indexOf("export default function HeroTurntablePrototype()");
+let head = src.slice(0, cut).trimEnd();
+
+// 2) 取舞台 JSX
+const startMark = '            <div className={styles.stage} data-turntable>';
+const endMark = '        <div className={landing.container + " " + landing.heroBottom}>';
+const sIdx = src.indexOf(startMark);
+const eIdx = src.indexOf(endMark);
+let stage = src.slice(sIdx, eIdx).trimEnd();
+// 去掉舞台之后多出来的一个收尾 </div>（它关的是 heroLayout）
+if (stage.endsWith("</div>")) stage = stage.slice(0, stage.lastIndexOf("</div>")).trimEnd();
+
+// 3) 头部的 import 与文档注释改写
+head = head
+  .replace('import Link from "next/link";\n', "")
+  .replace('import landing from "@/components/LandingPage.module.css";\n', "")
+  .replace('import styles from "./HeroTurntablePrototype.module.css";', 'import styles from "./HeroTurntable.module.css";\nimport { deliverables } from "./landingDeliverables";');
+
+// 去掉旧文档注释与本地 deliverables 常量
+head = head.replace(/\/\*\*[\s\S]*?\*\/\n(?=const deliverables)/, `/**
+ * 首屏右侧的「成果转台」：同一份成果的四个面（需求分析 / 原型 / PRD / 任务拆分）。
+ *
+ * 指针横向拖动让整台带惯性转过去，松手吸附到 90° 档位；无人操作时自己缓慢转，
+ * 用来引起第一次接触。每一面按面法线与光向的夹角压暗，而不是按「正对屏幕的程度」
+ * 对称压暗——有方向的受光才读得出这是物体，不是两块并排的面板。
+ * 用 CSS 3D 组合而非逐帧物理积分：静止时零开销，静帧就是设计终态。
+ */
+`);
+head = head.replace(/const deliverables = \[[\s\S]*?\] as const;\n\n/, "");
+
+// 去掉只在原型外壳里用的箭头图标
+head = head.replace(/function Arrow\([\s\S]*?\n\}\n\n/, "");
+
+// 4) 舞台 JSX 里的文案替换
+stage = stage
+  .replace(
+    '<span><b>同一份成果，四个面。</b> 转过去看，它怎么长出来。</span>',
+    "<span><b>AI开发工作流</b></span>",
+  )
+  .replace(
+    `            <div className={styles.hint}>
+              <i aria-hidden="true" />
+              <span>它会慢慢转 —— 按住就能拨到任意一面</span>
+            </div>`,
+    `            <div className={styles.hint}>
+              <span>可拖拽旋转</span>
+            </div>`,
+  );
+
+// 5) 缩进：舞台 JSX 从 12 空格缩进改到 6（组件 return 内）
+stage = stage
+  .split("\n")
+  .map((line) => (line.startsWith("            ") ? line.slice(6) : line))
+  .join("\n");
+
+const out = `${head}
+
+export default function HeroTurntable() {
+  const drumRef = useRef<HTMLDivElement>(null);
+  const [face, setFace] = useState(0);
+  const onFaceChange = useCallback((next: number) => setFace(next), []);
+  const goTo = useTurntable(drumRef, onFaceChange);
+
+  const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+    event.preventDefault();
+    const step = event.key === "ArrowRight" ? 1 : -1;
+    goTo.current(wrapFace(face + step));
+  };
+
+  return (
+${stage}
+  );
+}
+`;
+
+fs.writeFileSync("src/components/HeroTurntable.tsx", out);
+console.log(out.slice(0, 1400));

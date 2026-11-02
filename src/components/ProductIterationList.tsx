@@ -213,7 +213,6 @@ export default function ProductIterationList({ projectId }: ProductIterationList
       <main className="iteration-main">
         <header className="iteration-project-head">
           <div>
-            <p className="iteration-eyebrow">SELECTED PROJECT</p>
             <h2>{project?.name || "项目"}</h2>
             <div className="iteration-project-meta"><span>最近更新 {project?.created_at ? formatUpdated(project.created_at) : "刚刚"}</span></div>
           </div>

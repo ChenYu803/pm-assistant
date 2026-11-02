@@ -1,0 +1,71 @@
+/* 原型页外壳：惰性的假导航与底部说明条，只服务 /prototype/hero，不进正式页。 */
+.inertNav > span {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--muted);
+}
+
+.inertAction {
+  display: inline-flex;
+  align-items: center;
+  gap: 24px;
+  min-height: 44px;
+}
+
+.bar {
+  position: fixed;
+  z-index: 30;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: calc(100vw - 32px);
+  padding: 11px 16px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--ground) 88%, transparent);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .38);
+  color: var(--muted);
+  font: 12px/1.4 var(--sans);
+  backdrop-filter: blur(8px);
+}
+
+.bar b {
+  color: var(--accent);
+  font: 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.bar span {
+  color: var(--type);
+}
+
+.bar a {
+  color: var(--muted);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.bar a:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* 窄屏：底部提示条只留「原型」与「退出」，否则一行塞不下、字会被挤成竖排。 */
+@media (max-width: 720px) {
+  .bar {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    transform: none;
+    max-width: none;
+    justify-content: space-between;
+  }
+
+  .bar span {
+    display: none;
+  }
+}

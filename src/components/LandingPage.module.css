@@ -8,7 +8,7 @@
   --accent: #ed6f5c;
   --line: #45463a;
   --ease-out: cubic-bezier(.16, 1, .3, 1);
-  --serif: "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC", SimSun, Georgia, serif;
+  --serif: var(--font-display);
   --sans: "Inter Tight", Inter, system-ui, sans-serif;
   min-height: 100%;
   flex-shrink: 0;
@@ -26,14 +26,6 @@
 .shell :is(a, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 5px; }
 .shell :is(h1, h2, h3, p, blockquote) { margin: 0; }
 .container { width: min(1360px, calc(100% - 112px)); margin-inline: auto; }
-.header { position: relative; z-index: 5; background: var(--ground); border-bottom: 1px solid var(--line); }
-.nav { display: flex; align-items: center; justify-content: space-between; min-height: 88px; gap: 28px; }
-.brand { display: inline-flex; align-items: center; gap: 12px; font-weight: 700; white-space: nowrap; }
-.brandMark { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--accent); border-radius: 50%; color: var(--accent); font: 21px/1 Georgia, serif; }
-.navLinks { display: flex; gap: 32px; font-size: 13px; color: var(--muted); }
-.navLinks a, .authLink { display: flex; align-items: center; min-height: 44px; transition: color 160ms ease; }
-.navLinks a:hover, .authLink:hover { color: var(--accent); }
-.authLink { font-size: 13px; text-underline-offset: 6px; }
 .arrow { display: inline-block; flex: none; width: 22px; height: 22px; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .shell h1, .shell h2 { font-family: var(--serif); font-weight: 400; letter-spacing: -.03em; }
 .shell h1 { font-size: clamp(52px, 5.8vw, 86px); line-height: 1.22; }
@@ -42,44 +34,34 @@
 .hero { padding: 80px 0 0; }
 .heroLayout { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(28px, 4vw, 70px); align-items: center; }
 .heroCopy { max-width: 38ch; margin-top: 30px !important; color: var(--muted); font-size: 16px; line-height: 1.85; }
-.pathActions { display: flex; align-items: flex-start; flex-direction: column; gap: 18px; margin-top: 34px; }
-.primaryAction, .secondaryAction { display: inline-flex; align-items: center; justify-content: center; gap: 28px; min-height: 54px; font-size: 14px; font-weight: 650; }
-.shell .primaryAction { padding: 0 22px; background: var(--accent); color: #171713; border: 1px solid var(--accent); transition: background-color 180ms ease; }
-.shell .primaryAction:hover { background: #da8770; }
+.pathActions { display: flex; align-items: flex-start; flex-direction: column; gap: 14px; margin-top: 34px; }
+/* 两个入口等重：同底色、同尺寸、同悬停动效，只有去向不同。 */
+.primaryAction, .secondaryAction { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 54px; max-width: 100%; padding: 0 24px; font-size: 14px; font-weight: 650; text-align: center; white-space: nowrap; }
+.shell .primaryAction, .shell .secondaryAction { background: var(--accent); color: #171713; border: 1px solid var(--accent); transition: background-color 180ms ease, border-color 180ms ease; }
+.shell .primaryAction:hover, .shell .secondaryAction:hover { background: #da8770; border-color: #da8770; }
 .primaryAction .arrow, .secondaryAction .arrow { transition: transform 280ms var(--ease-out); }
 .primaryAction:hover .arrow, .secondaryAction:hover .arrow { transform: translate(3px, -3px); }
-.secondaryAction { color: var(--type); border-bottom: 1px solid var(--line); min-height: 44px; justify-content: space-between; }
-.secondaryAction:hover { border-color: var(--accent); }
 .heroFootnote { display: block; margin-top: 25px; color: var(--muted); font-size: 12px; }
 .heroBottom { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 76px; padding-block: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
 .heroBottom a { display: inline-flex; align-items: center; gap: 24px; min-height: 44px; }
 .heroBottom .arrow { transform: rotate(90deg); color: var(--accent); }
-.artifactStage { --aim-x: 0; --aim-y: 0; min-width: 0; }
-.artifactCaption, .deliveryCaption { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 12px; padding-block: 18px; border-bottom: 1px solid var(--line); }
-.artifactSpace { position: relative; height: 390px; perspective: 1000px; margin: 22px 10px 28px; overflow: clip; }
-.artifactStack { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateX(calc(var(--aim-y) * -6deg)) rotateY(calc(var(--aim-x) * 9deg)); }
-.heroSheet { position: absolute; inset: 24px 36px 26px 14px; padding: 26px; background: var(--surface); border: 1px solid #656452; color: var(--type); transform: translate3d(calc(var(--stack-order) * 16px), calc(var(--stack-order) * -13px), calc(var(--stack-order) * -24px)) rotate(calc(var(--stack-order) * 5deg - 5deg)); z-index: calc(5 - var(--stack-order)); transition: transform 650ms var(--ease-out), background-color 280ms ease; }
-.heroSheetActive { background: var(--raised); border-color: #a18c6a; }
+.artifactStage { min-width: 0; }
+.deliveryCaption { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 12px; padding-block: 18px; border-bottom: 1px solid var(--line); }
 .sheetFile { display: block; color: var(--accent); font: 12px/1.5 var(--sans); }
 .sheetNumber { position: absolute; top: 12px; right: 24px; color: #6e6c57; font: 60px/1.2 Georgia, serif; }
-.sheetTitle { position: relative; display: block; margin: 48px 0 28px; font: 400 clamp(25px, 2.5vw, 37px)/1.25 var(--serif); }
 .sheetLines { display: grid; gap: 12px; }
 .sheetLines > span { display: flex; align-items: baseline; gap: 16px; color: #cdc4ac; font-size: 13px; border-bottom: 1px solid var(--line); padding-bottom: 7px; }
 .sheetLines small { color: var(--muted); font-size: 10px; font-variant-numeric: tabular-nums; }
 .sheetFooter { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 24px; color: var(--muted); font-size: 10px; }
-.artifactControls { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-block: 1px solid var(--line); }
-.artifactControls button { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 4px; min-height: 66px; background: var(--ground); color: var(--muted); border: 0; border-top: 2px solid transparent; padding: 9px 8px; font: 12px/1.5 var(--sans); cursor: pointer; transition: color 160ms ease, background-color 160ms ease; }
-.artifactControls button > span { font-size: 10px; font-variant-numeric: tabular-nums; }
-.artifactControls button[aria-pressed="true"] { border-top-color: var(--accent); color: var(--accent); background: #25241c; }
-.artifactControls button:hover { background: var(--surface); color: var(--type); }
 .about { padding: 120px 0; background: #1e1f19; border-block: 1px solid var(--line); }
 .sectionHead { display: grid; grid-template-columns: 1.35fr 1fr; align-items: end; gap: 80px; margin-bottom: 60px; }
+.sectionHeadSingle { grid-template-columns: 1fr; }
 .sectionLead { max-width: 38ch; color: var(--muted); font-size: 16px; line-height: 1.85; }
 .concernList { border-top: 1px solid #73705e; }
 .concernItem { display: grid; grid-template-columns: 50px 1.5fr 1fr; gap: 30px; padding: 32px 0; border-bottom: 1px solid var(--line); }
 .concernNum { color: var(--accent); font: 12px/1.8 var(--sans); }
 .concernItem h3 { max-width: 26ch; font: 400 clamp(20px, 1.9vw, 27px)/1.55 var(--serif); }
-.concernItem p { font-size: 14px; color: var(--muted); }
+.concernItem p { font-size: 17px; line-height: 1.8; color: var(--muted); }
 .how { padding: 120px 0 98px; }
 .experienceFlow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .experienceStep { position: relative; min-height: 230px; padding: 26px 24px 12px 0; border-top: 1px solid #78705a; }
@@ -106,12 +88,7 @@
 .deliverySheet h3 { position: relative; margin: 44px 0 30px; font: 400 clamp(25px, 2.7vw, 40px)/1.3 var(--serif); }
 .deliveryFootnote { display: flex; align-items: center; justify-content: space-between; min-height: 44px; color: var(--muted); font-size: 12px; }
 .deliveryFootnote .arrow { color: var(--accent); }
-.testimonial { padding-block: 130px; background: #1b1b17; }
-.quoteLayout { display: grid; grid-template-columns: 110px 1fr; gap: 32px; }
-.quoteMark { color: var(--accent); font: 120px/.9 Georgia, serif; }
-.quoteLayout blockquote p { max-width: 25ch; font: 400 clamp(28px, 3.7vw, 50px)/1.5 var(--serif); }
-.quoteLayout blockquote footer { margin-top: 32px; font-size: 12px; color: var(--muted); }
-.cta { padding-block: 100px 110px; border-top: 1px solid var(--line); }
+.cta { padding-block: 78px 86px; border-top: 1px solid var(--line); }
 .ctaInner { display: flex; justify-content: space-between; align-items: end; gap: 44px; }
 .ctaCopy { max-width: 55ch; margin-top: 24px !important; color: var(--muted); }
 .ctaInner > a { flex: none; }
@@ -138,8 +115,6 @@
 @media (max-width: 1100px) {
   .container { width: calc(100% - 64px); }
   .heroLayout { gap: 32px; }
-  .heroSheet { inset-inline: 0 36px; padding: 22px; }
-  .sheetTitle { font-size: 28px; }
   .practicePin { gap: 40px; }
   .sectionHead { gap: 48px; }
 }
@@ -151,9 +126,6 @@
   .heroWords { max-width: 720px; }
   .heroCopy { max-width: 44ch; }
   .artifactStage { max-width: 620px; width: 100%; justify-self: center; }
-  .artifactSpace { height: 400px; }
-  .heroSheet { inset-inline: 24px 70px; }
-  .sheetTitle { font-size: 34px; }
   .heroBottom { margin-top: 48px; }
   .sectionHead { grid-template-columns: 1fr; gap: 26px; margin-bottom: 42px; }
   .concernItem { grid-template-columns: 32px 1fr; gap: 12px 22px; }
@@ -168,7 +140,6 @@
   .deliverySheet h3 { font-size: 25px; }
   .sheetNumber { font-size: 48px; }
   .ctaInner { align-items: flex-start; flex-direction: column; gap: 32px; }
-  .quoteLayout { grid-template-columns: 60px 1fr; gap: 16px; }
 }
 @media (max-width: 600px) {
   .container { width: calc(100% - 40px); }
@@ -183,14 +154,10 @@
   .heroFootnote { font-size: 11px; }
   .primaryAction, .secondaryAction { gap: 16px; font-size: 13px; }
   .heroLayout { gap: 38px; }
-  .artifactCaption { font-size: 11px; }
-  .artifactSpace { height: 340px; margin-inline: 0; }
-  .heroSheet { inset: 35px 37px 12px 0; padding: 20px; }
-  .sheetTitle { margin: 42px 0 23px; font-size: 28px; }
+
   .sheetLines { gap: 9px; }
   .sheetLines > span { font-size: 12px; padding-bottom: 5px; }
   .sheetFooter { margin-top: 20px; font-size: 9px; }
-  .artifactControls button { font-size: 11px; padding-inline: 6px; }
   .heroBottom { margin-top: 32px; font-size: 10px; gap: 12px; }
   .heroBottom > span { max-width: 17ch; }
   .heroBottom a { gap: 9px; }
@@ -206,18 +173,11 @@
   .deliveryDeck { grid-template-columns: 1fr; }
   .deliverySheet { padding: 24px; }
   .deliverySheet h3 { margin: 42px 0 24px; font-size: 30px; }
-  .testimonial { padding-block: 76px; }
-  .quoteLayout { grid-template-columns: 1fr; gap: 0; }
-  .quoteMark { font-size: 80px; }
-  .quoteLayout blockquote p { font-size: 28px; }
-  .quoteLayout blockquote footer { line-height: 1.8; }
-  .cta { padding-block: 76px; }
+  .cta { padding-block: 64px; }
   .ctaCopy { font-size: 14px; }
   .footerInner { flex-direction: column; gap: 12px; }
   .footerLinks { gap: 20px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .shell *, .shell *::before, .shell *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
-  .artifactStack { transform: none; }
-  .heroSheet { transform: translate(calc(var(--stack-order) * 9px), calc(var(--stack-order) * -7px)); }
 }

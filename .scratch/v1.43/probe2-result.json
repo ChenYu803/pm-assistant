@@ -1,0 +1,165 @@
+{
+  "tokens": {
+    "scopeFound": true,
+    "declared": {
+      "--work-paper": "#171713",
+      "--work-bone": "#efe6d1",
+      "--work-ink": "#e9dfc8",
+      "--work-type": "#e9dfc8",
+      "--work-panel": "#262720",
+      "--work-surface": "#1e1f19",
+      "--work-muted": "#b1ab98",
+      "--work-line": "#e9dfc829",
+      "--work-coral": "#ed6f5c",
+      "--work-accent": "#ed6f5c",
+      "--work-focus": "#ed6f5c",
+      "--work-success": "#6aa583"
+    },
+    "accentRgbOnScope": "rgb(237, 111, 92)"
+  },
+  "accentUsage": {
+    "accentRgb": "rgb(237, 111, 92)",
+    "hits": [
+      {
+        "tag": "B",
+        "cls": "",
+        "text": "产品迭代 01",
+        "fontSize": "12px",
+        "fontWeight": "500",
+        "opacity": "1"
+      },
+      {
+        "tag": "SPAN",
+        "cls": "stage-index",
+        "text": "01",
+        "fontSize": "11px",
+        "fontWeight": "400",
+        "opacity": "1"
+      },
+      {
+        "tag": "BUTTON",
+        "cls": "composer-context-button",
+        "text": "当前上下文 · 0 个文件",
+        "fontSize": "12px",
+        "fontWeight": "500",
+        "opacity": "1"
+      }
+    ]
+  },
+  "disabled": [
+    {
+      "text": "发送消息",
+      "cls": "",
+      "disabled": true,
+      "ariaDisabled": null,
+      "selfOpacity": "0.48",
+      "effectiveOpacity": 0.48,
+      "color": "rgb(233, 223, 200)",
+      "bg": "rgb(38, 39, 32)",
+      "borderColor": "rgba(233, 223, 200, 0.16)",
+      "borderWidth": "0.8px",
+      "cursor": "not-allowed",
+      "fontSize": "13px",
+      "fontWeight": "600"
+    }
+  ],
+  "zoneBorders": {
+    ".workbench-sessions": {
+      "bg": "rgb(38, 39, 32)",
+      "color": "rgb(233, 223, 200)",
+      "borderTop": "0px solid rgba(233, 223, 200, 0.14)",
+      "borderRight": "0px solid rgba(233, 223, 200, 0.14)",
+      "borderBottom": "0px solid rgba(233, 223, 200, 0.14)",
+      "borderLeft": "0px solid rgba(233, 223, 200, 0.14)",
+      "boxShadow": "none",
+      "rect": {
+        "x": 25,
+        "w": 232,
+        "h": 830
+      }
+    },
+    ".workbench-conversation": {
+      "bg": "rgb(30, 31, 25)",
+      "color": "rgb(233, 223, 200)",
+      "borderTop": "0px solid rgba(233, 223, 200, 0.14)",
+      "borderRight": "0px solid rgba(233, 223, 200, 0.14)",
+      "borderBottom": "0px solid rgba(233, 223, 200, 0.14)",
+      "borderLeft": "0px solid rgba(233, 223, 200, 0.14)",
+      "boxShadow": "none",
+      "rect": {
+        "x": 257,
+        "w": 799,
+        "h": 830
+      }
+    },
+    ".workbench-context": {
+      "bg": "rgb(38, 39, 32)",
+      "color": "rgb(233, 223, 200)",
+      "borderTop": "0px solid rgba(233, 223, 200, 0.16)",
+      "borderRight": "0px solid rgba(233, 223, 200, 0.16)",
+      "borderBottom": "0px solid rgba(233, 223, 200, 0.16)",
+      "borderLeft": "0.8px solid rgba(233, 223, 200, 0.16)",
+      "boxShadow": "none",
+      "rect": {
+        "x": 1056,
+        "w": 344,
+        "h": 830
+      }
+    }
+  },
+  "stageTabs": {
+    "barFound": false,
+    "barCls": null,
+    "count": 4,
+    "tabs": [
+      {
+        "text": "01需求分析未开始",
+        "cls": "workbench-stage",
+        "cursor": "pointer",
+        "color": "rgb(233, 223, 200)",
+        "bg": "rgb(38, 39, 32)",
+        "borderBottom": "0px none rgb(233, 223, 200)",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "opacity": "1",
+        "ariaSelected": null
+      },
+      {
+        "text": "02原型设计未开始",
+        "cls": "workbench-stage",
+        "cursor": "pointer",
+        "color": "rgb(177, 171, 152)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderBottom": "0px none rgb(177, 171, 152)",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "opacity": "1",
+        "ariaSelected": null
+      },
+      {
+        "text": "03PRD未开始",
+        "cls": "workbench-stage",
+        "cursor": "pointer",
+        "color": "rgb(177, 171, 152)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderBottom": "0px none rgb(177, 171, 152)",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "opacity": "1",
+        "ariaSelected": null
+      },
+      {
+        "text": "04任务拆分未开始",
+        "cls": "workbench-stage",
+        "cursor": "pointer",
+        "color": "rgb(177, 171, 152)",
+        "bg": "rgba(0, 0, 0, 0)",
+        "borderBottom": "0px none rgb(177, 171, 152)",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "opacity": "1",
+        "ariaSelected": null
+      }
+    ]
+  }
+}

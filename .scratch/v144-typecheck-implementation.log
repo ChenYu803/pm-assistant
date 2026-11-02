@@ -1,0 +1,5 @@
+.next/dev/types/validator.ts(557,39): error TS2307: Cannot find module '../../../src/app/api/verify/conditional-auto-naming/route.js' or its corresponding type declarations.
+.next/dev/types/validator.ts(575,39): error TS2307: Cannot find module '../../../src/app/api/work-records/[id]/auto-name/route.js' or its corresponding type declarations.
+.next/types/validator.ts(548,39): error TS2307: Cannot find module '../../src/app/api/verify/conditional-auto-naming/route.js' or its corresponding type declarations.
+.next/types/validator.ts(566,39): error TS2307: Cannot find module '../../src/app/api/work-records/[id]/auto-name/route.js' or its corresponding type declarations.
+src/components/ChatArea.tsx(1260,20): error TS2304: Cannot find name 'requestAutomaticName'.

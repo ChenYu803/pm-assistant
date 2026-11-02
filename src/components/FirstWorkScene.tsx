@@ -105,11 +105,6 @@ export default function FirstWorkScene() {
 
   return (
     <div ref={pageRef} className={`${styles.page} ${styles.scenePage}`}>
-      <div className={styles.topline}><div className={`${styles.container} ${styles.toplineInner}`}><span>AI PRODUCT FIELD / WORK SCENE 01</span><span>你的选择不会改变后续路线</span></div></div>
-      <header className={`${styles.nav} ${styles.container}`}>
-        <Link className={styles.brand} href="/onboarding/brief"><span className={styles.brandMark} aria-hidden="true">A</span><span>AI 产品现场</span></Link>
-        <Link className={styles.navBack} href="/onboarding/brief">← 返回任务简报</Link>
-      </header>
       <main>
         <section className={`${styles.container} ${styles.sceneIntro} ${styles.scrollReveal}`} data-od-id="scene-intro" data-motion-key="scene-1-intro">
           <span className={styles.sceneNo}>01 / 06</span><div><p className={styles.eyebrow}>工作场景一 · 需求收集</p><h1>会议室里，前辈问你：<br /><em>我们该从哪里开始？</em></h1><p>项目还没有开始写功能。你需要先确认大学生在学习中真正遇到了什么问题。现在，请判断哪些方法可以用来收集需求。</p></div>

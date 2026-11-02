@@ -1,0 +1,10 @@
+import fs from "node:fs";
+const src = fs.readFileSync("src/components/prototype/HeroTurntablePrototype.module.css", "utf8").split("\n");
+const at = (n) => src[n - 1];
+const idx = (needle) => src.findIndex((l) => l.startsWith(needle)) + 1;
+const inertNav = idx(".inertNav");
+const bar = idx(".bar {");
+const media1180 = idx("@media (max-width: 1180px)");
+const m720 = idx("/* 窄屏：底部提示条");
+console.log({ inertNav, bar, media1180, m720, len: src.length });
+console.log("check:", at(inertNav), "|", at(bar), "|", at(m720), "|", at(m720 - 2), at(m720 - 1));

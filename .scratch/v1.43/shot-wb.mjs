@@ -1,0 +1,21 @@
+import { chromium } from "playwright-core";
+const browser = await chromium.launch({ executablePath: "D:/DevCache/ms-playwright/chromium-1243/chrome-win64/chrome.exe" });
+const ctx = await browser.newContext({ viewport: { width: 1440, height: 1000 }, storageState: ".scratch/v1.43/auth-state.json" });
+const page = await ctx.newPage();
+await page.goto("http://localhost:3000/projects", { waitUntil: "networkidle" });
+await page.waitForTimeout(800);
+// 新建项目
+await page.getByRole("button", { name: "新建一个项目" }).first().click();
+await page.waitForTimeout(600);
+const dlg = page.locator('[role="dialog"]').first();
+console.log("dialog text:", (await dlg.innerText()).replace(/\n/g, " | ").slice(0, 160));
+const inputs = dlg.locator("input, textarea");
+console.log("fields:", await inputs.count());
+if (await inputs.count()) await inputs.first().fill("暗色验收项目");
+await page.screenshot({ path: ".scratch/v1.43/dark-dialog.png" });
+await dlg.getByRole("button", { name: /创建|确定|保存/ }).first().click();
+await page.waitForTimeout(3000);
+await page.screenshot({ path: ".scratch/v1.43/dark-projects2.png" });
+console.log("url:", page.url());
+console.log("body:", (await page.evaluate(() => document.body.innerText)).replace(/\n/g, " | ").slice(0, 300));
+await browser.close();

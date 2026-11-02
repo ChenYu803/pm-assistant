@@ -1,0 +1,130 @@
+{
+  "pass": 23,
+  "fail": 0,
+  "aiMode": "replay",
+  "workflows": [
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "legacyTimeout": "locator.waitFor: Timeout 1000ms exceeded.",
+      "mobileNavigation": null,
+      "sessionCreated": true
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "legacyTimeout": "locator.waitFor: Timeout 1000ms exceeded.",
+      "mobileNavigation": {
+        "navigationVisible": true,
+        "sessionsReachable": true,
+        "filesReachable": true,
+        "conversationReachable": true
+      },
+      "sessionCreated": true
+    }
+  ],
+  "screenshots": [
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-foundation-diagnosis-lHi2Aj\\foundation-1440-focused-before-create.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-foundation-diagnosis-lHi2Aj\\foundation-1440-focused-after-create.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-foundation-diagnosis-lHi2Aj\\foundation-390-focused-before-create.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-foundation-diagnosis-lHi2Aj\\foundation-390-focused-after-create.png"
+  ],
+  "assertions": [
+    {
+      "name": "发送聊天前确认服务端固定回放",
+      "okay": true
+    },
+    {
+      "name": "浏览器回放开始前没有用户",
+      "okay": true
+    },
+    {
+      "name": "1440×900 正式注册成功进入项目页",
+      "okay": true
+    },
+    {
+      "name": "1440×900 显式退出清除认证",
+      "okay": true
+    },
+    {
+      "name": "1440×900 原账号登录成功",
+      "okay": true
+    },
+    {
+      "name": "1440×900 新建目标没有默认选项",
+      "okay": true
+    },
+    {
+      "name": "1440×900 第一轮目标保存且稳定编号为 1",
+      "okay": true
+    },
+    {
+      "name": "1440×900 复现原定位超时且旧按钮不存在",
+      "okay": true
+    },
+    {
+      "name": "1440×900 新空状态入口可见且可点击",
+      "okay": true
+    },
+    {
+      "name": "1440×900 初始四阶段未创建会话",
+      "okay": true
+    },
+    {
+      "name": "1440×900 新入口成功创建真实会话并进入进行中",
+      "okay": true
+    },
+    {
+      "name": "1440×900 会话已持久化且输入框可用",
+      "okay": true
+    },
+    {
+      "name": "390×844 正式注册成功进入项目页",
+      "okay": true
+    },
+    {
+      "name": "390×844 显式退出清除认证",
+      "okay": true
+    },
+    {
+      "name": "390×844 原账号登录成功",
+      "okay": true
+    },
+    {
+      "name": "390×844 新建目标没有默认选项",
+      "okay": true
+    },
+    {
+      "name": "390×844 第一轮目标保存且稳定编号为 1",
+      "okay": true
+    },
+    {
+      "name": "390×844 复现原定位超时且旧按钮不存在",
+      "okay": true
+    },
+    {
+      "name": "390×844 新空状态入口可见且可点击",
+      "okay": true
+    },
+    {
+      "name": "390×844 初始四阶段未创建会话",
+      "okay": true
+    },
+    {
+      "name": "390×844 原移动端区域切换路径仍然可用",
+      "okay": true
+    },
+    {
+      "name": "390×844 新入口成功创建真实会话并进入进行中",
+      "okay": true
+    },
+    {
+      "name": "390×844 会话已持久化且输入框可用",
+      "okay": true
+    }
+  ]
+}

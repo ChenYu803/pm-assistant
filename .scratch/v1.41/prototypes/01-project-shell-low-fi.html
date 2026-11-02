@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="低保真探索：项目与产品迭代双栏入口">
+  <title>项目入口低保真探索 · AI 产品现场</title>
+  <style>
+    :root {
+      --paper: #efe7d2;
+      --paper-deep: #dfd2b4;
+      --paper-light: #f7f1de;
+      --ink: #15140f;
+      --ink-mute: #5a5448;
+      --line: rgba(21,20,15,.2);
+      --coral: #ed6f5c;
+      --coral-dark: #9f4035;
+      --sans: Inter, "Microsoft YaHei", system-ui, sans-serif;
+      --mono: "Courier New", monospace;
+      --serif: Georgia, serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body { margin: 0; color: var(--ink); background: var(--paper); font: 15px/1.55 var(--sans); }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 2px solid var(--coral); outline-offset: 3px; }
+    .topline { padding: 9px 20px; color: var(--paper-light); background: var(--ink); font: 12px var(--mono); }
+    .app { width: min(1360px, calc(100% - 64px)); min-height: calc(100vh - 38px); margin: 0 auto; display: grid; grid-template-columns: 260px minmax(0, 1fr); }
+    .projects { padding: 34px 22px 40px 0; border-right: 1px solid var(--line); background: var(--paper-deep); }
+    .projects h1 { margin: 0; font: 500 30px/1.05 var(--serif); }
+    .projects-intro { margin: 9px 0 26px; color: var(--ink-mute); font-size: 13px; }
+    .project-list { display: grid; gap: 7px; }
+    .project-item { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 35px; gap: 8px; align-items: stretch; padding: 0; border: 1px solid transparent; background: transparent; }
+    .project-item.selected { border-color: var(--ink); background: var(--paper-light); }
+    .project-select { min-width: 0; padding: 13px 12px; color: var(--ink); border: 0; background: transparent; text-align: left; }
+    .project-select strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; }
+    .project-select span { display: block; margin-top: 3px; color: var(--ink-mute); font: 11px var(--mono); }
+    .more-trigger { align-self: center; width: 32px; height: 34px; margin-right: 3px; border: 1px solid transparent; color: var(--ink); background: transparent; font-size: 20px; line-height: 1; letter-spacing: 2px; }
+    .more-trigger:hover, .more-trigger[aria-expanded="true"] { border-color: var(--line); background: var(--paper); }
+    .project-menu, .iteration-menu { position: absolute; z-index: 8; display: none; width: 190px; padding: 8px; border: 1px solid var(--ink); background: var(--paper-light); box-shadow: 8px 8px 0 var(--paper-deep); }
+    .project-menu.open, .iteration-menu.open { display: grid; gap: 3px; }
+    .project-menu { top: 52px; right: 4px; }
+    .menu-meta { padding: 7px 9px 9px; color: var(--ink-mute); border-bottom: 1px dotted var(--line); font-size: 12px; }
+    .menu-action { min-height: 37px; padding: 0 9px; color: var(--ink); border: 0; background: transparent; text-align: left; font-size: 13px; }
+    .menu-action:hover { background: var(--coral); }
+    .menu-action.danger { color: var(--coral-dark); }
+    .new-project { width: 100%; margin-top: 18px; }
+    .main { min-width: 0; padding: 44px 0 90px 54px; overflow: hidden; }
+    .empty-state { min-height: 72vh; display: grid; place-items: center; align-content: center; gap: 18px; text-align: center; }
+    .empty-state h2 { margin: 0; font: 500 clamp(45px, 7vw, 82px)/.95 var(--serif); }
+    .empty-state p { max-width: 420px; margin: 0; color: var(--ink-mute); }
+    .button { min-height: 46px; padding: 0 18px; border: 1px solid var(--ink); color: var(--ink); background: transparent; font-weight: 600; }
+    .button:hover { transform: translateY(-2px); }
+    .button.primary { border-color: var(--coral); background: var(--coral); }
+    .button.dark { color: var(--paper-light); background: var(--ink); }
+    .button.quiet { color: var(--ink-mute); border-color: var(--line); }
+    .button.danger { color: var(--paper-light); border-color: var(--coral-dark); background: var(--coral-dark); }
+    .project-view { display: none; min-height: 72vh; animation: slide-in .34s cubic-bezier(.22,1,.36,1) both; }
+    .project-view.active { display: block; }
+    @keyframes slide-in { from { opacity: 0; transform: translateX(56px); } to { opacity: 1; transform: translateX(0); } }
+    .layout-b { grid-template-columns: 210px minmax(0, 1fr); }
+    .layout-b .projects { color: var(--paper-light); background: var(--ink); border-right: 0; }
+    .layout-b .projects-intro, .layout-b .project-select span { color: rgba(247,241,222,.64); }
+    .layout-b .project-item.selected { border-color: var(--coral); background: rgba(247,241,222,.1); }
+    .layout-b .project-select, .layout-b .more-trigger { color: var(--paper-light); }
+    .layout-b .more-trigger:hover, .layout-b .more-trigger[aria-expanded="true"] { border-color: var(--dark-line); background: rgba(247,241,222,.12); }
+    .layout-b .new-project { color: var(--ink); border-color: var(--coral); background: var(--coral); }
+    .layout-b .project-head { align-items: end; padding: 24px; border: 1px solid var(--line); background: rgba(247,241,222,.48); }
+    .layout-b .iteration-section { padding: 28px 24px; border: 1px solid var(--line); border-top: 0; }
+    .layout-c { grid-template-columns: 320px minmax(0, 1fr); }
+    .layout-c .projects { padding-right: 28px; background: var(--paper-light); border-right: 3px solid var(--ink); }
+    .layout-c .project-item { grid-template-columns: 1fr 38px; border-bottom: 1px dotted var(--line); }
+    .layout-c .project-item.selected { border-color: var(--coral); box-shadow: inset 5px 0 0 var(--coral); }
+    .layout-c .project-select { padding: 18px 14px; }
+    .layout-c .project-select strong { font-size: 17px; }
+    .layout-c .main { padding-left: 42px; }
+    .layout-c .iteration-row { grid-template-columns: 70px minmax(180px, 1fr) minmax(180px, 1fr) 190px; }
+    .project-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding-bottom: 28px; border-bottom: 1px solid var(--line); }
+    .project-head h2 { margin: 9px 0 0; font: 500 58px/.95 var(--serif); }
+    .project-head p:not(.eyebrow) { max-width: 580px; margin: 14px 0 0; color: var(--ink-mute); }
+    .project-head-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 9px; }
+    .iteration-section { padding-top: 34px; }
+    .iteration-section-head { display: flex; justify-content: space-between; align-items: end; gap: 20px; margin-bottom: 16px; }
+    .iteration-section-head h3 { margin: 0; font: 500 34px/1 var(--serif); }
+    .iteration-section-head p { margin: 0; color: var(--ink-mute); font-size: 13px; }
+    .iteration-list { border-top: 1px solid var(--ink); }
+    .iteration-row { position: relative; display: grid; grid-template-columns: 80px minmax(160px, 1fr) minmax(190px, 1.2fr) 105px 190px; gap: 18px; align-items: center; min-height: 105px; padding: 16px 0; border-bottom: 1px dotted var(--line); }
+    .iteration-number { color: var(--coral-dark); font: 13px var(--mono); }
+    .iteration-name strong { display: block; font-size: 18px; }
+    .iteration-name span, .iteration-goal { display: block; margin-top: 4px; color: var(--ink-mute); font-size: 12px; }
+    .iteration-goal.empty { color: var(--ink-mute); font-style: italic; }
+    .iteration-status { width: max-content; padding: 5px 8px; border: 1px solid var(--line); color: var(--ink-mute); font: 12px var(--mono); }
+    .iteration-status.active { border-color: rgba(237,111,92,.62); color: var(--ink); background: rgba(237,111,92,.12); }
+    .iteration-actions { display: flex; justify-content: flex-end; gap: 7px; }
+    .iteration-actions .button { min-height: 39px; padding: 0 11px; font-size: 12px; }
+    .iteration-menu { top: 74px; right: 0; }
+    .workspace-placeholder { display: none; margin-top: 28px; padding: 18px 20px; color: var(--paper-light); background: var(--ink); font-size: 15px; }
+    .workspace-placeholder.visible { display: block; }
+    .modal-backdrop { position: fixed; inset: 0; z-index: 30; display: none; place-items: center; padding: 24px; background: rgba(21,20,15,.7); }
+    .modal-backdrop.open { display: grid; }
+    .modal { width: min(530px, 100%); padding: 30px; border: 1px solid var(--ink); background: var(--paper); box-shadow: 12px 14px 0 var(--paper-deep); }
+    .modal h2 { margin: 10px 0 0; font: 500 40px/.98 var(--serif); }
+    .modal p { color: var(--ink-mute); }
+    .field { margin-top: 18px; }
+    .field label { display: block; margin-bottom: 7px; color: var(--ink-mute); font: 12px var(--mono); }
+    input, textarea { width: 100%; padding: 12px; border: 1px solid var(--line); background: var(--paper-light); font-size: 16px; }
+    textarea { min-height: 100px; resize: vertical; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px; padding-top: 18px; border-top: 1px dotted var(--line); }
+    .danger-copy { padding: 14px 15px; border: 1px solid var(--coral-dark); background: rgba(237,111,92,.11); color: var(--ink); }
+    .switcher { position: fixed; z-index: 50; left: 50%; bottom: 16px; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; padding: 7px 10px; color: var(--paper-light); border: 1px solid rgba(247,241,222,.3); background: var(--ink); box-shadow: 0 8px 18px rgba(21,20,15,.2); font: 12px var(--mono); }
+    .switcher button { width: 30px; height: 30px; color: var(--paper-light); border: 1px solid rgba(247,241,222,.34); background: transparent; }
+    .switcher button:hover { color: var(--ink); background: var(--coral); }
+    @media (max-width: 900px) { .app { width: min(100% - 32px, 760px); grid-template-columns: 210px minmax(0,1fr); } .main { padding-left: 28px; } .project-head { display: block; } .project-head-actions { justify-content: flex-start; margin-top: 22px; } .iteration-row { grid-template-columns: 65px minmax(130px,1fr) 110px; } .iteration-goal { display: none; } .iteration-actions { grid-column: 3; grid-row: 1; flex-wrap: wrap; } }
+    @media (max-width: 600px) { .topline { padding-inline: 16px; } .app { display: block; width: calc(100% - 32px); } .projects { padding: 24px 0 20px; border-right: 0; border-bottom: 1px solid var(--line); } .projects h1 { font-size: 26px; } .project-list { grid-template-columns: 1fr; } .main { padding: 30px 0 80px; } .empty-state { min-height: 55vh; } .project-head h2 { font-size: 44px; } .iteration-section-head { display: block; } .iteration-section-head .button { width: 100%; margin-top: 16px; } .iteration-row { grid-template-columns: 54px minmax(0,1fr) auto; gap: 8px; min-height: 126px; } .iteration-number { align-self: start; } .iteration-name strong { font-size: 16px; } .iteration-goal { display: -webkit-box; grid-column: 2; grid-row: 2; margin-top: 0; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; } .iteration-status { grid-column: 2; grid-row: 3; font-size: 11px; } .iteration-actions { grid-column: 3; grid-row: 1 / span 3; flex-direction: column; align-self: center; } .iteration-actions .button { width: 100%; } .modal { padding: 24px 20px; } .modal-actions { flex-direction: column-reverse; } .modal-actions .button { width: 100%; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="topline">AI 产品现场 / V1.41 · 项目入口低保真探索</div>
+  <div id="app"></div>
+  <div class="switcher" aria-label="低保真方案切换"><button id="prev" type="button" aria-label="上一个方案">←</button><span id="variant-label">A · 项目列表主导</span><button id="next" type="button" aria-label="下一个方案">→</button></div>
+
+  <div class="modal-backdrop" id="modal-layer" role="presentation">
+    <section class="modal" id="modal-content" role="dialog" aria-modal="true"></section>
+  </div>
+
+  <script>
+    // 三个结构方案均回答同一个问题：项目列表如何承载新建/删除，并把选中项目的迭代信息带入右侧。
+    const variants = {
+      A: "项目列表主导",
+      B: "项目导航主导",
+      C: "双级列表主导"
+    };
+    const data = {
+      projects: [
+        { id: 1, name: "小红书新用户体验", code: "PRODUCT-042", updated: "今天 10:42", iterations: 2 },
+        { id: 2, name: "AI 学习助手", code: "PRODUCT-018", updated: "昨天 16:20", iterations: 4 },
+        { id: 3, name: "求职作品集改版", code: "PRODUCT-007", updated: "3 天前", iterations: 1 }
+      ],
+      iterations: {
+        1: [
+          { id: 1, name: "重做新用户 onboarding", goal: "让第一次打开产品的人理解 AI 产品经理的工作方式。", status: "进行中" },
+          { id: 2, name: "降低首次使用流失", goal: "", status: "未开始" }
+        ],
+        2: [{ id: 1, name: "学习路径重构", goal: "", status: "已完成" }],
+        3: [{ id: 1, name: "作品案例结构调整", goal: "让面试官在 3 分钟内理解项目判断。", status: "进行中" }]
+      },
+      nextProject: 4,
+      nextIteration: 3,
+      selectedProject: null,
+      workspaceOpen: null,
+      menu: null,
+      modal: null,
+      editing: null
+    };
+
+    const $ = (s) => document.querySelector(s);
+    const escapeHtml = (v) => String(v).replace(/[&<>\"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+    const currentVariant = () => new URLSearchParams(location.search).get("variant")?.toUpperCase() || "A";
+    const setVariant = (key) => { const url = new URL(location.href); url.searchParams.set("variant", key); history.replaceState({}, "", url); render(); };
+    const pad = (n) => String(n).padStart(2, "0");
+
+    function projectList() {
+      return data.projects.map((p) => `
+        <div class="project-item${data.selectedProject === p.id ? " selected" : ""}">
+          <button class="project-select" data-project="${p.id}" type="button"><strong>${escapeHtml(p.name)}</strong><span>${p.code}</span></button>
+          <button class="more-trigger" data-project-menu="${p.id}" type="button" aria-label="${escapeHtml(p.name)} 更多功能" aria-expanded="${data.menu === `project-${p.id}`}">···</button>
+          <div class="project-menu${data.menu === `project-${p.id}` ? " open" : ""}">
+            <div class="menu-meta">最近更新 · ${p.updated}<br>产品迭代 · ${p.iterations} 个</div>
+            <button class="menu-action" data-rename-project="${p.id}" type="button">重命名项目</button>
+            <button class="menu-action danger" data-delete-project="${p.id}" type="button">删除项目</button>
+          </div>
+        </div>`).join("");
+    }
+
+    function iterationList() {
+      const list = data.iterations[data.selectedProject] || [];
+      if (!list.length) return `<div class="empty-state"><p>这个项目还没有产品迭代。</p><button class="button primary" data-create-iteration type="button">创建产品迭代</button></div>`;
+      return list.map((item) => `
+        <article class="iteration-row">
+          <span class="iteration-number">迭代 ${pad(item.id)}</span>
+          <div class="iteration-name"><strong>${escapeHtml(item.name)}</strong><span>展示名称 · 可修改</span></div>
+          <span class="iteration-goal${item.goal ? "" : " empty"}">${item.goal ? escapeHtml(item.goal) : "尚未填写本轮目标 · 不会自动猜测"}</span>
+          <span class="iteration-status${item.status === "进行中" ? " active" : ""}">${item.status}</span>
+          <div class="iteration-actions"><button class="button quiet" data-edit-iteration="${item.id}" type="button">编辑</button><button class="more-trigger" data-iteration-menu="${item.id}" type="button" aria-label="${escapeHtml(item.name)} 更多功能" aria-expanded="${data.menu === `iteration-${item.id}`}" >···</button></div>
+          <div class="iteration-menu${data.menu === `iteration-${item.id}` ? " open" : ""}"><button class="menu-action" data-enter-iteration="${item.id}" type="button">进入工作区</button><button class="menu-action danger" data-delete-iteration="${item.id}" type="button">删除产品迭代</button></div>
+        </article>`).join("");
+    }
+
+    function shellClass(key) {
+      return key === "A" ? "layout-a" : key === "B" ? "layout-b" : "layout-c";
+    }
+
+    function render() {
+      const variant = currentVariant();
+      if (!variants[variant]) return setVariant("A");
+      $("#variant-label").textContent = `${variant} · ${variants[variant]}`;
+      const selected = data.projects.find((p) => p.id === data.selectedProject);
+      $("#app").className = `app ${shellClass(variant)}`;
+      $("#app").innerHTML = `
+        <aside class="projects">
+          <p class="eyebrow">PROJECTS / WORKSPACE</p><h1>我的项目</h1><p class="projects-intro">项目拥有自己的文件树。选择项目后，在右侧管理产品迭代。</p>
+          <div class="project-list">${projectList()}</div>
+          <button class="button primary new-project" data-create-project type="button">新建一个项目</button>
+        </aside>
+        <main class="main">
+          ${selected ? `<section class="project-view active"><header class="project-head"><div><p class="eyebrow">SELECTED PROJECT / ${selected.code}</p><h2>${escapeHtml(selected.name)}</h2><p>当前项目的产品迭代、稳定编号和本轮目标都在这里管理。</p></div><div class="project-head-actions"><button class="button primary" data-create-iteration type="button">创建产品迭代</button></div></header><section class="iteration-section"><div class="iteration-section-head"><div><h3>产品迭代</h3><p>一个项目可以有多个迭代，稳定编号只增不减。</p></div></div><div class="iteration-list">${iterationList()}</div><div id="workspace-placeholder" class="workspace-placeholder${data.workspaceOpen ? " visible" : ""}" aria-live="polite">${data.workspaceOpen ? `工作区已打开 · 迭代 ${pad(data.workspaceOpen)}。后续票据将定义工作台。` : ""}</div></section></section>` : `<section class="empty-state"><h2>让我们开始工作</h2><p>先创建一个项目，或从左侧选择已有项目。</p><button class="button primary" data-create-project type="button">新建一个项目</button></section>`}
+        </main>`;
+      bind();
+    }
+
+    function openModal(kind, payload = {}) {
+      data.modal = { kind, ...payload };
+      const content = $("#modal-content");
+      if (kind === "create-project") content.innerHTML = `<p class="eyebrow">PROJECT / CREATE</p><h2>新建一个项目</h2><p>项目是长期容器，产品迭代和项目文件都归属于它。</p><div class="field"><label for="project-name">项目名称</label><input id="project-name" maxlength="80" placeholder="例如：小红书新用户体验"></div><div class="field"><label for="project-desc">项目描述（可选）</label><textarea id="project-desc" maxlength="300" placeholder="这个项目要解决什么问题？"></textarea></div><div class="modal-actions"><button class="button quiet" data-close-modal type="button">取消</button><button class="button primary" data-save-project type="button">创建项目</button></div>`;
+      if (kind === "rename-project") content.innerHTML = `<p class="eyebrow">PROJECT / RENAME</p><h2>重命名项目</h2><div class="field"><label for="rename-project-name">项目名称</label><input id="rename-project-name" maxlength="80" value="${escapeHtml(payload.project.name)}"></div><div class="modal-actions"><button class="button quiet" data-close-modal type="button">取消</button><button class="button primary" data-save-rename type="button">保存名称</button></div>`;
+      if (kind === "delete-project") content.innerHTML = `<p class="eyebrow">PROJECT / DELETE</p><h2>删除项目？</h2><p class="danger-copy">删除“${escapeHtml(payload.project.name)}”后，该项目下的产品迭代、阶段会话和项目文件都会被删除，且无法恢复。</p><div class="modal-actions"><button class="button quiet" data-close-modal type="button">取消</button><button class="button danger" data-confirm-delete-project type="button">确认删除项目</button></div>`;
+      if (kind === "create-iteration") content.innerHTML = `<p class="eyebrow">ITERATION / CREATE</p><h2>创建产品迭代</h2><p>稳定编号由系统生成；你可以填写本轮目标，也可以暂不填写。</p><div class="field"><label for="iteration-name">展示名称</label><input id="iteration-name" maxlength="80" placeholder="例如：降低首次使用流失"></div><div class="field"><label for="iteration-goal">本轮目标（可选）</label><textarea id="iteration-goal" maxlength="500" placeholder="这一轮最想改变什么？"></textarea></div><div class="modal-actions"><button class="button quiet" data-close-modal type="button">取消</button><button class="button primary" data-save-iteration type="button">创建迭代</button></div>`;
+      if (kind === "edit-iteration") content.innerHTML = `<p class="eyebrow">ITERATION / EDIT · 迭代 ${pad(payload.item.id)}</p><h2>编辑产品迭代</h2><p>稳定编号不可修改。</p><div class="field"><label>稳定编号</label><input value="迭代 ${pad(payload.item.id)}" disabled></div><div class="field"><label for="iteration-name">展示名称</label><input id="iteration-name" maxlength="80" value="${escapeHtml(payload.item.name)}"></div><div class="field"><label for="iteration-goal">本轮目标（可选）</label><textarea id="iteration-goal" maxlength="500">${escapeHtml(payload.item.goal)}</textarea></div><div class="modal-actions"><button class="button quiet" data-close-modal type="button">取消</button><button class="button primary" data-save-edit-iteration type="button">保存修改</button></div>`;
+      if (kind === "delete-iteration") content.innerHTML = `<p class="eyebrow">ITERATION / DELETE · 迭代 ${pad(payload.item.id)}</p><h2>删除产品迭代？</h2><p class="danger-copy">删除“${escapeHtml(payload.item.name)}”后，该迭代的阶段会话和未确认候选会被删除；项目文件和已发生的变更记录会保留。</p><div class="modal-actions"><button class="button quiet" data-close-modal type="button">取消</button><button class="button danger" data-confirm-delete-iteration type="button">确认删除迭代</button></div>`;
+      $("#modal-layer").classList.add("open");
+      window.setTimeout(() => $("#modal-content input, #modal-content textarea, #modal-content button")?.focus(), 20);
+    }
+
+    function closeModal() { data.modal = null; data.menu = null; $("#modal-layer").classList.remove("open"); render(); }
+    function bind() {
+      document.querySelectorAll("[data-project]").forEach((b) => b.addEventListener("click", () => { data.selectedProject = Number(b.dataset.project); data.menu = null; render(); }));
+      document.querySelectorAll("[data-project-menu]").forEach((b) => b.addEventListener("click", (e) => { e.stopPropagation(); const key = `project-${b.dataset.projectMenu}`; data.menu = data.menu === key ? null : key; render(); }));
+      document.querySelectorAll("[data-rename-project]").forEach((b) => b.addEventListener("click", () => { const p = data.projects.find((x) => x.id === Number(b.dataset.renameProject)); openModal("rename-project", { project: p }); }));
+      document.querySelectorAll("[data-delete-project]").forEach((b) => b.addEventListener("click", () => { const p = data.projects.find((x) => x.id === Number(b.dataset.deleteProject)); openModal("delete-project", { project: p }); }));
+      document.querySelectorAll("[data-create-project]").forEach((b) => b.addEventListener("click", () => openModal("create-project")));
+      document.querySelectorAll("[data-create-iteration]").forEach((b) => b.addEventListener("click", () => openModal("create-iteration")));
+      document.querySelectorAll("[data-edit-iteration]").forEach((b) => b.addEventListener("click", () => { const item = data.iterations[data.selectedProject].find((x) => x.id === Number(b.dataset.editIteration)); openModal("edit-iteration", { item }); }));
+      document.querySelectorAll("[data-iteration-menu]").forEach((b) => b.addEventListener("click", (e) => { e.stopPropagation(); const key = `iteration-${b.dataset.iterationMenu}`; data.menu = data.menu === key ? null : key; render(); }));
+      document.querySelectorAll("[data-delete-iteration]").forEach((b) => b.addEventListener("click", () => { const item = data.iterations[data.selectedProject].find((x) => x.id === Number(b.dataset.deleteIteration)); openModal("delete-iteration", { item }); }));
+      document.querySelectorAll("[data-enter-iteration]").forEach((b) => b.addEventListener("click", () => { data.workspaceOpen = Number(b.dataset.enterIteration); closeMenu(); }));
+    }
+    function closeMenu() { data.menu = null; render(); }
+
+    $("#modal-layer").addEventListener("click", (e) => { if (e.target.id === "modal-layer") closeModal(); });
+    $("#modal-content").addEventListener("click", (e) => {
+      const target = e.target;
+      if (target.matches("[data-close-modal]")) return closeModal();
+      if (target.matches("[data-save-project]")) { const name = $("#project-name").value.trim(); if (!name) return; const id = data.nextProject++; data.projects.unshift({ id, name, code: `PRODUCT-${String(id).padStart(3,"0")}`, updated: "刚刚", iterations: 0 }); data.iterations[id] = []; data.selectedProject = id; closeModal(); render(); }
+      if (target.matches("[data-save-rename]")) { const p = data.projects.find((x) => x.id === data.modal.project.id); p.name = $("#rename-project-name").value.trim() || p.name; closeModal(); render(); }
+      if (target.matches("[data-confirm-delete-project]")) { const id = data.modal.project.id; data.projects = data.projects.filter((p) => p.id !== id); delete data.iterations[id]; data.selectedProject = null; closeModal(); render(); }
+      if (target.matches("[data-save-iteration]")) { const name = $("#iteration-name").value.trim(); if (!name) return; const id = data.nextIteration++; data.iterations[data.selectedProject].push({ id, name, goal: $("#iteration-goal").value.trim(), status: "未开始" }); closeModal(); render(); }
+      if (target.matches("[data-save-edit-iteration]")) { const item = data.modal.item; item.name = $("#iteration-name").value.trim() || item.name; item.goal = $("#iteration-goal").value.trim(); closeModal(); render(); }
+      if (target.matches("[data-confirm-delete-iteration]")) { data.iterations[data.selectedProject] = data.iterations[data.selectedProject].filter((x) => x.id !== data.modal.item.id); closeModal(); render(); }
+    });
+    $("#prev").addEventListener("click", () => { const keys = Object.keys(variants); const i = keys.indexOf(currentVariant()); setVariant(keys[(i + keys.length - 1) % keys.length]); });
+    $("#next").addEventListener("click", () => { const keys = Object.keys(variants); const i = keys.indexOf(currentVariant()); setVariant(keys[(i + 1) % keys.length]); });
+    document.addEventListener("keydown", (e) => { if (["INPUT","TEXTAREA"].includes(document.activeElement?.tagName)) return; if (e.key === "ArrowLeft") $("#prev").click(); if (e.key === "ArrowRight") $("#next").click(); if (e.key === "Escape") { if (data.modal) closeModal(); else closeMenu(); } });
+    render();
+  </script>
+</body>
+</html>

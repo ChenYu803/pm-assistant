@@ -1,0 +1,6 @@
+
+D:\Project\4.Project\Agent2\src\components\ChatArea.tsx
+  848:6  warning  React Hook useEffect has missing dependencies: 'onTabFreezeStateChange' and 'onTabVersionChange'. Either include them or remove the dependency array. If 'onTabVersionChange' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
+
+✖ 1 problem (0 errors, 1 warning)
+

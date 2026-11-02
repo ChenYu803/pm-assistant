@@ -1,10 +1,12 @@
 .page {
-  --auth-paper: #efe7d2;
-  --auth-bone: #f7f1de;
-  --auth-ink: #15140f;
-  --auth-muted: #5a5448;
+  /* 暗色：与 landing 同一套底（#171713），面板抬一级，正文用奶白。 */
+  --auth-paper: #171713;
+  --auth-bone: #22231d;
+  --auth-ink: #e9dfc8;
+  --auth-muted: #b1ab98;
   --auth-coral: #ed6f5c;
-  --auth-line: rgba(21, 20, 15, .2);
+  --auth-on-coral: #171713;
+  --auth-line: rgba(233, 223, 200, .16);
   display: flex;
   min-height: 100%;
   flex-direction: column;
@@ -67,12 +69,12 @@
 .formPanel :global(label) { color: var(--auth-ink); font-size: 12px; font-weight: 650; }
 .formPanel :global(input) { min-height: 46px; border: 1px solid var(--auth-line); border-radius: 0; background: var(--auth-bone); color: var(--auth-ink); box-shadow: none; }
 .formPanel :global(input:focus-visible) { border-color: var(--auth-ink); outline: 2px solid var(--auth-coral); outline-offset: 2px; }
-.formPanel :global(button[type="submit"]) { min-height: 48px; border: 1px solid var(--auth-coral); border-radius: 0; background: var(--auth-coral); color: var(--auth-ink); font-weight: 700; box-shadow: none; }
+.formPanel :global(button[type="submit"]) { min-height: 48px; border: 1px solid var(--auth-coral); border-radius: 0; background: var(--auth-coral); color: var(--auth-on-coral); font-weight: 700; box-shadow: none; }
 .formPanel :global(button[type="submit"]:hover:not(:disabled)) { background: #e06351; }
 .formPanel :global(button[type="submit"]:focus-visible),
 .formPanel :global(a:focus-visible) { outline: 2px solid var(--auth-coral); outline-offset: 4px; }
 .formPanel :global(button[type="submit"]:disabled) { opacity: .58; }
-.formPanel :global(p[role="alert"]) { border: 1px solid rgba(159, 47, 35, .25); border-radius: 0; background: #f3dad3; color: #76281f; }
+.formPanel :global(p[role="alert"]) { border: 1px solid rgba(239, 155, 140, .38); border-radius: 0; background: rgba(159, 47, 35, .18); color: #f2b3a6; }
 .formPanel :global(.text-muted-foreground) { color: var(--auth-muted); }
 .formPanel :global(a.underline) { text-decoration-thickness: 1px; text-underline-offset: 4px; }
 .formPanel :global(form) { gap: 16px; }

@@ -1,0 +1,372 @@
+/* 首屏右侧「成果转台」：四个面 = 四份交付物，拖动/自转/键盘都能转。 */
+
+.stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "caption caption"
+    "drum index"
+    "hint hint";
+  align-items: center;
+  gap: 18px 22px;
+  perspective: 1150px;
+  perspective-origin: 50% 42%;
+}
+
+.caption {
+  grid-area: caption;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font: 11px/1.5 var(--sans);
+  letter-spacing: .02em;
+}
+
+.caption b {
+  color: var(--type);
+  font-weight: 400;
+}
+
+.drumWrap {
+  grid-area: drum;
+  display: grid;
+  place-items: center;
+  min-height: clamp(430px, 45vw, 580px);
+  /* 右侧留出让纸角转出去的空间：索引数字不能被纸压住 */
+  padding: 0 22px 54px 0;
+}
+
+.drumBox {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+/* 台面：一圈刻度盘 + 一枚跟着转的珊瑚色指示点，让「转了多少」有读数。 */
+.platter {
+  position: absolute;
+  bottom: -46px;
+  left: 50%;
+  width: 104%;
+  height: 44px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(233, 223, 200, .16);
+  border-radius: 50%;
+  background: radial-gradient(56% 108% at 50% 0%, rgba(0, 0, 0, .55), rgba(0, 0, 0, 0) 72%);
+  pointer-events: none;
+}
+
+.platter::before {
+  content: "";
+  position: absolute;
+  inset: 5px 11px;
+  border: 1px solid rgba(233, 223, 200, .07);
+  border-radius: 50%;
+}
+
+.tick {
+  position: absolute;
+  background: color-mix(in srgb, var(--line) 75%, transparent);
+}
+
+.tick[data-t="0"] { left: 50%; bottom: -5px; width: 1px; height: 9px; }
+.tick[data-t="1"] { right: -4px; top: 50%; width: 9px; height: 1px; }
+.tick[data-t="2"] { left: 50%; top: -5px; width: 1px; height: 9px; }
+.tick[data-t="3"] { left: -4px; top: 50%; width: 9px; height: 1px; }
+
+.orbitDot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px rgba(237, 111, 92, .85);
+  will-change: transform;
+}
+
+.baseShadow {
+  position: absolute;
+  bottom: -42px;
+  left: 50%;
+  width: 62%;
+  height: 22px;
+  transform: translateX(-50%);
+  background: radial-gradient(50% 50% at 50% 50%, rgba(0, 0, 0, .85), rgba(0, 0, 0, 0) 74%);
+  filter: blur(9px);
+  pointer-events: none;
+}
+
+.drum {
+  position: relative;
+  width: clamp(300px, 24vw, 356px);
+  aspect-ratio: 4 / 5;
+  transform-style: preserve-3d;
+  will-change: transform;
+  cursor: grab;
+  touch-action: pan-y;
+}
+
+.drum:active {
+  cursor: grabbing;
+}
+
+.drum:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 14px;
+}
+
+.sway {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  animation: sway 13s cubic-bezier(.45, 0, .55, 1) infinite alternate;
+}
+
+@keyframes sway {
+  from { transform: rotateY(-1.1deg) rotateX(.35deg); }
+  to { transform: rotateY(1.1deg) rotateX(-.35deg); }
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 26px 22px;
+  backface-visibility: hidden;
+  background:
+    linear-gradient(158deg, rgba(233, 223, 200, .07), rgba(233, 223, 200, 0) 48%),
+    linear-gradient(180deg, #30312a 0%, #23241d 58%, #1e1f19 100%);
+  border: 1px solid color-mix(in srgb, var(--line) 86%, #e9dfc8);
+  box-shadow:
+    inset 0 1px 0 rgba(233, 223, 200, .18),
+    inset 1px 0 0 rgba(233, 223, 200, .07),
+    inset -1px 0 0 rgba(0, 0, 0, .5),
+    inset 0 -1px 0 rgba(0, 0, 0, .55),
+    inset 22px 0 34px -26px rgba(0, 0, 0, .75),
+    inset -22px 0 34px -26px rgba(0, 0, 0, .75),
+    inset 0 -60px 90px rgba(0, 0, 0, .26);
+  color: var(--type);
+  overflow: hidden;
+  user-select: none;
+}
+
+/* 每一面都按「正对屏幕的程度」被压暗：转到侧面时暗下去，正面最亮。 */
+.face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #07080a;
+  opacity: var(--dim, 0);
+  pointer-events: none;
+}
+
+.face > * {
+  position: relative;
+  z-index: 1;
+  /* 侧到看不见正面的面只剩纸边，不让文字侧着露出来。 */
+  opacity: var(--content, 1);
+}
+
+.faceHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  color: var(--muted);
+  font: 10px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .08em;
+}
+
+.file {
+  color: var(--accent);
+  letter-spacing: .04em;
+}
+
+.verb {
+  margin-top: 30px;
+  font: 400 clamp(25px, 2.1vw, 33px)/1.32 var(--serif);
+  letter-spacing: .01em;
+}
+
+.lines {
+  display: grid;
+  gap: 0;
+  margin-top: 22px;
+  padding: 0;
+  list-style: none;
+}
+
+.lines li {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 62%, transparent);
+  color: var(--muted);
+  font: 13px/1.4 var(--sans);
+}
+
+.lines small {
+  color: color-mix(in srgb, var(--accent) 72%, var(--muted));
+  font: 9px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .1em;
+}
+
+.faceFoot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 16px;
+  color: color-mix(in srgb, var(--muted) 76%, transparent);
+  font: 9.5px/1.4 var(--sans);
+  letter-spacing: .1em;
+}
+
+.ghost {
+  position: absolute;
+  right: -8px;
+  bottom: -56px;
+  z-index: 0;
+  color: rgba(233, 223, 200, .055);
+  font: 400 196px/1 var(--serif);
+  pointer-events: none;
+}
+
+/* 侧面的页码索引：像文件侧边的拇指标签，也是无障碍入口。 */
+.index {
+  grid-area: index;
+  display: grid;
+  align-content: center;
+  gap: 1px;
+  min-width: 110px;
+  border-left: 1px solid var(--line);
+}
+
+.index button {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  gap: 10px;
+  padding: 11px 4px 11px 12px;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
+  background: transparent;
+  color: var(--muted);
+  text-align: left;
+  cursor: pointer;
+  transition: color .25s var(--ease-out), background .25s var(--ease-out);
+}
+
+.index button:last-child {
+  border-bottom: 0;
+}
+
+.index button span:first-child {
+  font: 9px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .1em;
+  color: color-mix(in srgb, var(--muted) 70%, transparent);
+}
+
+.index button span:last-child {
+  font: 12px/1.3 var(--sans);
+}
+
+.index button:hover {
+  color: var(--type);
+}
+
+.index button[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+
+.index button[aria-pressed="true"] span:first-child {
+  color: var(--accent);
+}
+
+.index button:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: -3px;
+}
+
+.hint {
+  grid-area: hint;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: color-mix(in srgb, var(--muted) 82%, transparent);
+  font: 10.5px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: .06em;
+}
+
+.hint i {
+  display: inline-block;
+  width: 22px;
+  height: 1px;
+  background: var(--accent);
+  opacity: .7;
+}
+
+
+@media (max-width: 1180px) {
+  .index {
+    min-width: 96px;
+  }
+}
+
+@media (max-width: 900px) {
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "caption"
+      "drum"
+      "index"
+      "hint";
+    gap: 14px;
+  }
+
+  .drumWrap {
+    min-height: 0;
+    padding: 6px 0 26px;
+  }
+
+  .drum {
+    width: min(72vw, 330px);
+  }
+
+  .index {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .index button {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding: 10px 8px;
+    border-bottom: 0;
+    border-right: 1px solid color-mix(in srgb, var(--line) 55%, transparent);
+  }
+
+  .index button:last-child {
+    border-right: 0;
+  }
+
+  .index button span:last-child {
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sway {
+    animation: none;
+  }
+}

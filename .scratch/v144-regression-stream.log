@@ -1,0 +1,9 @@
+✅ 入口明确使用 replay
+✅ 从没有任何表的独立空库开始
+✅ 当前 schema 可从零初始化且重复初始化不重复迁移
+✅ 注册前全部业务表为空
+✅ 正式服务也确认 replay，发送前拒绝真实模型
+v1.42 长生成流式响应开始；证据目录：C:\Users\ADMINI~1\AppData\Local\Temp\v141-generation-stream-X74Xet
+❌ v1.42 长生成流式响应未通过：连续浏览器回放完整结束
+✅ 仅清理本次创建的测试库和测试账号
+结果: 8 通过, 2 失败；日志与截图：C:\Users\ADMINI~1\AppData\Local\Temp\v141-generation-stream-X74Xet

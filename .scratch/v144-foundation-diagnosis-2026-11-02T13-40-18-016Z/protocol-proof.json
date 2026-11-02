@@ -1,0 +1,13 @@
+{
+  "httpStatus": 200,
+  "contentType": "text/event-stream; charset=utf-8",
+  "event": "result",
+  "eventPayload": {
+    "status": 409,
+    "body": {
+      "error": "生成已停止"
+    }
+  },
+  "wholeBodyJsonParseFails": true,
+  "jsonError": "Unexpected token 'e', \"event: res\"... is not valid JSON"
+}
