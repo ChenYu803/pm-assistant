@@ -1,0 +1,73 @@
+{
+  "pass": 15,
+  "fail": 1,
+  "aiMode": "replay",
+  "workflows": [],
+  "screenshots": [],
+  "assertions": [
+    {
+      "name": "发送聊天前确认服务端固定回放",
+      "okay": true
+    },
+    {
+      "name": "浏览器回放开始前没有用户",
+      "okay": true
+    },
+    {
+      "name": "1440×900 正式注册成功进入项目页",
+      "okay": true
+    },
+    {
+      "name": "1440×900 显式退出清除认证",
+      "okay": true
+    },
+    {
+      "name": "1440×900 原账号登录成功",
+      "okay": true
+    },
+    {
+      "name": "1440×900 新建目标没有默认选项",
+      "okay": true
+    },
+    {
+      "name": "1440×900 第一轮目标保存且稳定编号为 1",
+      "okay": true
+    },
+    {
+      "name": "1440×900 新建目标没有默认选项",
+      "okay": true
+    },
+    {
+      "name": "1440×900 暂不填写先明确展示已知与未知边界",
+      "okay": true
+    },
+    {
+      "name": "1440×900 风险返回保留选择与名称",
+      "okay": true
+    },
+    {
+      "name": "1440×900 风险返回保留目标草稿",
+      "okay": true
+    },
+    {
+      "name": "1440×900 确认后本次创建不重复警告",
+      "okay": true
+    },
+    {
+      "name": "1440×900 第二轮目标为空且编号递增",
+      "okay": true
+    },
+    {
+      "name": "1440×900 稳定编号展示为只读",
+      "okay": true
+    },
+    {
+      "name": "1440×900 展示名称可改且稳定编号不变",
+      "okay": true
+    },
+    {
+      "name": "回放中断：locator.waitFor: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: '开始本阶段工作' }) to be visible\u001b[22m\n",
+      "okay": false
+    }
+  ]
+}

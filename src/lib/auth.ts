@@ -38,6 +38,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   session: {
     strategy: "jwt",
+    // 固定登录期限；只读请求不续期，避免迟到响应恢复退出后的会话。
+    maxAge: 30 * 24 * 60 * 60,
   },
   pages: {
     signIn: "/login",
@@ -106,7 +108,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.id = token.id as string;
         session.user.email = token.email as string;
       }
-      return session;
+      return { ...session, ...(typeof token.exp === "number" ? { expires: new Date(token.exp * 1000).toISOString() } : {}) };
     },
   },
 });

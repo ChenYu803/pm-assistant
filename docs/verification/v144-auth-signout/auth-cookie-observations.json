@@ -1,0 +1,203 @@
+[
+  {
+    "path": "serial-http-signout",
+    "status": 200,
+    "setCookie": [
+      "authjs.session-token=<REDACTED>; Max-Age=0; Path=/; HttpOnly; SameSite=Lax"
+    ]
+  },
+  {
+    "path": "1440px-/api/auth/csrf",
+    "time": 1793623214237,
+    "setCookie": []
+  },
+  {
+    "path": "1440px-/api/auth/signout",
+    "time": 1793623214266,
+    "setCookie": [
+      "authjs.callback-url=<REDACTED>; Path=/; HttpOnly; SameSite=Lax",
+      "authjs.session-token=<REDACTED>; Max-Age=0; Path=/; HttpOnly; SameSite=Lax"
+    ]
+  },
+  {
+    "path": "1440px-browser-signout",
+    "status": 200,
+    "setCookie": [
+      "authjs.callback-url=<REDACTED>; Path=/; HttpOnly; SameSite=Lax",
+      "authjs.session-token=<REDACTED>; Max-Age=0; Path=/; HttpOnly; SameSite=Lax"
+    ]
+  },
+  {
+    "path": "1440px-/api/auth/session",
+    "time": 1793623216003,
+    "setCookie": [
+      "authjs.callback-url=<REDACTED>; Path=/; HttpOnly; SameSite=Lax"
+    ]
+  },
+  {
+    "path": "1440px-/api/auth/session",
+    "time": 1793623216039,
+    "setCookie": [
+      "authjs.callback-url=<REDACTED>; Path=/; HttpOnly; SameSite=Lax"
+    ]
+  },
+  {
+    "path": "1440px-/api/auth/session",
+    "time": 1793623216087,
+    "setCookie": []
+  },
+  {
+    "path": "1440px-/api/auth/session",
+    "time": 1793623216106,
+    "setCookie": []
+  },
+  {
+    "path": "1440px-/api/auth/session",
+    "time": 1793623217031,
+    "setCookie": [
+      "authjs.callback-url=<REDACTED>; Path=/; HttpOnly; SameSite=Lax"
+    ]
+  },
+  {
+    "path": "1440px-/api/auth/providers",
+    "time": 1793623217056,
+    "setCookie": []
+  },
+  {
+    "path": "1440px-/api/auth/session",
+    "time": 1793623217070,
+    "setCookie": [
+      "authjs.callback-url=<REDACTED>; Path=/; HttpOnly; SameSite=Lax"
+    ]
+  },
+  {
+    "path": "1440px-/api/auth/csrf",
+    "time": 1793623217094,
+    "setCookie": []
+  },
+  {
+    "path": "1440px-/api/auth/session",
+    "time": 1793623217105,
+    "setCookie": []
+  },
+  {
+    "path": "1440px-/api/auth/session",
+    "time": 1793623217240,
+    "setCookie": []
+  },
+  {
+    "path": "1440px-/api/auth/callback/credentials",
+    "time": 1793623217479,
+    "setCookie": [
+      "authjs.session-token=<REDACTED>; Path=/; Expires=Wed, 02 Dec 2026 12:40:17 GMT; HttpOnly; SameSite=Lax"
+    ]
+  },
+  {
+    "path": "1440px-/api/auth/session",
+    "time": 1793623217504,
+    "setCookie": []
+  },
+  {
+    "path": "1440px-/api/auth/csrf",
+    "time": 1793623218062,
+    "setCookie": [
+      "authjs.callback-url=<REDACTED>; Path=/; HttpOnly; SameSite=Lax"
+    ]
+  },
+  {
+    "path": "1440px-/api/auth/signout",
+    "time": 1793623218084,
+    "setCookie": [
+      "authjs.session-token=<REDACTED>; Max-Age=0; Path=/; HttpOnly; SameSite=Lax"
+    ]
+  },
+  {
+    "path": "1440px-/api/auth/session",
+    "time": 1793623218088,
+    "setCookie": []
+  },
+  {
+    "path": "390px-/api/auth/session",
+    "time": 1793623220648,
+    "setCookie": [
+      "authjs.callback-url=<REDACTED>; Path=/; HttpOnly; SameSite=Lax"
+    ]
+  },
+  {
+    "path": "390px-/api/auth/csrf",
+    "time": 1793623220715,
+    "setCookie": []
+  },
+  {
+    "path": "390px-/api/auth/session",
+    "time": 1793623220742,
+    "setCookie": []
+  },
+  {
+    "path": "390px-/api/auth/signout",
+    "time": 1793623220847,
+    "setCookie": [
+      "authjs.callback-url=<REDACTED>; Path=/; HttpOnly; SameSite=Lax",
+      "authjs.session-token=<REDACTED>; Max-Age=0; Path=/; HttpOnly; SameSite=Lax"
+    ]
+  },
+  {
+    "path": "390px-browser-signout",
+    "status": 200,
+    "setCookie": [
+      "authjs.callback-url=<REDACTED>; Path=/; HttpOnly; SameSite=Lax",
+      "authjs.session-token=<REDACTED>; Max-Age=0; Path=/; HttpOnly; SameSite=Lax"
+    ]
+  },
+  {
+    "path": "390px-/api/auth/session",
+    "time": 1793623220882,
+    "setCookie": []
+  },
+  {
+    "path": "390px-/api/auth/session",
+    "time": 1793623221964,
+    "setCookie": [
+      "authjs.callback-url=<REDACTED>; Path=/; HttpOnly; SameSite=Lax"
+    ]
+  },
+  {
+    "path": "390px-/api/auth/session",
+    "time": 1793623221973,
+    "setCookie": [
+      "authjs.callback-url=<REDACTED>; Path=/; HttpOnly; SameSite=Lax"
+    ]
+  },
+  {
+    "path": "390px-/api/auth/session",
+    "time": 1793623222006,
+    "setCookie": []
+  },
+  {
+    "path": "390px-/api/auth/session",
+    "time": 1793623222031,
+    "setCookie": []
+  },
+  {
+    "path": "390px-/api/auth/providers",
+    "time": 1793623222056,
+    "setCookie": []
+  },
+  {
+    "path": "390px-/api/auth/csrf",
+    "time": 1793623222078,
+    "setCookie": []
+  },
+  {
+    "path": "390px-/api/auth/callback/credentials",
+    "time": 1793623222468,
+    "setCookie": [
+      "authjs.session-token=<REDACTED>; Path=/; Expires=Wed, 02 Dec 2026 12:40:22 GMT; HttpOnly; SameSite=Lax"
+    ]
+  },
+  {
+    "path": "390px-/api/auth/session",
+    "time": 1793623222565,
+    "setCookie": []
+  }
+]
