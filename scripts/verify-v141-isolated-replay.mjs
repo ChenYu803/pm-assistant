@@ -11,9 +11,12 @@ import nextEnv from "@next/env";
 import { initializeMysql } from "../src/lib/mysql-bootstrap.ts";
 import { getMysqlAdminConfig, getMysqlConnectionOptions } from "../src/lib/mysql-config.ts";
 
-export async function runIsolatedReplay({ slug, title, scenarioScript, captureProvider = false, expectedWorkflows = 2 }) {
-  if (!/^[a-z][a-z0-9-]*$/.test(slug) || !/^scripts\/verify-v14[12]-[a-z0-9-]+-scenario\.mjs$/.test(scenarioScript)) {
+export async function runIsolatedReplay({ slug, title, scenarioScript, captureProvider = false, providerFixtureUrl, expectedWorkflows = 2 }) {
+  if (!/^[a-z][a-z0-9-]*$/.test(slug) || !/^scripts\/verify-v14[124]-[a-z0-9-]+-scenario\.mjs$/.test(scenarioScript)) {
     throw new Error("非法专项标识或场景路径");
+  }
+  if (providerFixtureUrl && !/^http:\/\/127\.0\.0\.1:\d+\/v1$/.test(providerFixtureUrl)) {
+    throw new Error("模型替身只允许本机随机端口 /v1");
   }
   nextEnv.loadEnvConfig(process.cwd());
   let pass = 0;
@@ -152,6 +155,14 @@ export async function runIsolatedReplay({ slug, title, scenarioScript, capturePr
       }, null, 2));
     }
     const serviceEnv = { ...env };
+    if (providerFixtureUrl) {
+      serviceEnv.AI_MODE = "live";
+      serviceEnv.AI_BASE_URL = providerFixtureUrl;
+      serviceEnv.AI_API_KEY = "isolated-provider-fixture";
+      serviceEnv.V144_PROVIDER_FIXTURE_URL = providerFixtureUrl;
+      serviceEnv.AI_DAILY_SITE_LIMIT = "200";
+      serviceEnv.AI_DAILY_USER_LIMIT = "100";
+    }
     // 网站进程不继承维护账号。
     for (const key of Object.keys(serviceEnv)) if (key.startsWith("MYSQL_ADMIN_") || key.startsWith("MYSQL_MIGRATION_")) delete serviceEnv[key];
     server = start("scripts/verify-v141-replay-foundation-server.mjs", "server", serviceEnv, projectDir);
@@ -159,9 +170,9 @@ export async function runIsolatedReplay({ slug, title, scenarioScript, capturePr
     const modeResponse = await fetch(`${base}/api/verify/replay-mode`, { signal: AbortSignal.timeout(30_000) });
     if (!modeResponse.ok) throw new Error(`隔离服务 replay 门禁返回 HTTP ${modeResponse.status}，详见 server.log`);
     const mode = await modeResponse.json();
-    check("正式服务也确认 replay，发送前拒绝真实模型", modeResponse.ok && mode.aiMode === "replay");
+    check(providerFixtureUrl ? "隔离服务只连接本机 HTTP 模型替身" : "正式服务也确认 replay，发送前拒绝真实模型", modeResponse.ok && mode.aiMode === (providerFixtureUrl ? "live" : "replay"));
     console.log(`${title}开始；证据目录：${outputDir}`);
-    scenario = start(scenarioScript, "scenario", { ...serviceEnv, BASE_URL: base });
+    scenario = start(scenarioScript, "scenario", { ...serviceEnv, AI_MODE: "replay", BASE_URL: base });
     const timer = setTimeout(() => { scenario.kill("SIGKILL"); }, 8 * 60_000);
     let exitCode;
     try { [exitCode] = await once(scenario, "exit"); } finally { clearTimeout(timer); }

@@ -458,6 +458,13 @@ export const MYSQL_MIGRATIONS = [
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
     ],
   },
+  {
+    id: "0023_v144_session_manual_title",
+    checksum: "10de3d5d2d51b09e94c3f88d10affbb06a9e3bf4ff3f2f44ece13864254ca73c",
+    statements: [
+      "ALTER TABLE iteration_sessions ADD COLUMN title_manually_set BOOLEAN NOT NULL DEFAULT FALSE",
+    ],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {

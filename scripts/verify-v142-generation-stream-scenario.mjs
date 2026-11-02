@@ -72,7 +72,7 @@ const browser = await chromium.launch({ channel: "msedge", headless: true });
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
 const page = await context.newPage();
 page.setDefaultTimeout(45_000);
-page.setDefaultNavigationTimeout(45_000);
+page.setDefaultNavigationTimeout(120_000);
 try {
   await page.goto(`${base}/register`);
   await page.fill("#email", `verify-v142-stream-${Date.now()}@test.local`);

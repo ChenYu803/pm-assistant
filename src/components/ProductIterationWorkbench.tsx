@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import namingStyles from "./SessionNaming.module.css";
 import { getWorkbenchFileStage } from "@/lib/workbench-file-branch";
 import ProjectFileTree, { type ProjectFileEntry } from "@/components/ProjectFileTree";
 import MarkdownCandidateReview, { type MarkdownCandidate } from "@/components/MarkdownCandidateReview";
@@ -93,6 +94,11 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
   const [contextUpdating, setContextUpdating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
+  const [renamingSession, setRenamingSession] = useState<{ id: string; stage: StageKey; title: string } | null>(null);
+  const [savingSessionName, setSavingSessionName] = useState(false);
+  const [sessionNameError, setSessionNameError] = useState("");
+  const sessionNamesVersion = useRef(0);
+  const renameSessionButton = useRef<HTMLButtonElement>(null);
   const [demoId, setDemoId] = useState<string | null>(null);
   const [demoExpanded, setDemoExpanded] = useState(true);
   const [toast, setToast] = useState("");
@@ -221,11 +227,20 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
   }, [base, iteration.id, project.id, request]);
 
   const refreshStageFacts = useCallback(async () => {
+    const startedAtNamesVersion = sessionNamesVersion.current;
     const state = await request(`${base}/workbench`);
+    // 旧请求的名称结果不能覆盖刚保存的人工名称。
+    const canUpdateNames = startedAtNamesVersion === sessionNamesVersion.current;
+    const updateSessions = (previous: Session[], actual: Session[]) => previous.map((session) => {
+      const latest = actual.find((item) => item.id === session.id);
+      return canUpdateNames && latest ? { ...session, title: latest.title, updatedAt: latest.updatedAt } : session;
+    });
     setStages((previous) => previous.map((entry) => {
       const actual = state.stages.find((stage: Stage) => stage.key === entry.key);
-      return actual ? { ...entry, status: actual.status, generatingSessionIds: actual.generatingSessionIds } : entry;
+      return actual ? { ...entry, status: actual.status, generatingSessionIds: actual.generatingSessionIds, sessions: updateSessions(entry.sessions, actual.sessions) } : entry;
     }));
+    const activeStage = state.stages.find((stage: Stage) => stage.key === activeView.current.stage);
+    if (activeStage) setSessions((previous) => updateSessions(previous, activeStage.sessions));
     return state;
   }, [base, request]);
 
@@ -235,10 +250,10 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
   }, [loadWorkbench]);
 
   useEffect(() => {
-    if (!stages.some((stage) => stage.generatingSessionIds.length > 0)) return;
+    if (!sendingSessionIds.length && !stages.some((stage) => stage.generatingSessionIds.length > 0)) return;
     const timer = window.setInterval(() => { void refreshStageFacts().catch(() => undefined); }, 2000);
     return () => window.clearInterval(timer);
-  }, [refreshStageFacts, stages]);
+  }, [refreshStageFacts, stages, sendingSessionIds]);
 
   const loadMessages = useCallback(async (sessionId: string | null) => {
     const requestSequence = ++loadSequence.current;
@@ -457,6 +472,31 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
     finally { setStoppingGeneration(false); }
   }
 
+  function closeSessionRename() {
+    const targetId = renamingSession?.id;
+    setRenamingSession(null);
+    window.requestAnimationFrame(() => { if (activeView.current.sessionId === targetId) renameSessionButton.current?.focus(); });
+  }
+
+  async function saveSessionName() {
+    if (!renamingSession || savingSessionName || !renamingSession.title.trim()) return;
+    const target = renamingSession;
+    setSavingSessionName(true);
+    setSessionNameError("");
+    try {
+      const updated = await request(`${base}/sessions/${target.id}`, {
+        method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: target.title }),
+      });
+      sessionNamesVersion.current += 1;
+      const update = (session: Session) => session.id === target.id ? { ...session, title: updated.title, updatedAt: updated.updated_at } : session;
+      setStages((previous) => previous.map((stage) => stage.key === target.stage ? { ...stage, sessions: stage.sessions.map(update) } : stage));
+      if (activeView.current.stage === target.stage) setSessions((previous) => previous.map(update));
+      closeSessionRename();
+      showToast("会话名称已保存");
+    } catch (caught) { setSessionNameError(caught instanceof Error ? caught.message : "改名未完成，请重试。"); }
+    finally { setSavingSessionName(false); }
+  }
+
   async function sendMessage(content: string, editMessageId?: string, regenerateMessageId?: string) {
     if (!activeSessionId || messagesLoading || messagesFailed || currentStatus === "completed" || (!content.trim() && !regenerateMessageId) || sendingIds.current.has(activeSessionId)) return;
     const sessionId = activeSessionId;
@@ -469,7 +509,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
       let latestMessages: Message[] = [];
       if (editMessageId) {
         await streamGeneration(`${base}/sessions/${sessionId}/messages/${editMessageId}`, {
-          method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: content.trim() }),
+          method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content }),
         }, sessionId);
         const history = await request(`${base}/stages/${stage}/sessions/${sessionId}/messages`);
         latestMessages = history.messages;
@@ -480,7 +520,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
       } else {
         const result = await streamGeneration(`${base}/stages/${stage}/sessions/${sessionId}/messages`, {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...(content.trim() ? { content: content.trim() } : {}), ...(regenerateMessageId ? { regenerateMessageId } : {}) }),
+          body: JSON.stringify({ ...(content.trim() ? { content } : {}), ...(regenerateMessageId ? { regenerateMessageId } : {}) }),
         }, sessionId);
         latestMessages = result.messages ?? [];
         if (activeView.current.stage === stage && activeView.current.sessionId === sessionId) {
@@ -499,12 +539,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
         }
       }
       if (activeView.current.stage === stage && activeView.current.sessionId === sessionId) { setEditingId(null); setEditValue(""); }
-      const updated = await request(`${base}/sessions/${sessionId}`).catch(() => null);
-      if (updated) {
-        const updateSession = (session: Session) => session.id === sessionId ? { ...session, title: updated.title, updatedAt: updated.updated_at } : session;
-        setStages((previous) => previous.map((entry) => entry.key === stage ? { ...entry, sessions: entry.sessions.map(updateSession) } : entry));
-        if (activeView.current.stage === stage) setSessions((previous) => previous.map(updateSession));
-      }
+
     } catch (caught) {
       liveReplies.current.delete(sessionId);
       const generationStopped = caught instanceof Error && caught.message === "生成已停止";
@@ -613,7 +648,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
         <aside className="workbench-sessions" id="workbench-sessions" aria-label="阶段会话">
           <div className="sessions-heading"><h2>阶段会话</h2><button className="new-session-button" type="button" disabled={creatingSession || contextUpdating} onClick={() => void createSession()} aria-label="新建会话" title="新建会话"><Icon name="plus"/></button></div>
           {sessions.length ? <div className="real-session-list">{sessions.map((session) => <div className="session-list-item" key={session.id}>
-            <button className="session-row" data-session-id={session.id} type="button" title={session.title} disabled={contextUpdating} aria-current={activeSessionId === session.id ? "page" : undefined} onClick={() => void chooseSession(session)}><strong>{session.title}</strong><small>{generatingSessionIds.includes(session.id) || sendingSessionIds.includes(session.id) ? "生成中 · " : session.title === "新会话" ? "尚无消息 · " : ""}{session.updatedAt ? new Date(session.updatedAt).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }) : ""}</small></button>
+            <button className="session-row" data-session-id={session.id} type="button" title={session.title} disabled={contextUpdating} aria-current={activeSessionId === session.id ? "page" : undefined} onClick={() => void chooseSession(session)}><strong className={namingStyles.sessionTitle}>{session.title}</strong><small>{generatingSessionIds.includes(session.id) || sendingSessionIds.includes(session.id) ? "生成中 · " : session.title === "新会话" ? "尚无消息 · " : ""}{session.updatedAt ? new Date(session.updatedAt).toLocaleString("zh-CN", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }) : ""}</small></button>
             <button className="session-delete-button" type="button" disabled={contextUpdating || creatingSession || stageUpdating} aria-label={`删除会话：${session.title}`} title={`删除会话：${session.title}`} onClick={() => setDeletingSession({ session, stage: currentStage })}><Icon name="trash" /></button>
           </div>)}</div> : <p className="session-empty">本阶段还没有会话，可新建会话开始。</p>}
           {demoSessions.length > 0 && currentStage === "analysis" ? <details className="demo-section" open={demoExpanded} onToggle={(event) => setDemoExpanded(event.currentTarget.open)}><summary className="demo-divider disclosure-summary"><span>演示会话</span><small>只读样例</small><DisclosureIcon /></summary>
@@ -621,7 +656,17 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
         </aside>
 
         <section className="workbench-conversation" id="workbench-conversation" aria-labelledby="conversation-title">
-          <div className="conversation-heading"><div className="conversation-identity"><h2 id="conversation-title" title={activeSession?.title ?? selectedDemo?.title ?? currentInfo.label}>{activeSession?.title ?? selectedDemo?.title ?? currentInfo.label}</h2></div>
+          <div className="conversation-heading"><div className={`conversation-identity ${namingStyles.identity}`}>
+            {renamingSession?.id === activeSessionId && renamingSession?.stage === currentStage && !selectedDemo ? <form className={namingStyles.renameForm} onSubmit={(event) => { event.preventDefault(); void saveSessionName(); }}>
+              <h2 id="conversation-title" className={namingStyles.srOnly}>修改会话名称</h2>
+              <input autoFocus aria-label="会话名称" maxLength={80} value={renamingSession.title} disabled={savingSessionName} onChange={(event) => setRenamingSession({ ...renamingSession, title: event.target.value })} onKeyDown={(event) => { if (event.key === "Escape" && !savingSessionName) { event.preventDefault(); closeSessionRename(); } }} />
+              <button type="submit" disabled={savingSessionName || !renamingSession.title.trim()}>{savingSessionName ? "保存中…" : "保存名称"}</button>
+              <button type="button" disabled={savingSessionName} onClick={closeSessionRename}>取消改名</button>
+              {sessionNameError ? <p className={namingStyles.error} role="alert">{sessionNameError}</p> : null}
+            </form> : <div className={namingStyles.titleRow}><h2 id="conversation-title" title={activeSession?.title ?? selectedDemo?.title ?? currentInfo.label}>{activeSession?.title ?? selectedDemo?.title ?? currentInfo.label}</h2>
+              {activeSession && !selectedDemo ? <button ref={renameSessionButton} type="button" aria-label="修改会话名称" title="修改会话名称" onClick={() => { setRenamingSession({ id: activeSession.id, stage: currentStage, title: activeSession.title }); setSessionNameError(""); }}><Icon name="edit" /></button> : null}
+            </div>}
+          </div>
             {!selectedDemo && currentStatus === "in_progress" && currentStageState?.sessions.length ? <button className="stage-complete-button" type="button" disabled={stageUpdating || Boolean(stageGenerating)} aria-describedby={stageGenerating ? "stage-generation-note" : undefined} onClick={() => void completeStage()}>完成本阶段</button> : null}
             {!selectedDemo && currentStatus === "completed" ? <button className="stage-reopen-button" type="button" disabled={stageUpdating} onClick={() => void reopenStage()}>重新打开阶段</button> : null}
           </div>

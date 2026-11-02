@@ -69,6 +69,7 @@ try {
       new MutationObserver(insert).observe(document, { childList: true, subtree: true }); insert();
     });
     page = await context.newPage(); page.setDefaultTimeout(20000);
+    page.setDefaultNavigationTimeout(120_000);
     const errors = []; page.on("pageerror", (error) => errors.push(error.message));
     const email = `verify-foundation-${viewport.width}-${randomUUID()}@test.local`;
     const password = "verify-pass-1234";

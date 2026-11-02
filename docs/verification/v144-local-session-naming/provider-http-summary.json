@@ -1,0 +1,10 @@
+{
+  "kind": "isolated-loopback-provider-fixture",
+  "requestCount": 31,
+  "streamingRequests": 31,
+  "nonStreamingRequests": 0,
+  "rawEvidencePath": "C:/Users/Administrator/AppData/Local/Temp/v141-local-session-naming-ua4Zem/provider-http-requests.json",
+  "sha256": "32b5898ddd486c8706eab7f47ffbc8ff34aa992605c18b38fc31513a2efa2d31",
+  "actualLiveProvider": false,
+  "production": false
+}

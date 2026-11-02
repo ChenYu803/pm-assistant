@@ -224,28 +224,6 @@ export async function stopMysqlGeneratingMessage(tabId: string, messageId: strin
   return result.affectedRows === 1 ? getMysqlMessage(messageId) : null;
 }
 
-export async function applyMysqlAutomaticWorkRecordName(workRecordId: string, name: string): Promise<string | null> {
-  const [result] = await getMysqlPool().execute<ResultSetHeader>(
-    "UPDATE work_records SET name = ? WHERE id = ? AND name = '未命名'",
-    [name, workRecordId]
-  );
-  return result.affectedRows === 1 ? name : null;
-}
-
-export async function mysqlMessageCount(tabId: string) {
-  const [rows] = await getMysqlPool().query<Array<RowDataPacket & { count: number }>>(
-    "SELECT COUNT(*) AS count FROM messages WHERE tab_id = ?", [tabId]
-  );
-  return Number(rows[0]?.count ?? 0);
-}
-
-export async function mysqlConversationForAutoName(tabId: string) {
-  const [rows] = await getMysqlPool().query<Array<MysqlMessage & RowDataPacket>>(
-    `SELECT ${MESSAGE_COLUMNS} FROM messages WHERE tab_id = ? ORDER BY timestamp ASC, id ASC LIMIT 20`, [tabId]
-  );
-  return rows.map(mapMessage);
-}
-
 export function mysqlAgentType(tab: MysqlConversationTab): AgentType {
   return tab.agent_type;
 }

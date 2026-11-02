@@ -83,7 +83,6 @@ interface ChatAreaProps {
    *  file markers after this — otherwise a slow file fetch would make us
    *  re-ask for a write the user already confirmed. */
   filesReady?: boolean;
-  onWorkRecordRenamed?: (newName: string) => void;
   onFileSaved?: () => void; // notify parent to refresh file list
   onTabVersionChange?: (tabId: string, version: number) => void;
   onTabConflict?: (tabId: string) => void;
@@ -495,7 +494,6 @@ function StreamingHtmlPlaceholder() {
 
 export default function ChatArea({
   tabId,
-  workRecordId,
   tabName,
   tabVersion,
   freezeStatus,
@@ -505,7 +503,6 @@ export default function ChatArea({
   projectId,
   existingFileNames,
   filesReady = true,
-  onWorkRecordRenamed,
   onFileSaved,
   onTabVersionChange,
   onTabConflict,
@@ -563,30 +560,6 @@ export default function ChatArea({
   // （v1.1 文件更新修复）。消息 ID 全局唯一，切 tab 后无需清理。
   const liveMessageIds = useRef<Set<string>>(new Set());
   const pendingFileSequence = useRef(0);
-
-  /** 聊天完成后单独请求命名；失败保持静默，不能反过来影响已完成的聊天。 */
-  const requestAutomaticName = useCallback(
-    async (completedTabId: string) => {
-      if (!workRecordId) return;
-
-      try {
-        const res = await fetch(`/api/work-records/${workRecordId}/auto-name`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tabId: completedTabId }),
-        });
-        if (!res.ok) return;
-
-        const data = await res.json().catch(() => ({}));
-        if (typeof data.name === "string" && data.name) {
-          onWorkRecordRenamed?.(data.name);
-        }
-      } catch {
-        // 自动命名是辅助结果；网络或命名服务失败时用户仍可继续聊天和手动改名。
-      }
-    },
-    [onWorkRecordRenamed, workRecordId]
-  );
 
   useEffect(() => {
     freezeStatusRef.current = freezeStatus;
@@ -1281,7 +1254,6 @@ export default function ChatArea({
               } else {
                 setTimeout(() => checkAndShowFileDialog(completedMessage), 100);
               }
-              void requestAutomaticName(tabId);
               break;
             }
             case "error": {

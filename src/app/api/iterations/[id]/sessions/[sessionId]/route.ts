@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import { isMysqlId } from "@/lib/identifiers";
 import { mysqlUnavailableMessage } from "@/lib/mysql";
-import { deleteMysqlIterationSession, findOwnedIterationSession } from "@/lib/mysql-iteration-workbench";
+import { deleteMysqlIterationSession, findOwnedIterationSession, renameMysqlIterationSession } from "@/lib/mysql-iteration-workbench";
 
 type Context = { params: Promise<{ id: string; sessionId: string }> };
 
@@ -18,6 +18,23 @@ export async function GET(_request: Request, { params }: Context) {
   } catch (error) {
     console.error("GET /api/iterations/[id]/sessions/[sessionId] error:", error);
     return NextResponse.json({ error: mysqlUnavailableMessage() }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request, { params }: Context) {
+  try {
+    const userId = await requireAuth();
+    if (userId instanceof NextResponse) return userId;
+    const { id, sessionId } = await params;
+    if (!isMysqlId(id) || !isMysqlId(sessionId)) return NextResponse.json({ error: "会话参数无效" }, { status: 400 });
+    const body = await request.json().catch(() => null);
+    const title = typeof body?.title === "string" ? body.title.trim() : "";
+    if (!title || Array.from(title).length > 80) return NextResponse.json({ error: "会话名称需为 1–80 个字符" }, { status: 400 });
+    const session = await renameMysqlIterationSession(id, sessionId, userId, title);
+    return session ? NextResponse.json(session) : NextResponse.json({ error: "会话不存在或无权操作" }, { status: 404 });
+  } catch (error) {
+    console.error("PATCH /api/iterations/[id]/sessions/[sessionId] error:", error);
+    return NextResponse.json({ error: "改名未完成，请重试。" }, { status: 500 });
   }
 }
 

@@ -4,7 +4,11 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import next from "next";
 
-if (!process.send || process.env.AI_MODE !== "replay" || !/^v141_replay_[a-f0-9]{16}$/.test(process.env.MYSQL_DATABASE ?? "")) {
+const localProviderFixture = process.env.V144_PROVIDER_FIXTURE_URL;
+const safeLocalProvider = process.env.AI_MODE === "live" &&
+  /^http:\/\/127\.0\.0\.1:\d+\/v1$/.test(localProviderFixture ?? "") &&
+  process.env.AI_BASE_URL === localProviderFixture && process.env.AI_API_KEY === "isolated-provider-fixture";
+if (!process.send || (process.env.AI_MODE !== "replay" && !safeLocalProvider) || !/^v141_replay_[a-f0-9]{16}$/.test(process.env.MYSQL_DATABASE ?? "")) {
   throw new Error("回放服务只能由独立空库入口启动");
 }
 

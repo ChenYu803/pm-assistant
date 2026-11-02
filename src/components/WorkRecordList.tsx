@@ -40,7 +40,7 @@ export default function WorkRecordList({ projectId }: WorkRecordListProps) {
   const [showCreate, setShowCreate] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<WorkRecord | null>(null);
-  // 创建面板的名称输入（可选，留空 = 「未命名」+ AI 自动命名兜底）
+  // 创建面板的名称输入（可选，留空显示「未命名」，可随时人工改名）
   const [newName, setNewName] = useState("");
   // 行内改名的目标记录 id（配合 InlineNameInput 使用）
   const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -213,7 +213,7 @@ export default function WorkRecordList({ projectId }: WorkRecordListProps) {
           {showCreate && (
             <div className="mb-6 rounded-lg border border-border bg-card p-4">
               <p className="mb-3 text-sm text-muted-foreground">
-                输入名称后回车即创建；留空将显示「未命名」，首次对话后由 AI 自动命名（手动命名后 AI 不再覆盖）。
+                输入名称后回车即创建；留空将显示「未命名」，之后可以手动改名。
               </p>
               <div className="flex gap-2">
                 <Input

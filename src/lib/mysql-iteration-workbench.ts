@@ -27,6 +27,19 @@ const STAGE_AGENT: Record<WorkbenchStage, AgentType> = {
   prd: "mvp_prd",
   tickets: "ticket_splitter",
 };
+const titleSegmenter = new Intl.Segmenter("zh-CN", { granularity: "grapheme" });
+
+/** 按用户看到的字符截取，保留空格、标点、组合字符和 emoji 序列。 */
+function firstPromptTitle(content: string) {
+  let title = "";
+  let count = 0;
+  for (const { segment } of titleSegmenter.segment(content)) {
+    if (count++ === 10) break;
+    title += segment;
+  }
+  return title;
+}
+
 const stageToStorage = (stage: WorkbenchStage) => stage === "analysis" ? "requirements" : stage === "tickets" ? "tasks" : stage;
 const stageFromStorage = (stage: string): WorkbenchStage => stage === "requirements" ? "analysis" : stage === "tasks" ? "tickets" : stage as WorkbenchStage;
 
@@ -153,6 +166,21 @@ export async function findOwnedIterationSession(iterationId: string, sessionId: 
      JOIN projects p ON p.id = i.project_id
      WHERE s.id = ? AND i.id = ? AND p.user_id = ? LIMIT 1`, [sessionId, iterationId, userId]);
   return rows[0] ? { ...rows[0], stage: stageFromStorage(rows[0].stage) } : null;
+}
+
+export async function renameMysqlIterationSession(iterationId: string, sessionId: string, userId: string, title: string) {
+  const connection = await getMysqlPool().getConnection();
+  const updatedAt = new Date();
+  try {
+    await connection.beginTransaction();
+    if (!(await lockOwnedIteration(connection, iterationId, userId))) { await connection.rollback(); return null; }
+    const [result] = await connection.execute<ResultSetHeader>(
+      "UPDATE iteration_sessions SET title = ?, title_manually_set = 1, updated_at = ? WHERE id = ? AND iteration_id = ?",
+      [title, updatedAt, sessionId, iterationId]);
+    if (!result.affectedRows) { await connection.rollback(); return null; }
+    await connection.commit();
+    return { id: sessionId, title, updated_at: updatedAt };
+  } catch (error) { await connection.rollback(); throw error; } finally { connection.release(); }
 }
 
 export async function deleteMysqlIterationSession(iterationId: string, sessionId: string, userId: string) {
@@ -326,7 +354,7 @@ export async function generateMysqlIterationMessage(input: {
     if (!input.content?.trim()) return { kind: "empty" as const };
     const now = new Date();
     const id = randomUUID();
-    userMessage = { id, role: "user", content: input.content.trim(), createdAt: now };
+    userMessage = { id, role: "user", content: input.content, createdAt: now };
   }
   const prompt = await buildMysqlIterationPrompt(input.iterationId, input.sessionId, input.userId, session.stage);
   if (!prompt) return { kind: "not-found" as const };
@@ -361,7 +389,11 @@ export async function generateMysqlIterationMessage(input: {
       userMessage.createdAt = new Date(Math.max(userMessage.createdAt.valueOf(), latestCreatedAt + 1));
       createdAt = new Date(Math.max(createdAt.valueOf(), userMessage.createdAt.valueOf() + 1));
       await reservation.execute<ResultSetHeader>("INSERT INTO iteration_session_messages (id, session_id, role, content, status, created_at) VALUES (?, ?, 'user', ?, 'completed', ?)", [userMessage.id, input.sessionId, userMessage.content, userMessage.createdAt]);
-      await reservation.execute<ResultSetHeader>("UPDATE iteration_sessions SET title = IF(title = '新会话', ?, title), updated_at = ? WHERE id = ?", [userMessage.content.slice(0, 80), new Date(), input.sessionId]);
+      // 只在首条用户消息落库的事务内确定默认名；人工名称（包括“新会话”）优先。
+      if (!freshMessages.some((message) => message.role === "user")) {
+        await reservation.execute<ResultSetHeader>("UPDATE iteration_sessions SET title = ? WHERE id = ? AND title = '新会话' AND title_manually_set = 0", [firstPromptTitle(userMessage.content), input.sessionId]);
+      }
+      await reservation.execute<ResultSetHeader>("UPDATE iteration_sessions SET updated_at = ? WHERE id = ?", [new Date(), input.sessionId]);
     } else createdAt = new Date(Math.max(createdAt.valueOf(), latestCreatedAt + 1));
     await reservation.execute<ResultSetHeader>("INSERT INTO iteration_session_messages (id, session_id, role, content, status, created_at) VALUES (?, ?, 'assistant', '', 'generating', ?)", [assistantId, input.sessionId, createdAt]);
     await reservation.commit();
@@ -442,8 +474,7 @@ export async function generateMysqlIterationMessage(input: {
         messageId: assistantId, content: prototypeHtml.content,
       });
       if (prototypeHtml.kind === "valid" && input.forceSnapshotFailure) throw new Error("回放强制 HTML 快照写入失败");
-      const title = userMessage?.content.slice(0, 80) || "新会话";
-      await connection.execute<ResultSetHeader>("UPDATE iteration_sessions SET title = IF(title = '新会话', ?, title), updated_at = ? WHERE id = ?", [title, new Date(), input.sessionId]);
+      await connection.execute<ResultSetHeader>("UPDATE iteration_sessions SET updated_at = ? WHERE id = ?", [new Date(), input.sessionId]);
       await connection.commit();
     } catch (error) { await connection.rollback(); throw error; } finally { connection.release(); }
     return { kind: "generated" as const, userMessage, assistantMessage: { id: assistantId, role: "assistant" as const, content: answer, status: "completed", errorMessage: null, createdAt } };

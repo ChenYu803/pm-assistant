@@ -48,6 +48,7 @@
     "verify:mysql-context-usage": "tsx scripts/verify-context-usage.mjs",
     "verify:mysql-list-rendering": "tsx scripts/verify-list.mjs",
     "verify:mysql-ui-fixes": "tsx scripts/verify-fixes.mjs",
+    "verify:v144-local-session-naming": "tsx scripts/verify-v144-local-session-naming.mjs",
     "verify:mysql-auto-naming": "tsx scripts/verify-conditional-auto-naming.mjs",
     "verify:a11y": "tsx scripts/verify-a11y.mjs",
     "verify:agent-types": "tsx scripts/verify-agent-types.mjs",

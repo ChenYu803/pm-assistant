@@ -1,0 +1,9 @@
+.identity { flex: 1; }
+.titleRow { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.identity .titleRow h2, :global(.session-row) .sessionTitle { white-space: pre; }
+.titleRow button svg { display: block; width: 16px; height: 16px; }
+.renameForm { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.renameForm input { flex: 1 1 120px; min-width: 0; max-width: 280px; min-height: 36px; padding: 6px 8px; border: 1px solid var(--work-line); background: var(--work-panel); color: var(--work-type); font: 14px var(--font-app-sans); }
+.renameForm input:focus-visible { outline: 2px solid var(--work-coral); outline-offset: 2px; }
+.error { flex-basis: 100%; margin: 0; color: var(--work-type); font-size: 12px; }
+.srOnly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }

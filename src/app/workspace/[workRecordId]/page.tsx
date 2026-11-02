@@ -354,8 +354,7 @@ export default function WorkspacePage() {
     }
   }
 
-  /** 顶栏改名：PATCH 后更新本地工作记录名（AI 自动命名只对「未命名」生效，
-   *  手动改名后不再覆盖——auto-name 服务端判定，此处无需额外处理）。 */
+  /** 顶栏人工改名：保存后同步当前展示名称。 */
   async function handleRenameRecord(newName: string) {
     setRenamingRecord(false);
     const trimmed = newName.trim();
@@ -756,11 +755,6 @@ export default function WorkspacePage() {
               projectId={project?.id ?? null}
               existingFileNames={files.map((f) => f.filename)}
               filesReady={!filesLoading}
-              onWorkRecordRenamed={(newName) => {
-                setWorkRecord((prev) =>
-                  prev ? { ...prev, name: newName } : prev
-                );
-              }}
               onFileSaved={fetchFiles}
               onTabVersionChange={(tabId, version) => {
                 setTabs((prev) =>
