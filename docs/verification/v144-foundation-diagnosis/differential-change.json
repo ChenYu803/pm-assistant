@@ -1,0 +1,7 @@
+{
+  "source": "scripts/verify-v141-replay-foundation-scenario.mjs",
+  "replacements": 3,
+  "old": "name: \"开始本阶段工作\"",
+  "next": "name: \"新建会话，开始这一阶段\"",
+  "assertionsUnchanged": true
+}
