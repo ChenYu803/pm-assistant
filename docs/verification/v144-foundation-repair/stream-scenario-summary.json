@@ -1,0 +1,13 @@
+{
+  "pass": 16,
+  "fail": 0,
+  "aiMode": "replay",
+  "workflows": [
+    "heartbeat-before-first-token",
+    "workbench-streamed-generation",
+    "stream-completion-and-persistence",
+    "stream-regeneration",
+    "stream-edited-regeneration",
+    "legacy-json-compatibility"
+  ]
+}

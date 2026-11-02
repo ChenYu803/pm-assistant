@@ -5,6 +5,7 @@ import mysql from "mysql2/promise";
 import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { installFoundationStreamObserver, assertFoundationGeneration } from "./verify-foundation-stream-observer.mjs";
 
 const base = process.env.BASE_URL;
 const output = process.env.V141_REPLAY_OUTPUT_DIR;
@@ -30,6 +31,19 @@ async function mutation(page, path, action, expected = 200) {
   const response = await pending;
   if (response.status() !== expected) throw new Error(`${response.request().method()} ${path} 返回 ${response.status()}，预期 ${expected}`);
   return response.json();
+}
+// 旁路等待浏览器收到的流终态，避免 CDP response.finished()/json() 等待 SSE。
+async function generation(page, path, action) {
+  const start = await page.evaluate(() => window.__foundationStreams.length);
+  await action();
+  return {
+    async result(expectedStatus) {
+      await page.waitForFunction(({ path, start }) => window.__foundationStreams.slice(start).some((item) => item.path === path && item.ended), { path, start });
+      const observation = await page.evaluate(({ path, start }) => window.__foundationStreams.slice(start).find((item) => item.path === path), { path, start });
+      const body = assertFoundationGeneration(observation, expectedStatus);
+      return { ...observation, body };
+    },
+  };
 }
 function stage(state, key) { return state.stages.find((item) => item.key === key); }
 async function eventually(read, predicate, description) {
@@ -59,6 +73,7 @@ try {
     const prefix = `${viewport.width}×${viewport.height}`;
     const compact = viewport.width < 1100;
     const context = await browser.newContext({ viewport });
+    await context.addInitScript(installFoundationStreamObserver);
     // Next 开发指示器不是产品控件，避免它挡住移动端底部按钮。
     await context.addInitScript(() => {
       const insert = () => {
@@ -162,7 +177,7 @@ try {
     await page.waitForURL(firstRoute);
     const statePath = `/api/iterations/${first.id}/workbench`;
     const state = () => api(page, statePath);
-    await page.getByRole("button", { name: "开始本阶段工作" }).waitFor();
+    await page.getByRole("button", { name: "新建会话，开始这一阶段", exact: true }).waitFor();
     const initial = await state();
     check(`${prefix} 四环初始未开始且无会话`, initial.stages.length === 4 && initial.stages.every((item) => item.status === "not_started" && item.sessions.length === 0));
     const nav = page.getByRole("region", { name: "四环阶段导航" });
@@ -175,7 +190,7 @@ try {
         await nav.getByRole("button", { name: new RegExp(label) }).click();
         await page.getByRole("button", { name: `继续进入${label}`, exact: true }).click();
       });
-      check(`${prefix} 可直接进入空${label}`, (await state()).currentStage === key && await page.getByRole("button", { name: "开始本阶段工作" }).isVisible());
+      check(`${prefix} 可直接进入空${label}`, (await state()).currentStage === key && await page.getByRole("button", { name: "新建会话，开始这一阶段", exact: true }).isVisible());
     }
     await mutation(page, statePath, () => nav.getByRole("button", { name: /需求分析/ }).click());
     const afterNavigation = await state();
@@ -183,7 +198,7 @@ try {
     requireOkay(`${prefix} 空阶段来回导航不建会话、不变状态、不写文件`, afterNavigation.stages.every((item) => item.sessions.length === 0 && item.status === "not_started") && Number(emptyFiles[0].total) === 0);
     await snapshot("empty-navigation");
     const sessionPath = `/api/iterations/${first.id}/stages/analysis/sessions`;
-    const created = await mutation(page, sessionPath, () => page.getByRole("button", { name: "开始本阶段工作" }).click(), 201);
+    const created = await mutation(page, sessionPath, () => page.getByRole("button", { name: "新建会话，开始这一阶段", exact: true }).click(), 201);
     const firstSession = created.session;
     await page.locator(`[data-session-id="${firstSession.id}"][aria-current="page"]`).waitFor({ state: "attached" });
     await readyComposer();
@@ -209,7 +224,10 @@ try {
     await conversation();
     const firstMessage = `会话一独立消息 ${viewport.width}`;
     await page.getByLabel("输入消息").fill(firstMessage);
-    await mutation(page, `${sessionPath}/${firstSession.id}/messages`, () => page.getByRole("button", { name: "发送消息", exact: true }).click());
+    const firstGeneration = await generation(page, `${sessionPath}/${firstSession.id}/messages`, () => page.getByRole("button", { name: "发送消息", exact: true }).click());
+    const completed = await firstGeneration.result(200);
+    requireOkay(`${prefix} 正常回复经过 token 与唯一 result 完成`, completed.tokens > 0 && completed.body.messages.some((item) => item.role === "assistant" && item.status === "completed" && item.content));
+    await page.getByRole("button", { name: "停止生成", exact: true }).waitFor({ state: "hidden" });
     await readyComposer();
     const firstDraft = "会话一未发送草稿";
     await page.getByLabel("输入消息").fill(firstDraft);
@@ -227,14 +245,15 @@ try {
     await page.route(`**${delayedPath}`, (route) => route.continue({ headers: { ...route.request().headers(), "x-pm-verify-stream-delay": "1" } }));
     const secondMessage = `会话二独立消息 ${viewport.width}`;
     await page.getByLabel("输入消息").fill(secondMessage);
-    const generationResponse = page.waitForResponse((response) => new URL(response.url()).pathname === delayedPath && response.request().method() === "POST");
-    await page.getByRole("button", { name: "发送消息", exact: true }).click();
+    const secondGeneration = await generation(page, delayedPath, () => page.getByRole("button", { name: "发送消息", exact: true }).click());
     await page.getByRole("button", { name: "停止生成", exact: true }).waitFor();
     const busy = await eventually(state, (value) => stage(value, "analysis").generatingSessionIds.includes(secondSession.id), "第二会话生成事实");
     check(`${prefix} 生成状态仅属于第二会话`, stage(busy, "analysis").generatingSessionIds.length === 1 && !stage(busy, "analysis").generatingSessionIds.includes(firstSession.id));
     await mutation(page, `/api/iterations/${first.id}/sessions/${secondSession.id}/stop`, () => page.getByRole("button", { name: "停止生成", exact: true }).click());
-    const stoppedResponse = await generationResponse;
-    if (stoppedResponse.status() !== 409) throw new Error(`停止回放生成响应为 ${stoppedResponse.status()}，预期 409`);
+    const stopped = await secondGeneration.result(409);
+    requireOkay(`${prefix} 停止保留 HTTP 200 并以 result 409 结束`, stopped.body.error === "生成已停止");
+    await page.getByRole("button", { name: "停止生成", exact: true }).waitFor({ state: "hidden" });
+    await eventually(state, (value) => !stage(value, "analysis").generatingSessionIds.includes(secondSession.id), "停止后清除生成状态");
     await page.unroute(`**${delayedPath}`);
     await readyComposer();
     const secondDraft = "会话二未发送草稿";

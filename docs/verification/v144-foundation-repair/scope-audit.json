@@ -1,0 +1,13 @@
+{
+  "checkpoint": "1e5f529b0c5dac7c5f4f648f2984c857aa2e1414",
+  "existingTemplatedCheckSites": 38,
+  "newTemplatedCheckSites": 40,
+  "removed": [],
+  "added": [
+    "${prefix} 正常回复经过 token 与唯一 result 完成",
+    "${prefix} 停止保留 HTTP 200 并以 result 409 结束"
+  ],
+  "oldEntryOccurrences": 3,
+  "currentEntryOccurrences": 3,
+  "productFilesChanged": []
+}
