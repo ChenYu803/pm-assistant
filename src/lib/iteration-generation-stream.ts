@@ -9,7 +9,7 @@ export function createIterationGenerationStream(
   let closed = false;
   let heartbeat: ReturnType<typeof setInterval> | undefined;
   const generationController = new AbortController();
-  const abortGeneration = () => generationController.abort();
+  const abortGeneration = () => { closed = true; if (heartbeat) clearInterval(heartbeat); };
   requestSignal?.addEventListener("abort", abortGeneration, { once: true });
   if (requestSignal?.aborted) abortGeneration();
 
@@ -22,7 +22,6 @@ export function createIterationGenerationStream(
         } catch {
           closed = true;
           if (heartbeat) clearInterval(heartbeat);
-          generationController.abort();
         }
       };
 
@@ -42,7 +41,6 @@ export function createIterationGenerationStream(
     cancel() {
       closed = true;
       if (heartbeat) clearInterval(heartbeat);
-      generationController.abort();
       requestSignal?.removeEventListener("abort", abortGeneration);
     },
   }), {

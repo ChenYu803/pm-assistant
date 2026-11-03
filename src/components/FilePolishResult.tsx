@@ -4,6 +4,7 @@ import type { useFilePolish } from "@/components/useFilePolish";
 
 export function FilePolishResult({polish}: {polish: ReturnType<typeof useFilePolish>}) {
   return <div className="mt-3 space-y-2 text-xs">
+    {polish.busy && <button type="button" className="underline underline-offset-4" onClick={() => void polish.stop()}>停止润色</button>}
     {polish.error && <p role="alert" className="text-destructive">{polish.error}</p>}
     <div role="status" aria-live="polite" className="text-muted-foreground">
       <ReplyCredits call={polish.creditCall} />

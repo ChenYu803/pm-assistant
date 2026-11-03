@@ -70,7 +70,7 @@ export async function stopMysqlMessageRoute(tabId: string, userId: string, body:
     const response = typeof replay.response_json === "object" && replay.response_json ? replay.response_json : null;
     return response ? NextResponse.json({ ...response, tabVersion: replay.tab_version }) : NextResponse.json({ error: "请求正在处理中，请稍后重试" }, { status: 409 });
   }
-  const message = await stopMysqlGeneratingMessage(tabId, messageId);
+  const message = await stopMysqlGeneratingMessage(tabId, messageId, userId);
   const tabVersion = await completeMysqlTabOperation(started.operation, message ? {
     message: { id: message.id, role: message.role, content: message.content, timestamp: message.timestamp, status: message.status, errorMessage: message.error_message },
   } : { error: "消息不是生成中状态，无法停止" });

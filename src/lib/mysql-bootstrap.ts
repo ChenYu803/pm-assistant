@@ -606,6 +606,11 @@ export const MYSQL_MIGRATIONS = [
  content LONGTEXT NOT NULL, created_at DATETIME(3) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`],
   },
+  {
+    id: "0031_v144_model_stop_requests",
+    checksum: "e88b9a4b2bff18be4d413d98417e7d6cbf3e7fde832d4203a06bbf6a10e3ee37",
+    statements: ["ALTER TABLE model_requests ADD COLUMN stop_requested_at DATETIME(3) NULL"],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {

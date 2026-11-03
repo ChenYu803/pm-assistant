@@ -13,7 +13,7 @@ export function registerGeneration(messageId: string): AbortController {
 export function cancelGeneration(messageId: string): boolean {
   const controller = activeGenerations.get(messageId);
   if (!controller) return false;
-  controller.abort();
+  controller.abort("user_stop");
   return true;
 }
 

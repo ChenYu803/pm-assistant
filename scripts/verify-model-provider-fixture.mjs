@@ -5,7 +5,7 @@ import { setTimeout as delay } from "node:timers/promises";
 
 
 export async function withModelProvider(run) {
-const modes = new Set(["normal", "hold", "tiny", "output-length", "context-document", "over-budget", "prototype", "insufficient-system-resource", "missing", "negative", "fractional", "string", "unsafe", "total-mismatch", "cache-mismatch", "reasoning-invalid", "conflicting", "delayed", "failed-known", "failed-unknown", "interrupted", "disconnect", "stop-known", "stop-unknown"]);
+const modes = new Set(["normal", "hold", "request-error", "tiny", "output-length", "context-document", "over-budget", "prototype", "insufficient-system-resource", "missing", "negative", "fractional", "string", "unsafe", "total-mismatch", "cache-mismatch", "reasoning-invalid", "conflicting", "delayed", "failed-known", "failed-unknown", "interrupted", "disconnect", "stop-known", "stop-unknown"]);
 const usage = { prompt_tokens: 1000, prompt_cache_hit_tokens: 400, prompt_cache_miss_tokens: 600, completion_tokens: 100, total_tokens: 1100, completion_tokens_details: { reasoning_tokens: 20 } };
 const calls = [], timers = new Set();
 let plan;
@@ -30,6 +30,7 @@ const provider = createServer(async (req, res) => {
     calls.push(call);
     res.on("close", () => { call.closed = true; });
     res.setHeader("x-request-id", current.upstreamId);
+    if (current.mode === "request-error") { call.phase = "request-error"; return sendJson(503,{error:{message:"隔离供应商故障",code:"fixture_failure"}}); }
     const common = { id: current.providerId, object: body.stream ? "chat.completion.chunk" : "chat.completion", model: "deepseek-v4-flash", created: Math.floor(Date.now() / 1000) };
     const supplied = current.mode === "tiny" ? { prompt_tokens:1,prompt_cache_hit_tokens:0,prompt_cache_miss_tokens:1,completion_tokens:1,total_tokens:2 } : structuredClone(usage);
     if (current.mode === "over-budget") Object.assign(supplied, {prompt_tokens:200000,prompt_cache_hit_tokens:0,prompt_cache_miss_tokens:200000,total_tokens:200100});
@@ -41,12 +42,13 @@ const provider = createServer(async (req, res) => {
     if (current.mode === "cache-mismatch") supplied.prompt_cache_miss_tokens = 601;
     if (current.mode === "reasoning-invalid") supplied.completion_tokens_details.reasoning_tokens = 101;
     const content = current.mode === "context-document" ? "%%%FILE_BEGIN%%% 需求分析-积分样本.md\n# 积分上下文\n" + "V144_CREDIT_CONTEXT_中文😀".repeat(128) + "\n%%%FILE_END%%%" : current.mode === "prototype" ? "供应商正文保护样本：测试回复\n%%%HTML_BEGIN%%%\n<!doctype html><html><head><title>隔离快照</title></head><body>测试原型</body></html>\n%%%HTML_END%%%" : "供应商正文保护样本：测试回复与测试润色。";
-    const finishReason = current.mode === "insufficient-system-resource" ? "insufficient_system_resource" : current.mode === "output-length" ? "length" : "stop";
+    const finishReason = ["insufficient-system-resource","failed-known","failed-unknown"].includes(current.mode) ? "insufficient_system_resource" : current.mode === "output-length" ? "length" : "stop";
     if (!body.stream) {
-      if (!["normal", "tiny", "hold", "missing", "over-budget", "output-length", "insufficient-system-resource"].includes(current.mode)) return sendJson(409, { error: "fixture-stream-required" });
+      if (!["normal", "tiny", "hold", "missing", "over-budget", "output-length", "insufficient-system-resource", "failed-known", "failed-unknown", "disconnect"].includes(current.mode)) return sendJson(409, { error: "fixture-stream-required" });
       if (current.mode === "hold") await delay(2500);
+      if (current.mode === "disconnect") { res.writeHead(200,{"Content-Type":"application/json"});res.write("{\"id\":");await delay(100);return res.destroy(); }
       call.phase = "done";
-      return sendJson(200, { ...common, choices: [{ index: 0, message: { role: "assistant", content }, finish_reason: finishReason }], ...(current.mode === "missing" ? {} : {usage:supplied}) });
+      return sendJson(200, { ...common, choices: [{ index: 0, message: { role: "assistant", content }, finish_reason: finishReason }], ...(["missing","failed-unknown"].includes(current.mode) ? {} : {usage:supplied}) });
     }
     res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-store", Connection: "keep-alive" });
     const chunk = (choices, extra = {}) => res.write("data: " + JSON.stringify({ ...common, choices, ...extra }) + "\n\n");

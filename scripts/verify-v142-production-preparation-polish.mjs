@@ -32,17 +32,35 @@ export async function verifyProductionPolish({ page, pool, userId, base, output,
   }
   check("润色客户端兼容旧 JSON 成功响应", (await readGenerationResult(Response.json({ polished: "旧 JSON 正文" }))).polished === "旧 JSON 正文");
   let finish;
-  let aborted = false;
-  const heartbeat = createIterationGenerationStream(async (_onContent, signal) => {
-    await new Promise((resolve) => { finish = resolve; signal.addEventListener("abort", resolve, { once: true }); });
-    aborted = signal.aborted;
-    return { status: 200, body: { polished: "完整结果" } };
+  let upstreamSignal;
+  let backgroundTask;
+  let completed = false;
+  let streamEnded = false;
+  const heartbeat = createIterationGenerationStream((_onContent, signal) => {
+    upstreamSignal = signal;
+    backgroundTask = (async () => {
+      await new Promise((resolve) => { finish = resolve; });
+      completed = true;
+      return { status: 200, body: { polished: "完整结果" } };
+    })();
+    return backgroundTask;
   }, 10);
   const reader = heartbeat.body.getReader();
-  const firstEvent = new TextDecoder().decode((await reader.read()).value);
-  check("只有完整润色结果时等待阶段仍输出心跳并禁代理缓冲", firstEvent.includes("event: heartbeat") && heartbeat.headers.get("X-Accel-Buffering") === "no" && heartbeat.headers.get("Cache-Control").includes("no-transform"));
-  await reader.cancel(); await new Promise((resolve) => setTimeout(resolve, 0));
-  check("润色读取端取消向上游传递中止信号", aborted && typeof finish === "function");
+  try {
+    const firstEvent = new TextDecoder().decode((await reader.read()).value);
+    check("只有完整润色结果时等待阶段仍输出心跳并禁代理缓冲", firstEvent.includes("event: heartbeat") && heartbeat.headers.get("X-Accel-Buffering") === "no" && heartbeat.headers.get("Cache-Control").includes("no-transform"));
+    await reader.cancel(); await new Promise((resolve) => setTimeout(resolve, 0));
+    check("润色读取端断开不触发上游中止且后台任务仍在等待", !upstreamSignal.aborted && !completed && typeof finish === "function");
+  } finally {
+    // 网页断开只结束传输；显式完成夹具，避免留下悬挂任务或读取锁。
+    finish?.();
+    await backgroundTask;
+    await reader.cancel();
+    streamEnded = (await reader.read()).done;
+    await reader.closed;
+    reader.releaseLock();
+  }
+  check("网页断开后后台润色完成且响应流无残留", completed && !upstreamSignal.aborted && streamEnded && !heartbeat.body.locked);
 
   const projectId = randomUUID(); const recordId = randomUUID(); const fileId = randomUUID();
   const initial = "# 润色验证原文\n\n只在显式保存后修改数据库。";
@@ -102,16 +120,16 @@ export async function verifyProductionLegacy({ page, pool, userId, base, check }
     return { status: response.status, cache: response.headers.get("Cache-Control"), buffering: response.headers.get("X-Accel-Buffering"), text };
   }, { path, requestId });
   check("旧工作台真实 SSE 输出 token 且禁缓存/代理缓冲", disconnected.status === 200 && disconnected.cache.includes("no-store") && disconnected.cache.includes("no-transform") && disconnected.buffering === "no");
-  let interrupted;
+  let completedReply;
   const deadline = Date.now() + 5000;
   do {
-    const [rows] = await pool.query("SELECT status,content FROM messages WHERE tab_id=? AND request_id=? AND role='assistant'", [tabId, requestId]);
-    interrupted = rows[0];
-    if (interrupted?.status !== "generating") break;
+    const [rows] = await pool.query("SELECT status,content,error_message FROM messages WHERE tab_id=? AND request_id=? AND role='assistant'", [tabId, requestId]);
+    completedReply = rows[0];
+    if (completedReply?.status !== "generating") break;
     await new Promise((resolve) => setTimeout(resolve, 50));
   } while (Date.now() < deadline);
   const [unlocked] = await pool.query("SELECT active_operation_id,version FROM tabs WHERE id=?", [tabId]);
-  check("旧工作台 HTTP 断开后持久 interrupted/部分正文并释放操作锁", interrupted?.status === "interrupted" && interrupted.content.length > 0 && unlocked[0].active_operation_id === null);
+  check("旧工作台 HTTP 断开后继续生成并持久 completed 正文、释放操作锁", completedReply?.status === "completed" && completedReply.content.length > 0 && completedReply.error_message === null && unlocked[0].active_operation_id === null);
   const retry = await page.request.post(`${base}${path}`, { data: { expectedVersion: unlocked[0].version, requestId: randomUUID(), content: "断线后继续生成" } });
   check("旧工作台断线后新请求可完成并返回真实终态", retry.status() === 200 && (await retry.text()).includes('"type":"done"'));
 
@@ -136,7 +154,7 @@ export async function verifyProductionLegacy({ page, pool, userId, base, check }
   } finally {
     controller.abort();
     await reader.cancel();
-    // ReadableStream 取消早于 async start 内的数据库收口完成，先等待终态再关闭本测试进程连接池。
+    // 传输断开不停止后台生成；等待真实终态和操作锁释放后再关闭测试连接池。
     const deadline = Date.now() + 5000;
     while (Date.now() < deadline) {
       const [state] = await pool.query("SELECT active_operation_id FROM tabs WHERE id=?", [tabId]);
@@ -144,7 +162,7 @@ export async function verifyProductionLegacy({ page, pool, userId, base, check }
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
     const [finished] = await pool.query("SELECT active_operation_id FROM tabs WHERE id=?", [tabId]);
-    check("旧工作台请求中止后完成数据库收口再结束测试连接", finished[0].active_operation_id === null);
+    check("旧工作台传输断开后完成数据库收口再结束测试连接", finished[0].active_operation_id === null);
     await closeMysqlPoolForTests();
   }
 }

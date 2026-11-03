@@ -84,7 +84,7 @@ export async function settleConversationCredits(id: string, provided?: PoolConne
     const budget = call.budget_json as ConversationBudget;
     const outside = !free && consumed !== null && (consumed > creditUnits(call.reserved) || (model.usage_json && (model.usage_json.prompt_tokens > budget.inputTokenBound || model.usage_json.completion_tokens > budget.maxOutputTokens)));
     if (consumed === null || outside) {
-      await connection.execute("UPDATE conversation_credit_calls SET state='pending',pending_since=COALESCE(pending_since,?),reason=? WHERE id=?", [new Date(),outside?"budget_exceeded":"usage_or_price_unconfirmed",id]);
+      await connection.execute("UPDATE conversation_credit_calls SET state='pending',pending_since=COALESCE(pending_since,?),reason=? WHERE id=?", [new Date(),outside?"budget_exceeded":model.status === "stopped"?"stopped_usage_unconfirmed":"usage_or_price_unconfirmed",id]);
       if (!provided) await connection.commit(); return;
     }
     const allocations = call.allocations as Allocation[], spent: Allocation[] = [], released: Allocation[] = [];
@@ -97,9 +97,9 @@ export async function settleConversationCredits(id: string, provided?: PoolConne
       if (refund > BigInt(0)) released.push({...part,amount:creditText(refund)});
       remaining -= used;
     }
-    const afterConsumption = await appendCallEntries(connection,{id,user,phase:"settle",reason:"按可靠用量结算",before,allocations:spent,context:call.context_snapshot});
+    const afterConsumption = await appendCallEntries(connection,{id,user,phase:"settle",reason:model.status === "stopped"?"主动停止，按可靠用量结算":"按可靠用量结算",before,allocations:spent,context:call.context_snapshot});
     await appendCallEntries(connection,{id,user,phase:"release",reason:free?"生成故障免单，释放预留":"释放未用预留",before:afterConsumption,allocations:released,context:call.context_snapshot});
-    await connection.execute("UPDATE conversation_credit_calls SET state=?,consumed=?,settled_at=?,reason=? WHERE id=?", [free?"released":"settled",creditText(consumed),new Date(),free?"website_borne":"confirmed",id]);
+    await connection.execute("UPDATE conversation_credit_calls SET state=?,consumed=?,settled_at=?,reason=? WHERE id=?", [free?"released":"settled",creditText(consumed),new Date(),free?"website_borne":model.status === "stopped"?"stopped_confirmed":"confirmed",id]);
     if (!provided) await connection.commit();
   } catch (error) { if (!provided) await connection.rollback(); throw error; }
   finally { if (!provided) connection.release(); }

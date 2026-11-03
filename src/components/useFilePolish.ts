@@ -33,7 +33,7 @@ export function useFilePolish(open: boolean, target: { projectId: string; fileId
     if (result.creditCall) setCreditCall(result.creditCall);
     if (result.requestId) latestId.current = result.requestId;
     if (result.state === "running") { setBusy(true); return true; }
-    if (result.state === "completed" || result.state === "failed") {
+    if (result.state === "completed" || result.state === "failed" || result.state === "stopped") {
       setBusy(false);
       if (!persist({...record.current,pending:undefined})) return false;
       setError(result.error ?? "");
@@ -115,6 +115,18 @@ export function useFilePolish(open: boolean, target: { projectId: string; fileId
       setBusy(false);
     } finally { if (controller.current === requestController) { sending.current = false; controller.current = null; } window.dispatchEvent(new Event("credit-balance-change")); }
   }
+  async function stop() {
+    const requestId = record.current.pending?.requestId ?? latestId.current;
+    if (!path || !requestId) return;
+    const revision = generation.current;
+    try {
+      const response = await fetch(path,{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({requestId})});
+      const result = await response.json();
+      if (revision !== generation.current) return;
+      if (!response.ok) throw new Error(result.error || "停止请求未确认，请重试停止。");
+      receive(result);
+    } catch (caught) { if (revision === generation.current) setError(caught instanceof Error ? caught.message : "停止请求未确认，请重试停止。"); }
+  }
   function dismiss(apply: boolean) {
     const value = apply && polishedContent ? polishedContent : content;
     setContent(value); setPolishedContent(null);
@@ -124,5 +136,5 @@ export function useFilePolish(open: boolean, target: { projectId: string; fileId
     // 成功保存后只清正文草稿，费用及不采用选择仍可恢复；未知请求保留原输入。
     if (storageKey && !record.current.pending) persist({...record.current,content:undefined});
   }
-  return {content,edit,polishedContent,creditCall,error,busy,ready,pending,polish,dismiss,saved};
+  return {content,edit,polishedContent,creditCall,error,busy,ready,pending,polish,stop,dismiss,saved};
 }

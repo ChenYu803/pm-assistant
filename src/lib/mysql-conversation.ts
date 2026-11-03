@@ -1,3 +1,6 @@
+import { assertModelProcessingActive, completeModelProcessing } from "@/lib/model-metering";
+import { lockCreditUsers } from "@/lib/credits-ledger";
+import { requestModelStop } from "@/lib/model-request-control";
 import { randomUUID } from "node:crypto";
 import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
@@ -182,10 +185,12 @@ export async function getMysqlMessage(messageId: string): Promise<MysqlMessage |
   return rows[0] ? mapMessage(rows[0]) : null;
 }
 
-export async function completeMysqlMessage(input: { messageId: string; tabId: string; content: string; supersedeIds: string[] }) {
+export async function completeMysqlMessage(input: { userId: string; modelRequestId?: string; messageId: string; tabId: string; content: string; supersedeIds: string[] }) {
   const connection = await getMysqlPool().getConnection();
   try {
     await connection.beginTransaction();
+    await lockCreditUsers(connection,[input.userId]);
+    await assertModelProcessingActive(input.modelRequestId,connection);
     const [completed] = await connection.execute<ResultSetHeader>(
       "UPDATE messages SET content = ?, status = 'completed', error_message = NULL WHERE id = ? AND tab_id = ? AND status = 'generating'",
       [input.content, input.messageId, input.tabId]
@@ -204,6 +209,7 @@ export async function completeMysqlMessage(input: { messageId: string; tabId: st
       );
       if (committed.affectedRows !== 1) throw new Error("新结果替换提交失败");
     }
+    await completeModelProcessing(input.modelRequestId,connection);
     await connection.commit();
     const message = await getMysqlMessage(input.messageId);
     if (!message) throw new Error("完成的消息不存在");
@@ -216,12 +222,18 @@ export async function completeMysqlMessage(input: { messageId: string; tabId: st
   }
 }
 
-export async function stopMysqlGeneratingMessage(tabId: string, messageId: string) {
-  const [result] = await getMysqlPool().execute<ResultSetHeader>(
-    "UPDATE messages SET status = 'interrupted', error_message = '生成已停止' WHERE id = ? AND tab_id = ? AND role = 'assistant' AND status = 'generating'",
-    [messageId, tabId]
-  );
-  return result.affectedRows === 1 ? getMysqlMessage(messageId) : null;
+export async function stopMysqlGeneratingMessage(tabId: string, messageId: string, userId: string) {
+  const connection = await getMysqlPool().getConnection();
+  try {
+    await connection.beginTransaction();
+    await lockCreditUsers(connection,[userId]);
+    const [result] = await connection.execute<ResultSetHeader>(
+      "UPDATE messages SET status = 'interrupted', error_message = '生成已停止' WHERE id = ? AND tab_id = ? AND role = 'assistant' AND status = 'generating'",[messageId,tabId]);
+    if (result.affectedRows === 1) await requestModelStop(connection,userId,{messageId});
+    await connection.commit();
+    return result.affectedRows === 1 ? getMysqlMessage(messageId) : null;
+  } catch (error) { await connection.rollback(); throw error; }
+  finally { connection.release(); }
 }
 
 export function mysqlAgentType(tab: MysqlConversationTab): AgentType {

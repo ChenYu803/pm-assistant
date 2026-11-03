@@ -1,3 +1,4 @@
+import { ModelStoppedError } from "@/lib/model-request-control";
 import { createHash, randomUUID } from "node:crypto";
 import type { RowDataPacket } from "mysql2/promise";
 import { createAICompletion, isLiveAI } from "@/lib/ai";
@@ -37,6 +38,7 @@ export async function readPolishOperation(target: Target, requestId?: string): P
   const creditCall: CreditCallView = { id: call.id, messageId: call.messageId, state: call.state, reserved: call.reserved, consumed: call.consumed, reason: call.reason };
   const base = { requestId: row.request_key as string, creditCall };
   if (["running","processing"].includes(row.status)) return { status: 202, body: { ...base, state: "running" } };
+  if (row.status === "stopped") return { status: 200, body: { ...base, state: "stopped", error: "润色已停止，请查看本次费用状态。" } };
   if (typeof row.content === "string") return { status: 200, body: { ...base, state: "completed", polished: row.content } };
   return { status: 500, body: { ...base, state: "failed", error: row.error_code === "polish_incomplete" ? "润色未生成完整正文，本次已免单，请重新尝试。" : "此润色未完成，请查看费用状态后重新尝试。" } };
 }
@@ -84,7 +86,7 @@ export async function generatePolish(target: Target & { content: string; request
     if (modelRequestId) {
       const persisted = await readPolishOperation(target,target.requestId);
       if (persisted && persisted.body.state !== "running") return persisted;
-      await markModelProcessingFailure(modelRequestId);
+      await markModelProcessingFailure(modelRequestId,error instanceof ModelStoppedError);
     }
     // 相同请求并发撞到唯一身份时，返回原调用状态，不再访问供应商。
     if (error instanceof CreditError && error.status === 409 && isLiveAI()) {

@@ -1,3 +1,5 @@
+import { lockCreditUsers } from "@/lib/credits-ledger";
+import { assertModelProcessingActive, completeModelProcessing } from "@/lib/model-metering";
 import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
 import type { FreezeStatus } from "@/lib/agent-constants";
@@ -66,6 +68,8 @@ export async function markMysqlFreezeProposed(input: { tabId: string; requestId:
 }
 
 export async function completeMysqlFreezeGeneration(input: {
+  userId: string;
+  modelRequestId?: string;
   tabId: string;
   requestId: string;
   messageId: string;
@@ -77,6 +81,8 @@ export async function completeMysqlFreezeGeneration(input: {
   const connection = await getMysqlPool().getConnection();
   try {
     await connection.beginTransaction();
+    await lockCreditUsers(connection,[input.userId]);
+    await assertModelProcessingActive(input.modelRequestId,connection);
     const [message] = await connection.execute<ResultSetHeader>(
       "UPDATE messages SET content = ?, status = 'completed', error_message = NULL WHERE id = ? AND tab_id = ? AND status = 'generating'",
       [input.content, input.messageId, input.tabId]
@@ -95,6 +101,7 @@ export async function completeMysqlFreezeGeneration(input: {
       input.operation,
       { messageId: input.messageId }
     );
+    await completeModelProcessing(input.modelRequestId,connection);
     await connection.commit();
     return { tabVersion };
   } catch (error) {

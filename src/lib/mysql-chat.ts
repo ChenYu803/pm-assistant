@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
-import { completeModelProcessing, markModelProcessingFailure } from "@/lib/model-metering";
+import { ModelStoppedError } from "@/lib/model-request-control";
+import { markModelProcessingFailure } from "@/lib/model-metering";
 import { NextResponse } from "next/server";
 
 import { AGENT_SYSTEM_PROMPTS } from "@/lib/agent-prompts";
@@ -257,9 +258,6 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
   const assistant = started.assistant;
   const userMessage = started.userMessage;
   const generation = registerGeneration(assistant.id);
-  const abortGeneration = () => generation.abort();
-  request.signal.addEventListener("abort", abortGeneration, { once: true });
-  if (request.signal.aborted) abortGeneration();
   let heartbeat: ReturnType<typeof setInterval> | undefined;
   const stream = new ReadableStream({
     async start(controller) {
@@ -304,6 +302,8 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
                 messageId: assistant.id,
                 content: fullContent,
                 documentContent: document.content,
+                userId,
+                modelRequestId,
                 filename: document.filename,
                 operation,
               };
@@ -311,7 +311,7 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
           : null;
         const completed = freezeCompletion
           ? { ...assistant, content: fullContent, status: "completed" as const, error_message: null }
-          : await completeMysqlMessage({ messageId: assistant.id, tabId, content: fullContent, supersedeIds });
+          : await completeMysqlMessage({ userId, modelRequestId, messageId: assistant.id, tabId, content: fullContent, supersedeIds });
         const proposedFreeze =
           !isFreeze &&
           supportsScopeFreeze(tab.agent_type) &&
@@ -321,10 +321,9 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
         }
         const tabVersion = freezeCompletion?.tabVersion ?? await completeMysqlTabOperation(operation, { messageId: assistant.id });
         operationFinished = true;
-        await completeModelProcessing(modelRequestId);
         send(controller, "done", { ...messageJson(completed), ...(userMessage ? { userMessageId: userMessage.id } : {}), ...(supersedeIds.length ? { replacesMessageIds: supersedeIds, replaceFromMessageId: replacementTargetId } : {}), ...(isFreeze ? { freezeStatus: "awaiting_write", freezeMessageId: assistant.id } : proposedFreeze ? { freezeStatus: "proposed" } : {}), tabVersion });
       } catch (error) {
-        const interrupted = error instanceof MysqlGenerationInterruptedError || generation.signal.aborted;
+        const interrupted = error instanceof ModelStoppedError || error instanceof MysqlGenerationInterruptedError || generation.signal.aborted;
         await markModelProcessingFailure(modelRequestId, interrupted);
         const errorMessage = interrupted ? "生成已停止" : error instanceof Error ? error.message : "AI 请求失败，请稍后重试";
         const freezeFailure = isFreeze
@@ -346,15 +345,13 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
         send(controller, "error", { message: errorMessage, interrupted, ...messageJson(latest ?? assistant), ...(userMessage ? { userMessageId: userMessage.id } : {}), ...(isFreeze ? { freezeStatus: "failed", freezeMessageId: assistant.id, freezeError: errorMessage } : {}), ...(tabVersion === undefined ? {} : { tabVersion }) });
       } finally {
         if (heartbeat) clearInterval(heartbeat);
-        request.signal.removeEventListener("abort", abortGeneration);
         releaseGeneration(assistant.id, generation);
         close(controller);
       }
     },
     cancel() {
       if (heartbeat) clearInterval(heartbeat);
-      request.signal.removeEventListener("abort", abortGeneration);
-      abortGeneration();
+      // 关闭传输后仍记录真实生成与费用；主动停止有独立持久入口。
     },
   });
   return new Response(stream, { headers: { "Content-Type": "text/event-stream", "Cache-Control": "private, no-store, no-cache, no-transform", "X-Accel-Buffering": "no" } });

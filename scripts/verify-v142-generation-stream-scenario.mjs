@@ -1,5 +1,6 @@
 // v1.42：验证工作台流式回复、断线/停止事实与旧 JSON 响应兼容。
 import { chromium } from "playwright-core";
+import { latestEmailCode } from "./verify-email-fixture.mjs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { createIterationGenerationStream } from "../src/lib/iteration-generation-stream.ts";
@@ -21,19 +22,65 @@ async function api(page, path, init) {
   }, { path, init });
 }
 const json = (body) => ({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+let disconnectSequence = 0;
+const messageSnapshot = (messages) => messages.map((message) => ({
+  id: message.id, role: message.role, status: message.status, length: message.content?.length,
+  createdAt: message.createdAt, errorMessage: message.errorMessage,
+  candidateId: message.candidate?.id, taskCandidateId: message.taskCandidate?.id,
+}));
+// 本机 Playwright 的 waitForFunction 不轮询 async 回调，HTTP 条件由 Node 显式等待。
+async function waitForMessages(page, path, predicate, label) {
+  const deadline = Date.now() + 45_000;
+  let messages;
+  do {
+    const response = await api(page, path);
+    if (response.status !== 200 || !Array.isArray(response.body.messages)) throw new Error(label + "：消息读取失败，HTTP " + response.status);
+    messages = response.body.messages;
+    if (predicate(messages)) return messages;
+    await new Promise(resolve => setTimeout(resolve, 100));
+  } while (Date.now() < deadline);
+  throw new Error(label + "：45 秒内未达到条件；" + JSON.stringify(messageSnapshot(messages)));
+}
 async function disconnectGeneration(page, path, body, method = "POST") {
-  await page.evaluate(async ({ path, body, method }) => {
-    const response = await fetch(path, { method, headers: { "Content-Type": "application/json", Accept: "text/event-stream", "x-pm-verify-stream-delay": "1" }, body: JSON.stringify(body) });
+  const evidenceName = "disconnect-" + (++disconnectSequence) + "-transport.json";
+  const transport = await page.evaluate(async ({ path, body, method }) => {
+    const response = await fetch(path, { method, headers: { "Content-Type": "application/json", Accept: "text/event-stream" }, body: JSON.stringify(body) });
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let text = "";
-    while (!text.includes("event: token")) {
-      const chunk = await reader.read();
-      if (chunk.done) throw new Error("断线测试未收到 token");
-      text += decoder.decode(chunk.value);
+    let pending = "";
+    let result;
+    let firstToken;
+    try {
+      while (!firstToken) {
+        const chunk = await reader.read();
+        const part = decoder.decode(chunk.value, { stream: !chunk.done });
+        text += part;
+        pending += part;
+        let boundary;
+        while ((boundary = pending.indexOf("\n\n")) >= 0) {
+          const frame = pending.slice(0, boundary);
+          pending = pending.slice(boundary + 2);
+          const lines = frame.split("\n");
+          const event = lines.find(line => line.startsWith("event:"))?.slice(6).trim();
+          const data = lines.filter(line => line.startsWith("data:")).map(line => line.slice(5).trimStart()).join("\n");
+          if (!data) continue;
+          const payload = JSON.parse(data);
+          if (event === "result") result = payload;
+          if (event === "token" && !firstToken) firstToken = { messageId: payload.messageId, length: payload.content?.length };
+        }
+        if (chunk.done) break;
+      }
+    } finally {
+      await reader.cancel();
+      reader.releaseLock();
     }
-    await reader.cancel();
+    return { status: response.status, contentType: response.headers.get("Content-Type"), firstToken, result, ...(!firstToken ? { sse: text } : {}) };
   }, { path, body, method });
+  await mkdir(output, { recursive: true });
+  await writeFile(join(output, evidenceName), JSON.stringify({ path, method, transport }, null, 2));
+  if (!transport.firstToken?.messageId) throw new Error("断线测试未取得首 token 身份；HTTP " + transport.status + "；SSE result.status=" + transport.result?.status + "；完整响应见 " + evidenceName);
+  return { ...transport, evidenceName };
 }
 
 if (!base || !output || process.env.AI_MODE !== "replay") throw new Error("必须由隔离 replay launcher 提供 BASE_URL、输出目录与 AI_MODE=replay");
@@ -56,17 +103,36 @@ while (!heartbeatText.includes("event: token")) {
 check("正文生成前先发出心跳，且响应关闭缓存与代理缓冲", heartbeatText.includes("event: heartbeat") && heartbeatText.includes("event: token") && heartbeatResponse.headers.get("Cache-Control")?.includes("no-transform") && heartbeatResponse.headers.get("X-Accel-Buffering") === "no");
 await heartbeatReader.cancel();
 workflows.push("heartbeat-before-first-token");
-let disconnectedSignalAborted = false;
-const disconnectedResponse = createIterationGenerationStream(async (_onContent, signal) => {
-  await new Promise((resolve) => signal.addEventListener("abort", resolve, { once: true }));
-  disconnectedSignalAborted = signal.aborted;
-  return { status: 409, body: { error: "生成已停止" } };
+let finishDisconnected;
+let disconnectedSignal;
+let disconnectedTask;
+let disconnectedCompleted = false;
+let disconnectedEnded = false;
+const disconnectedResponse = createIterationGenerationStream((_onContent, signal) => {
+  disconnectedSignal = signal;
+  disconnectedTask = (async () => {
+    await new Promise((resolve) => { finishDisconnected = resolve; });
+    disconnectedCompleted = true;
+    return { status: 200, body: { ok: true } };
+  })();
+  return disconnectedTask;
 }, 20);
 const disconnectedReader = disconnectedResponse.body.getReader();
-await disconnectedReader.read();
-await disconnectedReader.cancel();
-await new Promise((resolve) => setTimeout(resolve, 0));
-check("浏览器断开响应会中止上游生成信号", disconnectedSignalAborted);
+try {
+  await disconnectedReader.read();
+  await disconnectedReader.cancel();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  check("浏览器断开响应不触发上游中止且后台任务继续等待", !disconnectedSignal.aborted && !disconnectedCompleted && typeof finishDisconnected === "function");
+} finally {
+  // 网页断开只结束传输；显式释放夹具 promise，并确认任务和读取锁均已收口。
+  finishDisconnected?.();
+  await disconnectedTask;
+  await disconnectedReader.cancel();
+  disconnectedEnded = (await disconnectedReader.read()).done;
+  await disconnectedReader.closed;
+  disconnectedReader.releaseLock();
+}
+check("断开后后台任务完成且响应流无残留", disconnectedCompleted && !disconnectedSignal.aborted && disconnectedEnded && !disconnectedResponse.body.locked);
 
 const browser = await chromium.launch({ channel: "msedge", headless: true });
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
@@ -75,9 +141,17 @@ page.setDefaultTimeout(45_000);
 page.setDefaultNavigationTimeout(120_000);
 try {
   await page.goto(`${base}/register`);
-  await page.fill("#email", `verify-v142-stream-${Date.now()}@test.local`);
+  const email = `verify-v142-stream-${Date.now()}@test.local`;
+  await page.fill("#email", email);
   await page.locator('input[type="password"]').first().fill("verify-pass-1234");
   await page.locator('input[type="password"]').nth(1).fill("verify-pass-1234");
+  const [emailCodeResponse] = await Promise.all([
+    page.waitForResponse(response => new URL(response.url()).pathname === "/api/auth/email-code" && response.request().method() === "POST"),
+    page.getByRole("button", { name: "获取验证码", exact: true }).click(),
+  ]);
+  if (emailCodeResponse.status() !== 200) throw new Error("浏览器注册发码失败，HTTP " + emailCodeResponse.status());
+  await page.getByRole("status").filter({ hasText: /验证码已发送/ }).waitFor();
+  await page.fill("#emailCode", await latestEmailCode(email));
   await page.locator('form button[type="submit"]').click();
   await page.waitForURL((url) => url.pathname === "/projects");
 
@@ -135,34 +209,60 @@ try {
 
   await input.fill("验证 SSE 成功终态");
   await page.getByRole("button", { name: "发送消息" }).click();
-  await page.waitForFunction(async (path) => {
-    const response = await fetch(path);
-    const body = await response.json();
-    return body.messages?.at(-1)?.role === "assistant" && body.messages.at(-1).status === "completed";
-  }, messagesPath);
+  await waitForMessages(page, messagesPath, messages => messages.at(-1)?.role === "assistant" && messages.at(-1).status === "completed", "普通 SSE 完成");
   const successful = await api(page, messagesPath);
   check("SSE 正常结束后数据库保存完整 completed 正文", successful.body.messages.at(-1).status === "completed" && successful.body.messages.at(-1).content.length > 0, JSON.stringify(successful.body.messages.map((message) => ({ role: message.role, status: message.status, length: message.content.length, errorMessage: message.errorMessage }))));
-  const originalAssistantId = successful.body.messages.at(-1).id;
   workflows.push("stream-completion-and-persistence");
 
-  // 真正断开 HTTP 响应，验证 Next 路由到数据库的取消链路，保持旧成功回复与用户原文。
-  for (const mutation of [{ regenerateMessageId: originalAssistantId }, { editMessageId: successful.body.messages.at(-2).id, content: "断线时不提交的编辑" }]) {
-    const mutationPath = mutation.editMessageId ? `/api/iterations/${iteration.body.id}/sessions/${session.body.session.id}/messages/${mutation.editMessageId}` : messagesPath;
-    await disconnectGeneration(page, mutationPath, mutation, mutation.editMessageId ? "PATCH" : "POST");
-    await page.waitForFunction(async (path) => {
-      const body = await (await fetch(path)).json();
-      return !body.messages.some((message) => message.status === "generating");
-    }, messagesPath);
-    const afterDisconnect = await api(page, messagesPath);
-    check(`${mutation.editMessageId ? "编辑" : "重新生成"}断线后清理临时消息并保留原成功事实`, JSON.stringify(afterDisconnect.body.messages) === JSON.stringify(successful.body.messages));
+  // HTTP 断开只结束传输；重新生成和编辑继续完成，并提交对应结果。
+  for (const editing of [false, true]) {
+    const beforeDisconnect = (await api(page, messagesPath)).body.messages;
+    const previousAssistant = beforeDisconnect.at(-1);
+    const previousUser = beforeDisconnect.at(-2);
+    const mutation = editing
+      ? { editMessageId: previousUser.id, content: "断线后继续完成的编辑" }
+      : { regenerateMessageId: previousAssistant.id };
+    const mutationPath = editing ? `/api/iterations/${iteration.body.id}/sessions/${session.body.session.id}/messages/${mutation.editMessageId}` : messagesPath;
+    const label = editing ? "编辑" : "重新生成";
+    const transport = await disconnectGeneration(page, mutationPath, mutation, editing ? "PATCH" : "POST");
+    const messageId = transport.firstToken.messageId;
+    const evidencePath = join(output, editing ? "disconnect-edit-messages.json" : "disconnect-regenerate-messages.json");
+    await writeFile(evidencePath, JSON.stringify({ transport, before: beforeDisconnect, beforeSnapshot: messageSnapshot(beforeDisconnect) }, null, 2));
+    try {
+      await waitForMessages(page, messagesPath, messages => {
+        const reply = messages.find(message => message.id === messageId);
+        return reply && reply.status !== "generating";
+      }, label + " token 对应消息终态");
+    } catch (error) {
+      const pending = (await api(page, messagesPath)).body.messages;
+      await writeFile(evidencePath, JSON.stringify({ transport, before: beforeDisconnect, after: pending, beforeSnapshot: messageSnapshot(beforeDisconnect), afterSnapshot: messageSnapshot(pending) }, null, 2));
+      throw error;
+    }
+    const afterDisconnect = (await api(page, messagesPath)).body.messages;
+    const assistant = afterDisconnect.find(message => message.id === messageId);
+    const historyLength = editing ? -2 : -1;
+    const conditions = {
+      httpOkay: transport.status === 200,
+      countUnchanged: afterDisconnect.length === beforeDisconnect.length,
+      correlatedNewAssistant: assistant?.role === "assistant" && assistant.id !== previousAssistant.id && afterDisconnect.at(-1)?.id === messageId,
+      completedWithContent: assistant?.status === "completed" && assistant.content.length > 0 && !assistant.errorMessage,
+      historyUnchanged: JSON.stringify(afterDisconnect.slice(0, historyLength)) === JSON.stringify(beforeDisconnect.slice(0, historyLength)),
+      editedUserCommitted: !editing || (afterDisconnect.at(-2)?.id === previousUser.id && afterDisconnect.at(-2)?.content === mutation.content),
+    };
+    const detail = { messageId, conditions, before: messageSnapshot(beforeDisconnect), after: messageSnapshot(afterDisconnect) };
+    await writeFile(evidencePath, JSON.stringify({ transport, conditions, before: beforeDisconnect, after: afterDisconnect, snapshots: detail }, null, 2));
+    check(label + "断线后完成并持久新正文、保留更早历史", Object.values(conditions).every(Boolean), JSON.stringify(detail));
   }
+  const beforeUiRegeneration = (await api(page, messagesPath)).body.messages.at(-1).id;
+  // 外部 HTTP 更新了历史；刷新并等到最新编辑正文可见，使 UI 使用本轮持久消息 ID。
+  await page.reload();
+  await page.locator(".workbench-message.user .message-content").last().filter({ hasText: /^断线后继续完成的编辑$/ }).waitFor();
 
   await page.getByRole("button", { name: "重新生成" }).last().click();
-  await page.waitForFunction(async ({ path, previousId }) => {
-    const body = await (await fetch(path)).json();
-    const latest = body.messages?.at(-1);
-    return latest?.role === "assistant" && latest.status === "completed" && latest.id !== previousId;
-  }, { path: messagesPath, previousId: originalAssistantId });
+  await waitForMessages(page, messagesPath, messages => {
+    const latest = messages.at(-1);
+    return latest?.role === "assistant" && latest.status === "completed" && latest.id !== beforeUiRegeneration;
+  }, "UI 重新生成完成");
   check("重新生成也经流式协议完成并以新消息替换旧回复", true);
   workflows.push("stream-regeneration");
 
@@ -170,12 +270,11 @@ try {
   const editBox = page.getByRole("textbox", { name: "修改这条消息" });
   await editBox.fill("验证编辑后仍逐步生成");
   await page.getByRole("button", { name: "发送", exact: true }).click();
-  await page.waitForFunction(async ({ path, expected }) => {
-    const body = await (await fetch(path)).json();
-    const latest = body.messages?.at(-1);
-    return body.messages?.some((message) => message.role === "user" && message.content === expected)
+  await waitForMessages(page, messagesPath, messages => {
+    const latest = messages.at(-1);
+    return messages.some(message => message.role === "user" && message.content === "验证编辑后仍逐步生成")
       && latest?.role === "assistant" && latest.status === "completed";
-  }, { path: messagesPath, expected: "验证编辑后仍逐步生成" });
+  }, "UI 编辑后生成完成");
   const editedMessages = await api(page, messagesPath);
   await page.waitForFunction((expectedCount) => document.querySelectorAll(".workbench-message.assistant").length === expectedCount
     && ![...document.querySelectorAll(".workbench-message.assistant .message-label")].some((label) => label.textContent.includes("生成中")),
@@ -186,14 +285,14 @@ try {
   const legacy = await api(page, messagesPath, json({ content: "验证旧 JSON 客户端兼容" }));
   check("未请求 SSE 的旧 JSON 调用仍返回原状态与消息结构", legacy.status === 200 && Array.isArray(legacy.body.messages) && legacy.body.messages.at(-1).status === "completed");
   workflows.push("legacy-json-compatibility");
-  await disconnectGeneration(page, messagesPath, { content: "断线时保留的普通消息" });
-  await page.waitForFunction(async (path) => {
-    const body = await (await fetch(path)).json();
-    return body.messages?.at(-1)?.status === "failed";
-  }, messagesPath);
+  const ordinaryTransport = await disconnectGeneration(page, messagesPath, { content: "断线时保留的普通消息" });
+  await waitForMessages(page, messagesPath, messages => {
+    const reply = messages.find(message => message.id === ordinaryTransport.firstToken.messageId);
+    return reply && reply.status !== "generating";
+  }, "普通断开发送 token 对应消息终态");
   const disconnectedMessages = await api(page, messagesPath);
-  const disconnectedAssistant = disconnectedMessages.body.messages.at(-1);
-  check("普通发送断线后保留部分正文和已停止终态", disconnectedAssistant?.errorMessage === "生成已停止" && disconnectedAssistant.content.length > 0
+  const disconnectedAssistant = disconnectedMessages.body.messages.find(message => message.id === ordinaryTransport.firstToken.messageId);
+  check("普通发送断线后持久 completed 正文并保留此前历史", disconnectedAssistant?.status === "completed" && !disconnectedAssistant.errorMessage && disconnectedAssistant.content.length > 0
     && JSON.stringify(disconnectedMessages.body.messages.slice(0, -2)) === JSON.stringify(legacy.body.messages)
     && disconnectedMessages.body.messages.at(-2)?.content === "断线时保留的普通消息");
 } catch (error) {

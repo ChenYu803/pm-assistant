@@ -7,6 +7,7 @@ import { findOwnedMysqlProjectFile } from "@/lib/mysql-project-artifacts";
 import { AIQuotaError } from "@/lib/mysql-ai-budget";
 import { CreditError } from "@/lib/credit-values";
 import { createIterationGenerationStream } from "@/lib/iteration-generation-stream";
+import { stopPolishRequest } from "@/lib/model-request-control";
 import { generatePolish, readPolishOperation } from "@/lib/polish-generation";
 
 type Context = { params: Promise<{ id: string; fileId: string }> };
@@ -36,6 +37,23 @@ export async function GET(request: Request, context: Context) {
     const operation = await readPolishOperation(target,requestId);
     // GET 总能返回费用，包括失败终态；查询不重发模型、不变动资金。
     return NextResponse.json(operation?.body ?? {}, { headers: noStore });
+  } catch (error) {
+    const result = failure(error);
+    return NextResponse.json(result.body,{status:result.status,headers:noStore});
+  }
+}
+
+export async function DELETE(request: Request, context: Context) {
+  try {
+    const target = await authorize(context);
+    if (target instanceof NextResponse) return target;
+    const { requestId } = (await request.json()) ?? {};
+    if (!validRequestId(requestId)) throw new CreditError("润色操作标识无效。",400);
+    const existing = await readPolishOperation(target,requestId);
+    if (!existing) throw new CreditError("润色请求尚未确认，请稍后重试停止。",409);
+    await stopPolishRequest(target.userId,requestId,target.fileId);
+    const operation = await readPolishOperation(target,requestId);
+    return NextResponse.json(operation!.body,{headers:noStore});
   } catch (error) {
     const result = failure(error);
     return NextResponse.json(result.body,{status:result.status,headers:noStore});

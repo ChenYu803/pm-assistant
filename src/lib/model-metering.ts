@@ -1,3 +1,4 @@
+import { ModelStoppedError } from "@/lib/model-request-control";
 import { randomUUID } from "node:crypto";
 import { getMysqlPool } from "@/lib/mysql";
 import type { PoolConnection, RowDataPacket } from "mysql2/promise";
@@ -55,6 +56,14 @@ export async function startModelRequest(input: ModelContext & { userId: string; 
   if (input.creditCall) {
    if (!startPrice || !input.creditBudget) throw new CreditError("模型价格或费用边界尚未核实，请联系管理员。",503);
    await reserveConversationCredits(connection,input.userId,id,input.creditCall,input.creditBudget);
+   if (input.purpose === "chat") {
+    const [messages] = await connection.execute<RowDataPacket[]>("SELECT status FROM messages WHERE id=? FOR UPDATE",[input.creditCall.messageId]);
+    if (messages[0]?.status !== "generating") throw new CreditError("生成已停止，请刷新会话。",409);
+   }
+   if (input.purpose === "stage_chat") {
+    const [messages] = await connection.execute<RowDataPacket[]>("SELECT status FROM iteration_session_messages WHERE id=? FOR UPDATE",[input.creditCall.messageId]);
+    if (messages[0]?.status !== "generating") throw new CreditError("生成已停止，请刷新会话。",409);
+   }
   }
   // 资金与每日次数同事务授权，余额不足不消耗次数。
   await reserveAIRequest(input.userId, process.env, getMysqlPool(), started, connection);
@@ -82,11 +91,32 @@ export async function startModelRequest(input: ModelContext & { userId: string; 
   }
   // 供应商完成与正文保存分开确认；正文保存前崩溃仍留有持久可恢复的 processing 状态。
   const persistedStatus = status === "completed" && input.awaitProcessing ? "processing" : status;
-  await withModelAccountTransaction(id, async connection => {
-  await connection.execute("UPDATE model_requests SET actual_model=?,provider_id=?,upstream_request_id=?,ended_at=?,status=?,finish_reason=?,error_code=?,usage_status=?,usage_json=?,price_json=?,cost_cny=?,cost_reason=?,website_borne=? WHERE id=?", [actualModel,providerId,upstreamId,utc(ended),persistedStatus,finish,errorCode,reliable ? "reliable" : "pending",usage ? JSON.stringify(usage) : null,JSON.stringify({ start: startPrice, end: endPrice, official, fixture, rule: "same_price_window_only", usageValidated: !invalid }),costCny,costReason,status === "failed" || status === "interrupted",id]);
-  if (persistedStatus !== "processing") await settleConversationCredits(id, connection);
+  let receipt: ModelReceipt = { id,status: persistedStatus,usageStatus: reliable ? "reliable" : "pending",costCny,costReason };
+  const persist = async (siteFailure = false) => withModelAccountTransaction(id, async connection => {
+   const [rows] = await connection.execute<RowDataPacket[]>("SELECT m.*,c.state AS credit_state FROM model_requests m JOIN conversation_credit_calls c ON c.id=m.id WHERE m.id=? FOR UPDATE",[id]);
+   const previous = rows[0];
+   const terminal = ["settled","released"].includes(previous.credit_state);
+   // 免单和已扣费终态不可被重试改写；迟到证据只补网站成本。
+   if (terminal || ["failed","interrupted"].includes(previous.status)) {
+    if (previous.website_borne && previous.cost_cny === null && reliable && (previous.usage_status !== "reliable" || costCny !== null)) {
+     await connection.execute("UPDATE model_requests SET actual_model=?,provider_id=?,upstream_request_id=?,finish_reason=?,usage_status='reliable',usage_json=?,price_json=?,cost_cny=?,cost_reason=? WHERE id=?",[actualModel,providerId,upstreamId,finish,JSON.stringify(usage),JSON.stringify({start:startPrice,end:endPrice,official,fixture,rule:"same_price_window_only",usageValidated:!invalid}),costCny,costReason,id]);
+     previous.usage_status = "reliable"; previous.cost_cny = costCny; previous.cost_reason = costReason;
+    }
+    await settleConversationCredits(id,connection);
+    receipt = {id,status:previous.status,usageStatus:previous.usage_status,costCny:previous.cost_cny,costReason:previous.cost_reason};
+    return;
+   }
+   const finalStatus = siteFailure ? "failed" : (status === "completed" || (status === "interrupted" && errorCode === null)) && (previous.stop_requested_at || previous.status === "stopped") ? "stopped" : persistedStatus;
+   const failure = ["failed","interrupted"].includes(finalStatus);
+   await connection.execute("UPDATE model_requests SET actual_model=?,provider_id=?,upstream_request_id=?,ended_at=?,status=?,finish_reason=?,error_code=?,usage_status=?,usage_json=?,price_json=?,cost_cny=?,cost_reason=?,website_borne=? WHERE id=?", [actualModel,providerId,upstreamId,utc(ended),finalStatus,finish,siteFailure ? "site_settlement_error" : finalStatus === "stopped" ? "user_stop" : errorCode,reliable ? "reliable" : "pending",usage ? JSON.stringify(usage) : null,JSON.stringify({ start: startPrice, end: endPrice, official, fixture, rule: "same_price_window_only", usageValidated: !invalid }),costCny,costReason,failure,id]);
+   if (finalStatus !== "processing") await settleConversationCredits(id, connection);
+   receipt.status = finalStatus;
   });
-  return { id,status: persistedStatus,usageStatus: reliable ? "reliable" : "pending",costCny,costReason };
+  try { await persist(); }
+  catch { // 写入回滚后尝试故障免单；若 commit 已成功，终态保护会返回原结果。
+   await persist(true);
+  }
+  return receipt;
  }
  return { id, observe, upstream(value: unknown) { upstreamId = shortId(value); }, finish: finishRequest, outcome(): "completed" | "failed" | "interrupted" {
   if (finish === "insufficient_system_resource" || finish === "content_filter") return "failed";
@@ -99,7 +129,7 @@ export async function markModelProcessingFailure(id: string | undefined, stopped
  if (!id) return;
  try {
   await withModelAccountTransaction(id, async connection => {
-  await connection.execute("UPDATE model_requests SET status=?, website_borne=?, error_code=? WHERE id=? AND status IN ('completed','processing')",[stopped ? "stopped" : "failed", !stopped, stopped ? "site_processing_stopped" : "site_processing_error", id]);
+  await connection.execute("UPDATE model_requests SET status=?, website_borne=?, error_code=? WHERE id=? AND status IN ('running','processing')",[stopped ? "stopped" : "failed", !stopped, stopped ? "site_processing_stopped" : "site_processing_error", id]);
   await settleConversationCredits(id, connection);
   });
  } catch {
@@ -108,11 +138,20 @@ export async function markModelProcessingFailure(id: string | undefined, stopped
  }
 }
 
-/** 必须在正文及必要业务操作持久化之后确认完成；阶段会话与正文共用事务。 */
+/** 正文保存前先检查持久终态；调用方须已持账号锁。 */
+export async function assertModelProcessingActive(id: string | undefined, transaction: PoolConnection) {
+ if (!id) return;
+ const [rows] = await transaction.execute<RowDataPacket[]>("SELECT stop_requested_at,status FROM model_requests WHERE id=? FOR UPDATE",[id]);
+ if (rows[0]?.stop_requested_at || rows[0]?.status === "stopped") throw new ModelStoppedError();
+ if (!["processing","completed"].includes(rows[0]?.status)) throw new Error("生成已失败，本次免单，请重试。");
+}
+
+/** 必须在正文及必要业务操作持久化之后确认完成；与正文共用事务。 */
 export async function completeModelProcessing(id: string | undefined, connection?: import("mysql2/promise").PoolConnection) {
  if (!id) return;
  const complete = async (transaction: PoolConnection) => {
-  await transaction.execute("UPDATE model_requests SET status='completed', website_borne=FALSE WHERE id=? AND status='processing'", [id]);
+  await assertModelProcessingActive(id,transaction);
+  await transaction.execute("UPDATE model_requests SET status='completed', website_borne=FALSE WHERE id=? AND status='processing' AND stop_requested_at IS NULL", [id]);
   await settleConversationCredits(id, transaction);
  };
  if (connection) await complete(connection);

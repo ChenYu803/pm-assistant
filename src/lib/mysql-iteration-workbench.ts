@@ -2,7 +2,8 @@ import { createHash } from "node:crypto";
 import { CreditError } from "@/lib/credit-values";
 import { findCreditCall, messageCreditCalls } from "@/lib/conversation-credits";
 import { lockCreditUsers } from "@/lib/credits-ledger";
-import { completeModelProcessing, markModelProcessingFailure } from "@/lib/model-metering";
+import { ModelStoppedError, requestModelStop } from "@/lib/model-request-control";
+import { assertModelProcessingActive, completeModelProcessing, markModelProcessingFailure } from "@/lib/model-metering";
 import { randomUUID } from "node:crypto";
 import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
@@ -238,6 +239,7 @@ export async function stopMysqlIterationGeneration(iterationId: string, sessionI
   const connection = await getMysqlPool().getConnection();
   try {
     await connection.beginTransaction();
+    await lockCreditUsers(connection,[userId]);
     if (!(await lockOwnedIteration(connection, iterationId, userId))) { await connection.rollback(); return "not-found" as const; }
     const [sessions] = await connection.query<Array<RowDataPacket & { id: string }>>(
       "SELECT id FROM iteration_sessions WHERE id = ? AND iteration_id = ?", [sessionId, iterationId]);
@@ -247,6 +249,7 @@ export async function stopMysqlIterationGeneration(iterationId: string, sessionI
     if (!pending.length) { await connection.rollback(); return "not-generating" as const; }
     await connection.execute<ResultSetHeader>(
       "UPDATE iteration_session_messages SET status = 'failed', error_message = '生成已停止' WHERE id = ? AND status = 'generating'", [pending[0].id]);
+    await requestModelStop(connection,userId,{messageId:pending[0].id});
     await connection.commit();
     cancelGeneration(pending[0].id);
     return "stopped" as const;
@@ -419,11 +422,9 @@ export async function generateMysqlIterationMessage(input: {
   } catch (error) { await reservation.rollback(); throw error; } finally { reservation.release(); }
   let modelRequestId: string | undefined;
   const generation = registerGeneration(assistantId);
-  const abortGeneration = () => generation.abort();
-  input.signal?.addEventListener("abort", abortGeneration, { once: true });
-  if (input.signal?.aborted) abortGeneration();
+  // 网页断开只停止传输；明确停止由持久请求和独立取消入口控制。
   async function stoppedResult() {
-    if (editTarget || regenerateTarget) {
+    if ((editTarget || regenerateTarget) && !modelRequestId) {
       await pool.execute<ResultSetHeader>(
         "DELETE FROM iteration_session_messages WHERE id = ? AND session_id = ? AND (status = 'generating' OR (status = 'failed' AND error_message = '生成已停止'))",
         [assistantId, input.sessionId]);
@@ -474,6 +475,7 @@ export async function generateMysqlIterationMessage(input: {
       await connection.beginTransaction();
       // 账号锁先于业务对象；结算与正文、快照在同一短事务提交。
       if (modelRequestId) await lockCreditUsers(connection,[input.userId]);
+      await assertModelProcessingActive(modelRequestId,connection);
       // 快照版本与项目删除共用项目 → 迭代锁序；任何失败都回滚回复和快照。
       await connection.query("SELECT id FROM projects WHERE id = ? FOR UPDATE", [session.project_id]);
       await connection.query("SELECT id FROM product_iterations WHERE id = ? FOR UPDATE", [input.iterationId]);
@@ -481,8 +483,8 @@ export async function generateMysqlIterationMessage(input: {
         "SELECT id FROM iteration_session_messages WHERE id = ? AND session_id = ? AND status = 'generating'", [assistantId, input.sessionId]);
       if (!activeRows.length || generation.signal.aborted) {
         await connection.rollback();
-        if (generation.signal.aborted) throw new Error("生成已停止");
-        return stoppedResult();
+        if (generation.signal.aborted) throw new ModelStoppedError();
+        throw new Error("生成消息状态已变化");
       }
       if (editTarget) {
         await connection.execute<ResultSetHeader>("UPDATE iteration_session_messages SET content = ? WHERE id = ? AND session_id = ? AND role = 'user'", [userMessage!.content, editTarget.id, input.sessionId]);
@@ -508,18 +510,17 @@ export async function generateMysqlIterationMessage(input: {
   } catch (error) {
     if (partialFlushTimer) clearInterval(partialFlushTimer);
     await partialWrite.catch(() => undefined);
-    const stopped = generation.signal.aborted;
+    const stopped = error instanceof ModelStoppedError || generation.signal.aborted;
     await markModelProcessingFailure(modelRequestId, stopped);
     const message = stopped ? "生成已停止" : error instanceof Error ? error.message : "Agent 生成失败";
     if (!editTarget && !regenerateTarget) {
       await pool.execute<ResultSetHeader>("UPDATE iteration_session_messages SET content = ?, status = 'failed', error_message = ? WHERE id = ? AND session_id = ? AND (status = 'generating' OR (status = 'failed' AND error_message = '生成已停止'))", [answer, message, assistantId, input.sessionId]);
       await pool.execute<ResultSetHeader>("UPDATE iteration_sessions SET updated_at = ? WHERE id = ?", [new Date(), input.sessionId]);
-    } else if (stopped) {
-      await pool.execute<ResultSetHeader>("UPDATE iteration_session_messages SET content = ? WHERE id = ? AND session_id = ? AND status = 'failed' AND error_message = '生成已停止'", [answer, assistantId, input.sessionId]);
+    } else if (modelRequestId) {
+      await pool.execute<ResultSetHeader>("UPDATE iteration_session_messages SET content = ?, status = 'failed', error_message = ? WHERE id = ? AND session_id = ? AND (status = 'generating' OR (status = 'failed' AND error_message = '生成已停止'))", [answer, message, assistantId, input.sessionId]);
     } else await pool.execute<ResultSetHeader>("DELETE FROM iteration_session_messages WHERE id = ? AND session_id = ? AND status = 'generating'", [assistantId, input.sessionId]);
     return stopped ? stoppedResult() : { kind: "generation-failed" as const, error: message, status: error instanceof CreditError ? error.status : 502, userMessage, assistantMessageId: assistantId };
   } finally {
-    input.signal?.removeEventListener("abort", abortGeneration);
     releaseGeneration(assistantId, generation);
   }
 }
