@@ -5,11 +5,12 @@ import { useState, type FormEvent } from "react";
 import { signOut } from "next-auth/react";
 import styles from "./ProfilePage.module.css";
 import CreditLedger from "./CreditLedger";
+import GiftInviteRedemption from "./GiftInviteRedemption";
 import type { CreditStatement } from "@/lib/credit-values";
 
 type Feedback = { kind: "success" | "error"; message: string } | null;
 
-export default function ProfilePage({ email, initialNickname, isAdmin = false, credits }: { email: string; initialNickname: string; isAdmin?: boolean; credits: CreditStatement }) {
+export default function ProfilePage({ email, initialNickname, isAdmin = false, credits, giftRedeemed, giftRegistrationFailed }: { email: string; initialNickname: string; isAdmin?: boolean; credits: CreditStatement; giftRedeemed: boolean; giftRegistrationFailed: boolean }) {
   const [nickname, setNickname] = useState(initialNickname);
   const [savedNickname, setSavedNickname] = useState(initialNickname);
   const [nameFeedback, setNameFeedback] = useState<Feedback>(null);
@@ -89,6 +90,8 @@ export default function ProfilePage({ email, initialNickname, isAdmin = false, c
         </div>
 
         <CreditLedger initial={credits} />
+        {giftRegistrationFailed && <p className={styles.error} role="status">注册已成功，但邀请码未兑换，未获得赠送积分。您仍可在此更正邀请码后重试。</p>}
+        <GiftInviteRedemption initiallyRedeemed={giftRedeemed} />
 
         <section className={styles.section} aria-labelledby="nickname-title">
           <div className={styles.sectionLabel}><span>01</span><h2 id="nickname-title">用户昵称</h2></div>

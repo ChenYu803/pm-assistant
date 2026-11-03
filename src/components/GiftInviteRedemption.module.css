@@ -1,0 +1,16 @@
+.section { border-top: 1px solid #d9dee5; padding: 24px 0; }
+.heading { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; }
+.heading span { color: #738091; font-size: 12px; }
+.heading h2 { margin: 0; font-size: 18px; font-weight: 650; }
+.body { padding-left: 28px; }
+.body form { max-width: 560px; }
+.body label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 600; }
+.formRow { display: flex; gap: 8px; }
+.formRow input { min-width: 0; flex: 1; height: 40px; border: 1px solid #b9c2cd; border-radius: 4px; padding: 0 10px; background: #fff; color: #17212b; }
+.formRow button { min-width: 106px; border: 1px solid #176b61; border-radius: 4px; padding: 0 14px; background: #176b61; color: white; font-weight: 600; }
+.formRow button:disabled { opacity: .55; }
+.hint { margin: 8px 0 0; color: #697586; font-size: 13px; }
+.error, .success { margin: 10px 0 0; font-size: 14px; }
+.error { color: #a3322c; }
+.success { color: #176b61; }
+@media (max-width: 480px) { .body { padding-left: 0; } .formRow { align-items: stretch; flex-direction: column; } .formRow button { min-height: 40px; } }

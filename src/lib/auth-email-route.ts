@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { AuthRequestError, authClientAddress, limitAuthRequest } from "@/lib/auth-rate-limit";
 import { EmailDeliveryError } from "@/lib/auth-email-delivery";
 import { completeEmailVerification, sendEmailCode, validatedEmail, validatedPassword } from "@/lib/email-verification";
+import { redeemGiftInvite } from "@/lib/gift-invites";
+import { randomUUID } from "node:crypto";
 
 async function limitedRequestBody(request: Request) {
   const reader = request.body?.getReader();
@@ -51,7 +53,19 @@ export async function emailAuthRoute(request: Request, action: "send" | "registe
     }
     const password = validatedPassword(body.password);
     const user = await completeEmailVerification(email, action, body.code, password, address);
-    return NextResponse.json(action === "register" ? user : { message: "密码已重置，请使用新密码登录。" }, { status: action === "register" ? 201 : 200 });
+    if (action === "register") {
+      let giftInvite: { redeemed: boolean; credits?: string; error?: string } = { redeemed: false };
+      if (typeof body.giftInvite === "string" && body.giftInvite.trim()) {
+        try {
+          const result = await redeemGiftInvite(user.id, body.giftInvite, "register-" + randomUUID());
+          giftInvite = { redeemed: true, credits: result.credits };
+        } catch (error) {
+          giftInvite = { redeemed: false, error: error instanceof Error ? error.message : "邀请码兑换失败，请登录后重试。" };
+        }
+      }
+      return NextResponse.json({ ...user, giftInvite }, { status: 201 });
+    }
+    return NextResponse.json({ message: "密码已重置，请使用新密码登录。" }, { status: 200 });
   } catch (error) {
     if (error instanceof AuthRequestError)
       return NextResponse.json({ error: error.message, ...(error.retryAfter ? { retryAfter: error.retryAfter } : {}) }, { status: error.status, headers: error.retryAfter ? { "Retry-After": String(error.retryAfter) } : {} });

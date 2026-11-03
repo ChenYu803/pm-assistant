@@ -20,6 +20,7 @@ function RegisterForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [code, setCode] = useState("");
+  const [giftInvite, setGiftInvite] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -48,7 +49,7 @@ function RegisterForm() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, code }),
+        body: JSON.stringify({ email, password, code, giftInvite }),
       });
 
       const data = await res.json();
@@ -68,6 +69,10 @@ function RegisterForm() {
       if (result?.error) {
         router.push(callbackUrl === "/projects" ? "/login" : `/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
       } else {
+        if (data.giftInvite && !data.giftInvite.redeemed && giftInvite.trim()) {
+          router.push("/profile?gift=failed");
+          return;
+        }
         navigateAfterAuthentication(callbackUrl, router);
       }
     } catch {
@@ -134,6 +139,11 @@ function RegisterForm() {
           )}
 
           <EmailCodeField email={email} purpose="register" value={code} onChange={setCode} />
+          <div>
+            <Label htmlFor="gift-invite" className="mb-1 block">赠送邀请码（选填）</Label>
+            <Input id="gift-invite" value={giftInvite} onChange={(event) => setGiftInvite(event.target.value)} autoComplete="off" maxLength={64} />
+            <p className="mt-1 text-sm text-muted-foreground">兑换成功可获得 2000 积分；不填写也可正常注册。</p>
+          </div>
           <p className="text-sm text-muted-foreground">无需邀请码即可注册。新账号初始积分为零。</p>
 
           <Button

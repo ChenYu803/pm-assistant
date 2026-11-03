@@ -19,4 +19,4 @@ export type CreditEntry = {
   context: Record<string, unknown> | null; createdAt: string;
 };
 export type CreditStatement = { accountId: string; balance: CreditBalance; entries: CreditEntry[]; total: number; page: number; pageSize: number };
-export const CREDIT_BUSINESS_LABELS: Record<string, string> = { admin_grant: "管理员赠送", admin_compensation: "补偿", admin_correction: "赠送余额纠正" };
+export const CREDIT_BUSINESS_LABELS: Record<string, string> = { admin_grant: "管理员赠送", admin_compensation: "补偿", admin_correction: "赠送余额纠正", invite_redemption: "邀请码赠送" };

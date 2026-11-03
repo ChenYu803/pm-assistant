@@ -528,6 +528,42 @@ export const MYSQL_MIGRATIONS = [
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`
     ],
   },
+  {
+    id: "0027_v144_gift_invites",
+    checksum: "ce1c6793e49fb4a2bb0aee47eb8d7549591545b61aa88782f3cf258e797f2d60",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS gift_invite_batches (
+ batch_id VARCHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL PRIMARY KEY,
+ created_at DATETIME(3) NOT NULL, created_by CHAR(36) NOT NULL,
+ code_count INT UNSIGNED NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+      `CREATE TABLE IF NOT EXISTS gift_invite_codes (
+ id CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL PRIMARY KEY,
+ batch_id VARCHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+ code_digest CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL UNIQUE,
+ status ENUM('available','redeemed','void') NOT NULL DEFAULT 'available',
+ credits DECIMAL(28,8) NOT NULL, created_at DATETIME(3) NOT NULL,
+ redeemed_by CHAR(36) NULL, redeemed_at DATETIME(3) NULL,
+ voided_by CHAR(36) NULL, voided_at DATETIME(3) NULL,
+ KEY gift_invite_status (status, created_at), KEY gift_invite_owner (redeemed_by, redeemed_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+      `CREATE TABLE IF NOT EXISTS gift_invite_redemptions (
+ id CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL PRIMARY KEY,
+ code_id CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL UNIQUE,
+ user_id CHAR(36) NOT NULL UNIQUE, request_id VARCHAR(160) CHARACTER SET ascii COLLATE ascii_bin NOT NULL UNIQUE,
+ credits DECIMAL(28,8) NOT NULL, created_at DATETIME(3) NOT NULL,
+ KEY gift_redemption_user (user_id, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+      `CREATE TABLE IF NOT EXISTS gift_invite_admin_actions (
+ id CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL PRIMARY KEY,
+ actor_id CHAR(36) NOT NULL, action VARCHAR(24) NOT NULL,
+ code_id CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NULL,
+ batch_id VARCHAR(64) CHARACTER SET ascii COLLATE ascii_bin NULL,
+ reason VARCHAR(500) NOT NULL, created_at DATETIME(3) NOT NULL,
+ KEY gift_admin_action_time (created_at), KEY gift_admin_action_code (code_id, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+    ],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {
