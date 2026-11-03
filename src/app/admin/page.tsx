@@ -23,7 +23,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
   const result = await listAdminUsers(search, status, page);
   function pageUrl(next: number) { return "/admin?" + new URLSearchParams({ q: search, status, page: String(next) }); }
   return <div className={styles.shell}><div className={styles.content}>
-    <nav className={styles.nav} aria-label="后台导航"><span>运营后台 · 用户管理</span><Link href="/admin/gift-invites">管理赠送邀请码</Link><Link href="/profile">返回个人主页</Link></nav>
+    <nav className={styles.nav} aria-label="后台导航"><span>运营后台 · 用户管理</span><Link href="/admin/model-requests">模型请求与成本</Link><Link href="/admin/gift-invites">管理赠送邀请码</Link><Link href="/profile">返回个人主页</Link></nav>
     <h1>用户管理</h1>
     <p className={styles.intro}>查询账号状态，停用异常账号。停用操作会保存操作者、时间和业务说明。</p>
     <dl className={styles.summary} aria-label="用户数量汇总"><div><dt>全部用户</dt><dd>{result.summary.total}</dd></div><div><dt>正常</dt><dd>{result.summary.active}</dd></div><div><dt>已停用</dt><dd>{result.summary.disabled}</dd></div></dl>

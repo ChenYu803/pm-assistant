@@ -68,7 +68,8 @@
     "verify:v144-admin-controls": "tsx scripts/verify-v144-admin-controls.mjs",
     "verify:v144-admin-unconfigured": "tsx scripts/verify-v144-admin-unconfigured.mjs",
     "verify:v144-credits": "tsx scripts/verify-v144-credits.mjs",
-    "verify:v144-gift-invites": "tsx scripts/verify-v144-gift-invites.mjs"
+    "verify:v144-gift-invites": "tsx scripts/verify-v144-gift-invites.mjs",
+    "verify:v144-model-cost": "tsx scripts/verify-v144-model-cost.mjs"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "1.1.13",

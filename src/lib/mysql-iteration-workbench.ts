@@ -1,3 +1,4 @@
+import { completeModelProcessing, markModelProcessingFailure } from "@/lib/model-metering";
 import { randomUUID } from "node:crypto";
 import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
@@ -398,6 +399,7 @@ export async function generateMysqlIterationMessage(input: {
     await reservation.execute<ResultSetHeader>("INSERT INTO iteration_session_messages (id, session_id, role, content, status, created_at) VALUES (?, ?, 'assistant', '', 'generating', ?)", [assistantId, input.sessionId, createdAt]);
     await reservation.commit();
   } catch (error) { await reservation.rollback(); throw error; } finally { reservation.release(); }
+  let modelRequestId: string | undefined;
   const generation = registerGeneration(assistantId);
   const abortGeneration = () => generation.abort();
   input.signal?.addEventListener("abort", abortGeneration, { once: true });
@@ -432,7 +434,7 @@ export async function generateMysqlIterationMessage(input: {
       "SELECT id FROM iteration_session_messages WHERE id = ? AND status = 'generating'", [assistantId]);
     if (generation.signal.aborted) throw new Error("生成已停止");
     if (!active.length) return stoppedResult();
-    const stream = await createAIStream({ userId: input.userId, agentType: prompt.agentType, maxTokens: 32768, messages: [{ role: "system", content: prompt.prompt }, ...history], timeoutMs: 600_000, signal: generation.signal, replayDelayMs: input.replayDelayMs });
+    const stream = await createAIStream({ userId: input.userId, purpose: "stage_chat", awaitProcessing: true, projectId: session.project_id, onRequest: id => { modelRequestId = id; }, sessionId: input.sessionId, agentType: prompt.agentType, maxTokens: 32768, messages: [{ role: "system", content: prompt.prompt }, ...history], timeoutMs: 600_000, signal: generation.signal, replayDelayMs: input.replayDelayMs });
     partialFlushTimer = setInterval(() => { void flushPartial().catch(() => undefined); }, 500);
     for await (const chunk of stream) {
       if (generation.signal.aborted) throw new Error("生成已停止");
@@ -475,6 +477,7 @@ export async function generateMysqlIterationMessage(input: {
       });
       if (prototypeHtml.kind === "valid" && input.forceSnapshotFailure) throw new Error("回放强制 HTML 快照写入失败");
       await connection.execute<ResultSetHeader>("UPDATE iteration_sessions SET updated_at = ? WHERE id = ?", [new Date(), input.sessionId]);
+      await completeModelProcessing(modelRequestId, connection);
       await connection.commit();
     } catch (error) { await connection.rollback(); throw error; } finally { connection.release(); }
     return { kind: "generated" as const, userMessage, assistantMessage: { id: assistantId, role: "assistant" as const, content: answer, status: "completed", errorMessage: null, createdAt } };
@@ -482,6 +485,7 @@ export async function generateMysqlIterationMessage(input: {
     if (partialFlushTimer) clearInterval(partialFlushTimer);
     await partialWrite.catch(() => undefined);
     const stopped = generation.signal.aborted;
+    await markModelProcessingFailure(modelRequestId, stopped);
     const message = stopped ? "生成已停止" : error instanceof Error ? error.message : "Agent 生成失败";
     if (!editTarget && !regenerateTarget) {
       await pool.execute<ResultSetHeader>("UPDATE iteration_session_messages SET content = ?, status = 'failed', error_message = ? WHERE id = ? AND session_id = ? AND (status = 'generating' OR (status = 'failed' AND error_message = '生成已停止'))", [answer, message, assistantId, input.sessionId]);

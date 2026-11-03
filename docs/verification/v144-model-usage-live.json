@@ -1,0 +1,89 @@
+{
+  "verifiedDate": "2026-11-03",
+  "boundary": "本机直接官方HTTP样本，不是应用隔离替身或目标机证据",
+  "balanceBeforeCny": "25.68",
+  "balanceAfterCny": "25.68",
+  "confirmedCostCny": "0.000044",
+  "costPendingRequests": 4,
+  "records": [
+    {
+      "kind": "nonstream",
+      "started": "2026-11-03T08:51:14.529Z",
+      "ended": "2026-11-03T08:51:15.039Z",
+      "httpStatus": 200,
+      "requestId": null,
+      "id": "75e22e10-e8fe-4680-9cc2-dba469bbe5e0",
+      "model": "deepseek-flash",
+      "finishReason": "stop",
+      "usage": {
+        "prompt_tokens": 7,
+        "completion_tokens": 1,
+        "total_tokens": 8,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 7
+      }
+    },
+    {
+      "kind": "stream",
+      "started": "2026-11-03T08:52:25.718Z",
+      "ended": "2026-11-03T08:52:28.900Z",
+      "httpStatus": 200,
+      "id": "7111b175-d123-4b4c-a488-04a53924c1bf",
+      "model": "deepseek-flash",
+      "finishReason": "stop",
+      "usage": {
+        "prompt_tokens": 7,
+        "completion_tokens": 1,
+        "total_tokens": 8,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 7
+      },
+      "done": true,
+      "chunks": 3
+    },
+    {
+      "kind": "stop",
+      "started": "2026-11-03T08:55:52.673Z",
+      "ended": "2026-11-03T08:55:52.779Z",
+      "httpStatus": 503,
+      "usage": null,
+      "done": false,
+      "recovery": "未发现官方按请求ID事后查询用量接口；本样本成本待确认"
+    },
+    {
+      "kind": "disconnect",
+      "started": "2026-11-03T08:55:52.779Z",
+      "ended": "2026-11-03T08:55:52.873Z",
+      "httpStatus": 200,
+      "id": "8bd0bff7-b266-4779-acf4-f89e9926bdeb",
+      "model": "deepseek-flash",
+      "finishReason": null,
+      "usage": null,
+      "done": false,
+      "recovery": "未发现官方按请求ID事后查询用量接口；本样本成本待确认"
+    },
+    {
+      "kind": "stop",
+      "started": "2026-11-03T08:59:41.214Z",
+      "ended": "2026-11-03T08:59:41.641Z",
+      "httpStatus": 503,
+      "usage": null,
+      "done": false,
+      "recovery": "未发现官方按请求ID事后查询用量接口；本样本成本待确认"
+    },
+    {
+      "kind": "stop_short_prompt",
+      "started": "2026-11-03T09:00:00.207Z",
+      "ended": "2026-11-03T09:00:00.363Z",
+      "httpStatus": 503,
+      "usage": null,
+      "done": false
+    }
+  ]
+}

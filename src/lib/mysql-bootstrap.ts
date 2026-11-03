@@ -564,6 +564,24 @@ export const MYSQL_MIGRATIONS = [
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
     ],
   },
+  {
+    id: "0028_v144_model_requests",
+    checksum: "0a71b79ca5319bef14c77374a6ac0f294b5b0af7830269a03b41bf1f7c7fa440",
+    statements: [`CREATE TABLE IF NOT EXISTS model_requests (
+ id CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL PRIMARY KEY,
+ user_id CHAR(36) NOT NULL, purpose VARCHAR(24) NOT NULL,
+ project_id CHAR(36) NULL, session_id CHAR(36) NULL, file_id CHAR(36) NULL,
+ requested_model VARCHAR(160) NOT NULL, max_output_tokens INT NOT NULL, transport VARCHAR(24) NOT NULL, actual_model VARCHAR(160) NULL,
+ provider_id VARCHAR(160) NULL, upstream_request_id VARCHAR(160) NULL,
+ started_at DATETIME(3) NOT NULL, ended_at DATETIME(3) NULL, deadline_at DATETIME(3) NOT NULL,
+ status VARCHAR(24) NOT NULL, finish_reason VARCHAR(64) NULL, error_code VARCHAR(64) NULL,
+ usage_status VARCHAR(24) NOT NULL, usage_json JSON NULL, price_json JSON NULL,
+ cost_cny DECIMAL(28,8) NULL, cost_reason VARCHAR(64) NOT NULL,
+ website_borne BOOLEAN NOT NULL DEFAULT FALSE,
+ KEY model_request_time (started_at, id), KEY model_request_user (user_id, started_at),
+ KEY model_request_state (status, usage_status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {

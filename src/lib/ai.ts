@@ -1,11 +1,14 @@
 import { assertAccountActive } from "@/lib/account-controls";
 import OpenAI from "openai";
 import type { AgentType } from "@/lib/agent-constants";
+import { startModelRequest, type ModelContext, type ModelReceipt } from "@/lib/model-metering";
 import { reserveAIRequest } from "@/lib/mysql-ai-budget";
 
 export type AIMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam;
 
-type AIRequest = {
+type AIRequest = ModelContext & {
+  onRequest?: (id: string) => void;
+  onReceipt?: (receipt: ModelReceipt) => void;
   userId?: string;
   agentType?: AgentType;
   messages: AIMessage[];
@@ -24,7 +27,7 @@ type ReplayChunk = {
  * 真实调用必须显式设置 AI_MODE=live。
  */
 export const AI_MODE = process.env.AI_MODE ?? "replay";
-export const AI_MODEL = process.env.AI_MODEL ?? "deepseek-v4-flash";
+export const AI_MODEL = process.env.AI_MODEL ?? "deepseek-flash";
 
 export function isLiveAI(): boolean {
   return AI_MODE === "live";
@@ -380,42 +383,55 @@ function replayStream(
   })();
 }
 
-export async function createAIStream({
-  userId,
-  agentType,
-  messages,
-  maxTokens,
-  timeoutMs,
-  signal,
-  replayDelayMs,
-}: AIRequest): Promise<AsyncIterable<ReplayChunk> | AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>> {
-  await assertAccountActive(userId);
-  if (!isLiveAI()) {
-    return replayStream(replayResponse(agentType, messages), replayDelayMs, signal);
-  }
-  await reserveAIRequest(userId);
-  return createAIClient().chat.completions.create(
-    { model: AI_MODEL, max_tokens: maxTokens, messages, stream: true },
-    { timeout: timeoutMs, signal }
-  );
+/** 文本块结构保持兼容；onReceipt 在用量和成本持久化后提供后续结算关联。 */
+function upstreamErrorCode(error: unknown, fallback: string): string {
+ if (error instanceof OpenAI.APIError && error.status) return "upstream_http_"+error.status;
+ if (error instanceof OpenAI.APIConnectionTimeoutError) return "upstream_timeout";
+ if (error instanceof OpenAI.APIConnectionError) return "upstream_connection_error";
+ return fallback;
 }
-
-export async function createAICompletion({
-  userId,
-  agentType,
-  messages,
-  maxTokens,
-  timeoutMs,
-  signal,
-}: AIRequest): Promise<string> {
-  await assertAccountActive(userId);
+export async function createAIStream(input: AIRequest): Promise<AsyncIterable<ReplayChunk> | AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>> {
+ const { userId,agentType,messages,maxTokens,timeoutMs,signal,replayDelayMs } = input;
+ await assertAccountActive(userId);
   if (!isLiveAI()) {
-    return replayResponse(agentType, messages);
+    return replayStream(replayResponse(agentType,messages),replayDelayMs,signal);
   }
-  await reserveAIRequest(userId);
-  const response = await createAIClient().chat.completions.create(
-    { model: AI_MODEL, max_tokens: maxTokens, messages, stream: false },
-    { timeout: timeoutMs, signal }
-  );
-  return response.choices[0]?.message?.content?.trim() ?? "";
+ await reserveAIRequest(userId);
+ const meter = await startModelRequest({ ...input,userId: userId!,model: AI_MODEL,transport: "stream" });
+ input.onRequest?.(meter.id);
+ let stream: AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
+ try {
+  const response = await createAIClient().chat.completions.create({ model: AI_MODEL,max_tokens: maxTokens,messages,stream: true,stream_options: { include_usage: true } },{ timeout: timeoutMs,signal }).withResponse();
+  meter.upstream(response.request_id); stream = response.data;
+ } catch(error) { const receipt = await meter.finish(signal?.aborted ? "stopped" : "failed", upstreamErrorCode(error,"upstream_request_error")); input.onReceipt?.(receipt); throw error; }
+ return (async function* () {
+  let status: "completed" | "stopped" | "failed" | "interrupted" = "interrupted", errorCode: string | null = null;
+  try {
+   for await (const chunk of stream) { meter.observe(chunk); yield chunk; }
+   if (signal?.aborted) throw replayAbortError();
+   status = meter.outcome();
+   if (status === "interrupted") errorCode = "finish_unconfirmed";
+   if (status === "failed") { errorCode = "upstream_finish_error"; throw new Error("供应商未能完成生成，请稍后重试"); }
+  } catch(error) { status = signal?.aborted ? "stopped" : errorCode === "upstream_disconnected" ? "interrupted" : "failed"; errorCode ??= upstreamErrorCode(error,"upstream_stream_error"); throw error; }
+  finally { if (signal?.aborted) status = "stopped"; const receipt = await meter.finish(status,errorCode); input.onReceipt?.(receipt); }
+ })();
+}
+export async function createAICompletion(input: AIRequest): Promise<string> {
+ const { userId,agentType,messages,maxTokens,timeoutMs,signal } = input;
+ await assertAccountActive(userId);
+ if (!isLiveAI()) return replayResponse(agentType,messages);
+ await reserveAIRequest(userId);
+ const meter = await startModelRequest({ ...input,userId: userId!,model: AI_MODEL,transport: "completion" });
+ input.onRequest?.(meter.id);
+ let response: OpenAI.Chat.Completions.ChatCompletion;
+ try {
+  const result = await createAIClient().chat.completions.create({ model: AI_MODEL,max_tokens: maxTokens,messages,stream: false },{ timeout: timeoutMs,signal }).withResponse();
+  meter.upstream(result.request_id); response = result.data;
+ } catch(error) { const receipt = await meter.finish(signal?.aborted ? "stopped" : "failed", upstreamErrorCode(error,"upstream_completion_error")); input.onReceipt?.(receipt); throw error; }
+ meter.observe(response);
+ const status = meter.outcome();
+ const receipt = await meter.finish(status,status === "failed" ? "upstream_finish_error" : status === "interrupted" ? "upstream_disconnected" : null);
+ input.onReceipt?.(receipt);
+ if (status === "failed") throw new Error("供应商未能完成生成，请稍后重试");
+ return response.choices[0]?.message?.content?.trim() ?? "";
 }

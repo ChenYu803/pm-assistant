@@ -28,7 +28,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (!isAIConfigured()) return NextResponse.json({ error: "AI 服务未配置，请联系管理员设置 AI_API_KEY" }, { status: 500 });
     const generate = async (signal?: AbortSignal) => {
       try {
-        const polished = await createAICompletion({ userId, maxTokens: 32768, messages: [{ role: "system", content: POLISH_SYSTEM_PROMPT }, { role: "user", content: `请润色以下 Markdown 内容：\n\n${content}` }], timeoutMs: 600_000, signal });
+        const polished = await createAICompletion({ userId, purpose: "polish", projectId, fileId, maxTokens: 32768, messages: [{ role: "system", content: POLISH_SYSTEM_PROMPT }, { role: "user", content: `请润色以下 Markdown 内容：\n\n${content}` }], timeoutMs: 600_000, signal });
         return { status: 200, body: { polished } };
       } catch (error) {
         return { status: error instanceof AccountAccessError ? 403 : error instanceof AIQuotaError ? 429 : 500, body: { error: error instanceof AccountAccessError || error instanceof AIQuotaError ? error.message : "AI 润色失败" } };

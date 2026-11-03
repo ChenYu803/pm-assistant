@@ -1,3 +1,4 @@
+import { completeModelProcessing, markModelProcessingFailure } from "@/lib/model-metering";
 import { NextResponse } from "next/server";
 
 import { AGENT_SYSTEM_PROMPTS } from "@/lib/agent-prompts";
@@ -263,6 +264,7 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
     async start(controller) {
       let fullContent = "";
       let operationFinished = false;
+      let modelRequestId: string | undefined;
       heartbeat = setInterval(() => send(controller, "heartbeat", {}), 15_000);
       send(controller, "start", {
         ...messageJson(assistant),
@@ -273,7 +275,7 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
       try {
         const failureMode = process.env.NODE_ENV !== "production" ? request.headers.get("x-pm-verify-force-error") : null;
         if (failureMode === "zero-token") throw new Error("回放强制零 token 失败");
-        const stream = await createAIStream({ userId, agentType: tab.agent_type, maxTokens: 32768, messages, timeoutMs: 600_000, signal: generation.signal, replayDelayMs: process.env.NODE_ENV !== "production" && request.headers.get("x-pm-verify-stream-delay") === "1" ? 300 : undefined });
+        const stream = await createAIStream({ userId, purpose: "chat", awaitProcessing: true, onRequest: id => { modelRequestId = id; }, projectId: tab.project_id, sessionId: tabId, agentType: tab.agent_type, maxTokens: 32768, messages, timeoutMs: 600_000, signal: generation.signal, replayDelayMs: process.env.NODE_ENV !== "production" && request.headers.get("x-pm-verify-stream-delay") === "1" ? 300 : undefined });
         for await (const chunk of stream) {
           if (generation.signal.aborted) throw new MysqlGenerationInterruptedError();
           const delta = chunk.choices[0]?.delta?.content;
@@ -314,9 +316,11 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
         }
         const tabVersion = freezeCompletion?.tabVersion ?? await completeMysqlTabOperation(operation, { messageId: assistant.id });
         operationFinished = true;
+        await completeModelProcessing(modelRequestId);
         send(controller, "done", { ...messageJson(completed), ...(userMessage ? { userMessageId: userMessage.id } : {}), ...(supersedeIds.length ? { replacesMessageIds: supersedeIds, replaceFromMessageId: replacementTargetId } : {}), ...(isFreeze ? { freezeStatus: "awaiting_write", freezeMessageId: assistant.id } : proposedFreeze ? { freezeStatus: "proposed" } : {}), tabVersion });
       } catch (error) {
         const interrupted = error instanceof MysqlGenerationInterruptedError || generation.signal.aborted;
+        await markModelProcessingFailure(modelRequestId, interrupted);
         const errorMessage = interrupted ? "生成已停止" : error instanceof Error ? error.message : "AI 请求失败，请稍后重试";
         const freezeFailure = isFreeze
           ? await failMysqlFreezeGeneration({

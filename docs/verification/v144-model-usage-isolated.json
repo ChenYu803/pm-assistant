@@ -1,0 +1,128 @@
+{
+  "date": "2026-11-03",
+  "ticket": "v1.44 #06",
+  "baselineCommit": "466b5adc79635c7cac756e5b98820630dce221e9",
+  "isolated": {
+    "pass": 332,
+    "fail": 0,
+    "cleaned": true,
+    "evidenceDir": "C:/Users/ADMINI~1/AppData/Local/Temp/v141-model-cost-RHb0a6",
+    "scenarioAssertions": 324,
+    "outerAssertions": 8,
+    "applicationAiMode": "live",
+    "provider": "仅本机受限供应商替身",
+    "realLlmCostCny": "0",
+    "workflows": [
+      "permissions-and-three-model-entrypoints",
+      "missing-invalid-and-delayed-usage",
+      "faults-stops-and-disconnections",
+      "queries-pagination-cumulative-summary-and-private-response",
+      "admin-page-desktop-mobile"
+    ],
+    "limitations": [
+      "页面仅校验 Next development 的 no-cache, must-revalidate；生产页面禁缓存由独立 production 构建验证。",
+      "金额双时段算例均独立核对；正式 HTTP 仅证明本次实际落库价格时段，未修改生产时钟。",
+      "不发起官方 live 样本；共享 runner 中 aiMode=replay 是 scenario 子进程保护值，applicationAiMode=live 的正式服务只连接 127.0.0.1 替身。",
+      "网站快照失败与重试通过正式 HTTP 注入；计量补标 SQL 自身抛错没有正式 HTTP 注入边界，本专项未模拟该异常。"
+    ]
+  },
+  "production": {
+    "results": [
+      {
+        "name": "生产模式隔离管理员正常登录",
+        "okay": true
+      },
+      {
+        "name": "生产模式管理页实际渲染成功",
+        "okay": true
+      },
+      {
+        "name": "生产模式管理页响应禁止共享及本地缓存",
+        "okay": true,
+        "actual": {
+          "status": 200,
+          "cacheControl": "private, no-store"
+        }
+      },
+      {
+        "name": "生产模式中文查询返回空结果",
+        "okay": true
+      },
+      {
+        "name": "生产模式成本API返回隔离空账本",
+        "okay": true
+      },
+      {
+        "name": "生产模式成本API使用private,no-store",
+        "okay": true,
+        "actual": {
+          "cacheControl": "private, no-store"
+        }
+      }
+    ],
+    "pass": 6,
+    "fail": 0,
+    "cleaned": true,
+    "output": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v144-cost-production-0y1gmn",
+    "aiMode": "replay",
+    "realLlmCostCny": "0",
+    "provider": "replay，无真实模型或邮件调用"
+  },
+  "regressions": [
+    {
+      "name": "个人积分账本",
+      "pass": 108,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-credits-UzvqPl"
+    },
+    {
+      "name": "本地会话命名",
+      "pass": 94,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-local-session-naming-s5Ry6q"
+    },
+    {
+      "name": "未配置管理员",
+      "pass": 12,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-admin-unconfigured-3lAqbv"
+    },
+    {
+      "name": "退出与迟到响应竞态",
+      "pass": 30,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-auth-signout-5IWfDF"
+    }
+  ],
+  "checks": {
+    "typecheck": "通过",
+    "targetedEslint": "通过，0 errors；src/proxy.ts 保留基点已有的2个未使用参数warning",
+    "scriptSyntax": "通过",
+    "productionBuild": "通过"
+  },
+  "knownBaselineLimits": [
+    "旧长生成脚本缺邮箱验证码，未进入生成",
+    "协议静态检查19通过、3失败：旧路由冻结断言，相关脚本与路由相对基点未变"
+  ],
+  "review": {
+    "initial": "Standards/Spec 审查问题已修复",
+    "finalAgents": "403额度不足，未完成最终增量代理复核",
+    "manual": "主会话补审无未解决问题"
+  },
+  "recoveryLimits": [
+    "正文快照失败及重试有HTTP故障注入",
+    "计量补标SQL失败与进程瞬时崩溃未做正式HTTP故障注入，恢复逻辑经代码/事务审阅"
+  ],
+  "liveEvidence": "v144-model-usage-live.json",
+  "liveLimits": [
+    "6次受控官方核验，确认费用0.000044元，另4笔待确认",
+    "连续503未建立成功主动停止证据，不再追加探测",
+    "200元是开发至首批试用累计预算；历史支出覆盖不完整，不能推算精确剩余预算"
+  ],
+  "scope": "未部署、未修改真实配置、未操作日常业务库、未扣分或预留",
+  "sessionLogArchive": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v144-model-cost-session-V1ccfM"
+}

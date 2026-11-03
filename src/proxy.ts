@@ -1,4 +1,4 @@
-import type { NextFetchEvent, NextRequest } from "next/server";
+import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { withoutSessionRenewal } from "@/lib/auth-session-cookies";
 
@@ -6,7 +6,9 @@ const authenticate = auth((_request: NextRequest, _event: NextFetchEvent) => und
 
 export default async function proxy(request: NextRequest, event: NextFetchEvent) {
   const response = await authenticate(request, event);
-  return response ? withoutSessionRenewal(response) : response;
+  const safeResponse = response ? withoutSessionRenewal(response) : NextResponse.next();
+  if (request.nextUrl.pathname === "/admin/model-requests") safeResponse.headers.set("Cache-Control", "private, no-store");
+  return safeResponse;
 }
 
 export const config = {
