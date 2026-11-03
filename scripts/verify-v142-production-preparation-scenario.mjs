@@ -103,8 +103,8 @@ try {
   try { await reserveAIRequest(undefined, limits, pool, day); } catch (error) { identityDenied = error instanceof AIQuotaError; }
   check("缺少有效账号时供应商请求占用被拒绝", identityDenied);
   const beforeReplay = JSON.stringify(await rows("SELECT * FROM ai_daily_usage ORDER BY usage_day, subject"));
-  await createAICompletion({ messages: [{ role: "user", content: "离线验证" }], maxTokens: 20, timeoutMs: 1000 });
-  check("固定 replay 无需真实账号且不占用供应商额度", beforeReplay === JSON.stringify(await rows("SELECT * FROM ai_daily_usage ORDER BY usage_day, subject")));
+  await createAICompletion({ userId, messages: [{ role: "user", content: "离线验证" }], maxTokens: 20, timeoutMs: 1000 });
+  check("固定 replay 使用已注册账号且不占用供应商额度", beforeReplay === JSON.stringify(await rows("SELECT * FROM ai_daily_usage ORDER BY usage_day, subject")));
   workflows.push("atomic-persistent-ai-budget");
 
   await verifyProductionPolish({ page, pool, userId, base, output, check });

@@ -18,7 +18,47 @@
 
 TDD证据：首次接口未实现时，`v141-admin-controls-cQfT4a` 内部1通过/1失败、外层7通过/2失败；最小实现后 `v141-admin-controls-ArmPch` 外层9通过/0失败，均已清理隔离库与账号。
 
-完整专项、相邻回归与双轴审查结果在本次收尾后记录于下方。
+### 管理员完整专项
+
+`npm run verify:v144-admin-controls`：**85/85**，内部 **77/77**、四条工作流全部完成，`cleaned=true`。证据目录：`C:/Users/Administrator/AppData/Local/Temp/v141-admin-controls-xPcenV`（summary.json、scenario-summary.json、provider-summary.json、scenario.log、server.log及桌面/390px截图）。
+
+覆盖旧结构升级与旧资料保留、指定管理员/普通用户/匿名/伪造身份权限、字面搜索与状态筛选、24账号两页分页及汇总、请求说明和长度/同源校验、禁止停用自己、重复停用不覆盖首次记录、页面操作后刷新保留审计、停用旧会话三个模型入口403且上游新增0、重置密码不能复活、正常用户和管理员仍可生成且回复持久化、跨账号正文访问仍404。
+
+本机HTTP供应商累计收到5次有效请求：目标账号停用前的阶段会话、旧聊天、润色各1次，其他正常账号与管理员各1次；没有真实上游请求。
+
+主会话实际查看最终桌面第二页及此前桌面查询/窄屏审计截图；验证代理查看最终390px账号列与审计列。页面只有一个主要内容地标、无整页横向溢出，表格独立滚动且可键盘聚焦，原因中的HTML以文本呈现，无高频刷新或装饰动效。
+
+### 验证过程中的失配
+
+- 第一轮完整专项受到并行生产构建清理.next的影响，出现隔离源码ENOENT和旧聊天500；该轮不作为产品失败或通过依据。构建改在全部隔离专项清理后执行。
+- 下一轮内部76通过/1失败，仅页面分页断言在点击后立即读URL/行数；等待第二页URL及可见页码后，同样的“四个账号”断言通过。未为迎合测试修改分页产品代码。
+- 最早未配置专项最后一项页面失败源于主会话改动遗漏页面起始标签；已修复并通过类型检查，最终未配置专项独立复跑取证。
+
+### 相邻回归、静态检查与审查
+
+| 验证 | launcher汇总 | 证据目录（TEMP下） |
+| --- | --- | --- |
+| 管理员完整专项 | 85/85（内部77/77） | v141-admin-controls-xPcenV |
+| 未配置管理员默认拒绝 | 12/12（内部5/5） | v141-admin-unconfigured-h06SQZ |
+| 邮箱认证与找回 | 249/249 | v141-email-auth-VmNAJP |
+| 退出与迟到Cookie竞态 | 30/30 | v141-auth-signout-S7gBQK |
+| 基础产品完整回放 | 101/101 | v141-replay-foundation-R4UGu6 |
+| 生产准备（含持久额度与正式润色） | 62/62 | v141-production-preparation-kR8RXt |
+| 生产备份/恢复工具与共享AI边界 | 51/51（AI子专项9/9，已包含） | v142-production-tools-evidence-kXybSd |
+
+最终TypeScript、生产构建、生产源码与相关专项脚本的定向ESLint、脚本语法及diff检查全部通过。构建日志位于TEMP/agent2-admin-build-final.log；类型与增量脚本检查日志分别为agent2-admin-tsc-final.log和agent2-admin-eslint-final-delta.log。未声称全仓lint通过（既有临时脚本不在本票修改范围）。
+
+全部回放隔离资源cleaned=true，备份工具fixtureRemoved=true。工具套件两次真实恢复均保持users=1、ai_daily_usage=2，三个AI临时用户精确清理；独立清理核验agent2-admin-regression-v142-fix-cleanup.json的remainingDatabases/remainingAccounts/remainingReplayBuildDirs均为空，无残留测试进程。
+
+生产准备首轮暴露两处旧夹具失配：回放调用未传真实账号，以及AI子专项新增隔离账号影响备份工具原有账号数断言。已改为正式注册后传账号ID，并只清理AI子专项自身创建的三个临时账号；不绕过账号状态检查，不弱化备份恢复断言。修复后两项均首轮通过，日志为TEMP/agent2-admin-regression-v142-production-preparation-fix-r1.log与agent2-admin-regression-v142-production-tools-fix-r1.log。
+
+### Standards（规范）
+
+固定基准 `53b32a96b17adb0f1e5f9c4b1509630ab50755b7`，实现检查点 `196843a`。独立审查27个文件：**0项硬规范违反，0项值得单列的smell建议**。页面/接口独立授权、事务内复核操作者、增量迁移和同事务审计、管理日志隐私及隔离供应商边界符合仓库规范。静态审查不替代实际验收计数。最终两份相邻夹具适配也经同轴复核通过。
+
+### Spec（需求）
+
+相同基准独立审查：**缺失或不完整需求0项、范围膨胀0项、实现错误0项**。已覆盖本票权限、查询/分页/汇总、停用审计、旧JWT模型准入、旧资料与正文隔离、可访问性和窄屏要求。余额、充值等保持后续票范围。最终两份夹具适配经同轴复核，未绕过账号状态检查，原额度/并发/备份恢复断言均保留。指定生产身份未提供不阻止本票隔离实现验收，但必须明确生产配置和目标机证据尚未完成。
 
 ## 生产交接
 

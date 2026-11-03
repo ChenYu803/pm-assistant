@@ -9,6 +9,7 @@ import { getMysqlPool, closeMysqlPoolForTests } from "../src/lib/mysql.ts";
 
 if (process.env.AI_MODE !== "live" || !/^v142_backup_[a-f0-9]{16}$/.test(process.env.MYSQL_DATABASE ?? "")) throw new Error("仅允许本次隔离库与本机模拟 live 分支");
 let pass = 0; let fail = 0; let requests = 0; let failNext = false;
+const seededUserIds = new Set();
 const userId = randomUUID();
 const options = { userId, messages: [{ role: "user", content: "隔离模拟输入" }], maxTokens: 20, timeoutMs: 3000 };
 function check(name, okay) { if (!okay) throw new Error(name); pass++; }
@@ -33,6 +34,7 @@ process.env.AI_DAILY_USER_LIMIT = "2";
 process.env.AI_DAILY_SITE_LIMIT = "100";
 async function seedActiveUser(id) {
   await getMysqlPool().execute("INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)", [id, id + "@test.local", "isolated-unused-hash"]);
+  seededUserIds.add(id);
 }
 try {
   await seedActiveUser(userId);
@@ -63,7 +65,19 @@ try {
   fail++; console.error(`❌ 模拟 live 入口：${error.message}`);
 } finally {
   server.close(); await once(server, "close");
-  await closeMysqlPoolForTests();
+  try {
+    // 只删除本子专项成功创建的账号，保留父专项的备份账号与严格恢复断言。
+    if (seededUserIds.size > 0) {
+      const ids = [...seededUserIds];
+      const [removed] = await getMysqlPool().execute(`DELETE FROM users WHERE id IN (${ids.map(() => "?").join(", ")})`, ids);
+      if (removed.affectedRows !== ids.length) throw new Error("本子专项测试账号未全部清理");
+      console.log(`已清理本子专项创建的 ${ids.length} 个测试账号`);
+    }
+  } catch (error) {
+    fail++; console.error(`❌ 模拟 live 账号清理：${error.message}`);
+  } finally {
+    await closeMysqlPoolForTests();
+  }
 }
 console.log(`AI_BOUNDARY_SUMMARY=${JSON.stringify({ pass, fail, requests, externalRequests: 0 })}`);
 process.exit(fail > 0 ? 1 : 0);
