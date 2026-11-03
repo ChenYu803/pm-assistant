@@ -43,9 +43,10 @@ const provider = createServer(async (req, res) => {
     const content = current.mode === "context-document" ? "%%%FILE_BEGIN%%% 需求分析-积分样本.md\n# 积分上下文\n" + "V144_CREDIT_CONTEXT_中文😀".repeat(128) + "\n%%%FILE_END%%%" : current.mode === "prototype" ? "供应商正文保护样本：测试回复\n%%%HTML_BEGIN%%%\n<!doctype html><html><head><title>隔离快照</title></head><body>测试原型</body></html>\n%%%HTML_END%%%" : "供应商正文保护样本：测试回复与测试润色。";
     const finishReason = current.mode === "insufficient-system-resource" ? "insufficient_system_resource" : current.mode === "output-length" ? "length" : "stop";
     if (!body.stream) {
-      if (!["normal", "insufficient-system-resource"].includes(current.mode)) return sendJson(409, { error: "fixture-stream-required" });
+      if (!["normal", "tiny", "hold", "missing", "over-budget", "output-length", "insufficient-system-resource"].includes(current.mode)) return sendJson(409, { error: "fixture-stream-required" });
+      if (current.mode === "hold") await delay(2500);
       call.phase = "done";
-      return sendJson(200, { ...common, choices: [{ index: 0, message: { role: "assistant", content }, finish_reason: finishReason }], usage: supplied });
+      return sendJson(200, { ...common, choices: [{ index: 0, message: { role: "assistant", content }, finish_reason: finishReason }], ...(current.mode === "missing" ? {} : {usage:supplied}) });
     }
     res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-store", Connection: "keep-alive" });
     const chunk = (choices, extra = {}) => res.write("data: " + JSON.stringify({ ...common, choices, ...extra }) + "\n\n");

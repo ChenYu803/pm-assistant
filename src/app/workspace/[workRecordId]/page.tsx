@@ -489,7 +489,7 @@ export default function WorkspacePage() {
   }
 
   async function handleSaveEdit(fileId: string, content: string) {
-    if (!project) return;
+    if (!project) return false;
     setSavingFile(true);
     try {
       const res = await fetch(
@@ -511,8 +511,10 @@ export default function WorkspacePage() {
       );
       setSelectedFile(updated);
       setPreviewOpen(true);
+      return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : "保存文件失败");
+      return false;
     } finally {
       setSavingFile(false);
     }

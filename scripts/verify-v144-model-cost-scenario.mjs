@@ -185,7 +185,7 @@ try {
     const beforePolish = await json(actor, filePath);
     must("润色前从公开 files API 读到目标文件正文与版本", beforePolish.id === file.id && beforePolish.project_id === project.id && beforePolish.filename === file.filename && typeof beforePolish.content === "string" && beforePolish.content.includes("项目文件正文保护样本") && Number.isSafeInteger(beforePolish.version));
     const polishPlan = await fixture("/control", { mode: "normal" });
-    const polished = await actor.post(polishPath, { data: { content: "用户对话正文保护样本：文件润色" } });
+    const polished = await actor.post(polishPath, { data: { requestId: randomUUID(), content: "用户对话正文保护样本：文件润色" } });
     check("润色非流式入口正常返回正文", polished.ok() && (await polished.json()).polished?.includes("测试润色"));
     const polishRow = await ledgerAfter("polish", row => row.fileId === file.id);
     assertKnown("润色", polishRow);
@@ -220,7 +220,7 @@ try {
     check("HTTP200 流式资源不足按业务失败而非完成", resource.frames.some(frame => frame.type === "error" && frame.status === "failed") && !resource.frames.some(frame => frame.type === "done" && frame.status === "completed") && storedFailure.messages.some(message => message.role === "assistant" && message.status === "failed"));
     check("流式资源不足保留 finish、可靠成本并由网站承担", resource.row?.finishReason === "insufficient_system_resource" && resource.row?.websiteBorne === true && resource.row?.errorCode === "upstream_finish_error" && resource.row?.costCny !== null);
     const completionPlan = await fixture("/control", { mode: "insufficient-system-resource" });
-    const completionResponse = await actor.post(polishPath, { data: { content: "用户对话正文保护样本：资源不足润色" } });
+    const completionResponse = await actor.post(polishPath, { data: { requestId: randomUUID(), content: "用户对话正文保护样本：资源不足润色" } });
     const completionBody = await completionResponse.json();
     check("HTTP200 completion 资源不足按业务失败且不返回成功预览", completionResponse.status() === 500 && typeof completionBody.error === "string" && !Object.hasOwn(completionBody, "polished"));
     const completionRow = await ledgerAfter("completion-resource", row => row.providerId === completionPlan.providerId);

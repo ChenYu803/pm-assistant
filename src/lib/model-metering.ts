@@ -42,6 +42,7 @@ function shortId(value: unknown): string | null { return typeof value === "strin
 
 /** 只记录供应商证据与必要关联，不写消息、文件正文或原始异常内容。 */
 export async function startModelRequest(input: ModelContext & { userId: string; model: string; timeoutMs: number; maxTokens: number; transport: "stream" | "completion"; creditBudget?: ConversationBudget }) {
+ if (!input.creditCall || !input.creditBudget) throw new CreditError("缺少生成操作标识或费用预算，请刷新后重试。",400);
  const id = randomUUID(), started = new Date();
  // 测试替身可使用官方协议，生产自定义中转地址不能被当作官方价格。
  const url = new URL(process.env.AI_BASE_URL || "https://api.deepseek.com");

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import DisclosureIcon from "@/components/DisclosureIcon";
 import ProjectFileDetails from "@/components/ProjectFileDetails";
+import ProjectFileEditor from "@/components/ProjectFileEditor";
 import { getWorkbenchFileStage } from "@/lib/workbench-file-branch";
 import type { TaskFolderRestoreEntry } from "@/lib/mysql-task-folders";
 
@@ -40,7 +41,6 @@ export default function ProjectFileTree({ projectId, iterationId, files, onChang
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState("");
   const [confirmUndo, setConfirmUndo] = useState(false);
   const [working, setWorking] = useState(false);
   const [notice, setNotice] = useState("");
@@ -162,15 +162,15 @@ export default function ProjectFileTree({ projectId, iterationId, files, onChang
     window.setTimeout(() => closeButton.current?.focus(), 0);
   }
 
-  async function changeRevision(action: "edit" | "restore") {
-    if (!selected || !iterationId || working) return;
+  async function changeRevision(action: "edit" | "restore", editedContent?: string) {
+    if (!selected || !iterationId || working) return false;
     setWorking(true);
     setError("");
     setNotice("");
     try {
       const response = await fetch(`/api/iterations/${iterationId}/files/${selected.id}`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId, action, ...(action === "edit" ? { content: draft } : {}) }),
+        body: JSON.stringify({ projectId, action, ...(action === "edit" ? { content: editedContent } : {}) }),
       });
       const body = await response.json();
       if (!response.ok) throw new Error(body.error || "文件操作失败，请重试");
@@ -181,8 +181,10 @@ export default function ProjectFileTree({ projectId, iterationId, files, onChang
       setNotice(action === "restore" ? "已撤回到上一版；本次撤回不能重做。" : "修改已保存，可撤回到修改前的正文。");
       if (selected.taskFolderId) { setFolderLoading(true); setFolderRevision((value) => value + 1); }
       onChanged?.();
+      return true;
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "文件操作失败，请重试");
+      return false;
     } finally { setWorking(false); }
   }
 
@@ -265,11 +267,11 @@ export default function ProjectFileTree({ projectId, iterationId, files, onChang
           loading ? <p role="status">正在打开文件…</p> : <>
             {notice && <p className="project-file-revision-notice" role="status">{notice}</p>}
             {error && <p className="project-file-revision-error" role="alert">{error}{!editing && !confirmUndo && !content ? <> <button type="button" onClick={() => open(selected)}>重试</button></> : null}</p>}
-            {editing ? <div className="project-file-edit"><label htmlFor="project-file-content">Markdown 正文</label><textarea id="project-file-content" value={draft} disabled={working} onChange={(event) => setDraft(event.target.value)} /><div className="project-file-edit-actions"><button type="button" disabled={working} onClick={() => { setEditing(false); setError(""); }}>取消</button><button type="button" disabled={working || draft === content} onClick={() => void changeRevision("edit")}>{working ? "保存中…" : "保存修改"}</button></div></div> : content || !error ? <MarkdownRenderer content={content} /> : null}
+            {editing ? <ProjectFileEditor key={selected.id} projectId={projectId} fileId={selected.id} initialContent={content} saving={working} onCancel={() => { setEditing(false); setError(""); }} onSave={value => changeRevision("edit",value)} /> : content || !error ? <MarkdownRenderer content={content} /> : null}
             {confirmUndo && !editing && <div className="project-file-undo-confirm"><p>撤回后，上一版会成为当前正文，这次撤回不能重做。</p><div><button type="button" disabled={working} onClick={() => { setConfirmUndo(false); setError(""); }}>取消</button><button type="button" disabled={working} onClick={() => void changeRevision("restore")}>{working ? "撤回中…" : "确认撤回"}</button></div></div>}
           </>}
         </div>
-        {view === "preview" && !selected.deleted && <footer><span>{selected.taskFolderId ? selected.taskArchived ? "已删除迭代 · 只读归档" : canChangeSelected ? "本迭代任务 · 可修改" : "其他迭代任务 · 只读" : canChangeSelected ? selected.canUndo ? "可撤回到上一版" : "没有可撤回的上一版" : "Markdown 预览"}</span><div className="project-file-preview-actions">{canChangeSelected && !loading && !editing && !confirmUndo && <><button type="button" disabled={working || Boolean(error)} onClick={() => { setDraft(content); setEditing(true); setNotice(""); }}>编辑正文</button>{!selected.taskFolderId && <button type="button" disabled={working || !selected.canUndo || Boolean(error)} onClick={() => { setConfirmUndo(true); setNotice(""); }}>撤回上次修改</button>}</>}<a href={`/api/projects/${projectId}/files/${selected.id}/download`} aria-label={`下载 ${selected.filename}`}><svg className="project-file-action-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v9 m-4-4 4 4 4-4 M4 14v3h12v-3" /></svg>下载 Markdown</a></div></footer>}
+        {view === "preview" && !selected.deleted && <footer><span>{selected.taskFolderId ? selected.taskArchived ? "已删除迭代 · 只读归档" : canChangeSelected ? "本迭代任务 · 可修改" : "其他迭代任务 · 只读" : canChangeSelected ? selected.canUndo ? "可撤回到上一版" : "没有可撤回的上一版" : "Markdown 预览"}</span><div className="project-file-preview-actions">{canChangeSelected && !loading && !editing && !confirmUndo && <><button type="button" disabled={working || Boolean(error)} onClick={() => { setEditing(true); setNotice(""); }}>编辑正文</button>{!selected.taskFolderId && <button type="button" disabled={working || !selected.canUndo || Boolean(error)} onClick={() => { setConfirmUndo(true); setNotice(""); }}>撤回上次修改</button>}</>}<a href={`/api/projects/${projectId}/files/${selected.id}/download`} aria-label={`下载 ${selected.filename}`}><svg className="project-file-action-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v9 m-4-4 4 4 4-4 M4 14v3h12v-3" /></svg>下载 Markdown</a></div></footer>}
       </section>
     </div>}
   </>;

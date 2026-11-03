@@ -397,7 +397,7 @@ export async function createAIStream(input: AIRequest): Promise<AsyncIterable<Re
   if (!isLiveAI()) {
     return replayStream(replayResponse(agentType,messages),replayDelayMs,signal);
   }
- if (input.purpose !== "polish" && !input.creditCall) throw new CreditError("缺少生成操作标识，请刷新后重试。",400);
+ if (!input.creditCall) throw new CreditError("缺少生成操作标识，请刷新后重试。",400);
  const meter = await startModelRequest({ ...input,userId: userId!,model: AI_MODEL, ...(input.creditCall ? { creditBudget: conversationBudget(messages,maxTokens) } : {}),transport: "stream" });
  input.onRequest?.(meter.id);
  let stream: AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
@@ -421,7 +421,7 @@ export async function createAICompletion(input: AIRequest): Promise<string> {
  const { userId,agentType,messages,maxTokens,timeoutMs,signal } = input;
  await assertAccountActive(userId);
  if (!isLiveAI()) return replayResponse(agentType,messages);
- if (input.purpose !== "polish" && !input.creditCall) throw new CreditError("缺少生成操作标识，请刷新后重试。",400);
+ if (!input.creditCall) throw new CreditError("缺少生成操作标识，请刷新后重试。",400);
  const meter = await startModelRequest({ ...input,userId: userId!,model: AI_MODEL, ...(input.creditCall ? { creditBudget: conversationBudget(messages,maxTokens) } : {}),transport: "completion" });
  input.onRequest?.(meter.id);
  let response: OpenAI.Chat.Completions.ChatCompletion;
@@ -430,9 +430,13 @@ export async function createAICompletion(input: AIRequest): Promise<string> {
   meter.upstream(result.request_id); response = result.data;
  } catch(error) { const receipt = await meter.finish(signal?.aborted ? "stopped" : "failed", upstreamErrorCode(error,"upstream_completion_error")); input.onReceipt?.(receipt); throw error; }
  meter.observe(response);
- const status = meter.outcome();
- const receipt = await meter.finish(status,status === "failed" ? "upstream_finish_error" : status === "interrupted" ? "upstream_disconnected" : null);
+ const content = response.choices[0]?.message?.content?.trim() ?? "";
+ // 润色只接受完整正文；截断、空结果和未知 finish 不能结算为成功预览。
+ const outcome = meter.outcome();
+ const invalidPolish = input.purpose === "polish" && outcome !== "failed" && (response.choices[0]?.finish_reason !== "stop" || !content);
+ const status = invalidPolish ? "failed" : outcome;
+ const receipt = await meter.finish(status,invalidPolish ? "polish_incomplete" : status === "failed" ? "upstream_finish_error" : status === "interrupted" ? "upstream_disconnected" : null);
  input.onReceipt?.(receipt);
  if (status === "failed") throw new Error("供应商未能完成生成，请稍后重试");
- return response.choices[0]?.message?.content?.trim() ?? "";
+ return content;
 }

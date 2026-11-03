@@ -53,10 +53,10 @@ export async function verifyProductionPolish({ page, pool, userId, base, output,
   const fileRow = async () => JSON.stringify((await pool.query("SELECT * FROM project_files WHERE id = ?", [fileId]))[0]);
   const before = await fileRow();
   const path = `/api/projects/${projectId}/files/${fileId}/polish`;
-  const jsonResponse = await page.request.post(`${base}${path}`, { data: { content: initial } });
+  const jsonResponse = await page.request.post(`${base}${path}`, { data: { requestId: randomUUID(), content: initial } });
   const jsonResult = await jsonResponse.json();
   check("真实已登录润色 API 保持 JSON 成功协议", jsonResponse.status() === 200 && typeof jsonResult.polished === "string" && jsonResult.polished.length > 0 && !jsonResponse.headers()["content-type"].includes("text/event-stream"));
-  const streamResponse = await page.request.post(`${base}${path}`, { data: { content: initial }, headers: { Accept: "text/event-stream" } });
+  const streamResponse = await page.request.post(`${base}${path}`, { data: { requestId: randomUUID(), content: initial }, headers: { Accept: "text/event-stream" } });
   const streamResult = await readGenerationResult(new Response(await streamResponse.body(), { status: streamResponse.status(), headers: streamResponse.headers() }));
   check("真实已登录润色 API 可选 SSE 完整终态并禁缓存/代理缓冲", streamResult.polished === jsonResult.polished && streamResponse.headers()["content-type"].includes("text/event-stream") && streamResponse.headers()["x-accel-buffering"] === "no");
   check("JSON/SSE 润色 API 均不隐式写入项目文件", before === await fileRow());

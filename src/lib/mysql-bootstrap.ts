@@ -598,6 +598,14 @@ export const MYSQL_MIGRATIONS = [
  CONSTRAINT conversation_credit_nonnegative CHECK (reserved > 0 AND (consumed IS NULL OR (consumed >= 0 AND consumed <= reserved)))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`],
   },
+  {
+    id: "0030_v144_polish_generation_results",
+    checksum: "4b6e1c3d18f44c7342257a73eb9f9e7c69edef3a136aecc47efa3e4bcce64063",
+    statements: [`CREATE TABLE IF NOT EXISTS polish_generation_results (
+ call_id CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL PRIMARY KEY,
+ content LONGTEXT NOT NULL, created_at DATETIME(3) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {

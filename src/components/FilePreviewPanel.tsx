@@ -12,7 +12,7 @@ interface FilePreviewPanelProps {
   open: boolean;
   saving: boolean;
   onClose: () => void;
-  onSaveEdit: (fileId: string, content: string) => Promise<void>;
+  onSaveEdit: (fileId: string, content: string) => Promise<boolean>;
   projectId: string;
 }
 
@@ -40,8 +40,9 @@ export default function FilePreviewPanel({
   }
 
   async function handleSave(content: string) {
-    await onSaveEdit(file!.id, content);
-    setShowEditor(false);
+    const success = await onSaveEdit(file!.id, content);
+    if (success) setShowEditor(false);
+    return success;
   }
 
   return (

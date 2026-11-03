@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { readGenerationResult } from "@/lib/generation-result-client";
+import { useFilePolish } from "@/components/useFilePolish";
+import { FilePolishResult } from "@/components/FilePolishResult";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +15,7 @@ interface FileEditorModalProps {
   filename: string;
   initialContent: string;
   saving: boolean;
-  onSave: (content: string) => void;
+  onSave: (content: string) => Promise<boolean>;
   onClose: () => void;
   /** 传入 projectId + fileId 后会显示「AI 润色」按钮 */
   polishTarget?: { projectId: string; fileId: string };
@@ -30,52 +30,13 @@ export default function FileEditorModal({
   onClose,
   polishTarget,
 }: FileEditorModalProps) {
-  const [content, setContent] = useState(initialContent);
-  const [isPolishing, setIsPolishing] = useState(false);
-  const [polishedContent, setPolishedContent] = useState<string | null>(null);
-  const [polishError, setPolishError] = useState("");
-  const polishController = useRef<AbortController | null>(null);
-  useEffect(() => () => polishController.current?.abort(), []);
-
-  async function handlePolish() {
-    if (!polishTarget || !content.trim()) return;
-    setIsPolishing(true);
-    setPolishError("");
-    const controller = new AbortController();
-    polishController.current = controller;
-    try {
-      const res = await fetch(
-        `/api/projects/${polishTarget.projectId}/files/${polishTarget.fileId}/polish`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
-          body: JSON.stringify({ content }),
-          signal: controller.signal,
-        }
-      );
-      const data = await readGenerationResult(res);
-      setPolishedContent(data.polished ?? null);
-    } catch (err) {
-      setPolishError(
-        err instanceof Error ? err.message : "AI 润色失败"
-      );
-    } finally {
-      if (polishController.current === controller) polishController.current = null;
-      setIsPolishing(false);
-    }
-  }
-
-  function applyPolish() {
-    if (polishedContent) {
-      setContent(polishedContent);
-      setPolishedContent(null);
-    }
-  }
+  const polish = useFilePolish(open,polishTarget,initialContent);
+  const {content,busy:isPolishing} = polish;
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
       <DialogContent
-        className="flex w-full max-w-2xl flex-col p-0"
+        className="flex max-h-[90dvh] w-full max-w-2xl flex-col p-0"
         // 与现有行为一致：点击遮罩不关闭；保存/润色中 Escape 也不关闭
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => {
@@ -95,6 +56,7 @@ export default function FileEditorModal({
             size="icon"
             onClick={onClose}
             disabled={saving}
+            aria-label="关闭编辑器"
             className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -104,47 +66,16 @@ export default function FileEditorModal({
         </div>
 
         {/* Editor */}
-        <div className="flex-1 p-5">
+        <div className="min-h-0 flex-1 overflow-y-auto p-5">
           <Textarea
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={(e) => polish.edit(e.target.value)}
             className="h-80 rounded-lg bg-muted p-4 font-mono text-sm"
             placeholder="输入 Markdown 内容..."
-            disabled={saving || isPolishing}
+            disabled={saving || isPolishing || polish.pending}
           />
 
-          {/* Polish error */}
-          {polishError && (
-            <p className="mt-2 text-xs text-destructive">{polishError}</p>
-          )}
-
-          {/* Polished preview */}
-          {polishedContent && (
-            <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-              <p className="mb-2 text-xs font-medium text-emerald-700">
-                AI 润色结果：
-              </p>
-              <pre className="max-h-40 overflow-y-auto whitespace-pre-wrap text-xs text-gray-700">
-                {polishedContent}
-              </pre>
-              <div className="mt-2 flex items-center gap-2">
-                <Button
-                  size="sm"
-                  onClick={applyPolish}
-                  className="bg-emerald-600 hover:bg-emerald-700"
-                >
-                  应用润色
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPolishedContent(null)}
-                >
-                  保留原文
-                </Button>
-              </div>
-            </div>
-          )}
+          {polishTarget && <FilePolishResult polish={polish} />}
         </div>
 
         {/* Footer */}
@@ -155,8 +86,8 @@ export default function FileEditorModal({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handlePolish}
-                disabled={saving || isPolishing}
+                onClick={() => void polish.polish()}
+                disabled={saving || isPolishing || !polish.ready || !content.trim()}
                 className="border-indigo-200 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700"
               >
                 {isPolishing ? (
@@ -165,7 +96,7 @@ export default function FileEditorModal({
                     润色中
                   </span>
                 ) : (
-                  "AI 润色"
+                  (polish.pending ? "重试原请求" : "AI 润色")
                 )}
               </Button>
             )}
@@ -178,7 +109,7 @@ export default function FileEditorModal({
             >
               取消
             </Button>
-            <Button onClick={() => onSave(content)} disabled={saving || isPolishing}>
+            <Button onClick={async () => { if (await onSave(content)) polish.saved(); }} disabled={saving || isPolishing}>
               {saving ? (
                 <span className="flex items-center gap-1">
                   <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />

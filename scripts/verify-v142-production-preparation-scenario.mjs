@@ -42,7 +42,8 @@ try {
   browser = await chromium.launch({ channel: "msedge", headless: true });
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   page.setDefaultTimeout(45_000);
-  page.setDefaultNavigationTimeout(45_000);
+  // Next 首次编译注册页可能超过 45 秒，导航等待与其他隔离专项一致。
+  page.setDefaultNavigationTimeout(120_000);
   await page.goto(`${base}/register`);
   check("旧邀请配置不再要求注册邀请码", await page.locator("#inviteCode").count() === 0);
   await page.fill("#email", email);
