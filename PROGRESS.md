@@ -6,6 +6,14 @@
 
 ## 当前阶段
 
+### 2026-11-03：v1.44 #06 新密钥官方复核
+
+按用户本轮授权替换本机 `.env.local` 的 AI_API_KEY，官方地址/Flash别名与日常replay模式保持原配置。新旧配置的DPAPI加密副本保存在 `C:/Users/Administrator/.codex/credential-backups/Agent2`，目录仅Administrator/SYSTEM，已解密回读验证；配置受Git忽略，不提交密钥。
+
+受控官方HTTP新增2次：正常请求200，输入35/输出12，快照成本0.000083元；流式200并收到推理片段后客户端abort，未到finish/usage/DONE，成本仍待确认。已补齐客户端中途取消证据，不能据此证明供应商停止计费；无事后可靠用量恢复证据。两轮8次样本合计确认0.000127元、5笔待确认，历史累计支出仍未补齐。此次未经过应用落库、未操作日常/生产数据库，未追加调用；tsc通过。见[复核记录](docs/verification/v144-model-usage-cost.md)及[脱敏JSON](docs/verification/v144-model-usage-live-key-retry.json)。
+
+下一前沿仍是#07，未自动开始、未部署、未push。新坑：更换可用密钥解决连通性证据，不会让已取消的流补回尾部usage；unknown必须继续保留。
+
 ### 2026-11-03：v1.44 #06 官方模型用量与真实成本完成
 
 迁移0028建立独立供应商请求账本；旧会话、阶段会话、文件润色统一保留调用关联、可靠用量、价格快照、人民币成本及故障状态。未知成本为NULL，用户故障免单仍保留网站承担成本；正文成功前保持processing，阶段正文与完成同事务，补标失败后超期也可识别为中断。管理员可查完整ID、状态/用量、分页及全累计成本，默认无正文。契约见 [模型计量](docs/model-metering-contract.md)，实现票 [#06](.scratch/v1.44/issues/06-official-model-usage-cost.md) 已resolved。

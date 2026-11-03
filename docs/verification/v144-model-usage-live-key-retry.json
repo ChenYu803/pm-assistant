@@ -1,0 +1,91 @@
+{
+  "verifiedDate": "2026-11-03",
+  "boundary": "本机直接官方HTTP样本；未经过应用计量落库，不是隔离替身或目标机证据",
+  "credential": "用户本轮提供的新官方密钥；无明文或指纹留存",
+  "configuration": {
+    "file": ".env.local",
+    "keyUpdated": true,
+    "baseUrl": "https://api.deepseek.com",
+    "model": "deepseek-v4-flash",
+    "applicationAiMode": "replay",
+    "backupProtection": "Windows DPAPI当前用户加密，已解密回读一致，副本在仓库外",
+    "backupDir": "C:/Users/Administrator/.codex/credential-backups/Agent2"
+  },
+  "requests": 2,
+  "confirmedCostCny": "0.00008300",
+  "costPendingRequests": 1,
+  "records": [
+    {
+      "kind": "nonstream",
+      "started": "2026-11-03T10:56:43.926Z",
+      "ended": "2026-11-03T10:56:44.924Z",
+      "httpStatus": 200,
+      "requestedModel": "deepseek-v4-flash",
+      "model": "deepseek-flash",
+      "id": "1727ab57-7364-4320-b0f3-2dd31d8e3e70",
+      "requestId": null,
+      "finishReason": "stop",
+      "usage": {
+        "prompt_tokens": 35,
+        "completion_tokens": 12,
+        "total_tokens": 47,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 10
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 35
+      },
+      "hasText": true,
+      "error": null,
+      "price": {
+        "version": "deepseek-flash-cny-2026-11-03",
+        "currency": "CNY",
+        "peak": false,
+        "inputHitPerMillion": "0.02",
+        "inputMissPerMillion": "1",
+        "outputPerMillion": "4",
+        "basis": "北京时间18:56同一空闲价格时段，沿用本票已核实快照"
+      },
+      "costCny": "0.00008300"
+    },
+    {
+      "kind": "stop",
+      "started": "2026-11-03T10:57:06.973Z",
+      "requestedModel": "deepseek-v4-flash",
+      "httpStatus": 200,
+      "id": "21d990f4-6772-466c-97d8-6e7cbe1c2477",
+      "model": "deepseek-flash",
+      "finishReason": null,
+      "usage": null,
+      "done": false,
+      "receivedContent": false,
+      "receivedReasoning": true,
+      "events": 2,
+      "transportChunks": 2,
+      "clientAborted": true,
+      "cancelAfterFirstDelta": true,
+      "cancelError": "AbortError",
+      "ended": "2026-11-03T10:57:07.645Z",
+      "costCny": null,
+      "costReason": "usage_unconfirmed"
+    }
+  ],
+  "conclusions": [
+    "新密钥完成官方HTTP200正常生成，并取得可靠用量",
+    "收到真实生成片段后发出客户端abort；当时尚未收到finish_reason、usage或DONE",
+    "客户端取消不证明供应商停止处理或停止计费；此笔成本未知，不能记零",
+    "没有重复探测；原6次样本继续保留，原4笔待确认没有因换key消除"
+  ],
+  "limitations": [
+    "未取得逐请求事后可靠用量恢复证据",
+    "本轮未进行应用到数据库的真实端到端验证；该路径既有隔离专项332/332",
+    "正常样本费用依据逐笔用量与现有价格快照计算，不是供应商账单对账结果",
+    "累计200元预算仍缺完整历史支出"
+  ],
+  "checks": {
+    "typecheck": "通过"
+  }
+}
