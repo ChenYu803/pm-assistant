@@ -1,3 +1,4 @@
+import { CreditError } from "@/lib/credit-values";
 import { NextResponse } from "next/server";
 
 import { requireAuth } from "@/lib/auth-helper";
@@ -29,7 +30,7 @@ export async function POST(request: Request, { params }: Context) {
     const body = await request.json().catch(() => null);
     if (!isMysqlId(id) || !isMysqlId(sessionId)) return NextResponse.json({ error: "会话参数无效" }, { status: 400 });
     const result = await generateMysqlIterationMessage({
-      iterationId: id, sessionId, userId,
+      iterationId: id, sessionId, userId, requestId: body?.requestId,
       ...(typeof body?.content === "string" ? { content: body.content } : {}),
       ...(typeof body?.regenerateMessageId === "string" ? { regenerateMessageId: body.regenerateMessageId } : {}),
     });
@@ -39,10 +40,12 @@ export async function POST(request: Request, { params }: Context) {
     if (result.kind === "invalid-regenerate") return NextResponse.json({ error: "只能重新生成最后一条已完成的 Agent 消息" }, { status: 409 });
     if (result.kind === "conflict") return NextResponse.json({ error: "当前会话已被其他请求更新，请刷新后重试" }, { status: 409 });
     if (result.kind === "stage-completed") return NextResponse.json({ error: "本阶段已完成，请先重新打开阶段" }, { status: 409 });
+    if (result.kind === "generating") return NextResponse.json({ error: "当前会话正在生成，请稍后重试" }, { status: 409 });
     if (result.kind === "generation-stopped") return NextResponse.json({ error: "生成已停止" }, { status: 409 });
-    if (result.kind === "generation-failed") return NextResponse.json({ error: result.error, userMessage: result.userMessage, assistantMessageId: result.assistantMessageId }, { status: 502 });
+    if (result.kind === "generation-failed") return NextResponse.json({ error: result.error, userMessage: result.userMessage, assistantMessageId: result.assistantMessageId }, { status: result.status });
     return NextResponse.json({ userMessage: result.userMessage, assistantMessage: result.assistantMessage }, { status: 201 });
   } catch (error) {
+    if (error instanceof CreditError) return NextResponse.json({error:error.message},{status:error.status});
     console.error("POST iteration session messages error:", error);
     return NextResponse.json({ error: mysqlUnavailableMessage() }, { status: 500 });
   }

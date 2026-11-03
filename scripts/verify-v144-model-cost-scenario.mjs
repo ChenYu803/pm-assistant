@@ -14,7 +14,7 @@ const expectedUsage = { prompt_tokens: 1000, completion_tokens: 100, total_token
 let pass = 0, fail = 0, browser, admin, actor, initialDone, project, polishPath;
 function check(name, okay, actual) {
   const success = Boolean(okay); assertions.push({ name, okay: success, ...(!success && actual !== undefined ? { actual } : {}) });
-  console.log((success ? "✅ " : "❌ ") + name); success ? pass++ : fail++; return success;
+  console.log((success ? "✅ " : "❌ ") + name); if (success) pass++; else fail++; return success;
 }
 function must(name, okay) { if (!check(name, okay)) { const error = Error(name); error.counted = true; throw error; } }
 async function section(name, action) {
@@ -143,6 +143,7 @@ try {
   const actorUser = await register(actor, actorEmail); actor.userId = actorUser.id;
   must("指定管理员登录身份正确", (await login(admin, process.env.V144_ADMIN_EMAIL))?.id === adminUser.id);
   must("模型调用账号登录成功", (await login(actor, actorEmail))?.id === actorUser.id);
+  await json(admin,"/api/admin/users/"+actorUser.id+"/credits",{requestId:randomUUID(),type:"grant",amount:"100000",reason:"隔离成本专项调用资金"});
   const normalEmail = "viewer-" + randomUUID() + "@test.local"; await register(normal, normalEmail); await login(normal, normalEmail);
   project = await json(actor, "/api/projects", { name: "成本隔离验收" });
 
@@ -171,7 +172,7 @@ try {
     const session = await json(actor, "/api/iterations/" + iteration.id + "/stages/analysis/sessions", {});
     const path = "/api/iterations/" + iteration.id + "/stages/analysis/sessions/" + session.session.id + "/messages";
     const stagePlan = await fixture("/control", { mode: "normal" });
-    const stageResponse = await actor.post(path, { data: { content: "用户对话正文保护样本：新版阶段" } });
+    const stageResponse = await actor.post(path, { data: { requestId:randomUUID(), content: "用户对话正文保护样本：新版阶段" } });
     const stage = await stageResponse.json(), stageStored = await json(actor, path);
     check("新阶段会话正常返回且回复持久化", stageResponse.ok() && stage.assistantMessage?.status === "completed" && stageStored.messages.some(message => message.id === stage.assistantMessage?.id && message.content === stage.assistantMessage.content && message.status === "completed"));
     const stageRow = await ledgerAfter("new-stage", row => row.sessionId === session.session.id);
@@ -232,14 +233,14 @@ try {
     const session = await json(actor, "/api/iterations/" + iteration.id + "/stages/prototype/sessions", {});
     const path = "/api/iterations/" + iteration.id + "/stages/prototype/sessions/" + session.session.id + "/messages";
     const sitePlan = await fixture("/control", { mode: "prototype" });
-    const siteResponse = await actor.post(path, { headers: { "x-pm-verify-snapshot-failure": "1" }, data: { content: "用户对话正文保护样本：快照失败" } });
+    const siteResponse = await actor.post(path, { headers: { "x-pm-verify-snapshot-failure": "1" }, data: { requestId:randomUUID(), content: "用户对话正文保护样本：快照失败" } });
     const siteBody = await siteResponse.json(), siteStored = await json(actor, path);
     check("供应商成功后网站快照失败返回业务失败并清理生成状态", siteResponse.status() === 502 && typeof siteBody.error === "string" && siteStored.messages.some(message => message.role === "assistant" && message.status === "failed") && siteStored.messages.every(message => message.status !== "generating"));
     const siteRow = await ledgerAfter("site-processing-failure", row => row.providerId === sitePlan.providerId);
     assertKnown("网站持久化失败", siteRow, "failed");
     check("网站持久化失败不抹除已知供应商成本", siteRow?.websiteBorne === true && siteRow?.errorCode === "site_processing_error" && siteRow?.finishReason === "stop");
     const retryPlan = await fixture("/control", { mode: "prototype" });
-    const retry = await actor.post(path, { data: { content: "用户对话正文保护样本：故障后重试" } });
+    const retry = await actor.post(path, { data: { requestId:randomUUID(), content: "用户对话正文保护样本：故障后重试" } });
     check("网站失败后同会话可再次生成证明业务锁已释放", retry.ok() && (await retry.json()).assistantMessage?.status === "completed");
     assertKnown("网站失败后重试", await ledgerAfter("site-processing-retry", row => row.providerId === retryPlan.providerId));
     await stoppedCase("stop-known"); await stoppedCase("stop-unknown");

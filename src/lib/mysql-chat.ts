@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { completeModelProcessing, markModelProcessingFailure } from "@/lib/model-metering";
 import { NextResponse } from "next/server";
 
@@ -275,8 +276,11 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
       try {
         const failureMode = process.env.NODE_ENV !== "production" ? request.headers.get("x-pm-verify-force-error") : null;
         if (failureMode === "zero-token") throw new Error("回放强制零 token 失败");
-        const stream = await createAIStream({ userId, purpose: "chat", awaitProcessing: true, onRequest: id => { modelRequestId = id; }, projectId: tab.project_id, sessionId: tabId, agentType: tab.agent_type, maxTokens: 32768, messages, timeoutMs: 600_000, signal: generation.signal, replayDelayMs: process.env.NODE_ENV !== "production" && request.headers.get("x-pm-verify-stream-delay") === "1" ? 300 : undefined });
+        const stream = await createAIStream({ userId, purpose: "chat", awaitProcessing: true, creditCall: { requestKey: mutation.requestId, requestDigest: createHash("sha256").update(JSON.stringify([tabId,userContent,replacementTargetId??null,replacementKind??null])).digest("hex"), messageId: assistant.id, sessionId: tabId, context: { projectId:tab.project_id,sessionId:tabId,sessionTitle:tab.display_name } }, onRequest: id => { modelRequestId = id; }, projectId: tab.project_id, sessionId: tabId, agentType: tab.agent_type, maxTokens: isFreeze ? 32768 : 16384, messages, timeoutMs: 600_000, signal: generation.signal, replayDelayMs: process.env.NODE_ENV !== "production" && request.headers.get("x-pm-verify-stream-delay") === "1" ? 300 : undefined });
+        let outputLimitReached = false;
         for await (const chunk of stream) {
+          const choice = chunk.choices[0];
+          if (choice && "finish_reason" in choice && choice.finish_reason === "length") outputLimitReached = true;
           if (generation.signal.aborted) throw new MysqlGenerationInterruptedError();
           const delta = chunk.choices[0]?.delta?.content;
           if (!delta) continue;
@@ -285,6 +289,7 @@ export async function postMysqlChat({ request, userId, tabId, body }: { request:
           send(controller, "token", { messageId: assistant.id, content: delta });
           if (failureMode === "after-token") throw new Error("回放强制 partial 失败");
         }
+        if (outputLimitReached) throw new Error("本次回复达到输出上限，内容未完成。请拆分任务后重试；本次不扣积分。");
         const freezeCompletion = isFreeze
           ? await completeMysqlFreezeGeneration((() => {
               const document = getExpectedFreezeDocument({

@@ -1,9 +1,13 @@
+import { createHash } from "node:crypto";
+import { CreditError } from "@/lib/credit-values";
+import { findCreditCall, messageCreditCalls } from "@/lib/conversation-credits";
+import { lockCreditUsers } from "@/lib/credits-ledger";
 import { completeModelProcessing, markModelProcessingFailure } from "@/lib/model-metering";
 import { randomUUID } from "node:crypto";
 import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
 import { AGENT_SYSTEM_PROMPTS } from "@/lib/agent-prompts";
-import { createAIStream, isAIConfigured, type AIMessage } from "@/lib/ai";
+import { createAIStream, isAIConfigured, isLiveAI, type AIMessage } from "@/lib/ai";
 import type { AgentType } from "@/lib/agent-constants";
 import { isConceptDocFile, isWorkingDocFile, stripChangelogHeader } from "@/lib/file-helpers";
 import { getMysqlPool } from "@/lib/mysql";
@@ -161,8 +165,8 @@ export async function createMysqlIterationSession(iterationId: string, userId: s
 }
 
 export async function findOwnedIterationSession(iterationId: string, sessionId: string, userId: string) {
-  const [rows] = await getMysqlPool().query<Array<SessionRow & RowDataPacket & { project_id: string }>>(
-    `SELECT s.id, s.iteration_id, s.stage, s.title, s.created_at, s.updated_at, i.project_id
+  const [rows] = await getMysqlPool().query<Array<SessionRow & RowDataPacket & { project_id: string; project_name: string; iteration_name: string; iteration_number: number }>>(
+    `SELECT s.id, s.iteration_id, s.stage, s.title, s.created_at, s.updated_at, i.project_id, p.name AS project_name, i.display_name AS iteration_name, i.iteration_number
      FROM iteration_sessions s JOIN product_iterations i ON i.id = s.iteration_id
      JOIN projects p ON p.id = i.project_id
      WHERE s.id = ? AND i.id = ? AND p.user_id = ? LIMIT 1`, [sessionId, iterationId, userId]);
@@ -216,6 +220,7 @@ export async function deleteMysqlIterationSession(iterationId: string, sessionId
 export async function listMysqlIterationMessages(sessionId: string) {
   const [rows] = await getMysqlPool().query<Array<RowDataPacket & { id: string; role: "user" | "assistant"; content: string; status: string; error_message: string | null; created_at: Date }>>(
     "SELECT id, role, content, status, error_message, created_at FROM iteration_session_messages WHERE session_id = ? ORDER BY created_at ASC, role ASC, id ASC", [sessionId]);
+  const creditCalls = await messageCreditCalls(sessionId);
   const candidates = await listMarkdownCandidates(sessionId);
   const taskCandidates = await listTaskSetCandidates(sessionId);
   return rows.map((row) => ({ id: row.id, role: row.role, content: row.content,
@@ -223,6 +228,7 @@ export async function listMysqlIterationMessages(sessionId: string) {
       : row.role === "assistant" && (candidates.has(row.id) || taskCandidates.has(row.id) || row.content.includes("%%%HTML_BEGIN%%%"))
         ? { displayContent: withoutTaskSetBlocks(withoutFileBlocks(withoutPrototypeHtml(row.content))).replaceAll("%%%SCOPE_FREEZE_PROPOSAL%%%", "").trim() } : {}),
     status: row.status, errorMessage: row.error_message, createdAt: row.created_at,
+    ...(creditCalls.has(row.id) ? { creditCall: creditCalls.get(row.id) } : {}),
     ...(candidates.has(row.id) ? { candidate: candidates.get(row.id) } : {}),
     ...(taskCandidates.has(row.id) ? { taskCandidate: taskCandidates.get(row.id) } : {}),
   }));
@@ -325,12 +331,24 @@ export async function buildMysqlIterationPrompt(iterationId: string, sessionId: 
 }
 
 export async function generateMysqlIterationMessage(input: {
-  iterationId: string; sessionId: string; userId: string; content?: string; regenerateMessageId?: string; editMessageId?: string; replayDelayMs?: number; forceSnapshotFailure?: boolean; signal?: AbortSignal; onContentChunk?: (content: string, messageId: string) => void;
+  iterationId: string; sessionId: string; userId: string; requestId?: string; content?: string; regenerateMessageId?: string; editMessageId?: string; replayDelayMs?: number; forceSnapshotFailure?: boolean; signal?: AbortSignal; onContentChunk?: (content: string, messageId: string) => void;
 }) {
   const session = await findOwnedIterationSession(input.iterationId, input.sessionId, input.userId);
   if (!session) return { kind: "not-found" as const };
   if (!isAIConfigured()) return { kind: "not-configured" as const };
   const pool = getMysqlPool();
+  const requestKey = input.requestId ?? randomUUID();
+  if (isLiveAI() && (typeof input.requestId !== "string" || !/^[A-Za-z0-9_-]{16,120}$/.test(input.requestId))) throw new CreditError("缺少有效生成操作标识，请刷新后重试。",400);
+  const requestDigest = createHash("sha256").update(JSON.stringify([input.sessionId,input.content??null,input.regenerateMessageId??null,input.editMessageId??null])).digest("hex");
+  const previous = isLiveAI() ? await findCreditCall(input.userId,requestKey) : null;
+  if (previous) {
+    if (previous.requestDigest !== requestDigest || previous.sessionId !== input.sessionId) throw new CreditError("此操作标识已用于其他内容，请刷新后重新发起。",409);
+    if (previous.state === "reserved") return { kind: "generating" as const };
+    const messages = await listMysqlIterationMessages(input.sessionId);
+    const assistantMessage = messages.find(message => message.id === previous.messageId) ?? null;
+    if (!assistantMessage || assistantMessage.status !== "completed") return { kind: "generation-failed" as const, error: assistantMessage?.errorMessage || "此生成未完成，费用状态已保留，请查看会话记录。", status: 502, userMessage: null, assistantMessageId: previous.messageId };
+    return { kind: "generated" as const, userMessage: null, assistantMessage };
+  }
   const allMessages = await listMysqlIterationMessages(input.sessionId);
   if (allMessages.some((message) => message.status === "generating")) return { kind: "generating" as const };
   let history: AIMessage[] = allMessages.filter((message) => message.status === "completed").map((message) => ({ role: message.role, content: message.content } as AIMessage));
@@ -434,15 +452,19 @@ export async function generateMysqlIterationMessage(input: {
       "SELECT id FROM iteration_session_messages WHERE id = ? AND status = 'generating'", [assistantId]);
     if (generation.signal.aborted) throw new Error("生成已停止");
     if (!active.length) return stoppedResult();
-    const stream = await createAIStream({ userId: input.userId, purpose: "stage_chat", awaitProcessing: true, projectId: session.project_id, onRequest: id => { modelRequestId = id; }, sessionId: input.sessionId, agentType: prompt.agentType, maxTokens: 32768, messages: [{ role: "system", content: prompt.prompt }, ...history], timeoutMs: 600_000, signal: generation.signal, replayDelayMs: input.replayDelayMs });
+    const stream = await createAIStream({ userId: input.userId, purpose: "stage_chat", awaitProcessing: true, creditCall: { requestKey,requestDigest,messageId:assistantId,sessionId:input.sessionId,context:{projectId:session.project_id,iterationId:input.iterationId,sessionId:input.sessionId,stage:session.stage,sessionTitle:session.title,projectName:session.project_name,iterationName:session.iteration_name,iterationNumber:Number(session.iteration_number)} }, projectId: session.project_id, onRequest: id => { modelRequestId = id; }, sessionId: input.sessionId, agentType: prompt.agentType, maxTokens: session.stage === "analysis" ? 16384 : 32768, messages: [{ role: "system", content: prompt.prompt }, ...history], timeoutMs: 600_000, signal: generation.signal, replayDelayMs: input.replayDelayMs });
     partialFlushTimer = setInterval(() => { void flushPartial().catch(() => undefined); }, 500);
+    let outputLimitReached = false;
     for await (const chunk of stream) {
+      const choice = chunk.choices[0];
+      if (choice && "finish_reason" in choice && choice.finish_reason === "length") outputLimitReached = true;
       if (generation.signal.aborted) throw new Error("生成已停止");
       const content = chunk.choices[0]?.delta?.content ?? "";
       if (!content) continue;
       answer += content;
       input.onContentChunk?.(content, assistantId);
     }
+    if (outputLimitReached) throw new Error("本次回复达到输出上限，内容未完成。请拆分任务后重试；本次不扣积分。");
     if (partialFlushTimer) clearInterval(partialFlushTimer);
     await flushPartial();
     const prototypeHtml = session.stage === "prototype" ? extractPrototypeHtml(answer) : { kind: "none" as const };
@@ -450,6 +472,8 @@ export async function generateMysqlIterationMessage(input: {
     const connection = await pool.getConnection();
     try {
       await connection.beginTransaction();
+      // 账号锁先于业务对象；结算与正文、快照在同一短事务提交。
+      if (modelRequestId) await lockCreditUsers(connection,[input.userId]);
       // 快照版本与项目删除共用项目 → 迭代锁序；任何失败都回滚回复和快照。
       await connection.query("SELECT id FROM projects WHERE id = ? FOR UPDATE", [session.project_id]);
       await connection.query("SELECT id FROM product_iterations WHERE id = ? FOR UPDATE", [input.iterationId]);
@@ -493,7 +517,7 @@ export async function generateMysqlIterationMessage(input: {
     } else if (stopped) {
       await pool.execute<ResultSetHeader>("UPDATE iteration_session_messages SET content = ? WHERE id = ? AND session_id = ? AND status = 'failed' AND error_message = '生成已停止'", [answer, assistantId, input.sessionId]);
     } else await pool.execute<ResultSetHeader>("DELETE FROM iteration_session_messages WHERE id = ? AND session_id = ? AND status = 'generating'", [assistantId, input.sessionId]);
-    return stopped ? stoppedResult() : { kind: "generation-failed" as const, error: message, userMessage, assistantMessageId: assistantId };
+    return stopped ? stoppedResult() : { kind: "generation-failed" as const, error: message, status: error instanceof CreditError ? error.status : 502, userMessage, assistantMessageId: assistantId };
   } finally {
     input.signal?.removeEventListener("abort", abortGeneration);
     releaseGeneration(assistantId, generation);

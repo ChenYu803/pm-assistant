@@ -18,7 +18,9 @@ type StageKey = "analysis" | "prototype" | "prd" | "tickets";
 type StageStatus = "not_started" | "in_progress" | "completed";
 type Stage = { key: StageKey; status: StageStatus; sessions: Session[]; generatingSessionIds: string[] };
 type Session = { id: string; title: string; updatedAt?: string };
-type Message = { id: string; role: "user" | "assistant"; content: string; displayContent?: string; status?: string; errorMessage?: string | null; timestamp?: string; candidate?: MarkdownCandidate; taskCandidate?: TaskSetCandidate };
+import { AccountCredits, ReplyCredits } from "@/components/ConversationCredits";
+import type { CreditCallView } from "@/lib/credit-values";
+type Message = { creditCall?: CreditCallView; id: string; role: "user" | "assistant"; content: string; displayContent?: string; status?: string; errorMessage?: string | null; timestamp?: string; candidate?: MarkdownCandidate; taskCandidate?: TaskSetCandidate };
 type Project = { id: string; name: string };
 type Iteration = { id: string; project_id: string; iteration_number: number; display_name: string; goal: string | null };
 type FileRecord = ProjectFileEntry;
@@ -177,7 +179,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
       if (chunk.done) break;
     }
     if (!result.current) throw new Error("生成响应未完成，请刷新会话后重试。");
-    if (result.current.status >= 400) throw new Error(result.current.body.error || "请求未完成，请重试。");
+    if (result.current.status >= 400) throw Object.assign(new Error(result.current.body.error || "请求未完成，请重试。"), { confirmed: [400, 401, 402, 403, 404].includes(result.current.status) });
     return result.current.body;
   }, []);
 
@@ -291,12 +293,21 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
     if (!activeSessionId || messagesLoading) return;
     let inFlight = false;
     const refresh = async () => {
-      if (inFlight || sendingIds.current.has(activeSessionId)) return;
+      if (inFlight) return;
       inFlight = true;
       const startedAtMessageVersion = messageVersion.current;
       try {
         const history = await request(`${base}/stages/${currentStage}/sessions/${activeSessionId}/messages`);
-        if (activeView.current.sessionId === activeSessionId && activeView.current.stage === currentStage && startedAtMessageVersion === messageVersion.current) setMessages(history.messages);
+        if (activeView.current.sessionId !== activeSessionId || activeView.current.stage !== currentStage) return;
+        if (sendingIds.current.has(activeSessionId)) {
+          // 本地流式正文优先；仍同步服务端的本次预留，避免生成中只看到账号合计。
+          const persisted = history.messages as Message[];
+          setMessages(previous => {
+            const merged: Message[] = previous.map(message => ({ ...message, creditCall: persisted.find(row => row.id === message.id)?.creditCall ?? message.creditCall }));
+            for (const message of persisted) if (message.role === "assistant" && message.status === "generating" && message.creditCall && !merged.some(row => row.id === message.id)) merged.push(message);
+            return merged;
+          });
+        } else if (startedAtMessageVersion === messageVersion.current) setMessages(history.messages);
       } catch { /* 流式连接负责即时反馈；轮询失败时保留当前内容并等待下一次对账。 */ }
       finally { inFlight = false; }
     };
@@ -501,15 +512,20 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
     if (!activeSessionId || messagesLoading || messagesFailed || currentStatus === "completed" || (!content.trim() && !regenerateMessageId) || sendingIds.current.has(activeSessionId)) return;
     const sessionId = activeSessionId;
     const stage = currentStage;
+    const storageKey = "stage-generation-request:" + sessionId;
     sendingIds.current.add(sessionId);
     stoppedIds.current.delete(sessionId);
     setSendingSessionIds([...sendingIds.current]);
     setError("");
     try {
+      const identity = JSON.stringify([content,editMessageId??null,regenerateMessageId??null]);
+      const saved = JSON.parse(sessionStorage.getItem(storageKey) || "null") as { identity: string; requestId: string } | null;
+      const requestId = saved?.identity === identity ? saved.requestId : crypto.randomUUID();
+      sessionStorage.setItem(storageKey,JSON.stringify({identity,requestId}));
       let latestMessages: Message[] = [];
       if (editMessageId) {
         await streamGeneration(`${base}/sessions/${sessionId}/messages/${editMessageId}`, {
-          method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content }),
+          method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content, requestId }),
         }, sessionId);
         const history = await request(`${base}/stages/${stage}/sessions/${sessionId}/messages`);
         latestMessages = history.messages;
@@ -520,7 +536,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
       } else {
         const result = await streamGeneration(`${base}/stages/${stage}/sessions/${sessionId}/messages`, {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...(content.trim() ? { content } : {}), ...(regenerateMessageId ? { regenerateMessageId } : {}) }),
+          body: JSON.stringify({ requestId, ...(content.trim() ? { content } : {}), ...(regenerateMessageId ? { regenerateMessageId } : {}) }),
         }, sessionId);
         latestMessages = result.messages ?? [];
         if (activeView.current.stage === stage && activeView.current.sessionId === sessionId) {
@@ -528,6 +544,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
           setMessages(result.messages ?? []);
         }
       }
+      sessionStorage.removeItem(storageKey);
       if (!editMessageId && !regenerateMessageId) setDrafts((previous) => ({ ...previous, [sessionId]: "" }));
       if (stage === "prototype") {
         const latest = [...latestMessages].reverse().find((message) => message.role === "assistant" && message.status === "completed");
@@ -542,12 +559,14 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
 
     } catch (caught) {
       liveReplies.current.delete(sessionId);
+      if (caught && typeof caught === "object" && "confirmed" in caught && caught.confirmed) sessionStorage.removeItem(storageKey);
       const generationStopped = caught instanceof Error && caught.message === "生成已停止";
       if (!stoppedIds.current.has(sessionId) && !generationStopped && activeView.current.stage === stage && activeView.current.sessionId === sessionId) {
         setError(caught instanceof Error ? caught.message : "消息发送失败。");
       }
       if (activeView.current.stage === stage && activeView.current.sessionId === sessionId) await loadMessages(sessionId).catch(() => undefined);
     } finally {
+      window.dispatchEvent(new Event("credit-balance-change"));
       liveReplies.current.delete(sessionId);
       sendingIds.current.delete(sessionId);
       setSendingSessionIds([...sendingIds.current]);
@@ -624,7 +643,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
         <div className="workbench-identity">
           <div className="workbench-project"><strong title={iteration.display_name}>{iteration.display_name}</strong><span>{toast ? <span className="workbench-feedback" role="status" title={toast}>{toast}</span> : <><span title={project.name}>{project.name}</span><b>{`产品迭代 ${String(iteration.iteration_number).padStart(2, "0")}`}</b></>}</span></div>
         </div>
-        <div className="workbench-header-actions">{!contextOpen && <button className="workbench-quiet-button file-toggle" type="button" onClick={openContextPanel} aria-expanded="false" aria-controls="workbench-files"><Icon name="panel"/>展开文件区</button>}<Link href="/projects" className="workbench-back">返回迭代管理</Link></div>
+        <div className="workbench-header-actions"><AccountCredits/>{!contextOpen && <button className="workbench-quiet-button file-toggle" type="button" onClick={openContextPanel} aria-expanded="false" aria-controls="workbench-files"><Icon name="panel"/>展开文件区</button>}<Link href="/projects" className="workbench-back">返回迭代管理</Link></div>
       </header>
 
       <section className="workbench-stage-area" aria-label="四环阶段导航">
@@ -680,6 +699,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
             {activeSession && !messagesLoading && !messagesFailed && messages.length === 0 ? <div className="stage-empty session-start"><h3>这个会话还没有消息</h3><p>{currentInfo.hint}</p></div> : null}
             {(selectedDemo ? currentDemoMessages.map(([role, content], index): Message => ({ id: `demo-${index}`, role, content })) : messages).map((message) => <article className={`workbench-message ${message.role}${(message.candidate || message.taskCandidate) ? " has-candidate" : ""}`} key={message.id}>
               <div className="message-label">{message.role === "user" ? "你" : currentInfo.agent}{message.status === "generating" ? <span> · 生成中</span> : message.status === "failed" ? <span> · {message.errorMessage === "生成已停止" ? "已停止" : "生成失败"}</span> : null}</div>
+              <ReplyCredits call={message.creditCall}/>
               {editingId === message.id ? <div className="inline-message-edit"><textarea aria-label="修改这条消息" value={editValue} onChange={(event) => setEditValue(event.target.value)}/><div><button type="button" onClick={() => { setEditingId(null); setEditValue(""); }}>取消</button><button type="button" disabled={!editValue.trim() || sending || currentStatus === "completed"} onClick={() => void sendMessage(editValue, message.id)}>发送</button></div></div> : <><div className={`message-content${message.role === "assistant" ? " formatted" : ""}`}>{message.role === "assistant" ? <MarkdownRenderer content={message.status === "failed" && !message.content ? message.errorMessage ?? "生成失败" : message.displayContent ?? message.content} /> : message.displayContent ?? message.content}</div>{message.candidate && activeSessionId ? <MarkdownCandidateReview candidate={message.candidate} stage={currentStage === "prototype" ? "prototype" : currentStage === "prd" ? "prd" : "analysis"} iterationId={iteration.id} sessionId={activeSessionId} files={files.filter((file) => !file.deleted)} onDecided={() => refreshCandidateState(activeSessionId, currentStage)} /> : null}{message.taskCandidate && activeSessionId ? <TaskSetCandidateReview candidate={message.taskCandidate} iterationId={iteration.id} sessionId={activeSessionId} onDecided={() => refreshCandidateState(activeSessionId, currentStage)} /> : null}{currentStage === "prototype" && message.role === "assistant" && message.status === "completed" && message.content.includes("%%%HTML_BEGIN%%%") ? <button className="message-snapshot-link" type="button" onClick={() => { setFocusSnapshotMessageId(message.id); setContextTab("snapshots"); openContextPanel(); }}>打开本轮 HTML 快照</button> : null}{!selectedDemo && <div className="message-actions"><button type="button" title="复制消息" aria-label="复制消息" onClick={() => { void navigator.clipboard.writeText(message.displayContent ?? message.content).then(() => showToast("已复制消息")).catch(() => showToast("复制失败，请手动选择文本")); }}><Icon name="copy"/></button>{message.role === "user" && message.id === lastUserId && <button type="button" title="修改并重新发送" aria-label="修改并重新发送" disabled={currentStatus === "completed" || sending} onClick={() => { setEditingId(message.id); setEditValue(message.taskCandidate ? message.displayContent ?? "" : message.content); }}><Icon name="edit"/></button>}{message.role === "assistant" && message.id === lastAssistantId && <button type="button" title={message.status === "failed" ? "重试生成" : "重新生成"} aria-label={message.status === "failed" ? "重试生成" : "重新生成"} disabled={sending || currentStatus === "completed" || !["completed", "failed"].includes(message.status ?? "")} onClick={() => void sendMessage("", undefined, message.id)}><Icon name="refresh"/></button>}</div>}</>}
             </article>)}
           </div>

@@ -187,3 +187,9 @@
   .iteration-workbench .workbench-composer textarea { height:44px; min-height:44px; max-height:20dvh; padding:8px 12px; }
   .iteration-workbench .workbench-composer .composer-context-button { min-height:32px; margin-bottom:2px; }
 }
+
+/* 积分与当前会话费用分别展示，长小数可换行。 */
+.account-credits { display: flex; flex-wrap: wrap; gap: 2px 12px; color: inherit; text-decoration: none; font-size: 12px; max-width: 26rem; overflow-wrap: anywhere; }
+.account-credits small { width: 100%; }
+.reply-credits { font-size: 12px; color: var(--muted-foreground, #666); margin: 8px 0; overflow-wrap: anywhere; }
+@media (max-width: 640px) { .account-credits { max-width: 11rem; font-size: 11px; } }

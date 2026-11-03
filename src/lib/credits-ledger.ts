@@ -14,7 +14,7 @@ export async function lockCreditUsers(connection: PoolConnection, ids: string[])
   }
   return users;
 }
-async function balance(connection: PoolConnection, userId: string): Promise<CreditBalance> {
+export async function readCreditBalance(connection: PoolConnection, userId: string): Promise<CreditBalance> {
   const [rows] = await connection.execute<RowDataPacket[]>("SELECT kind, SUM(available) AS available, SUM(reserved) AS reserved FROM credit_sources WHERE user_id = ? GROUP BY kind", [userId]);
   const value: CreditBalance = { gift: { available: "0", reserved: "0" }, purchased: { available: "0", reserved: "0" } };
   for (const row of rows) value[row.kind as keyof CreditBalance] = { available: creditText(creditUnits(row.available)), reserved: creditText(creditUnits(row.reserved)) };
@@ -31,12 +31,14 @@ export async function readCreditStatement(userId: string, page = 1) {
     await connection.query("START TRANSACTION WITH CONSISTENT SNAPSHOT, READ ONLY");
     const [users] = await connection.execute<RowDataPacket[]>("SELECT id FROM users WHERE id = ?", [userId]);
     if (!users.length) throw new CreditError("账号不存在。", 404);
-    const current = await balance(connection, userId);
+    const current = await readCreditBalance(connection, userId);
     const [counts] = await connection.execute<RowDataPacket[]>("SELECT COUNT(*) AS total FROM credit_entries WHERE user_id = ?", [userId]);
     const total = Number(counts[0].total), pageSize = 20, currentPage = Math.min(page, Math.max(1, Math.ceil(total / pageSize)));
     const [rows] = await connection.query<RowDataPacket[]>("SELECT * FROM credit_entries WHERE user_id = ? ORDER BY sequence DESC LIMIT ? OFFSET ?", [userId, pageSize, (currentPage - 1) * pageSize]);
+    const [pending] = await connection.execute<RowDataPacket[]>("SELECT id,message_id,state,reserved,consumed,reason FROM conversation_credit_calls WHERE user_id=? AND state IN ('reserved','pending') ORDER BY created_at,id",[userId]);
+    const pendingCalls = pending.map(row => ({id:row.id,messageId:row.message_id,state:row.state,reserved:creditText(creditUnits(row.reserved)),consumed:null,reason:row.reason}));
     await connection.commit();
-    return { accountId: userId, balance: current, entries: rows.map(entry), total, page: currentPage, pageSize };
+    return { accountId: userId, balance: current, pendingCalls, entries: rows.map(entry), total, page: currentPage, pageSize };
   } catch (error) { await connection.rollback(); throw error; }
   finally { connection.release(); }
 }
@@ -71,7 +73,7 @@ export async function adjustCredits(actorId: string, userId: string, input: Cred
       if (saved.accountId !== userId || saved.businessType !== businessType || saved.amount !== operation.amount || saved.reason !== operation.reason) throw new CreditError("此操作标识已用于其他内容，请核对原流水后重新发起。", 409);
       await connection.commit(); return { entry: saved, replayed: true };
     }
-    const before = await balance(connection, userId);
+    const before = await readCreditBalance(connection, userId);
     if (units < BigInt("0") && creditUnits(before.gift.available) < -units) throw new CreditError("可用赠送积分不足，不能扣减预留或购买积分。", 409);
     // 预先检查上限，数据库精度溢出前回滚并给出可纠正反馈。
     if (creditUnits(before.gift.available) + units >= BigInt("10") ** BigInt("28")) throw new CreditError("账号积分超过支持上限。", 409);
@@ -91,7 +93,7 @@ export async function adjustCredits(actorId: string, userId: string, input: Cred
       }
       if (remaining !== BigInt("0")) throw new CreditError("积分来源暂不一致，请稍后重试。", 409);
     }
-    const after = await balance(connection, userId);
+    const after = await readCreditBalance(connection, userId);
     await connection.execute("INSERT INTO credit_entries (id,user_id,account_email,actor_id,actor_email,request_id,business_type,reason,amount,source_kind,balance_before,balance_after,allocations,created_at) VALUES (?,?,?,?,?,?,?,?,?,'gift',?,?,?,?)", [id,userId,target.email,actorId,actor.email,operation.requestId,businessType,operation.reason,operation.amount,JSON.stringify(before),JSON.stringify(after),JSON.stringify(allocations),now]);
     await connection.commit();
     return { entry: { id, accountId: userId, accountEmail: target.email, actorId, actorEmail: actor.email, requestId: operation.requestId, businessType, reason: operation.reason, amount: operation.amount, sourceKind: "gift" as const, before, after, allocations, context: null, createdAt: now.toISOString() }, replayed: false };

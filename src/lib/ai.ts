@@ -2,7 +2,8 @@ import { assertAccountActive } from "@/lib/account-controls";
 import OpenAI from "openai";
 import type { AgentType } from "@/lib/agent-constants";
 import { startModelRequest, type ModelContext, type ModelReceipt } from "@/lib/model-metering";
-import { reserveAIRequest } from "@/lib/mysql-ai-budget";
+import { CreditError } from "@/lib/credit-values";
+import { conversationBudget } from "@/lib/conversation-credit-budget";
 
 export type AIMessage = OpenAI.Chat.Completions.ChatCompletionMessageParam;
 
@@ -396,8 +397,8 @@ export async function createAIStream(input: AIRequest): Promise<AsyncIterable<Re
   if (!isLiveAI()) {
     return replayStream(replayResponse(agentType,messages),replayDelayMs,signal);
   }
- await reserveAIRequest(userId);
- const meter = await startModelRequest({ ...input,userId: userId!,model: AI_MODEL,transport: "stream" });
+ if (input.purpose !== "polish" && !input.creditCall) throw new CreditError("缺少生成操作标识，请刷新后重试。",400);
+ const meter = await startModelRequest({ ...input,userId: userId!,model: AI_MODEL, ...(input.creditCall ? { creditBudget: conversationBudget(messages,maxTokens) } : {}),transport: "stream" });
  input.onRequest?.(meter.id);
  let stream: AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
  try {
@@ -420,8 +421,8 @@ export async function createAICompletion(input: AIRequest): Promise<string> {
  const { userId,agentType,messages,maxTokens,timeoutMs,signal } = input;
  await assertAccountActive(userId);
  if (!isLiveAI()) return replayResponse(agentType,messages);
- await reserveAIRequest(userId);
- const meter = await startModelRequest({ ...input,userId: userId!,model: AI_MODEL,transport: "completion" });
+ if (input.purpose !== "polish" && !input.creditCall) throw new CreditError("缺少生成操作标识，请刷新后重试。",400);
+ const meter = await startModelRequest({ ...input,userId: userId!,model: AI_MODEL, ...(input.creditCall ? { creditBudget: conversationBudget(messages,maxTokens) } : {}),transport: "completion" });
  input.onRequest?.(meter.id);
  let response: OpenAI.Chat.Completions.ChatCompletion;
  try {

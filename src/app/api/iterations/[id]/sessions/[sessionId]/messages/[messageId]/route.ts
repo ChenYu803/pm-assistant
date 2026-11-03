@@ -1,3 +1,4 @@
+import { CreditError } from "@/lib/credit-values";
 import { NextResponse } from "next/server";
 
 import { requireAuth } from "@/lib/auth-helper";
@@ -16,7 +17,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (typeof body?.content !== "string" || !body.content.trim()) return NextResponse.json({ error: "消息内容不能为空" }, { status: 400 });
     const runGeneration = async (onContent: (content: string, messageId?: string) => void, signal?: AbortSignal): Promise<GenerationResponse> => {
       try {
-        const result = await generateMysqlIterationMessage({ iterationId: id, sessionId, userId, editMessageId: messageId, content: body.content, onContentChunk: onContent, signal,
+        const result = await generateMysqlIterationMessage({ iterationId: id, sessionId, userId, requestId: body?.requestId, editMessageId: messageId, content: body.content, onContentChunk: onContent, signal,
           replayDelayMs: process.env.AI_MODE === "replay" && process.env.NODE_ENV !== "production" && request.headers.get("x-pm-verify-stream-delay") === "1" ? 30000 : undefined });
         if (result.kind === "not-found") return { status: 404, body: { error: "会话不存在或无权访问" } };
         if (result.kind === "not-configured") return { status: 500, body: { error: "AI 服务未配置" } };
@@ -25,9 +26,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         if (result.kind === "conflict") return { status: 409, body: { error: "当前会话已被其他请求更新，请刷新后重试" } };
         if (result.kind === "stage-completed") return { status: 409, body: { error: "本阶段已完成，请先重新打开阶段" } };
         if (result.kind === "generation-stopped") return { status: 409, body: { error: "生成已停止" } };
-        if (result.kind === "generation-failed") return { status: 502, body: { error: result.error, userMessage: result.userMessage, assistantMessageId: result.assistantMessageId } };
+        if (result.kind === "generation-failed") return { status: result.status, body: { error: result.error, userMessage: result.userMessage, assistantMessageId: result.assistantMessageId } };
         return { status: 200, body: { userMessage: result.userMessage, assistantMessage: result.assistantMessage } };
       } catch (error) {
+        if (error instanceof CreditError) return { status: error.status, body: { error: error.message } };
         console.error("PATCH iteration session message error:", error);
         return { status: 500, body: { error: mysqlUnavailableMessage() } };
       }

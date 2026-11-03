@@ -1,8 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { getMysqlPool } from "@/lib/mysql";
-import { creditText, creditUnits } from "@/lib/credit-values";
+import type { PoolConnection, RowDataPacket } from "mysql2/promise";
+import { lockCreditUsers } from "@/lib/credits-ledger";
+import { reserveAIRequest } from "@/lib/mysql-ai-budget";
+import { CreditError, creditText, creditUnits } from "@/lib/credit-values";
+import { reserveConversationCredits, settleConversationCredits, type CreditCallInput } from "@/lib/conversation-credits";
+import type { ConversationBudget } from "@/lib/conversation-credit-budget";
 
-export type ModelContext = { purpose?: "chat" | "stage_chat" | "polish"; projectId?: string; sessionId?: string; fileId?: string; awaitProcessing?: boolean };
+export type ModelContext = { purpose?: "chat" | "stage_chat" | "polish"; projectId?: string; sessionId?: string; fileId?: string; awaitProcessing?: boolean; creditCall?: CreditCallInput };
 export type ModelReceipt = { id: string; status: string; usageStatus: string; costCny: string | null; costReason: string };
 export type ModelUsage = { prompt_tokens: number; completion_tokens: number; total_tokens: number; prompt_cache_hit_tokens: number; prompt_cache_miss_tokens: number; reasoning_tokens?: number };
 export type ModelPrice = { version: string; source: string; verifiedAt: string; currency: string; model: string; peak: boolean; inputHitPerMillion: string; inputMissPerMillion: string; outputPerMillion: string };
@@ -36,14 +41,25 @@ function utc(date: Date) { return date.toISOString().slice(0,23).replace("T", " 
 function shortId(value: unknown): string | null { return typeof value === "string" && /^[a-zA-Z0-9_.:/-]{1,160}$/.test(value) ? value : null; }
 
 /** 只记录供应商证据与必要关联，不写消息、文件正文或原始异常内容。 */
-export async function startModelRequest(input: ModelContext & { userId: string; model: string; timeoutMs: number; maxTokens: number; transport: "stream" | "completion" }) {
+export async function startModelRequest(input: ModelContext & { userId: string; model: string; timeoutMs: number; maxTokens: number; transport: "stream" | "completion"; creditBudget?: ConversationBudget }) {
  const id = randomUUID(), started = new Date();
  // 测试替身可使用官方协议，生产自定义中转地址不能被当作官方价格。
  const url = new URL(process.env.AI_BASE_URL || "https://api.deepseek.com");
  const official = url.protocol === "https:" && url.hostname === "api.deepseek.com" && !url.port && !url.username && !url.password && ["/", "/v1", "/v1/"].includes(url.pathname);
  const fixture = process.env.NODE_ENV !== "production" && process.env.AI_API_KEY === "isolated-provider-fixture" && url.hostname === "127.0.0.1";
  const startPrice = official || fixture ? priceAt(started, input.model) : null;
- await getMysqlPool().execute("INSERT INTO model_requests (id,user_id,purpose,project_id,session_id,file_id,requested_model,max_output_tokens,transport,started_at,deadline_at,status,usage_status,cost_reason,price_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,'running','pending','awaiting_usage',?)", [id,input.userId,input.purpose ?? "chat",input.projectId ?? null,input.sessionId ?? null,input.fileId ?? null,input.model,input.maxTokens,input.transport,utc(started),utc(new Date(started.valueOf()+input.timeoutMs+60000)),JSON.stringify({ start: startPrice, official, fixture })]);
+ const connection = await getMysqlPool().getConnection();
+ try {
+  await connection.beginTransaction();
+  if (input.creditCall) {
+   if (!startPrice || !input.creditBudget) throw new CreditError("模型价格或费用边界尚未核实，请联系管理员。",503);
+   await reserveConversationCredits(connection,input.userId,id,input.creditCall,input.creditBudget);
+  }
+  // 资金与每日次数同事务授权，余额不足不消耗次数。
+  await reserveAIRequest(input.userId, process.env, getMysqlPool(), started, connection);
+ await connection.execute("INSERT INTO model_requests (id,user_id,purpose,project_id,session_id,file_id,requested_model,max_output_tokens,transport,started_at,deadline_at,status,usage_status,cost_reason,price_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,'running','pending','awaiting_usage',?)", [id,input.userId,input.purpose ?? "chat",input.projectId ?? null,input.sessionId ?? null,input.fileId ?? null,input.model,input.maxTokens,input.transport,utc(started),utc(new Date(started.valueOf()+input.timeoutMs+60000)),JSON.stringify({ start: startPrice, official, fixture })]);
+  await connection.commit();
+ } catch(error) { await connection.rollback(); throw error; } finally { connection.release(); }
  let usage: ModelUsage | null = null, invalid = false, providerId: string | null = null, actualModel: string | null = null, finish: string | null = null, upstreamId: string | null = null;
  function observe(chunk: { id?: unknown; model?: unknown; usage?: unknown; choices?: { finish_reason?: unknown }[] }) {
   providerId = shortId(chunk.id) ?? providerId; actualModel = shortId(chunk.model) ?? actualModel;
@@ -65,7 +81,10 @@ export async function startModelRequest(input: ModelContext & { userId: string; 
   }
   // 供应商完成与正文保存分开确认；正文保存前崩溃仍留有持久可恢复的 processing 状态。
   const persistedStatus = status === "completed" && input.awaitProcessing ? "processing" : status;
-  await getMysqlPool().execute("UPDATE model_requests SET actual_model=?,provider_id=?,upstream_request_id=?,ended_at=?,status=?,finish_reason=?,error_code=?,usage_status=?,usage_json=?,price_json=?,cost_cny=?,cost_reason=?,website_borne=? WHERE id=?", [actualModel,providerId,upstreamId,utc(ended),persistedStatus,finish,errorCode,reliable ? "reliable" : "pending",usage ? JSON.stringify(usage) : null,JSON.stringify({ start: startPrice, end: endPrice, official, fixture, rule: "same_price_window_only", usageValidated: !invalid }),costCny,costReason,status === "failed" || status === "interrupted",id]);
+  await withModelAccountTransaction(id, async connection => {
+  await connection.execute("UPDATE model_requests SET actual_model=?,provider_id=?,upstream_request_id=?,ended_at=?,status=?,finish_reason=?,error_code=?,usage_status=?,usage_json=?,price_json=?,cost_cny=?,cost_reason=?,website_borne=? WHERE id=?", [actualModel,providerId,upstreamId,utc(ended),persistedStatus,finish,errorCode,reliable ? "reliable" : "pending",usage ? JSON.stringify(usage) : null,JSON.stringify({ start: startPrice, end: endPrice, official, fixture, rule: "same_price_window_only", usageValidated: !invalid }),costCny,costReason,status === "failed" || status === "interrupted",id]);
+  if (persistedStatus !== "processing") await settleConversationCredits(id, connection);
+  });
   return { id,status: persistedStatus,usageStatus: reliable ? "reliable" : "pending",costCny,costReason };
  }
  return { id, observe, upstream(value: unknown) { upstreamId = shortId(value); }, finish: finishRequest, outcome(): "completed" | "failed" | "interrupted" {
@@ -78,7 +97,10 @@ export async function startModelRequest(input: ModelContext & { userId: string; 
 export async function markModelProcessingFailure(id: string | undefined, stopped = false) {
  if (!id) return;
  try {
-  await getMysqlPool().execute("UPDATE model_requests SET status=?, website_borne=?, error_code=? WHERE id=? AND status IN ('completed','processing')",[stopped ? "stopped" : "failed", !stopped, stopped ? "site_processing_stopped" : "site_processing_error", id]);
+  await withModelAccountTransaction(id, async connection => {
+  await connection.execute("UPDATE model_requests SET status=?, website_borne=?, error_code=? WHERE id=? AND status IN ('completed','processing')",[stopped ? "stopped" : "failed", !stopped, stopped ? "site_processing_stopped" : "site_processing_error", id]);
+  await settleConversationCredits(id, connection);
+  });
  } catch {
   // 补标失败不能阻断会话和冻结操作清理；仅记录安全关联标识，不输出正文或底层异常。
   console.error("model_processing_failure_mark_failed", { requestId: id });
@@ -88,5 +110,24 @@ export async function markModelProcessingFailure(id: string | undefined, stopped
 /** 必须在正文及必要业务操作持久化之后确认完成；阶段会话与正文共用事务。 */
 export async function completeModelProcessing(id: string | undefined, connection?: import("mysql2/promise").PoolConnection) {
  if (!id) return;
- await (connection ?? getMysqlPool()).execute("UPDATE model_requests SET status='completed', website_borne=FALSE WHERE id=? AND status='processing'", [id]);
+ const complete = async (transaction: PoolConnection) => {
+  await transaction.execute("UPDATE model_requests SET status='completed', website_borne=FALSE WHERE id=? AND status='processing'", [id]);
+  await settleConversationCredits(id, transaction);
+ };
+ if (connection) await complete(connection);
+ else await withModelAccountTransaction(id, complete);
+}
+
+/** 先锁账号再写模型状态，终态与资金变动原子提交；外部 HTTP 不在事务内。 */
+async function withModelAccountTransaction(id: string, work: (connection: PoolConnection) => Promise<void>) {
+ const [owners] = await getMysqlPool().execute<RowDataPacket[]>("SELECT user_id FROM model_requests WHERE id=?", [id]);
+ if (!owners.length) return;
+ const connection = await getMysqlPool().getConnection();
+ try {
+  await connection.beginTransaction();
+  await lockCreditUsers(connection, [owners[0].user_id]);
+  await work(connection);
+  await connection.commit();
+ } catch (error) { await connection.rollback(); throw error; }
+ finally { connection.release(); }
 }

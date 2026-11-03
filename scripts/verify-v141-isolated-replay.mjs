@@ -206,13 +206,17 @@ export async function runIsolatedReplay({ slug, title, scenarioScript, capturePr
     // 仅隔离场景 IPC：构造已保护余额、重启同一份正式应用，无生产测试路由。
     let lifecycleBusy = false;
     if (creditLifecycle) scenario.on("message", async message => {
-      if (lifecycleBusy || !["credit-protection-fixture", "restart-credit-app"].includes(message?.type)) return;
+      if (lifecycleBusy || !["credit-protection-fixture", "conversation-purchase-fixture", "restart-credit-app"].includes(message?.type)) return;
       lifecycleBusy = true;
       try {
         if (message.type === "credit-protection-fixture") {
           const { seedProtectedCredits } = await import("./verify-credit-fixture.mjs");
           const fixture = await seedProtectedCredits(admin, database, env);
           scenario.send({ type: message.type, fixture });
+        } else if (message.type === "conversation-purchase-fixture") {
+          const { seedConversationPurchase } = await import("./verify-credit-fixture.mjs");
+          const fixture = await seedConversationPurchase(admin,database,env);
+          scenario.send({type:message.type,fixture});
         } else {
           await stop(server);
           server = start("scripts/verify-v141-replay-foundation-server.mjs", "server", serviceEnv, projectDir);

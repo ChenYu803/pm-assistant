@@ -582,6 +582,22 @@ export const MYSQL_MIGRATIONS = [
  KEY model_request_state (status, usage_status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`],
   },
+  {
+    id: "0029_v144_conversation_credit_calls",
+    checksum: "075418d958b2ce777b6b40a7804b1cc5589a1b98f7b64810585b50944601de9e",
+    statements: [`CREATE TABLE IF NOT EXISTS conversation_credit_calls (
+ id CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL PRIMARY KEY,
+ user_id CHAR(36) NOT NULL, request_key VARCHAR(160) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+ request_digest CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+ message_id CHAR(36) NOT NULL, session_id CHAR(36) NOT NULL,
+ state VARCHAR(24) NOT NULL, reserved DECIMAL(28,8) NOT NULL, consumed DECIMAL(28,8) NULL,
+ allocations JSON NOT NULL, budget_json JSON NOT NULL, context_snapshot JSON NOT NULL,
+ created_at DATETIME(3) NOT NULL, settled_at DATETIME(3) NULL, pending_since DATETIME(3) NULL, reason VARCHAR(64) NULL,
+ UNIQUE KEY conversation_credit_request (user_id,request_key), KEY conversation_credit_message (message_id),
+ KEY conversation_credit_owner (user_id,created_at), KEY conversation_credit_state (state,pending_since),
+ CONSTRAINT conversation_credit_nonnegative CHECK (reserved > 0 AND (consumed IS NULL OR (consumed >= 0 AND consumed <= reserved)))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {

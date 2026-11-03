@@ -1,3 +1,4 @@
+import { CreditError } from "@/lib/credit-values";
 import { NextResponse } from "next/server";
 
 import { requireAuth } from "@/lib/auth-helper";
@@ -34,7 +35,7 @@ export async function POST(request: Request, { params }: { params: Params }) {
     if (typeof body.content !== "string" && typeof body.regenerateMessageId !== "string") return NextResponse.json({ error: "消息内容不能为空" }, { status: 400 });
     const runGeneration = async (onContent: (content: string, messageId?: string) => void, signal?: AbortSignal): Promise<GenerationResponse> => {
       try {
-        const result = await generateMysqlIterationMessage({ iterationId: id, sessionId, userId, content: body.content, regenerateMessageId: body.regenerateMessageId, editMessageId: body.editMessageId,
+        const result = await generateMysqlIterationMessage({ iterationId: id, sessionId, userId, requestId: body?.requestId, content: body.content, regenerateMessageId: body.regenerateMessageId, editMessageId: body.editMessageId,
           replayDelayMs: process.env.NODE_ENV !== "production" && request.headers.get("x-pm-verify-stream-delay") === "1" ? 30000 : undefined,
           forceSnapshotFailure: process.env.NODE_ENV !== "production" && request.headers.get("x-pm-verify-snapshot-failure") === "1",
           onContentChunk: onContent, signal });
@@ -46,9 +47,10 @@ export async function POST(request: Request, { params }: { params: Params }) {
         if (result.kind === "generation-stopped") return { status: 409, body: { error: "生成已停止", messages: await listMysqlIterationMessages(sessionId) } };
         if (result.kind === "invalid-edit" || result.kind === "invalid-regenerate") return { status: 409, body: { error: result.kind === "invalid-edit" ? "只能修改最后一条用户消息" : "只能重新生成最后一条 Agent 回复" } };
         if (result.kind === "conflict") return { status: 409, body: { error: "当前会话已被其他请求更新，请刷新后重试" } };
-        if (result.kind === "generation-failed") return { status: 502, body: { error: `${result.error}；可重试生成。`, messages: await listMysqlIterationMessages(sessionId) } };
+        if (result.kind === "generation-failed") return { status: result.status, body: { error: `${result.error}；可重试生成。`, messages: await listMysqlIterationMessages(sessionId) } };
         return { status: 200, body: { messages: await listMysqlIterationMessages(sessionId), userMessage: result.userMessage, assistantMessage: result.assistantMessage } };
       } catch (error) {
+        if (error instanceof CreditError) return { status: error.status, body: { error: error.message } };
         console.error("POST iteration session messages error:", error);
         return { status: 500, body: { error: mysqlUnavailableMessage() } };
       }
