@@ -1,3 +1,4 @@
+import { assertAccountActive } from "@/lib/account-controls";
 import OpenAI from "openai";
 import type { AgentType } from "@/lib/agent-constants";
 import { reserveAIRequest } from "@/lib/mysql-ai-budget";
@@ -388,6 +389,7 @@ export async function createAIStream({
   signal,
   replayDelayMs,
 }: AIRequest): Promise<AsyncIterable<ReplayChunk> | AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>> {
+  await assertAccountActive(userId);
   if (!isLiveAI()) {
     return replayStream(replayResponse(agentType, messages), replayDelayMs, signal);
   }
@@ -406,6 +408,7 @@ export async function createAICompletion({
   timeoutMs,
   signal,
 }: AIRequest): Promise<string> {
+  await assertAccountActive(userId);
   if (!isLiveAI()) {
     return replayResponse(agentType, messages);
   }

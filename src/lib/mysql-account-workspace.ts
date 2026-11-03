@@ -11,6 +11,7 @@ export interface MysqlUser extends RowDataPacket {
   email: string;
   nickname: string | null;
   password_hash: string;
+  account_status: "active" | "disabled";
   created_at: Date;
 }
 
@@ -76,7 +77,7 @@ function mapTab(row: MysqlTab): MysqlTab {
 
 export async function findMysqlUserByEmail(email: string): Promise<MysqlUser | null> {
   const [rows] = await getMysqlPool().query<MysqlUser[]>(
-    "SELECT id, email, nickname, password_hash, created_at FROM users WHERE email = ? LIMIT 1",
+    "SELECT id, email, nickname, password_hash, account_status, created_at FROM users WHERE email = ? LIMIT 1",
     [normalizeEmail(email)]
   );
   return rows[0] ?? null;
@@ -85,7 +86,7 @@ export async function findMysqlUserByEmail(email: string): Promise<MysqlUser | n
 export async function findMysqlUserById(id: string): Promise<MysqlUser | null> {
   if (!isMysqlId(id)) return null;
   const [rows] = await getMysqlPool().query<MysqlUser[]>(
-    "SELECT id, email, nickname, password_hash, created_at FROM users WHERE id = ? LIMIT 1",
+    "SELECT id, email, nickname, password_hash, account_status, created_at FROM users WHERE id = ? LIMIT 1",
     [id]
   );
   return rows[0] ?? null;

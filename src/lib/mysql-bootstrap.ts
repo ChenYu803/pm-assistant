@@ -483,6 +483,21 @@ export const MYSQL_MIGRATIONS = [
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
     ],
   },
+  {
+    id: "0025_v144_account_controls",
+    checksum: "0b000e3e31a543a3131d7be33d3e2ba723bd07e9fa70ae55d28fdd56214bb4bd",
+    statements: [
+      `ALTER TABLE users ADD COLUMN account_status VARCHAR(16) NOT NULL DEFAULT 'active',
+ ADD COLUMN disabled_at DATETIME(3) NULL, ADD COLUMN disabled_by CHAR(36) NULL,
+ ADD COLUMN disabled_reason VARCHAR(500) NULL, ADD KEY users_account_status (account_status, created_at)`,
+      `CREATE TABLE IF NOT EXISTS account_admin_actions (
+ id CHAR(36) NOT NULL PRIMARY KEY, actor_id CHAR(36) NOT NULL,
+ target_id CHAR(36) NOT NULL, action VARCHAR(32) NOT NULL,
+ reason VARCHAR(500) NOT NULL, created_at DATETIME(3) NOT NULL,
+ KEY account_admin_target (target_id, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+    ],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {

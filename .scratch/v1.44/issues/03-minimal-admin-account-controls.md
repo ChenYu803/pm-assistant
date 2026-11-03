@@ -4,7 +4,7 @@
 
 **Blocked by:** 无（可立即开始）
 
-**Status:** ready-for-agent
+**Status:** claimed
 
 **Type:** task
 

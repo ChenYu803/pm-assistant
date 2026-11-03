@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import { randomUUID } from "node:crypto";
 import { once } from "node:events";
 import { createAIStream, createAICompletion } from "../src/lib/ai.ts";
+import { AccountAccessError } from "../src/lib/account-controls.ts";
 import { AIQuotaError } from "../src/lib/mysql-ai-budget.ts";
 import { getMysqlPool, closeMysqlPoolForTests } from "../src/lib/mysql.ts";
 
@@ -30,10 +31,14 @@ process.env.AI_BASE_URL = `http://127.0.0.1:${server.address().port}/v1`;
 process.env.AI_API_KEY = "isolated-local-http-only";
 process.env.AI_DAILY_USER_LIMIT = "2";
 process.env.AI_DAILY_SITE_LIMIT = "100";
+async function seedActiveUser(id) {
+  await getMysqlPool().execute("INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)", [id, id + "@test.local", "isolated-unused-hash"]);
+}
 try {
+  await seedActiveUser(userId);
   for (const generate of [createAICompletion, createAIStream]) {
     let denied = false;
-    try { await generate({ ...options, userId: undefined }); } catch (error) { denied = error instanceof AIQuotaError; }
+    try { await generate({ ...options, userId: undefined }); } catch (error) { denied = error instanceof AccountAccessError; }
     check("缺失账号的 live 请求在供应商之前拒绝", denied && requests === 0);
   }
   check("live Completion 经真实 SDK 调用本机 HTTP", await createAICompletion(options) === "模拟完整正文" && requests === 1);
@@ -46,12 +51,12 @@ try {
     check("Stream/Completion 共享限额且被拒请求不访问供应商", denied && requests === 2);
   }
   failNext = true;
-  const failedUser = randomUUID(); let failed = false;
+  const failedUser = randomUUID(); await seedActiveUser(failedUser); let failed = false;
   try { await createAICompletion({ ...options, userId: failedUser }); } catch { failed = true; }
   check("HTTP 500 不被 SDK 隐式重试", failed && requests === 3);
   const [failedUsage] = await getMysqlPool().query("SELECT request_count FROM ai_daily_usage WHERE subject = ?", [failedUser]);
   check("已经发出的失败供应商请求仍占用一次", failedUsage[0]?.request_count === 1);
-  const randomUser = randomUUID();
+  const randomUser = randomUUID(); await seedActiveUser(randomUser);
   const concurrent = await Promise.allSettled(Array.from({ length: 8 }, () => createAICompletion({ ...options, userId: randomUser })));
   check("live 入口八并发只有两次真正到达供应商", concurrent.filter((x) => x.status === "fulfilled").length === 2 && concurrent.filter((x) => x.status === "rejected").every((x) => x.reason instanceof AIQuotaError) && requests === 5);
 } catch (error) {

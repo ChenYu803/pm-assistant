@@ -1,3 +1,4 @@
+import { AccountAccessError } from "@/lib/account-controls";
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-helper";
 import { createAICompletion, isAIConfigured } from "@/lib/ai";
@@ -30,7 +31,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         const polished = await createAICompletion({ userId, maxTokens: 32768, messages: [{ role: "system", content: POLISH_SYSTEM_PROMPT }, { role: "user", content: `请润色以下 Markdown 内容：\n\n${content}` }], timeoutMs: 600_000, signal });
         return { status: 200, body: { polished } };
       } catch (error) {
-        return { status: error instanceof AIQuotaError ? 429 : 500, body: { error: error instanceof AIQuotaError ? error.message : "AI 润色失败" } };
+        return { status: error instanceof AccountAccessError ? 403 : error instanceof AIQuotaError ? 429 : 500, body: { error: error instanceof AccountAccessError || error instanceof AIQuotaError ? error.message : "AI 润色失败" } };
       }
     };
     // 润色预览仍只展示完整结果；等待时心跳避免入口把长响应视作无响应。

@@ -1,12 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { signOut } from "next-auth/react";
 import styles from "./ProfilePage.module.css";
 
 type Feedback = { kind: "success" | "error"; message: string } | null;
 
-export default function ProfilePage({ email, initialNickname }: { email: string; initialNickname: string }) {
+export default function ProfilePage({ email, initialNickname, isAdmin = false }: { email: string; initialNickname: string; isAdmin?: boolean }) {
   const [nickname, setNickname] = useState(initialNickname);
   const [savedNickname, setSavedNickname] = useState(initialNickname);
   const [nameFeedback, setNameFeedback] = useState<Feedback>(null);
@@ -82,6 +83,7 @@ export default function ProfilePage({ email, initialNickname }: { email: string;
         <div className={styles.heading}>
           <span className={styles.kicker}>ACCOUNT / 个人设置</span>
           <h1>个人主页</h1>
+          {isAdmin && <p><Link href="/admin" className={styles.backLink}>管理后台</Link></p>}
         </div>
 
         <section className={styles.section} aria-labelledby="nickname-title">

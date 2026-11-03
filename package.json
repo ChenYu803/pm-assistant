@@ -64,7 +64,9 @@
     "verify:v144-email-auth": "tsx scripts/verify-v144-email-auth.mjs",
     "verify:v144-email-unconfigured": "tsx scripts/verify-v144-email-unconfigured.mjs",
     "verify:v144-auth-limits": "tsx scripts/verify-v144-auth-limits.mjs",
-    "verify:v144-auth-signout": "tsx scripts/verify-v144-auth-signout.mjs"
+    "verify:v144-auth-signout": "tsx scripts/verify-v144-auth-signout.mjs",
+    "verify:v144-admin-controls": "tsx scripts/verify-v144-admin-controls.mjs",
+    "verify:v144-admin-unconfigured": "tsx scripts/verify-v144-admin-unconfigured.mjs"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "1.1.13",

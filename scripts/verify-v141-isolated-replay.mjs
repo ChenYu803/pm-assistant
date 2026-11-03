@@ -13,7 +13,7 @@ import { startEmailFixture } from "./verify-email-fixture.mjs";
 import { initializeMysql } from "../src/lib/mysql-bootstrap.ts";
 import { getMysqlAdminConfig, getMysqlConnectionOptions } from "../src/lib/mysql-config.ts";
 
-export async function runIsolatedReplay({ slug, title, scenarioScript, captureProvider = false, providerFixtureUrl, expectedWorkflows = 2, seedLegacyAuth = false, emailBoundary = true }) {
+export async function runIsolatedReplay({ slug, title, scenarioScript, captureProvider = false, providerFixtureUrl, expectedWorkflows = 2, seedLegacyAuth = false, emailBoundary = true, designatedAdmin = false }) {
   if (!/^[a-z][a-z0-9-]*$/.test(slug) || !/^scripts\/verify-v14[124]-[a-z0-9-]+-scenario\.mjs$/.test(scenarioScript)) {
     throw new Error("非法专项标识或场景路径");
   }
@@ -42,6 +42,12 @@ export async function runIsolatedReplay({ slug, title, scenarioScript, capturePr
     V141_REPLAY_OUTPUT_DIR: outputDir,
     V141_REPLAY_DEPENDENCY_ROOT: process.cwd(),
   };
+  // 隔离运行不能继承真实管理员身份。
+  delete env.ADMIN_EMAILS;
+  if (designatedAdmin) {
+    env.V144_ADMIN_EMAIL = `admin-${suffix}@test.local`;
+    env.ADMIN_EMAILS = env.V144_ADMIN_EMAIL;
+  }
   let emailFixture;
   let admin;
   let appConnection;

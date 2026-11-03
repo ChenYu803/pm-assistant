@@ -30,7 +30,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           // 历史邮箱排序规则可匹配重音变体，账号额度统一绑定稳定 ID。
           await limitAuthRequest(user ? "login-user:" + user.id : "login-email:" + email, 20, 900);
         } catch { return null; }
-        if (!user) {
+        if (!user || user.account_status !== "active") {
           return null;
         }
 
