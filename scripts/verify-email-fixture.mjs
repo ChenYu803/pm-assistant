@@ -11,6 +11,7 @@ export async function startEmailFixture() {
    let raw = ""; for await (const chunk of request) { raw += chunk; if (raw.length > 8192) throw Error("too large"); }
    const body = raw ? JSON.parse(raw) : {};
    if (request.url === "/clock") return response.end(JSON.stringify({ now: Date.now() + offset }));
+   if (request.url === "/clock-reset" && request.method === "POST") { offset = 0; return response.end("{}"); }
    if (request.url === "/advance" && request.method === "POST") { if (!Number.isInteger(body.seconds) || body.seconds < 0 || body.seconds > 3600) throw Error(); offset += body.seconds * 1000; return response.end("{}"); }
    if (request.url === "/mode" && request.method === "POST") { mode = body.mode; return response.end("{}"); }
    if (request.url === "/messages") return response.end(JSON.stringify(messages));

@@ -1,0 +1,11 @@
+[Unit]
+Description=IdeaStage 每分钟核对与释放到期预留
+
+[Timer]
+OnCalendar=*-*-* *:*:00
+AccuracySec=1s
+Persistent=true
+Unit=ideastage-usage-recovery.service
+
+[Install]
+WantedBy=timers.target

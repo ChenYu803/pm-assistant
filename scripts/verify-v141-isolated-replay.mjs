@@ -216,8 +216,8 @@ export async function runIsolatedReplay({ slug, title, scenarioScript, capturePr
           } else if (message.type === "stop-account-unlock") await admin.commit();
           else if (message.type === "stop-clear-fault") {
             for (const name of ["verify_settlement_failure","verify_polish_failure"]) await admin.query(`DROP TRIGGER IF EXISTS \`${database}\`.\`${name}\``);
-          } else if (message.target === "settlement") {
-            await admin.query(`CREATE TRIGGER \`${database}\`.verify_settlement_failure BEFORE INSERT ON \`${database}\`.credit_entries FOR EACH ROW BEGIN IF NEW.business_type='model_settle' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='isolated-settlement-write-failure'; END IF; END`);
+          } else if (["settlement", "release"].includes(message.target)) {
+            await admin.query(`CREATE TRIGGER \`${database}\`.verify_settlement_failure BEFORE INSERT ON \`${database}\`.credit_entries FOR EACH ROW BEGIN IF NEW.business_type='${message.target === "release" ? "model_release" : "model_settle"}' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='isolated-settlement-write-failure'; END IF; END`);
           } else if (message.target === "polish") {
             await admin.query(`CREATE TRIGGER \`${database}\`.verify_polish_failure BEFORE INSERT ON \`${database}\`.polish_generation_results FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='isolated-polish-write-failure'`);
           } else throw new Error("未知隔离写入故障");

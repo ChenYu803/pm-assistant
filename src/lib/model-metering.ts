@@ -38,6 +38,10 @@ function readUsage(value: unknown): ModelUsage | null {
  if (reasoning !== undefined && (typeof reasoning !== "number" || !Number.isSafeInteger(reasoning) || reasoning < 0 || reasoning > output)) return null;
  return { prompt_tokens: input, completion_tokens: output, total_tokens: total, prompt_cache_hit_tokens: cached, prompt_cache_miss_tokens: uncached, ...(reasoning === undefined ? {} : { reasoning_tokens: reasoning as number }) };
 }
+function costForUsage(usage: ModelUsage, price: ModelPrice) {
+ const units = (BigInt(usage.prompt_cache_hit_tokens)*creditUnits(price.inputHitPerMillion) + BigInt(usage.prompt_cache_miss_tokens)*creditUnits(price.inputMissPerMillion) + BigInt(usage.completion_tokens)*creditUnits(price.outputPerMillion))/BigInt(1000000);
+ return creditText(units);
+}
 function utc(date: Date) { return date.toISOString().slice(0,23).replace("T", " "); }
 function shortId(value: unknown): string | null { return typeof value === "string" && /^[a-zA-Z0-9_.:/-]{1,160}$/.test(value) ? value : null; }
 
@@ -84,10 +88,8 @@ export async function startModelRequest(input: ModelContext & { userId: string; 
   let costCny: string | null = null;
   const costReason = !reliable ? "usage_unconfirmed" : !sameWindow ? "price_unconfirmed" : "confirmed";
   if (reliable && sameWindow) {
-   const u = usage!;
-   // 推理 tokens 已包含在 completion_tokens 中，不能重复加收。每项均精确到人民币八位小数。
-   const units = (BigInt(u.prompt_cache_hit_tokens)*creditUnits(startPrice.inputHitPerMillion) + BigInt(u.prompt_cache_miss_tokens)*creditUnits(startPrice.inputMissPerMillion) + BigInt(u.completion_tokens)*creditUnits(startPrice.outputPerMillion))/BigInt(1000000);
-   costCny = creditText(units);
+   // 推理 tokens 已包含在 completion_tokens 中，不能重复加收。
+   costCny = costForUsage(usage!, startPrice);
   }
   // 供应商完成与正文保存分开确认；正文保存前崩溃仍留有持久可恢复的 processing 状态。
   const persistedStatus = status === "completed" && input.awaitProcessing ? "processing" : status;
@@ -97,10 +99,20 @@ export async function startModelRequest(input: ModelContext & { userId: string; 
    const previous = rows[0];
    const terminal = ["settled","released"].includes(previous.credit_state);
    // 免单和已扣费终态不可被重试改写；迟到证据只补网站成本。
-   if (terminal || ["failed","interrupted"].includes(previous.status)) {
-    if (previous.website_borne && previous.cost_cny === null && reliable && (previous.usage_status !== "reliable" || costCny !== null)) {
-     await connection.execute("UPDATE model_requests SET actual_model=?,provider_id=?,upstream_request_id=?,finish_reason=?,usage_status='reliable',usage_json=?,price_json=?,cost_cny=?,cost_reason=? WHERE id=?",[actualModel,providerId,upstreamId,finish,JSON.stringify(usage),JSON.stringify({start:startPrice,end:endPrice,official,fixture,rule:"same_price_window_only",usageValidated:!invalid}),costCny,costReason,id]);
-     previous.usage_status = "reliable"; previous.cost_cny = costCny; previous.cost_reason = costReason;
+   if (terminal || previous.credit_state === "pending" || ["failed","interrupted"].includes(previous.status)) {
+    // 已结束的同一次请求使用其原始价格窗口；核对发生时间不改变原请求价格。
+    // 没有原结束证据（如请求前失败）时，仍保留原有跨窗口不确定性。
+    const originalPrice = previous.finish_reason && previous.ended_at ? previous.price_json : null;
+    const evidencePrice = originalPrice ?? {start:startPrice,end:endPrice,official,fixture,rule:"same_price_window_only",windowConfirmed:Boolean(sameWindow)};
+    let recoveredCost = reliable ? costCny : null;
+    if (reliable && originalPrice) {
+     recoveredCost = originalPrice.windowConfirmed && originalPrice.start && FLASH_MODELS.includes(actualModel ?? previous.actual_model ?? input.model)
+      ? costForUsage(usage!,originalPrice.start) : null;
+    }
+    const recoveredReason = recoveredCost === null ? "price_unconfirmed" : "confirmed";
+    if ((previous.website_borne || previous.credit_state === "pending") && previous.cost_cny === null && reliable && (previous.usage_status !== "reliable" || recoveredCost !== null)) {
+     await connection.execute("UPDATE model_requests SET actual_model=?,provider_id=?,upstream_request_id=?,finish_reason=?,usage_status='reliable',usage_json=?,price_json=?,cost_cny=?,cost_reason=? WHERE id=?",[actualModel,providerId,upstreamId,finish,JSON.stringify(usage),JSON.stringify({...evidencePrice,usageValidated:!invalid}),recoveredCost,recoveredReason,id]);
+     previous.usage_status = "reliable"; previous.cost_cny = recoveredCost; previous.cost_reason = recoveredReason;
     }
     await settleConversationCredits(id,connection);
     receipt = {id,status:previous.status,usageStatus:previous.usage_status,costCny:previous.cost_cny,costReason:previous.cost_reason};
@@ -108,7 +120,7 @@ export async function startModelRequest(input: ModelContext & { userId: string; 
    }
    const finalStatus = siteFailure ? "failed" : (status === "completed" || (status === "interrupted" && errorCode === null)) && (previous.stop_requested_at || previous.status === "stopped") ? "stopped" : persistedStatus;
    const failure = ["failed","interrupted"].includes(finalStatus);
-   await connection.execute("UPDATE model_requests SET actual_model=?,provider_id=?,upstream_request_id=?,ended_at=?,status=?,finish_reason=?,error_code=?,usage_status=?,usage_json=?,price_json=?,cost_cny=?,cost_reason=?,website_borne=? WHERE id=?", [actualModel,providerId,upstreamId,utc(ended),finalStatus,finish,siteFailure ? "site_settlement_error" : finalStatus === "stopped" ? "user_stop" : errorCode,reliable ? "reliable" : "pending",usage ? JSON.stringify(usage) : null,JSON.stringify({ start: startPrice, end: endPrice, official, fixture, rule: "same_price_window_only", usageValidated: !invalid }),costCny,costReason,failure,id]);
+   await connection.execute("UPDATE model_requests SET actual_model=?,provider_id=?,upstream_request_id=?,ended_at=?,status=?,finish_reason=?,error_code=?,usage_status=?,usage_json=?,price_json=?,cost_cny=?,cost_reason=?,website_borne=? WHERE id=?", [actualModel,providerId,upstreamId,utc(ended),finalStatus,finish,siteFailure ? "site_settlement_error" : finalStatus === "stopped" ? "user_stop" : errorCode,reliable ? "reliable" : "pending",usage ? JSON.stringify(usage) : null,JSON.stringify({ start: startPrice, end: endPrice, official, fixture, rule: "same_price_window_only", windowConfirmed: Boolean(sameWindow), usageValidated: !invalid }),costCny,costReason,failure,id]);
    if (finalStatus !== "processing") await settleConversationCredits(id, connection);
    receipt.status = finalStatus;
   });

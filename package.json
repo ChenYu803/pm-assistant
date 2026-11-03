@@ -10,6 +10,8 @@
     "db:init": "tsx scripts/mysql-init.ts",
     "production:check": "tsx scripts/production-check.ts",
     "production:db": "tsx scripts/production-db.ts",
+    "credits:recover": "tsx scripts/pending-usage-recovery.ts",
+    "verify:v144-pending-usage": "tsx scripts/verify-v144-pending-usage.mjs",
     "production:backup": "tsx scripts/production-backup.ts",
     "verify:mysql-init": "tsx scripts/verify-mysql-init.mjs",
     "verify:account-project-workspace": "tsx scripts/verify-account-project-workspace.mjs",

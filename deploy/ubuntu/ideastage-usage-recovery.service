@@ -1,0 +1,22 @@
+[Unit]
+Description=IdeaStage 待核对积分恢复与到期免单
+After=network.target mysql.service ideastage.service
+
+[Service]
+Type=oneshot
+User=ideastage
+Group=ideastage
+WorkingDirectory=/srv/ideastage/current
+EnvironmentFile=/etc/ideastage/runtime.env
+# Node 24 安装至 /usr/bin；实际路径不同时修改此文件，不依赖交互 shell/nvm。
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node --import tsx scripts/pending-usage-recovery.ts
+# 大量积压时允许完成扫描；失败退出由下一次 timer 安全重试。
+TimeoutStartSec=0
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+StandardOutput=journal
+StandardError=journal

@@ -3,6 +3,7 @@ import type { PoolConnection, RowDataPacket } from "mysql2/promise";
 import { getMysqlPool } from "@/lib/mysql";
 import { lockCreditUsers, readCreditBalance } from "@/lib/credits-ledger";
 import { CreditError, creditText, creditUnits, type CreditCallView } from "@/lib/credit-values";
+import { pendingUsageNow } from "@/lib/pending-usage-clock";
 import type { ConversationBudget } from "@/lib/conversation-credit-budget";
 
 export type CreditCallInput = { requestKey: string; requestDigest: string; messageId: string; sessionId: string; context: Record<string, unknown> };
@@ -72,19 +73,22 @@ export async function settleConversationCredits(id: string, provided?: PoolConne
     if (!provided) await connection.beginTransaction();
     const [user] = await lockCreditUsers(connection,[owners[0].user_id]);
     if (!user) throw new CreditError("调用账号缺失，请联系管理员。",503);
-    const [calls] = await connection.execute<RowDataPacket[]>("SELECT * FROM conversation_credit_calls WHERE id=? FOR UPDATE",[id]);
+    const now = await pendingUsageNow();
+    const [calls] = await connection.execute<RowDataPacket[]>("SELECT *, (pending_since <= DATE_SUB(?, INTERVAL 24 HOUR)) AS pending_expired FROM conversation_credit_calls WHERE id=? FOR UPDATE",[now,id]);
     const call = calls[0];
     if (["settled","released"].includes(call.state)) { if (!provided) await connection.commit(); return; }
     const [models] = await connection.execute<RowDataPacket[]>("SELECT * FROM model_requests WHERE id=? FOR UPDATE",[id]);
     const model = models[0];
     if (!model || ["running","processing"].includes(model.status)) { if (!provided) await connection.commit(); return; }
-    const free = Boolean(model.website_borne) || ["failed","interrupted"].includes(model.status);
+    const expired = call.state === "pending" && Boolean(call.pending_expired);
+    if (expired) await connection.execute("UPDATE model_requests SET website_borne=TRUE WHERE id=?",[id]);
+    const free = expired || Boolean(model.website_borne) || ["failed","interrupted"].includes(model.status);
     const confirmed = model.usage_status === "reliable" && model.cost_cny !== null;
     const consumed = free ? BigInt(0) : confirmed ? creditUnits(model.cost_cny)*BigInt(2000) : null;
     const budget = call.budget_json as ConversationBudget;
     const outside = !free && consumed !== null && (consumed > creditUnits(call.reserved) || (model.usage_json && (model.usage_json.prompt_tokens > budget.inputTokenBound || model.usage_json.completion_tokens > budget.maxOutputTokens)));
     if (consumed === null || outside) {
-      await connection.execute("UPDATE conversation_credit_calls SET state='pending',pending_since=COALESCE(pending_since,?),reason=? WHERE id=?", [new Date(),outside?"budget_exceeded":model.status === "stopped"?"stopped_usage_unconfirmed":"usage_or_price_unconfirmed",id]);
+      await connection.execute("UPDATE conversation_credit_calls SET state='pending',pending_since=COALESCE(pending_since,?),reason=? WHERE id=?", [now,outside?"budget_exceeded":model.status === "stopped"?"stopped_usage_unconfirmed":"usage_or_price_unconfirmed",id]);
       if (!provided) await connection.commit(); return;
     }
     const allocations = call.allocations as Allocation[], spent: Allocation[] = [], released: Allocation[] = [];
@@ -98,8 +102,8 @@ export async function settleConversationCredits(id: string, provided?: PoolConne
       remaining -= used;
     }
     const afterConsumption = await appendCallEntries(connection,{id,user,phase:"settle",reason:model.status === "stopped"?"主动停止，按可靠用量结算":"按可靠用量结算",before,allocations:spent,context:call.context_snapshot});
-    await appendCallEntries(connection,{id,user,phase:"release",reason:free?"生成故障免单，释放预留":"释放未用预留",before:afterConsumption,allocations:released,context:call.context_snapshot});
-    await connection.execute("UPDATE conversation_credit_calls SET state=?,consumed=?,settled_at=?,reason=? WHERE id=?", [free?"released":"settled",creditText(consumed),new Date(),free?"website_borne":model.status === "stopped"?"stopped_confirmed":"confirmed",id]);
+    await appendCallEntries(connection,{id,user,phase:"release",reason:expired?"待核对满24小时免单，释放预留":free?"生成故障免单，释放预留":"释放未用预留",before:afterConsumption,allocations:released,context:call.context_snapshot});
+    await connection.execute("UPDATE conversation_credit_calls SET state=?,consumed=?,settled_at=?,reason=? WHERE id=?", [free?"released":"settled",creditText(consumed),new Date(),expired?"pending_expired":free?"website_borne":model.status === "stopped"?"stopped_confirmed":"confirmed",id]);
     if (!provided) await connection.commit();
   } catch (error) { if (!provided) await connection.rollback(); throw error; }
   finally { if (!provided) connection.release(); }
