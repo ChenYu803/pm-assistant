@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { RowDataPacket } from "mysql2/promise";
 import { getMysqlPool } from "@/lib/mysql";
+import { creditText, creditUnits } from "@/lib/credit-values";
 import { isMysqlId } from "@/lib/identifiers";
 import { isDesignatedAdmin } from "@/lib/account-controls";
 
@@ -24,7 +25,8 @@ export async function listAdminUsers(search: string, status: string, page: numbe
     const [counts] = await connection.query<RowDataPacket[]>("SELECT COUNT(*) AS total FROM users" + where, values);
     const total = Number(counts[0].total), pageSize = 20;
     const currentPage = Math.min(page, Math.max(1, Math.ceil(total / pageSize)));
-    const [rows] = await connection.query<RowDataPacket[]>("SELECT id, email, nickname, account_status AS status, created_at AS createdAt, disabled_at AS disabledAt, disabled_by AS disabledBy, disabled_reason AS disabledReason FROM users" + where + " ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?", [...values, pageSize, (currentPage - 1) * pageSize]);
+    const [rows] = await connection.query<RowDataPacket[]>("SELECT id, email, nickname, account_status AS status, created_at AS createdAt, disabled_at AS disabledAt, disabled_by AS disabledBy, disabled_reason AS disabledReason, COALESCE((SELECT SUM(available) FROM credit_sources WHERE user_id = users.id AND kind = 'gift'), 0) AS giftAvailable, COALESCE((SELECT SUM(available) FROM credit_sources WHERE user_id = users.id AND kind = 'purchased'), 0) AS purchasedAvailable FROM users" + where + " ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?", [...values, pageSize, (currentPage - 1) * pageSize]);
+    for (const row of rows) { row.giftAvailable = creditText(creditUnits(row.giftAvailable)); row.purchasedAvailable = creditText(creditUnits(row.purchasedAvailable)); }
     await connection.commit();
     return { users: rows, total, page: currentPage, pageSize, summary: { total: Number(summary[0].total), active: Number(summary[0].active), disabled: Number(summary[0].disabled) } };
   } catch (error) { await connection.rollback(); throw error; }

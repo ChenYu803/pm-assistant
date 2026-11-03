@@ -13,7 +13,7 @@ import { startEmailFixture } from "./verify-email-fixture.mjs";
 import { initializeMysql } from "../src/lib/mysql-bootstrap.ts";
 import { getMysqlAdminConfig, getMysqlConnectionOptions } from "../src/lib/mysql-config.ts";
 
-export async function runIsolatedReplay({ slug, title, scenarioScript, captureProvider = false, providerFixtureUrl, expectedWorkflows = 2, seedLegacyAuth = false, emailBoundary = true, designatedAdmin = false }) {
+export async function runIsolatedReplay({ slug, title, scenarioScript, captureProvider = false, providerFixtureUrl, expectedWorkflows = 2, seedLegacyAuth = false, emailBoundary = true, designatedAdmin = false, creditLifecycle = false }) {
   if (!/^[a-z][a-z0-9-]*$/.test(slug) || !/^scripts\/verify-v14[124]-[a-z0-9-]+-scenario\.mjs$/.test(scenarioScript)) {
     throw new Error("非法专项标识或场景路径");
   }
@@ -203,6 +203,24 @@ export async function runIsolatedReplay({ slug, title, scenarioScript, capturePr
     check(providerFixtureUrl ? "隔离服务只连接本机 HTTP 模型替身" : "正式服务也确认 replay，发送前拒绝真实模型", modeResponse.ok && mode.aiMode === (providerFixtureUrl ? "live" : "replay"));
     console.log(`${title}开始；证据目录：${outputDir}`);
     scenario = start(scenarioScript, "scenario", { ...serviceEnv, AI_MODE: "replay", BASE_URL: base });
+    // 仅隔离场景 IPC：构造已保护余额、重启同一份正式应用，无生产测试路由。
+    let lifecycleBusy = false;
+    if (creditLifecycle) scenario.on("message", async message => {
+      if (lifecycleBusy || !["credit-protection-fixture", "restart-credit-app"].includes(message?.type)) return;
+      lifecycleBusy = true;
+      try {
+        if (message.type === "credit-protection-fixture") {
+          const { seedProtectedCredits } = await import("./verify-credit-fixture.mjs");
+          const fixture = await seedProtectedCredits(admin, database, env);
+          scenario.send({ type: message.type, fixture });
+        } else {
+          await stop(server);
+          server = start("scripts/verify-v141-replay-foundation-server.mjs", "server", serviceEnv, projectDir);
+          scenario.send({ type: message.type, base: await ready(server) });
+        }
+      } catch { scenario.send({ type: message.type, error: "隔离生命周期操作失败，请检查测试资源。" }); }
+      finally { lifecycleBusy = false; }
+    });
     const timer = setTimeout(() => { scenario.kill("SIGKILL"); }, 8 * 60_000);
     let exitCode;
     try { [exitCode] = await once(scenario, "exit"); } finally { clearTimeout(timer); }

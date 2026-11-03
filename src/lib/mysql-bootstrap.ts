@@ -498,6 +498,36 @@ export const MYSQL_MIGRATIONS = [
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
     ],
   },
+  {
+    id: "0026_v144_credit_ledger",
+    checksum: "aaa84f3ad6751f0a557c61fb7bc5c48ef4a6feec265d9b50872e652b5a0b4796",
+    statements: [
+      `CREATE TABLE IF NOT EXISTS credit_sources (
+ id CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL PRIMARY KEY,
+ user_id CHAR(36) NOT NULL, kind ENUM('gift','purchased') NOT NULL,
+ business_type VARCHAR(40) NOT NULL, business_reference VARCHAR(160) NOT NULL,
+ original_credits DECIMAL(28,8) NOT NULL, available DECIMAL(28,8) NOT NULL,
+ reserved DECIMAL(28,8) NOT NULL DEFAULT 0, paid_rmb DECIMAL(28,8) NULL,
+ context_snapshot JSON NULL, created_at DATETIME(3) NOT NULL,
+ CONSTRAINT credit_source_nonnegative CHECK (original_credits >= 0 AND available >= 0 AND reserved >= 0 AND available + reserved <= original_credits),
+ CONSTRAINT credit_source_payment CHECK ((kind = 'gift' AND paid_rmb IS NULL) OR (kind = 'purchased' AND paid_rmb IS NOT NULL AND paid_rmb > 0)),
+ UNIQUE KEY credit_source_business (business_type, business_reference), KEY credit_source_owner (user_id, kind, created_at, id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+      `CREATE TABLE IF NOT EXISTS credit_entries (
+ sequence BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+ id CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+ user_id CHAR(36) NOT NULL, account_email VARCHAR(320) NOT NULL,
+ actor_id CHAR(36) NOT NULL, actor_email VARCHAR(320) NOT NULL,
+ request_id VARCHAR(160) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+ business_type VARCHAR(40) NOT NULL, reason VARCHAR(500) NOT NULL,
+ amount DECIMAL(28,8) NOT NULL, source_kind ENUM('gift','purchased') NOT NULL,
+ balance_before JSON NOT NULL, balance_after JSON NOT NULL, allocations JSON NOT NULL,
+ context_snapshot JSON NULL, created_at DATETIME(3) NOT NULL,
+ UNIQUE KEY credit_entry_id (id), UNIQUE KEY credit_entry_request (actor_id, request_id),
+ KEY credit_entry_owner (user_id, sequence)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`
+    ],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {

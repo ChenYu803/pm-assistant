@@ -35,10 +35,10 @@ export default async function AdminPage({ searchParams }: { searchParams: Promis
     <div className={styles.tableRegion} role="region" aria-label="用户列表，可横向滚动" tabIndex={0}>
       <table className={styles.table}><caption>符合条件的用户共 {result.total} 位；每页 {result.pageSize} 位</caption><thead><tr><th scope="col">账号</th><th scope="col">状态</th><th scope="col">注册时间</th><th scope="col">管理操作与记录</th></tr></thead>
         <tbody>{result.users.map(user => <tr key={user.id}>
-          <td>{user.email}{user.nickname && <span className={styles.id}>{user.nickname}</span>}<span className={styles.id}>{user.id}</span></td>
+          <td>{user.email}{user.nickname && <span className={styles.id}>{user.nickname}</span>}<span className={styles.id}>{user.id}</span><span className={styles.id}>赠送可用 {user.giftAvailable} · 购买可用 {user.purchasedAvailable} 积分</span></td>
           <td className={user.status === "disabled" ? styles.disabled : undefined}>{user.status === "disabled" ? "已停用" : "正常"}</td>
           <td className={styles.date}>{date(user.createdAt)}</td>
-          <td>{user.status === "disabled" ? <div className={styles.audit}><p>{user.disabledReason}</p><p className={styles.muted}>停用时间：{date(user.disabledAt)}</p><p className={styles.id}>操作者：{user.disabledBy}</p></div> : user.id === actor ? <span className={styles.muted}>当前管理员</span> : <DisableAccountControl userId={user.id} email={user.email} />}</td>
+          <td><p><Link href={"/admin/users/" + user.id + "/credits"}>查看积分 / 赠送与调整</Link></p>{user.status === "disabled" ? <div className={styles.audit}><p>{user.disabledReason}</p><p className={styles.muted}>停用时间：{date(user.disabledAt)}</p><p className={styles.id}>操作者：{user.disabledBy}</p></div> : user.id === actor ? <span className={styles.muted}>当前管理员</span> : <DisableAccountControl userId={user.id} email={user.email} />}</td>
         </tr>)}{result.total === 0 && <tr><td colSpan={4}>没有符合条件的用户，请调整查询条件。</td></tr>}</tbody>
       </table>
     </div>
