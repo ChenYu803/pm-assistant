@@ -13,7 +13,7 @@ import { startEmailFixture } from "./verify-email-fixture.mjs";
 import { initializeMysql } from "../src/lib/mysql-bootstrap.ts";
 import { getMysqlAdminConfig, getMysqlConnectionOptions } from "../src/lib/mysql-config.ts";
 
-export async function runIsolatedReplay({ slug, title, scenarioScript, captureProvider = false, providerFixtureUrl, expectedWorkflows = 2, seedLegacyAuth = false, emailBoundary = true, designatedAdmin = false, creditLifecycle = false, stopBillingFaults = false }) {
+export async function runIsolatedReplay({ slug, title, scenarioScript, captureProvider = false, providerFixtureUrl, expectedWorkflows = 2, seedLegacyAuth = false, emailBoundary = true, designatedAdmin = false, creditLifecycle = false, stopBillingFaults = false, manualRechargeLifecycle = false }) {
   if (!/^[a-z][a-z0-9-]*$/.test(slug) || !/^scripts\/verify-v14[124]-[a-z0-9-]+-scenario\.mjs$/.test(scenarioScript)) {
     throw new Error("非法专项标识或场景路径");
   }
@@ -47,6 +47,11 @@ export async function runIsolatedReplay({ slug, title, scenarioScript, capturePr
   if (designatedAdmin) {
     env.V144_ADMIN_EMAIL = `admin-${suffix}@test.local`;
     env.ADMIN_EMAILS = env.V144_ADMIN_EMAIL;
+    if (manualRechargeLifecycle) {
+      env.V144_SECOND_ADMIN_EMAIL = `admin-second-${suffix}@test.local`;
+      env.ADMIN_EMAILS += "," + env.V144_SECOND_ADMIN_EMAIL;
+      env.RECHARGE_WECHAT_CONTACT = "";
+    }
   }
   let emailFixture;
   let admin;
@@ -206,10 +211,20 @@ export async function runIsolatedReplay({ slug, title, scenarioScript, capturePr
     // 仅隔离场景 IPC：构造已保护余额、重启同一份正式应用，无生产测试路由。
     let lifecycleBusy = false;
     if (creditLifecycle) scenario.on("message", async message => {
-      if (lifecycleBusy || !["credit-protection-fixture", "conversation-purchase-fixture", "restart-credit-app", ...(stopBillingFaults ? ["stop-account-lock","stop-account-unlock","stop-write-fault","stop-clear-fault"] : [])].includes(message?.type)) return;
+      if (lifecycleBusy || !["credit-protection-fixture", "conversation-purchase-fixture", "restart-credit-app", ...(manualRechargeLifecycle ? ["recharge-write-fault","recharge-clear-fault","recharge-contact-configured"] : []), ...(stopBillingFaults ? ["stop-account-lock","stop-account-unlock","stop-write-fault","stop-clear-fault"] : [])].includes(message?.type)) return;
       lifecycleBusy = true;
       try {
-        if (stopBillingFaults && message.type.startsWith("stop-")) {
+        if (manualRechargeLifecycle && message.type.startsWith("recharge-")) {
+          if (message.type === "recharge-write-fault") {
+            await admin.query("CREATE TRIGGER "+mysql.escapeId(database)+".verify_recharge_failure BEFORE INSERT ON "+mysql.escapeId(database)+".credit_entries FOR EACH ROW BEGIN IF NEW.business_type='manual_recharge' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='isolated-recharge-audit-failure'; END IF; END");
+          } else if (message.type === "recharge-clear-fault") await admin.query("DROP TRIGGER IF EXISTS "+mysql.escapeId(database)+".verify_recharge_failure");
+          else {
+            await stop(server);
+            serviceEnv.RECHARGE_WECHAT_CONTACT = "isolated-operator-wechat";
+            server = start("scripts/verify-v141-replay-foundation-server.mjs", "server", serviceEnv, projectDir);
+          }
+          scenario.send({type:message.type,...(message.type === "recharge-contact-configured" ? {base:await ready(server)} : {})});
+        } else if (stopBillingFaults && message.type.startsWith("stop-")) {
           if (message.type === "stop-account-lock") {
             await admin.beginTransaction();
             await admin.execute(`SELECT id FROM \`${database}\`.users WHERE id=? FOR UPDATE`,[message.userId]);

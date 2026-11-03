@@ -38,3 +38,8 @@
 .shell .textButton { color: var(--coral); }
 .pagination { display: flex; align-items: center; flex-wrap: wrap; gap: 24px; margin-top: 24px; font-variant-numeric: tabular-nums; }
 @media (max-width: 600px) { .shell { padding-top: 24px; } .summary { gap: 16px 24px; } .filters { gap: 12px; } .field:first-child { flex-basis: 100%; max-width: none; } .table { font-size: 13px; } }
+
+.accountId { overflow-wrap: anywhere; }
+.instructions { max-width: 65ch; padding-left: 24px; line-height: 1.9; margin-block: 24px; }
+.instructions li { margin-bottom: 12px; }
+@media (max-width: 600px) { .nav { flex-wrap: wrap; } }

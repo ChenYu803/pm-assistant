@@ -7,7 +7,7 @@ import { latestEmailCode, requestRegistrationCode } from "./verify-email-fixture
 const base = process.env.BASE_URL, output = process.env.V141_REPLAY_OUTPUT_DIR;
 let pass = 0, fail = 0, browser;
 const clients = [], workflows = [], assertions = [];
-function check(name, okay) { assertions.push({ name, okay }); console.log((okay ? "✅ " : "❌ ") + name); okay ? pass++ : fail++; }
+function check(name, okay) { assertions.push({ name, okay }); console.log((okay ? "✅ " : "❌ ") + name); if (okay) pass++; else fail++; }
 async function client() { const value = await request.newContext({ baseURL: base, timeout: 120_000 }); clients.push(value); return value; }
 async function register(http, email) {
   const response = await http.post("/api/auth/register", { data: { email, password: "admin-test-12345", code: await requestRegistrationCode(http, email) } });
@@ -34,7 +34,7 @@ async function oldChat(http, tab, content, name) {
   return done;
 }
 async function stageMessage(http, path, content, name) {
-  const response = await http.post(path, { data: { content } });
+  const response = await http.post(path, { data: { content, requestId: randomUUID() } });
   const body = await response.json();
   check(name, response.ok() && body.assistantMessage?.status === "completed" && !!body.assistantMessage?.content?.trim());
   const stored = await json(http, path);
@@ -57,7 +57,7 @@ try {
   const anonymous = await client(), admin = await client(), normal = await client(), target = await client(), legacy = await client();
   const adminEmail = process.env.V144_ADMIN_EMAIL, email = "target-" + randomUUID() + "@test.local", normalEmail = "normal-" + randomUUID() + "@test.local";
   const adminUser = await register(admin, adminEmail), user = await register(target, email);
-  await register(normal, normalEmail);
+  const normalUser = await register(normal, normalEmail);
   check("指定管理员正常登录", (await login(admin, adminEmail))?.id === adminUser.id);
   check("普通用户正常登录", !!(await login(normal, normalEmail)));
   check("目标用户停用前正常登录", (await login(target, email))?.id === user.id);
@@ -77,7 +77,7 @@ try {
   check("管理员查询受保护且禁止缓存", (await admin.get("/api/admin/users")).headers()["cache-control"]?.includes("no-store"));
   const initial = await list(admin);
   check("返回实际用户汇总", initial.summary.total === 4 && initial.summary.active === 4 && initial.summary.disabled === 0);
-  check("管理列表仅含运营字段", initial.users.every(u => Object.keys(u).every(key => ["id", "email", "nickname", "status", "createdAt", "disabledAt", "disabledBy", "disabledReason"].includes(key))));
+  check("管理列表仅含运营字段", initial.users.every(u => Object.keys(u).every(key => ["id", "email", "nickname", "status", "createdAt", "disabledAt", "disabledBy", "disabledReason", "giftAvailable", "purchasedAvailable"].includes(key))));
   check("邮箱查询精确找到目标", (await list(admin, "?q=" + encodeURIComponent(email))).users[0]?.id === user.id);
   check("账号 ID 查询找到目标", (await list(admin, "?q=" + user.id)).total === 1);
   check("查询把通配符按字面处理", (await list(admin, "?q=%25")).total === 0);
@@ -89,6 +89,12 @@ try {
   check("空结果和超界页正常处理", (await list(admin, "?q=not-found&page=999")).total === 0 && (await list(admin, "?page=999")).page === 2);
   workflows.push("http-authorization-search-pagination-and-upgrade");
 
+  // #04 后新账号没有默认额度；经正式管理员接口提供已知赠送余额，不绕过权限或计费。
+  for (const [http, account] of [[target, user], [normal, normalUser], [admin, adminUser]]) {
+    await json(admin, "/api/admin/users/" + account.id + "/credits", { requestId: randomUUID(), type: "grant", amount: "10000", reason: "管理员控制隔离回归已知测试余额" });
+    const statement = await json(http, "/api/credits");
+    check("模型夹具账号取得已知10000赠送积分且无购买余额", statement.balance.gift.available === "10000" && statement.balance.gift.reserved === "0" && statement.balance.purchased.available === "0" && statement.balance.purchased.reserved === "0");
+  }
   // 先证明同一旧会话真实到达供应商边界，再做停用后的零新增调用比较。
   const project = await json(target, "/api/projects", { name: "停用前资料" });
   const record = await json(target, "/api/projects/" + project.id + "/work-records", {});
@@ -101,9 +107,11 @@ try {
   const file = await json(target, "/api/projects/" + project.id + "/files", { filename: "需求分析.md", content: "正文保护样本，不应出现在后台列表。", agent_type: "requirement_analyst", source_message_id: done.messageId });
   check("通过正式来源消息创建资料并持久保留正文", (await json(target, "/api/projects/" + project.id + "/files/" + file.id)).content.includes("正文保护样本，不应出现在后台列表。"));
   const polishPath = "/api/projects/" + project.id + "/files/" + file.id + "/polish";
-  const polished = await target.post(polishPath, { data: { content: "测试润色" } });
+  const polished = await target.post(polishPath, { data: { content: "测试润色", requestId: randomUUID() } });
   check("停用前润色可调用模型且返回正文", polished.ok() && !!(await polished.json()).polished?.trim());
   check("三个入口确实发生供应商请求", await count() === before + 3);
+  const charged = await json(target, "/api/credits");
+  check("三个入口可靠用量均已结算且仍有余额可供停用检查", charged.balance.gift.reserved === "0" && Number(charged.balance.gift.available) > 0 && Number(charged.balance.gift.available) < 10000 && charged.balance.purchased.available === "0" && charged.entries.filter(entry => entry.businessType === "model_settle").length === 3);
   const mutation = "/api/admin/users/" + user.id + "/disable";
   check("不允许管理员停用自己", (await admin.post("/api/admin/users/" + adminUser.id + "/disable", { data: { reason: "自身停用" } })).status() === 409);
   check("不存在账号安全返回 404", (await admin.post("/api/admin/users/" + randomUUID() + "/disable", { data: { reason: "不存在" } })).status() === 404);
@@ -166,7 +174,7 @@ try {
   workflows.push("admin-page-desktop-mobile-and-persistent-audit");
 
   const upstream = await count();
-  for (const [name, path, data] of [["阶段会话", messagesPath, { content: "停用后尝试" }], ["旧聊天", tabPath, { content: "停用后尝试", expectedVersion: done.tabVersion, requestId: randomUUID() }], ["润色", polishPath, { content: "停用后尝试" }]]) {
+  for (const [name, path, data] of [["阶段会话", messagesPath, { content: "停用后尝试", requestId: randomUUID() }], ["旧聊天", tabPath, { content: "停用后尝试", expectedVersion: done.tabVersion, requestId: randomUUID() }], ["润色", polishPath, { content: "停用后尝试", requestId: randomUUID() }]]) {
     const response = await target.post(path, { data }); check("停用前取得的旧登录状态不能继续" + name, response.status() === 403);
   }
   check("停用后供应商新增调用为零", await count() === upstream);

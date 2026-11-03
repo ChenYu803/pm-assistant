@@ -20,7 +20,7 @@ export async function readCreditBalance(connection: PoolConnection, userId: stri
   for (const row of rows) value[row.kind as keyof CreditBalance] = { available: creditText(creditUnits(row.available)), reserved: creditText(creditUnits(row.reserved)) };
   return value;
 }
-function entry(row: RowDataPacket): CreditEntry {
+export function creditEntry(row: RowDataPacket): CreditEntry {
   return { id: row.id, accountId: row.user_id, accountEmail: row.account_email, actorId: row.actor_id, actorEmail: row.actor_email, requestId: row.request_id, businessType: row.business_type, reason: row.reason, amount: creditText(creditUnits(row.amount)), sourceKind: row.source_kind, before: row.balance_before, after: row.balance_after, allocations: row.allocations, context: row.context_snapshot, createdAt: new Date(row.created_at).toISOString() };
 }
 export async function readCreditStatement(userId: string, page = 1) {
@@ -38,7 +38,7 @@ export async function readCreditStatement(userId: string, page = 1) {
     const [pending] = await connection.execute<RowDataPacket[]>("SELECT id,message_id,state,reserved,consumed,reason FROM conversation_credit_calls WHERE user_id=? AND state IN ('reserved','pending') ORDER BY created_at,id",[userId]);
     const pendingCalls = pending.map(row => ({id:row.id,messageId:row.message_id,state:row.state,reserved:creditText(creditUnits(row.reserved)),consumed:null,reason:row.reason}));
     await connection.commit();
-    return { accountId: userId, balance: current, pendingCalls, entries: rows.map(entry), total, page: currentPage, pageSize };
+    return { accountId: userId, balance: current, pendingCalls, entries: rows.map(creditEntry), total, page: currentPage, pageSize };
   } catch (error) { await connection.rollback(); throw error; }
   finally { connection.release(); }
 }
@@ -69,7 +69,7 @@ export async function adjustCredits(actorId: string, userId: string, input: Cred
     if (!target) throw new CreditError("账号不存在。", 404);
     const [existing] = await connection.execute<RowDataPacket[]>("SELECT * FROM credit_entries WHERE actor_id = ? AND request_id = ? FOR UPDATE", [actorId, operation.requestId]);
     if (existing.length) {
-      const saved = entry(existing[0]);
+      const saved = creditEntry(existing[0]);
       if (saved.accountId !== userId || saved.businessType !== businessType || saved.amount !== operation.amount || saved.reason !== operation.reason) throw new CreditError("此操作标识已用于其他内容，请核对原流水后重新发起。", 409);
       await connection.commit(); return { entry: saved, replayed: true };
     }

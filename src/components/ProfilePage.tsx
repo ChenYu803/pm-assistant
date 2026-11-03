@@ -89,6 +89,7 @@ export default function ProfilePage({ email, initialNickname, isAdmin = false, c
           {isAdmin && <p><Link href="/admin" className={styles.backLink}>管理后台</Link></p>}
         </div>
 
+        <p><Link href="/profile/recharge" className={styles.backLink}>获取积分 / 联系充值</Link></p>
         <CreditLedger initial={credits} />
         {giftRegistrationFailed && <p className={styles.error} role="status">注册已成功，但邀请码未兑换，未获得赠送积分。您仍可在此更正邀请码后重试。</p>}
         <GiftInviteRedemption initiallyRedeemed={giftRedeemed} />
