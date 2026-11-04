@@ -229,7 +229,7 @@ try {
   check("已知故障前后来源余额不变", JSON.stringify(afterKnown.balance) === JSON.stringify(beforeFailures.balance));
   checkCall("已知故障", afterKnown, knownCall.id, false);
   const knownModel = (await api(admin, "/api/admin/model-requests?q=" + knownCall.id)).requests.find(row => row.id === knownCall.id);
-  check("故障已知成本保留后台且由网站承担", knownModel?.websiteBorne && knownModel.usageStatus === "reliable" && ["0.001008", "0.002016"].includes(knownModel.costCny));
+  check("故障已知成本保留后台且由网站承担", knownModel?.websiteBorne && knownModel.usageStatus === "reliable" && knownModel.costCny !== null && [units("0.001008"), units("0.002016")].includes(units(knownModel.costCny)));
 
   const beforePending = await statement(actor);
   checkFunds("正常、润色、停止与故障之后", beforePending);
@@ -288,7 +288,7 @@ try {
   const afterLate = await statement(actor);
   check("迟到证据后资金与所有流水完全不变", fundsSignature(afterLate) === fundsSignature(deadlineReleased));
   const lateModel = (await api(admin, "/api/admin/model-requests?q=" + late.call.id)).requests.find(row => row.id === late.call.id);
-  check("原供应商响应的迟到可靠usage只补网站真实成本", lateModel?.websiteBorne && lateModel.status === "interrupted" && lateModel.usageStatus === "reliable" && ["0.001008", "0.002016"].includes(lateModel.costCny) && lateModel.providerId === late.plan.providerId && lateModel.usage?.total_tokens === 1100 && lateModel.price?.fixture === true);
+  check("原供应商响应的迟到可靠usage只补网站真实成本", lateModel?.websiteBorne && lateModel.status === "interrupted" && lateModel.usageStatus === "reliable" && lateModel.costCny !== null && [units("0.001008"), units("0.002016")].includes(units(lateModel.costCny)) && lateModel.providerId === late.plan.providerId && lateModel.usage?.total_tokens === 1100 && lateModel.price?.fixture === true);
   await runRecovery("迟到证据后再次恢复");
   check("补齐成本后重复恢复仍不追扣", fundsSignature(await statement(actor)) === fundsSignature(afterLate));
 
