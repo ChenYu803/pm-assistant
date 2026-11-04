@@ -5,9 +5,9 @@ import { setTimeout as delay } from "node:timers/promises";
 
 
 export async function withModelProvider(run) {
-const modes = new Set(["normal", "hold", "request-error", "tiny", "output-length", "context-document", "over-budget", "prototype", "insufficient-system-resource", "missing", "negative", "fractional", "string", "unsafe", "total-mismatch", "cache-mismatch", "reasoning-invalid", "conflicting", "delayed", "failed-known", "failed-unknown", "interrupted", "disconnect", "stop-known", "stop-unknown"]);
+const modes = new Set(["normal", "hold", "request-error", "tiny", "output-length", "context-document", "over-budget", "prototype", "insufficient-system-resource", "missing", "negative", "fractional", "string", "unsafe", "total-mismatch", "cache-mismatch", "reasoning-invalid", "conflicting", "delayed", "failed-known", "failed-unknown", "interrupted", "disconnect", "stop-known", "stop-unknown", "held-usage"]);
 const usage = { prompt_tokens: 1000, prompt_cache_hit_tokens: 400, prompt_cache_miss_tokens: 600, completion_tokens: 100, total_tokens: 1100, completion_tokens_details: { reasoning_tokens: 20 } };
-const calls = [], timers = new Set();
+const calls = [], timers = new Set(), heldUsage = new Map();
 let plan;
 const queue = [];
 const provider = createServer(async (req, res) => {
@@ -22,6 +22,13 @@ const provider = createServer(async (req, res) => {
       const added = { mode: body.mode, providerId: "fixture-" + randomUUID(), upstreamId: "upstream-" + randomUUID() };
       if (!plan) plan = added; else queue.push(added);
       return sendJson(200, added);
+    }
+    // 只释放本替身尚未结束的供应商响应，不接触应用状态或账本。
+    if (req.method === "POST" && req.url === "/release-usage") {
+      const release = heldUsage.get(body.providerId);
+      if (!release) return sendJson(409, { error: "fixture-usage-not-held" });
+      release(true);
+      return sendJson(200, { providerId: body.providerId, released: true });
     }
     if (req.method !== "POST" || req.url !== "/v1/chat/completions" || req.headers.authorization !== "Bearer isolated-provider-fixture") return sendJson(403, { error: "fixture-boundary-only" });
     if (!plan) return sendJson(409, { error: "fixture-unplanned-call" });
@@ -64,6 +71,23 @@ const provider = createServer(async (req, res) => {
     if (current.mode !== "stop-unknown") {
       finish();
       if (current.mode === "delayed") { call.phase = "waiting-usage"; await delay(500); }
+      if (current.mode === "held-usage") {
+        call.phase = "waiting-usage-release";
+        const released = await new Promise(resolveHold => {
+          const close = () => { call.phase = "closed-before-usage-release"; release(false); };
+          const release = accepted => {
+            heldUsage.delete(current.providerId);
+            clearTimeout(timer); timers.delete(timer); res.off("close", close);
+            resolveHold(accepted);
+          };
+          const timer = setTimeout(() => {
+            call.phase = "usage-release-timeout";
+            release(false); res.destroy();
+          }, 60000);
+          timers.add(timer); heldUsage.set(current.providerId, release); res.once("close", close);
+        });
+        if (!released || res.destroyed) return;
+      }
       if (current.mode !== "missing") usageOnly();
     }
     if (current.mode.startsWith("stop-")) {
@@ -78,5 +102,5 @@ const provider = createServer(async (req, res) => {
 });
 await new Promise(resolve => provider.listen(0, "127.0.0.1", resolve));
 try { return await run("http://127.0.0.1:"+provider.address().port+"/v1", () => ({ calls, planned:plan??null })); }
-finally { for (const timer of timers) clearTimeout(timer); provider.closeAllConnections(); await new Promise(resolve => provider.close(resolve)); }
+finally { for (const release of heldUsage.values()) release(false); for (const timer of timers) clearTimeout(timer); provider.closeAllConnections(); await new Promise(resolve => provider.close(resolve)); }
 }

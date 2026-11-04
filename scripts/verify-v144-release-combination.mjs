@@ -5,7 +5,7 @@ import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 process.env.AI_MODE = "replay";
 const result = await withModelProvider(async (url, stats) => {
-  const result = await runIsolatedReplay({ slug: "release-combination", title: "发布跨票组合", scenarioScript: "scripts/verify-v144-release-combination-scenario.mjs", designatedAdmin: true, creditLifecycle: true, providerFixtureUrl: url, expectedWorkflows: 4 });
+  const result = await runIsolatedReplay({ slug: "release-combination", title: "发布跨票组合", scenarioScript: "scripts/verify-v144-release-combination-scenario.mjs", designatedAdmin: true, creditLifecycle: true, providerFixtureUrl: url, expectedWorkflows: 5 });
   await writeFile(join(result.outputDir, "provider-summary.json"), JSON.stringify({ fixture: true, live: false, realLlmCostCny: "0", ...stats() }, null, 2));
   return result;
 });

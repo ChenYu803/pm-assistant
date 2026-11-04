@@ -5,7 +5,7 @@
 
 **Blocked by:** #01 本地命名；#05 赠送邀请码；#09 停止与故障免单；#10 待核对恢复；#12 人工退款。上述票均已有 resolved 记录，无新增外部服务前置。
 
-**Status:** ready-for-agent
+**Status:** claimed
 
 **Type:** task
 

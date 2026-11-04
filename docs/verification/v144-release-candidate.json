@@ -167,5 +167,28 @@
     "productionReadiness": "not-assessed",
     "endedAt": "2026-11-04T06:53:17.936Z"
   },
-  "ticketStatus": "ready-for-human"
+  "ticketStatus": "claimed",
+  "continuation": {
+    "planningCommit": "1165f8a34e0013c95dec504e785b02d980f79e9a",
+    "risk": "L2",
+    "runtimeReuseCheck": {
+      "priorSnapshot": "v144-release/2026-11-04T06-30-46-332Z/source-after.json",
+      "priorRuntimeFiles": 233,
+      "currentRuntimeFiles": 233,
+      "changedRuntimeFiles": [],
+      "addedRuntimeFiles": []
+    },
+    "releaseStages": {
+      "13": "候选与隔离生命周期组合回归",
+      "14": "目标服务器安全升级与受控验收就绪",
+      "15": "目标环境真实邮件、模型计量、累计预算验收与正式开放"
+    },
+    "candidateIncludesVerifiedAncestors": [
+      "fd6fb2c7216af8a1bee1eced7537996925da1ff1",
+      "5d2d5621ed987e42d95696809a4826007918ba36",
+      "aaffb6267e9d514a30da3ffbea9f2fb4d58483c5"
+    ],
+    "newPaidModelRequests": 0,
+    "productionOperationsExecuted": false
+  }
 }
