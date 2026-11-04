@@ -1,4 +1,5 @@
 "use client";
+import ManualRefundHistory from "./ManualRefundHistory";
 
 import { useId, useMemo, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import { CREDIT_BUSINESS_LABELS, type CreditStatement } from "@/lib/credit-values";
@@ -73,7 +74,7 @@ export default function CreditLedger({ initial, actorId }: { initial: CreditStat
     <div className={styles.heading}><h2 id={id + "-title"}>积分与流水</h2><button type="button" onClick={() => refresh()} disabled={loading || saving}>{loading ? "查询中…" : "刷新流水"}</button></div>
     <p className={styles.account}>账号 ID：<span>{data.accountId}</span></p>
     <dl className={styles.balances} aria-label="积分余额"><div><dt>赠送积分</dt><dd>可用 <strong>{data.balance.gift.available}</strong><span>预留 {data.balance.gift.reserved}</span></dd></div><div><dt>购买积分</dt><dd>可用 <strong>{data.balance.purchased.available}</strong><span>预留 {data.balance.purchased.reserved}</span></dd></div></dl>
-    <p className={styles.hint}>单位：积分。可用积分可供后续调用；预留积分为调用暂时占用的额度，尚未最终消耗。</p>
+    <p className={styles.hint}>单位：积分。可用积分可供后续调用；预留积分为调用暂时占用的额度，尚未最终消耗。退款锁定 {data.refundHeld??"0"} 积分，单独记录且不再可用。</p>
     {actorId && <form className={styles.form} onSubmit={submit} aria-label="管理员积分调整">
       <h3>赠送与余额纠正</h3><p className={styles.hint}>赠送、补偿与纠正均保存操作记录。纠正填写正数增加、负数扣减，只能调整赠送积分的可用部分。</p>
       <fieldset disabled={!ready || saving || !!pending} className={styles.fields}>
@@ -86,6 +87,7 @@ export default function CreditLedger({ initial, actorId }: { initial: CreditStat
     </form>}
     {message && <p role="status" className={styles.success}>{message}</p>}{(error || storageError) && <p role="alert" className={styles.error}>{error || "无法读取待确认操作，请启用浏览器会话存储后刷新页面。"}</p>}
     {data.pendingCalls?.length ? <div aria-label="未结算模型调用">{data.pendingCalls.map(call => <p key={call.id}>调用 {call.id} · {call.state === "pending" ? "待核对" : "生成中"} · 冻结 {call.reserved} 积分</p>)}</div> : null}
+    {!actorId && <ManualRefundHistory key={JSON.stringify(data.refunds)} initial={data.refunds??[]} total={data.refundTotal??0} held={data.refundHeld??"0"} />}
     <div className={styles.scroll} role="region" aria-label="积分流水，可横向滚动" tabIndex={0} aria-busy={loading}>
       <table className={styles.table}><caption>积分流水 · 共 {data.total} 笔，每页 {data.pageSize} 笔</caption><thead><tr><th scope="col">时间与业务</th><th scope="col">变动与余额</th><th scope="col">原因与追溯</th></tr></thead><tbody>
         {data.entries.map(item => <tr key={item.id}><td><time dateTime={item.createdAt}>{dates.format(new Date(item.createdAt))}</time><span>{CREDIT_BUSINESS_LABELS[item.businessType] ?? item.businessType}</span><span>{item.sourceKind === "gift" ? "赠送积分" : "购买积分"}</span></td><td><strong>{item.amount === "0" || item.amount.startsWith("-") ? "" : "+"}{item.amount}</strong><span>赠送可用 {item.before.gift.available} → {item.after.gift.available}</span><span>购买可用 {item.before.purchased.available} → {item.after.purchased.available}</span><span>预留：赠送 {item.after.gift.reserved} / 购买 {item.after.purchased.reserved}</span></td><td><p>{item.reason}</p>{item.businessType === "manual_recharge" && <p>实收人民币：{String(item.context?.originalPaidRmb)} 元<br/>交易参考号：{String(item.context?.receiptReference)}</p>}<details><summary>查看流水凭据</summary><p>流水 ID：{item.id}</p><p>操作者：{item.actorEmail}（{item.actorId}）</p><p>操作 ID：{item.requestId}</p>{item.allocations.map(source => <p key={source.sourceId}>来源 {source.sourceId}：{source.amount}</p>)}{item.context && <p>关联信息：{JSON.stringify(item.context)}</p>}</details></td></tr>)}

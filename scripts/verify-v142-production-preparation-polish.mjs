@@ -120,17 +120,19 @@ export async function verifyProductionLegacy({ page, pool, userId, base, check }
     return { status: response.status, cache: response.headers.get("Cache-Control"), buffering: response.headers.get("X-Accel-Buffering"), text };
   }, { path, requestId });
   check("旧工作台真实 SSE 输出 token 且禁缓存/代理缓冲", disconnected.status === 200 && disconnected.cache.includes("no-store") && disconnected.cache.includes("no-transform") && disconnected.buffering === "no");
-  let completedReply;
+  let completedReply, settled = false;
   const deadline = Date.now() + 5000;
   do {
-    const [rows] = await pool.query("SELECT status,content,error_message FROM messages WHERE tab_id=? AND request_id=? AND role='assistant'", [tabId, requestId]);
+    // 正文完成和操作解锁分两次提交；同轮读取两者，不能看到 completed 就提前断言。
+    const [rows] = await pool.query("SELECT m.status,CHAR_LENGTH(m.content) AS content_length,m.error_message,t.active_operation_id,t.version FROM tabs t LEFT JOIN messages m ON m.tab_id=t.id AND m.request_id=? AND m.role='assistant' WHERE t.id=?", [requestId, tabId]);
     completedReply = rows[0];
-    if (completedReply?.status !== "generating") break;
+    settled = completedReply?.status === "completed" && completedReply.content_length > 0 && completedReply.error_message === null && completedReply.active_operation_id === null;
+    if (settled || ["failed", "interrupted"].includes(completedReply?.status)) break;
     await new Promise((resolve) => setTimeout(resolve, 50));
   } while (Date.now() < deadline);
-  const [unlocked] = await pool.query("SELECT active_operation_id,version FROM tabs WHERE id=?", [tabId]);
-  check("旧工作台 HTTP 断开后继续生成并持久 completed 正文、释放操作锁", completedReply?.status === "completed" && completedReply.content.length > 0 && completedReply.error_message === null && unlocked[0].active_operation_id === null);
-  const retry = await page.request.post(`${base}${path}`, { data: { expectedVersion: unlocked[0].version, requestId: randomUUID(), content: "断线后继续生成" } });
+  console.log("旧工作台断线收口实际状态：" + JSON.stringify(completedReply ?? null));
+  check("旧工作台 HTTP 断开后继续生成并持久 completed 正文、释放操作锁", settled);
+  const retry = await page.request.post(`${base}${path}`, { data: { expectedVersion: completedReply.version, requestId: randomUUID(), content: "断线后继续生成" } });
   check("旧工作台断线后新请求可完成并返回真实终态", retry.status() === 200 && (await retry.text()).includes('"type":"done"'));
 
   // 只把本测试进程的 15 秒计时器缩至 20ms；执行同一真实数据库/正式函数，服务器源码保持不变。

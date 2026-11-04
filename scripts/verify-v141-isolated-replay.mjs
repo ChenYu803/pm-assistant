@@ -13,7 +13,7 @@ import { startEmailFixture } from "./verify-email-fixture.mjs";
 import { initializeMysql } from "../src/lib/mysql-bootstrap.ts";
 import { getMysqlAdminConfig, getMysqlConnectionOptions } from "../src/lib/mysql-config.ts";
 
-export async function runIsolatedReplay({ slug, title, scenarioScript, captureProvider = false, providerFixtureUrl, expectedWorkflows = 2, seedLegacyAuth = false, emailBoundary = true, designatedAdmin = false, creditLifecycle = false, stopBillingFaults = false, manualRechargeLifecycle = false }) {
+export async function runIsolatedReplay({ slug, title, scenarioScript, captureProvider = false, providerFixtureUrl, expectedWorkflows = 2, seedLegacyAuth = false, emailBoundary = true, designatedAdmin = false, creditLifecycle = false, stopBillingFaults = false, manualRechargeLifecycle = false, manualRefundLifecycle = false }) {
   if (!/^[a-z][a-z0-9-]*$/.test(slug) || !/^scripts\/verify-v14[124]-[a-z0-9-]+-scenario\.mjs$/.test(scenarioScript)) {
     throw new Error("非法专项标识或场景路径");
   }
@@ -47,11 +47,11 @@ export async function runIsolatedReplay({ slug, title, scenarioScript, capturePr
   if (designatedAdmin) {
     env.V144_ADMIN_EMAIL = `admin-${suffix}@test.local`;
     env.ADMIN_EMAILS = env.V144_ADMIN_EMAIL;
-    if (manualRechargeLifecycle) {
+    if (manualRechargeLifecycle || manualRefundLifecycle) {
       env.V144_SECOND_ADMIN_EMAIL = `admin-second-${suffix}@test.local`;
       env.ADMIN_EMAILS += "," + env.V144_SECOND_ADMIN_EMAIL;
-      env.RECHARGE_WECHAT_CONTACT = "";
     }
+    if (manualRechargeLifecycle) env.RECHARGE_WECHAT_CONTACT = "";
   }
   let emailFixture;
   let admin;
@@ -210,11 +210,39 @@ export async function runIsolatedReplay({ slug, title, scenarioScript, capturePr
     scenario = start(scenarioScript, "scenario", { ...serviceEnv, AI_MODE: "replay", BASE_URL: base });
     // 仅隔离场景 IPC：构造已保护余额、重启同一份正式应用，无生产测试路由。
     let lifecycleBusy = false;
+    let refundAccountLock = null;
     if (creditLifecycle) scenario.on("message", async message => {
-      if (lifecycleBusy || !["credit-protection-fixture", "conversation-purchase-fixture", "restart-credit-app", ...(manualRechargeLifecycle ? ["recharge-write-fault","recharge-clear-fault","recharge-contact-configured"] : []), ...(stopBillingFaults ? ["stop-account-lock","stop-account-unlock","stop-write-fault","stop-clear-fault"] : [])].includes(message?.type)) return;
+      if (lifecycleBusy || !["credit-protection-fixture", "conversation-purchase-fixture", "restart-credit-app", ...(manualRefundLifecycle ? ["refund-write-fault","refund-clear-fault","refund-account-lock","refund-account-unlock"] : []), ...(manualRechargeLifecycle ? ["recharge-write-fault","recharge-clear-fault","recharge-contact-configured"] : []), ...(stopBillingFaults ? ["stop-account-lock","stop-account-unlock","stop-write-fault","stop-clear-fault"] : [])].includes(message?.type)) return;
       lifecycleBusy = true;
       try {
-        if (manualRechargeLifecycle && message.type.startsWith("recharge-")) {
+        if (manualRefundLifecycle && message.type.startsWith("refund-")) {
+          // 退款故障仅隔离库、仅内部最终扣账；外部成功记录必须能独立提交。
+          if (!/^v141_replay_[a-f0-9]{16}$/.test(database)) throw new Error("拒绝非隔离退款操作");
+          let result = {};
+          if (message.type === "refund-write-fault") {
+            await admin.query("CREATE TRIGGER "+mysql.escapeId(database)+".verify_refund_failure BEFORE INSERT ON "+mysql.escapeId(database)+".credit_entries FOR EACH ROW BEGIN IF NEW.business_type='manual_refund' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='isolated-refund-accounting-failure'; END IF; END");
+          } else if (message.type === "refund-clear-fault") {
+            await admin.query("DROP TRIGGER IF EXISTS "+mysql.escapeId(database)+".verify_refund_failure");
+          } else if (message.type === "refund-account-lock" && message.inspect === true) {
+            if (!refundAccountLock || refundAccountLock !== message.userId) throw new Error("隔离账号锁不匹配");
+            // 按隔离库筛选实际等待中的事务，禁止用固定延时冒充请求已并发。
+            const [rows] = await admin.execute("SELECT COUNT(*) AS count FROM information_schema.innodb_trx t JOIN information_schema.processlist p ON p.ID=t.trx_mysql_thread_id WHERE p.DB=? AND t.trx_state='LOCK WAIT'", [database]);
+            // data_lock_waits 为实时锁图，不受持锁连接事务中的 INNODB_TRX 快照影响；计数含等待管理员锁的传递锁链。
+            const [live] = await admin.execute("SELECT COUNT(DISTINCT w.REQUESTING_THREAD_ID) AS count FROM performance_schema.data_lock_waits w JOIN performance_schema.data_locks l ON l.ENGINE=w.ENGINE AND l.ENGINE_LOCK_ID=w.REQUESTING_ENGINE_LOCK_ID WHERE l.OBJECT_SCHEMA=? AND l.OBJECT_NAME='users'", [database]);
+            result.waiters = Number(live[0].count);
+            result.innodbTrxWaiters = Number(rows[0].count);
+          } else if (message.type === "refund-account-lock") {
+            if (refundAccountLock || typeof message.userId !== "string" || !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(message.userId)) throw new Error("非法隔离账号锁");
+            await admin.beginTransaction();
+            const [rows] = await admin.execute("SELECT id FROM "+mysql.escapeId(database)+".users WHERE id=? FOR UPDATE", [message.userId]);
+            if (rows.length !== 1) { await admin.rollback(); throw new Error("账号不属于隔离库"); }
+            refundAccountLock = message.userId;
+          } else {
+            if (!refundAccountLock || refundAccountLock !== message.userId) throw new Error("隔离账号解锁不匹配");
+            await admin.commit(); refundAccountLock = null;
+          }
+          scenario.send({type:message.type,...result});
+        } else if (manualRechargeLifecycle && message.type.startsWith("recharge-")) {
           if (message.type === "recharge-write-fault") {
             await admin.query("CREATE TRIGGER "+mysql.escapeId(database)+".verify_recharge_failure BEFORE INSERT ON "+mysql.escapeId(database)+".credit_entries FOR EACH ROW BEGIN IF NEW.business_type='manual_recharge' THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='isolated-recharge-audit-failure'; END IF; END");
           } else if (message.type === "recharge-clear-fault") await admin.query("DROP TRIGGER IF EXISTS "+mysql.escapeId(database)+".verify_recharge_failure");

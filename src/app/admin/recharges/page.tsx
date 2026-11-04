@@ -13,7 +13,7 @@ export default async function Page({searchParams}:{searchParams:Promise<Record<s
  const result=await listManualRecharges(filters.q,filters.page),pages=Math.max(1,Math.ceil(result.total/result.pageSize));
  const url=(page:number)=>"/admin/recharges?"+new URLSearchParams({q:filters.q,page:String(page)});
  return <div className={styles.shell}><main className={styles.content}>
-  <nav className={styles.nav} aria-label="后台导航"><Link href="/admin">用户管理 / 选择账号入账</Link><Link href="/profile">个人主页</Link></nav>
+  <nav className={styles.nav} aria-label="后台导航"><Link href="/admin">用户管理 / 选择账号入账</Link><Link href="/admin/refunds">退款与恢复</Link><Link href="/profile">个人主页</Link></nav>
   <h1>人工充值记录</h1><p className={styles.intro}>核验实收后，请从用户管理选择明确账号入账。这里仅展示实收购买，不包含赠送与补偿；每笔充值保留原始实付及购买来源。</p>
   <form method="get" action="/admin/recharges" className={styles.filters}><div className={styles.field}><label htmlFor="recharge-query">完整账号 ID、邮箱或交易参考号</label><input id="recharge-query" name="q" type="search" maxLength={320} defaultValue={filters.q}/></div><button type="submit">查询充值</button><Link href="/admin/recharges">重置</Link></form>
   <div className={styles.tableRegion} role="region" aria-label="充值记录，可横向滚动" tabIndex={0}><table className={styles.table}>

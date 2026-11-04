@@ -1,3 +1,4 @@
+import type { ManualRefund } from "@/lib/manual-refund-values";
 /** 精确积分：数据库、HTTP 与界面共用十进制字符串，计算只使用 bigint。 */
 export const CREDIT_SCALE = BigInt("100000000");
 export type CreditBalance = { gift: { available: string; reserved: string }; purchased: { available: string; reserved: string } };
@@ -19,5 +20,5 @@ export type CreditEntry = {
   context: Record<string, unknown> | null; createdAt: string;
 };
 export type CreditCallView = { id: string; messageId: string; state: string; reserved: string; consumed: string | null; reason: string | null };
-export type CreditStatement = { accountId: string; balance: CreditBalance; entries: CreditEntry[]; pendingCalls?: CreditCallView[]; total: number; page: number; pageSize: number };
-export const CREDIT_BUSINESS_LABELS: Record<string, string> = { manual_recharge: "人工充值", admin_grant: "管理员赠送", admin_compensation: "补偿", admin_correction: "赠送余额纠正", invite_redemption: "邀请码赠送", model_reserve: "调用预留", model_settle: "模型消耗", model_release: "释放预留" };
+export type CreditStatement = { accountId: string; balance: CreditBalance; entries: CreditEntry[]; pendingCalls?: CreditCallView[]; refunds?: ManualRefund[]; refundTotal?: number; refundHeld?: string; total: number; page: number; pageSize: number };
+export const CREDIT_BUSINESS_LABELS: Record<string, string> = { manual_refund_reference: "退款请求关联", manual_refund_hold: "退款锁定", manual_refund_transfer: "外部退款确认", manual_refund: "人工退款扣账", manual_refund_release: "退款失败释放", manual_recharge: "人工充值", admin_grant: "管理员赠送", admin_compensation: "补偿", admin_correction: "赠送余额纠正", invite_redemption: "邀请码赠送", model_reserve: "调用预留", model_settle: "模型消耗", model_release: "释放预留" };

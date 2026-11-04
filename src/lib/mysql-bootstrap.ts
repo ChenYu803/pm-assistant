@@ -611,6 +611,29 @@ export const MYSQL_MIGRATIONS = [
     checksum: "e88b9a4b2bff18be4d413d98417e7d6cbf3e7fde832d4203a06bbf6a10e3ee37",
     statements: ["ALTER TABLE model_requests ADD COLUMN stop_requested_at DATETIME(3) NULL"],
   },
+  {
+    id: "0032_v144_manual_refunds",
+    checksum: "a3c29fec53468115a76766f42bff407262d02a2cdda60f3b45913b5fb8021ebe",
+    statements: [`ALTER TABLE credit_sources ADD COLUMN refund_held DECIMAL(28,8) NOT NULL DEFAULT 0, ADD CONSTRAINT credit_source_refund_nonnegative CHECK (refund_held >= 0 AND available + reserved + refund_held <= original_credits)`,
+`CREATE TABLE IF NOT EXISTS credit_refunds (
+ id CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL PRIMARY KEY,
+ user_id CHAR(36) NOT NULL, account_email VARCHAR(320) NOT NULL,
+ recharge_entry_id CHAR(36) NOT NULL, source_id CHAR(36) NOT NULL,
+ actor_id CHAR(36) NOT NULL, actor_email VARCHAR(320) NOT NULL,
+ request_id VARCHAR(160) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+ refund_rmb DECIMAL(28,8) NOT NULL, credits DECIMAL(28,8) NOT NULL, reason VARCHAR(500) NOT NULL,
+ transfer_status ENUM('unverified','succeeded','failed') NOT NULL DEFAULT 'unverified',
+ accounting_status ENUM('held','completed','released') NOT NULL DEFAULT 'held',
+ external_reference VARCHAR(128) CHARACTER SET ascii COLLATE ascii_bin NULL,
+ transfer_reason VARCHAR(500) NULL, created_at DATETIME(3) NOT NULL, updated_at DATETIME(3) NOT NULL,
+ active_source CHAR(36) GENERATED ALWAYS AS (IF(accounting_status = 'held', source_id, NULL)) STORED,
+ CONSTRAINT credit_refund_amount CHECK (refund_rmb > 0 AND credits = refund_rmb * 1000),
+ CONSTRAINT credit_refund_states CHECK ((accounting_status = 'held' AND transfer_status IN ('unverified','succeeded')) OR (accounting_status = 'completed' AND transfer_status = 'succeeded') OR (accounting_status = 'released' AND transfer_status = 'failed')),
+ UNIQUE KEY credit_refund_request (actor_id, request_id), UNIQUE KEY credit_refund_active_source (active_source),
+ UNIQUE KEY credit_refund_external (external_reference), KEY credit_refund_owner (user_id, created_at, id),
+ KEY credit_refund_source (source_id, accounting_status), KEY credit_refund_created (created_at, id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`],
+  },
 ] as const;
 
 export interface MysqlInitializationResult {

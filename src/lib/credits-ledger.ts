@@ -1,3 +1,4 @@
+import { readRefunds } from "@/lib/manual-refund-query";
 import { randomUUID } from "node:crypto";
 import type { PoolConnection, RowDataPacket } from "mysql2/promise";
 import { getMysqlPool } from "@/lib/mysql";
@@ -37,8 +38,10 @@ export async function readCreditStatement(userId: string, page = 1) {
     const [rows] = await connection.query<RowDataPacket[]>("SELECT * FROM credit_entries WHERE user_id = ? ORDER BY sequence DESC LIMIT ? OFFSET ?", [userId, pageSize, (currentPage - 1) * pageSize]);
     const [pending] = await connection.execute<RowDataPacket[]>("SELECT id,message_id,state,reserved,consumed,reason FROM conversation_credit_calls WHERE user_id=? AND state IN ('reserved','pending') ORDER BY created_at,id",[userId]);
     const pendingCalls = pending.map(row => ({id:row.id,messageId:row.message_id,state:row.state,reserved:creditText(creditUnits(row.reserved)),consumed:null,reason:row.reason}));
+    const refunds=await readRefunds(connection,{accountId:userId});
+    const [held]=await connection.execute<RowDataPacket[]>("SELECT COALESCE(SUM(refund_held),0) AS held FROM credit_sources WHERE user_id=?",[userId]);
     await connection.commit();
-    return { accountId: userId, balance: current, pendingCalls, entries: rows.map(creditEntry), total, page: currentPage, pageSize };
+    return { accountId: userId, balance: current, pendingCalls, refunds:refunds.refunds,refundTotal:refunds.total,refundHeld:creditText(creditUnits(held[0].held)), entries: rows.map(creditEntry), total, page: currentPage, pageSize };
   } catch (error) { await connection.rollback(); throw error; }
   finally { connection.release(); }
 }

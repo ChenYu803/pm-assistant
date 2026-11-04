@@ -75,7 +75,9 @@
     "verify:v144-conversation-credits": "tsx scripts/verify-v144-conversation-credits.mjs",
     "verify:v144-polish-credits": "tsx scripts/verify-v144-polish-credits.mjs",
     "verify:v144-stop-billing": "tsx scripts/verify-v144-stop-billing.mjs",
-    "verify:v144-manual-recharge": "tsx scripts/verify-v144-manual-recharge.mjs"
+    "verify:v144-manual-recharge": "tsx scripts/verify-v144-manual-recharge.mjs",
+    "verify:v144-manual-refund": "tsx scripts/verify-v144-manual-refund.mjs",
+    "verify:v144-manual-refund-browser": "node --import tsx scripts/verify-v144-manual-refund-browser.mjs"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "1.1.13",
