@@ -1,0 +1,4 @@
+❌ D:\DevTools\Node\node.exe 退出 1，详见隔离 tool.log
+✅ 本次隔离原库和随机账号全部清理
+✅ 本次含凭据、明文和密钥的临时夹具已清理
+结果: 2 通过, 1 失败；证据：C:\Users\ADMINI~1\AppData\Local\Temp\v142-production-tools-evidence-94ASaD

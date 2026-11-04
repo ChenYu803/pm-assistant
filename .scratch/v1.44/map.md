@@ -34,6 +34,8 @@
 
 - 2026-11-04，#13 已 resolved：最终代码候选 a209313，新增生命周期组合257/257及五项相关专项613/613，静态检查、构建与双轴复核通过；原3041隔离证据保留。运行中迟到usage不等于已结束pending事后补查，边界交#15。见 [13号票](issues/13-release-regression-live-probes.md) 与 [验收记录](../../docs/verification/v144-release-regression.md)。
 
+- 2026-11-04，#14备份解密、本机隔离恢复和目标机候选构建完成，真实邮件字段缺失阻断启动，状态needs-info；未迁移/切换，前沿仍#14。见[升级记录](../../docs/verification/v144-production-upgrade.md)。
+
 ## Fog
 
 - #02 仍缺真实事务邮件配置、验证过的发信身份和实际注册/找回收件回执；凭据经受限配置提供。

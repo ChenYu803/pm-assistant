@@ -1,0 +1,15 @@
+{
+  "observedAt": "2026-11-04T20:13:06+08:00",
+  "candidate": "a20931375da54551ee348dfa983a5271830c31ad",
+  "stagedDirectory": "/srv/ideastage/releases/a20931375da54551ee348dfa983a5271830c31ad",
+  "stagedHead": "a20931375da54551ee348dfa983a5271830c31ad",
+  "worktree": "",
+  "currentDirectory": "/srv/ideastage/releases/77c7678a6ad1d6a9bc02389bfc08ba465b6345",
+  "currentHead": "77c76768a6ad1d6a9bcc02389bfc08ba465b6345",
+  "preflightExit": 1,
+  "preflightOutput": "\u274c RESEND_API_KEY \u9700\u66ff\u6362\u4e3a\u81f3\u5c11 16 \u4f4d\u968f\u673a\u503c\n\u274c EMAIL_FROM \u9700\u4e3a\u4e8b\u52a1\u90ae\u4ef6\u670d\u52a1\u5df2\u9a8c\u8bc1\u7684\u53d1\u4fe1\u8eab\u4efd\n",
+  "siteService": "active",
+  "health": "{\"status\":\"ok\"}\n200",
+  "recoveryTimerInstalled": false,
+  "releaseOwnership": "root:ideastage 750"
+}

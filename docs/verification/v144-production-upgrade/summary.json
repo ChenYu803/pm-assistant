@@ -1,0 +1,115 @@
+{
+  "date": "2026-11-04",
+  "timezone": "Asia/Shanghai",
+  "implementationBaseline": "fceab8328fd12386d8aa013c4f94ac3ee5b9dd85",
+  "status": "preparation-complete-awaiting-real-email-configuration",
+  "candidate": "a20931375da54551ee348dfa983a5271830c31ad",
+  "verifiedAncestors": [
+    "fd6fb2c7216af8a1bee1eced7537996925da1ff1",
+    "5d2d5621ed987e42d95696809a4826007918ba36",
+    "aaffb6267e9d514a30da3ffbea9f2fb4d58483c5"
+  ],
+  "localHeadAtStart": "fceab8328fd12386d8aa013c4f94ac3ee5b9dd85",
+  "remoteHead": "77c76768a6ad1d6a9bcc02389bfc08ba465b6345",
+  "remoteProbe": "via target server git ls-remote; direct local GitHub request failed",
+  "target": {
+    "observedAt": "2026-11-04T20:13:06+08:00",
+    "candidate": "a20931375da54551ee348dfa983a5271830c31ad",
+    "stagedDirectory": "/srv/ideastage/releases/a20931375da54551ee348dfa983a5271830c31ad",
+    "stagedHead": "a20931375da54551ee348dfa983a5271830c31ad",
+    "worktree": "",
+    "currentDirectory": "/srv/ideastage/releases/77c7678a6ad1d6a9bc02389bfc08ba465b6345",
+    "currentHead": "77c76768a6ad1d6a9bcc02389bfc08ba465b6345",
+    "preflightExit": 1,
+    "preflightOutput": "❌ RESEND_API_KEY 需替换为至少 16 位随机值\n❌ EMAIL_FROM 需为事务邮件服务已验证的发信身份\n",
+    "siteService": "active",
+    "health": "{\"status\":\"ok\"}\n200",
+    "recoveryTimerInstalled": false,
+    "releaseOwnership": "root:ideastage 750"
+  },
+  "backup": {
+    "directory": "D:/Backups/IdeaStage/v144-upgrade-20261104",
+    "artifacts": [
+      {
+        "name": "2026-11-04T12-04-21-958Z-06ef9e0c.isb",
+        "bytes": 6106978,
+        "sha256": "e470da48859ce9fb821592296138c5ae2527d21c96ae8b754acc048ee92e9185"
+      },
+      {
+        "name": "2026-11-04-v144-before-system-config.isb",
+        "bytes": 3186,
+        "sha256": "d474effcb3781ed2012ffad3548e7b1f61dc03b6badda5bb929911420fd7edf0"
+      },
+      {
+        "name": "candidate-a209313.bundle",
+        "bytes": 21281128,
+        "sha256": "ed31097a842afad776ec1ca104e2d88362712b6406968c2e06dbace4d942dbbc"
+      }
+    ],
+    "localDecryptionVerified": true,
+    "keyPath": "C:/Users/Administrator/.ideastage-recovery/backup.key",
+    "keyOrigin": "copy of existing server key; no new key generated; existing KeePass entry not unlocked this session",
+    "separateKeyDirectory": true,
+    "acl": "Administrators and SYSTEM only",
+    "localPlaintextArchivesRemoved": true,
+    "isolatedRestore": {
+      "instance": "local MySQL 9.7.2",
+      "database": "ideastage_restore_a918b465b06c974d",
+      "tables": 22,
+      "migrations": 22,
+      "users": 0,
+      "projects": 0,
+      "files": 0,
+      "allOtherTablesEmpty": true,
+      "cleaned": true,
+      "loginAndBodyRecovery": "not exercised: production snapshot contains no users, projects or body rows"
+    },
+    "targetAdminCredentialWorks": false,
+    "targetMigrationCredentialWorks": true
+  },
+  "checks": {
+    "localTypecheck": "passed",
+    "targetDependencies": "passed",
+    "targetProductionBuild": "passed",
+    "targetTypecheck": "passed",
+    "targetPreflight": "blocked: missing RESEND_API_KEY and EMAIL_FROM",
+    "backupTools": {
+      "pass": 2,
+      "fail": 1,
+      "stage": "legacy AI boundary before backup assertions",
+      "reason": "missing generation request identity",
+      "cleaned": true
+    }
+  },
+  "runtimeConfiguration": {
+    "AI_MODE": "replay",
+    "AI_API_KEY": "empty",
+    "AI_MODEL": "deepseek-v4-flash",
+    "RESEND_API_KEY": "missing",
+    "EMAIL_FROM": "missing",
+    "ADMIN_EMAILS": "missing; decided value 3037116719@qq.com",
+    "RECHARGE_WECHAT_CONTACT": "missing",
+    "testClockAndEmailFixture": "absent"
+  },
+  "pendingMigrations": [
+    "0023",
+    "0024",
+    "0025",
+    "0026",
+    "0027",
+    "0028",
+    "0029",
+    "0030",
+    "0031",
+    "0032"
+  ],
+  "productionDatabaseMigrated": false,
+  "currentReleaseSwitched": false,
+  "maintenanceRestrictionActivated": false,
+  "ordinaryUsersOnCandidate": false,
+  "recoveryTimerEnabled": false,
+  "pushed": false,
+  "paidModelRequests": 0,
+  "trueFundOperations": 0,
+  "formallyReleased": false
+}

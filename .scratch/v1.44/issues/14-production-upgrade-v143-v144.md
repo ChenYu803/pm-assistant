@@ -5,7 +5,7 @@
 
 **Blocked by:** [#13 发布候选收口与生命周期组合回归](13-release-regression-live-probes.md)。
 
-**Status:** ready-for-agent
+**Status:** needs-info
 
 **Type:** task
 
@@ -37,3 +37,7 @@
 ## 实施边界与交接
 
 本票完成实际增量升级与受控基础验收，不能仅凭部署方案标记 resolved。普通用户开放和完整生产发布结论由 #15 完成；若无法维持受控访问，应先解决该阻断再切换版本。
+
+## Comments
+
+- 2026-11-04：目标机盘点、服务器外备份解密、本机随机隔离恢复和精确候选a209313的目标机构建/tsc/权限收口完成。缺少真实RESEND_API_KEY、EMAIL_FROM，启动门禁失败，状态needs-info；未迁移、切换、启用恢复调度或完成登录态验收，不标resolved。空业务恢复不算旧账号/正文验收。见[升级记录](../../../docs/verification/v144-production-upgrade.md)与[执行单](../../../docs/v144-production-upgrade-runbook.md)。

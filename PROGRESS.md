@@ -1,5 +1,13 @@
 # PROGRESS.md - 项目状态与交接
 
+### 2026-11-04：#14 升级准备完成，真实邮件配置阻断切换
+
+用户调用implement执行#14，基准fceab832。目标机与远端实际HEAD均77c7676；精确候选a209313通过bundle放入新发行目录，目标机npm ci、build、tsc及权限收口通过，未push。旧站仍active、health200，正式库22迁移，账号/项目/文件均0。未迁移/切current/启用恢复timer，#14设needs-info，前沿仍#14，不作受控验收就绪结论。
+
+已保存源码/数据库/runtime加密包及维护/系统配置补充包，下载至D:/Backups/IdeaStage/v144-upgrade-20261104，通过哈希与本机AES-GCM解密；现有密钥另存在C:/Users/Administrator/.ideastage-recovery/backup.key，两个目录ACL仅Administrators/SYSTEM。本机随机隔离恢复22表/22迁移及空业务，演练库/临时配置/验收明文已清理；不能声称登录和正文恢复通过。KeePass本轮未解锁，目标机旧MYSQL_ADMIN凭据失效，迁移账号正常。
+
+候选production-check仅因真实RESEND_API_KEY和EMAIL_FROM缺失返回1，属于#14启动阻断；#15仍负责真实收信。管理员沿用3037116719@qq.com，但目标库无账号且白名单未配置；服务器live密钥/微信尚缺，本机已有官方模型配置。旧备份专项在附带旧AI入口因缺少生成操作标识提前失败（2通过/1失败、外部请求0），没有进入备份断言，不列通过。本轮模型费用/资金操作0。见[证据](docs/verification/v144-production-upgrade.md)与[继续执行单](docs/v144-production-upgrade-runbook.md)。下一步运营者私下补真实邮件字段，预检成功后落实受限入口、刷新备份及恢复、继续迁移验收。
+
 ### 2026-11-04：#13 生命周期组合与候选收口完成，前沿推进 #14
 
 已按用户确认正式发布 #13–#15，并完成 implement 第十三票；Status 已 resolved。固定实施/审查基准为1165f8a34e0013c95dec504e785b02d980f79e9a，最终代码候选a20931375da54551ee348dfa983a5271830c31ad。仅修改三份测试脚本，移除草稿的内部计量/结算状态构造，以真实应用HTTP/浏览器、公开恢复CLI和外部替身串联生命周期。233个业务源码与原完整回归快照一致，v1.43视觉及v1.44功能祖先均已核验；原24项3041/3041证据保留原版本，不重新列为待办。

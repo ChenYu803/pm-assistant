@@ -1,0 +1,12 @@
+[
+  {
+    "command": "D:\\DevTools\\Node\\node.exe",
+    "args": [
+      "--import",
+      "tsx",
+      "D:\\Project\\4.Project\\Agent2\\scripts\\verify-v142-production-preparation-ai.mjs"
+    ],
+    "code": 1,
+    "text": "❌ 模拟 live 入口：缺少生成操作标识，请刷新后重试。\n已清理本子专项创建的 1 个测试账号\nAI_BOUNDARY_SUMMARY={\"pass\":2,\"fail\":1,\"requests\":0,\"externalRequests\":0}\n"
+  }
+]

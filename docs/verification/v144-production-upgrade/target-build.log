@@ -1,0 +1,130 @@
+
+added 445 packages, and audited 446 packages in 1m
+
+157 packages are looking for funding
+  run `npm fund` for details
+
+18 vulnerabilities (16 moderate, 1 high, 1 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+npm notice
+npm notice New major version of npm available! 11.19.1 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
+
+> pm-assistant@0.1.0 build
+> next build
+
+▲ Next.js 16.3.8 (Turbopack)
+✓ Running next.config.ts took 33ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 20.8s
+  Running TypeScript ...
+  Finished TypeScript in 11.1s ...
+  Collecting page data using 1 worker ...
+  Generating static pages using 1 worker (0/35) ...
+  Generating static pages using 1 worker (8/35) 
+  Generating static pages using 1 worker (17/35) 
+  Generating static pages using 1 worker (26/35) 
+✓ Generating static pages using 1 worker (35/35) in 377ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /admin
+├ ƒ /admin/gift-invites
+├ ƒ /admin/model-requests
+├ ƒ /admin/recharges
+├ ƒ /admin/refunds
+├ ƒ /admin/users/[id]/credits
+├ ƒ /api/admin/gift-invites
+├ ƒ /api/admin/gift-invites/[id]
+├ ƒ /api/admin/model-requests
+├ ƒ /api/admin/recharges
+├ ƒ /api/admin/refunds
+├ ƒ /api/admin/refunds/[id]
+├ ƒ /api/admin/refunds/sources
+├ ƒ /api/admin/users
+├ ƒ /api/admin/users/[id]/credits
+├ ƒ /api/admin/users/[id]/disable
+├ ƒ /api/auth/[...nextauth]
+├ ƒ /api/auth/email-code
+├ ƒ /api/auth/register
+├ ƒ /api/auth/reset-password
+├ ƒ /api/credits
+├ ƒ /api/gift-invites
+├ ƒ /api/health
+├ ƒ /api/iterations/[id]
+├ ƒ /api/iterations/[id]/files/[fileId]
+├ ƒ /api/iterations/[id]/sessions
+├ ƒ /api/iterations/[id]/sessions/[sessionId]
+├ ƒ /api/iterations/[id]/sessions/[sessionId]/candidates/[candidateId]
+├ ƒ /api/iterations/[id]/sessions/[sessionId]/context
+├ ƒ /api/iterations/[id]/sessions/[sessionId]/messages
+├ ƒ /api/iterations/[id]/sessions/[sessionId]/messages/[messageId]
+├ ƒ /api/iterations/[id]/sessions/[sessionId]/stop
+├ ƒ /api/iterations/[id]/sessions/[sessionId]/task-candidates
+├ ƒ /api/iterations/[id]/sessions/[sessionId]/task-candidates/[candidateId]
+├ ƒ /api/iterations/[id]/stages/[stage]/complete
+├ ƒ /api/iterations/[id]/stages/[stage]/sessions
+├ ƒ /api/iterations/[id]/stages/[stage]/sessions/[sessionId]/context
+├ ƒ /api/iterations/[id]/stages/[stage]/sessions/[sessionId]/messages
+├ ƒ /api/iterations/[id]/task-folder
+├ ƒ /api/iterations/[id]/workbench
+├ ƒ /api/iterations/[id]/writes
+├ ƒ /api/onboarding/career-document
+├ ƒ /api/profile
+├ ƒ /api/profile/password
+├ ƒ /api/projects
+├ ƒ /api/projects/[id]
+├ ƒ /api/projects/[id]/files
+├ ƒ /api/projects/[id]/files/[fileId]
+├ ƒ /api/projects/[id]/files/[fileId]/download
+├ ƒ /api/projects/[id]/files/[fileId]/history
+├ ƒ /api/projects/[id]/files/[fileId]/polish
+├ ƒ /api/projects/[id]/iterations
+├ ƒ /api/projects/[id]/snapshots
+├ ƒ /api/projects/[id]/snapshots/[snapshotId]
+├ ƒ /api/projects/[id]/task-folders
+├ ƒ /api/projects/[id]/ticket-sets
+├ ƒ /api/projects/[id]/ticket-sets/[version]/download
+├ ƒ /api/projects/[id]/work-records
+├ ƒ /api/refunds
+├ ƒ /api/tabs/[id]
+├ ƒ /api/tabs/[id]/chat
+├ ƒ /api/tabs/[id]/files
+├ ƒ /api/tabs/[id]/files/[fileId]
+├ ƒ /api/tabs/[id]/freeze
+├ ƒ /api/tabs/[id]/messages
+├ ƒ /api/verify/replay-mode
+├ ƒ /api/work-records/[id]
+├ ƒ /api/work-records/[id]/tabs
+├ ○ /forgot-password
+├ ○ /login
+├ ○ /onboarding/assessment
+├ ○ /onboarding/brief
+├ ƒ /onboarding/scenes
+├ ƒ /profile
+├ ƒ /profile/recharge
+├ ○ /projects
+├ ƒ /projects/[id]
+├ ƒ /projects/[id]/iterations/[iterationId]
+├ ○ /prototype/hero
+├ ○ /register
+└ ƒ /workspace/[workRecordId]
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
