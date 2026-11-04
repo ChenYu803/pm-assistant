@@ -1,5 +1,9 @@
 # PROGRESS.md - 项目状态与交接
 
+### 2026-11-04：指定 `test1@example.com` 为本机/隔离测试账号
+
+用户指定 `test1@example.com` 作为本人测试账号，可用于本机开发、`replay` 和随机隔离验收；不代表真实可收信邮箱，不授予管理员权限、不绕过邮箱验证，也不授权写入日常/生产数据或产生未批准的真实模型费用。决策详见 [ADR-0008](docs/adr/0008-designated-test-account.md)，#13 工单及发布证据已交叉引用。真实注册/找回收信仍需可收信邮箱。用户截图中的 `/profile` 报错为当前数据库缺少 `account_status` 列；本轮只记录决策，未操作数据库或执行迁移，修复前须按部署纪律核实目标和备份。
+
 ### 2026-11-04：v1.44 #13 隔离发布回归完成，外部发布证据待人工补齐
 
 新增跨票组合和完整发布 gate。24/24 隔离专项3041/3041通过、0失败，全部cleaned=true，前后源码哈希一致；Spec复审确认生命周期组合（润色/停止/免单/待核对）尚未串入组合scenario，作为未完成AC保留；组合专项77/77，删除专项170/170。TypeScript、相关脚本ESLint、拒绝非法专项门禁、diff检查及runner退出后的串行生产构建通过。证据见docs/verification/v144-release-regression.md与docs/verification/v144-release/2026-11-04T06-30-46-332Z。
