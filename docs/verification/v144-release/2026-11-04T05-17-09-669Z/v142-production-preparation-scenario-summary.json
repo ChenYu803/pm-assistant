@@ -1,0 +1,14 @@
+{
+  "pass": 56,
+  "fail": 0,
+  "aiMode": "replay",
+  "workflows": [
+    "public-health",
+    "invitation-register-login",
+    "offline-production-configuration",
+    "atomic-persistent-ai-budget",
+    "polish-stream-preview-boundary",
+    "legacy-stream-heartbeat-cancellation",
+    "startup-recovery-idempotency"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "pass": 92,
+  "fail": 0,
+  "aiMode": "replay",
+  "workflows": [
+    "raw-first-prompt",
+    "manual-name-race",
+    "rename-authorization",
+    "legacy-no-hidden-naming"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "fixture": true,
+  "live": false,
+  "realLlmCostCny": "0",
+  "calls": [
+    {
+      "mode": "normal",
+      "providerId": "fixture-1decb4ee-39c4-41ac-a36a-3b56074438fb",
+      "upstreamId": "upstream-6f185d22-631c-49c2-a071-2809fcd0b849",
+      "stream": true,
+      "includeUsage": true,
+      "requestedModel": "deepseek-v4-flash",
+      "maxTokens": 16384,
+      "inputBytes": 8298,
+      "messageCount": 2,
+      "fullContextIncluded": false,
+      "inputHashes": [
+        "9f8c49cdab5e4611694207e52bc34dff092d464a92c98350bd98cb824eee69eb",
+        "b61af965cf06cb1e22c0e1f6c4d7a037763bf6472b194f77a96e34b0355f643b"
+      ],
+      "phase": "done",
+      "closed": true
+    }
+  ],
+  "planned": null
+}

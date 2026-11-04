@@ -1,0 +1,10 @@
+✅ 入口明确使用 replay
+✅ 从没有任何表的独立空库开始
+✅ 当前 schema 可从零初始化且重复初始化不重复迁移
+✅ 增量升级只保留准备好的旧账号、项目和资料
+✅ 旧账号未被虚构为已验证邮箱
+✅ 隔离服务只连接本机 HTTP 模型替身
+官方模型成本计量（隔离替身，真实 LLM 成本为零）开始；证据目录：C:\Users\ADMINI~1\AppData\Local\Temp\v141-model-cost-ms1gkq
+✅ 连续浏览器回放完整结束
+✅ 仅清理本次创建的测试库和测试账号
+结果: 332 通过, 0 失败；日志与截图：C:\Users\ADMINI~1\AppData\Local\Temp\v141-model-cost-ms1gkq

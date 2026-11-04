@@ -1,0 +1,16 @@
+{
+  "pass": 76,
+  "fail": 0,
+  "aiMode": "replay",
+  "workflows": [
+    "login-user-accent-shared-limit",
+    "verify-email-concurrent-exact-limit"
+  ],
+  "durationMs": 18443,
+  "budget": {
+    "login": 21,
+    "verify": 42,
+    "send": 0
+  },
+  "evidence": "仅真实 HTTP；随机隔离旧账号夹具；不读验证码或限流数据库；无真实模型请求"
+}

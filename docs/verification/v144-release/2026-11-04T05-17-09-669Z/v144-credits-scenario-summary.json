@@ -1,0 +1,414 @@
+{
+  "pass": 100,
+  "fail": 0,
+  "workflows": [
+    "zero-upgrade-permissions-fractions-idempotency-concurrency-pagination",
+    "self-grants-and-source-allocation",
+    "protected-balances-purchase-basis-and-project-deletion",
+    "browser-grant-response-loss-refresh-pagination-and-responsive",
+    "process-restart-and-persistent-idempotency"
+  ],
+  "assertions": [
+    {
+      "name": "新账号稳定账号 ID 与赠送/购买可用、预留均为零",
+      "okay": true
+    },
+    {
+      "name": "旧账号无虚构赠送或购买",
+      "okay": true
+    },
+    {
+      "name": "旧账号与升级前项目资料保留",
+      "okay": true
+    },
+    {
+      "name": "游客不能读账",
+      "okay": true
+    },
+    {
+      "name": "游客不能查询管理账本",
+      "okay": true
+    },
+    {
+      "name": "游客不能写入管理账本",
+      "okay": true
+    },
+    {
+      "name": "普通用户不能查询其他账号管理账本",
+      "okay": true
+    },
+    {
+      "name": "普通用户不能自授积分",
+      "okay": true
+    },
+    {
+      "name": "普通用户不能给其他账号加分",
+      "okay": true
+    },
+    {
+      "name": "个人查询不能接受跨账号参数",
+      "okay": true
+    },
+    {
+      "name": "个人积分没有写入方法",
+      "okay": true
+    },
+    {
+      "name": "非法页码被拒绝",
+      "okay": true
+    },
+    {
+      "name": "管理查询不存在账号返回404",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 100.12345678",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：compensation 0.2",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：correction -0.1",
+      "okay": true
+    },
+    {
+      "name": "独立小数账单100.12345678+0.2-0.1=100.22345678",
+      "okay": true
+    },
+    {
+      "name": "赠送、补偿、纠正分别留痕且来源不冒充购买",
+      "okay": true
+    },
+    {
+      "name": "记录操作者时间原因与精确前后余额",
+      "okay": true
+    },
+    {
+      "name": "双方可核对同一流水与余额",
+      "okay": true
+    },
+    {
+      "name": "12个同操作并发仅一份有效结果",
+      "okay": true
+    },
+    {
+      "name": "最小小数没有向上取整且总账只新增一笔",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 100.12345678",
+      "okay": true
+    },
+    {
+      "name": "响应后重发保留原始ID、时间和前后余额",
+      "okay": true
+    },
+    {
+      "name": "操作返回 409：grant 1",
+      "okay": true
+    },
+    {
+      "name": "操作返回 409：grant 100.12345678",
+      "okay": true
+    },
+    {
+      "name": "操作返回 409：grant 100.12345678",
+      "okay": true
+    },
+    {
+      "name": "并发不同扣减不会透支余额",
+      "okay": true
+    },
+    {
+      "name": "并发扣减后独立账单余额正确",
+      "okay": true
+    },
+    {
+      "name": "操作返回 409：correction -1000",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：correction -0.01",
+      "okay": true
+    },
+    {
+      "name": "失败事务不占用幂等标识，可修正后重试",
+      "okay": true
+    },
+    {
+      "name": "无原因被拒绝且不产生流水",
+      "okay": true
+    },
+    {
+      "name": "原因过长被拒绝且不产生流水",
+      "okay": true
+    },
+    {
+      "name": "浮点数字被拒绝且不产生流水",
+      "okay": true
+    },
+    {
+      "name": "超精度被拒绝且不产生流水",
+      "okay": true
+    },
+    {
+      "name": "科学记数被拒绝且不产生流水",
+      "okay": true
+    },
+    {
+      "name": "零调整被拒绝且不产生流水",
+      "okay": true
+    },
+    {
+      "name": "负赠送被拒绝且不产生流水",
+      "okay": true
+    },
+    {
+      "name": "超上限被拒绝且不产生流水",
+      "okay": true
+    },
+    {
+      "name": "伪购买来源被拒绝且不产生流水",
+      "okay": true
+    },
+    {
+      "name": "缺操作ID被拒绝且不产生流水",
+      "okay": true
+    },
+    {
+      "name": "跨站管理写入被拒绝",
+      "okay": true
+    },
+    {
+      "name": "超长正文在读取阶段拒绝",
+      "okay": true
+    },
+    {
+      "name": "无效JSON被拒绝",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.01",
+      "okay": true
+    },
+    {
+      "name": "流水真实分页、无重复且余额独立于页码",
+      "okay": true
+    },
+    {
+      "name": "非法操作不污染流水与原始赠送记录",
+      "okay": true
+    },
+    {
+      "name": "账号之间账本隔离",
+      "okay": true
+    },
+    {
+      "name": "后台账号列表显示持久余额",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.1",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 0.2",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：correction -0.25",
+      "okay": true
+    },
+    {
+      "name": "跨来源扣减保持精确分摊",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：correction -0.05",
+      "okay": true
+    },
+    {
+      "name": "管理员可给自己赠送且管理操作本身不扣积分",
+      "okay": true
+    },
+    {
+      "name": "已知历史样本分别读取购买与赠送可用和预留",
+      "okay": true
+    },
+    {
+      "name": "操作返回 409：correction -3.25000001",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：correction -3.25",
+      "okay": true
+    },
+    {
+      "name": "负向纠正只扣可用赠送，保留预留及购买来源",
+      "okay": true
+    },
+    {
+      "name": "原实付与来源审计不被改写",
+      "okay": true
+    },
+    {
+      "name": "删除项目成功且资金记录保留必要快照",
+      "okay": true
+    },
+    {
+      "name": "后台表单赠送后即时读取同一账本",
+      "okay": true
+    },
+    {
+      "name": "响应丢失时服务端确已记录",
+      "okay": true
+    },
+    {
+      "name": "响应丢失且页面刷新后重试仍只到账一份",
+      "okay": true
+    },
+    {
+      "name": "后台窄屏无整页横向溢出",
+      "okay": true
+    },
+    {
+      "name": "个人主页展示账号ID与准确小数余额",
+      "okay": true
+    },
+    {
+      "name": "个人主页不暴露管理调整表单",
+      "okay": true
+    },
+    {
+      "name": "浏览器分页展示旧赠送且原因按文本转义",
+      "okay": true
+    },
+    {
+      "name": "个人主页窄屏无整体溢出",
+      "okay": true
+    },
+    {
+      "name": "窄屏流水区域支持键盘独立横向滚动",
+      "okay": true
+    },
+    {
+      "name": "页面无运行时错误",
+      "okay": true
+    },
+    {
+      "name": "应用实际进程重启后账本与审计完全一致",
+      "okay": true
+    },
+    {
+      "name": "操作返回 200：grant 100.12345678",
+      "okay": true
+    },
+    {
+      "name": "进程重启后原请求仍可幂等重放",
+      "okay": true
+    },
+    {
+      "name": "正式接口成功停用独立测试账号",
+      "okay": true
+    },
+    {
+      "name": "停用账号既有登录不能继续读取个人积分",
+      "okay": true
+    },
+    {
+      "name": "管理员仍可查询停用账号完整账本审计",
+      "okay": true
+    }
+  ],
+  "aiMode": "replay"
+}

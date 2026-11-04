@@ -1,0 +1,26 @@
+{
+  "pass": 4,
+  "fail": 0,
+  "aiMode": "replay",
+  "workflows": [
+    "unconfigured"
+  ],
+  "assertions": [
+    {
+      "name": "缺少邮件配置明确返回503与可操作反馈",
+      "okay": true
+    },
+    {
+      "name": "响应不携带验证码或供应商密钥",
+      "okay": true
+    },
+    {
+      "name": "未发出邮件不能建立正常账号",
+      "okay": true
+    },
+    {
+      "name": "失败注册的邮箱不能登录",
+      "okay": true
+    }
+  ]
+}

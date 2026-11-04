@@ -1,0 +1,337 @@
+{
+  "pass": 81,
+  "fail": 0,
+  "aiMode": "replay",
+  "workflows": [
+    "http-authorization-search-pagination-and-upgrade",
+    "normal-model-entrypoints-and-mutation-validation",
+    "admin-page-desktop-mobile-and-persistent-audit",
+    "old-session-denial-zero-provider-calls-and-account-isolation"
+  ],
+  "assertions": [
+    {
+      "name": "指定管理员正常登录",
+      "okay": true
+    },
+    {
+      "name": "普通用户正常登录",
+      "okay": true
+    },
+    {
+      "name": "目标用户停用前正常登录",
+      "okay": true
+    },
+    {
+      "name": "增量迁移保留旧账号且仍可登录",
+      "okay": true
+    },
+    {
+      "name": "增量升级保留原有资料正文",
+      "okay": true
+    },
+    {
+      "name": "匿名无法读取用户列表或伪造身份",
+      "okay": true
+    },
+    {
+      "name": "匿名无法读取用户列表或伪造身份",
+      "okay": true
+    },
+    {
+      "name": "匿名无法读取用户列表或伪造身份",
+      "okay": true
+    },
+    {
+      "name": "匿名跨账号操作不泄露账号存在性",
+      "okay": true
+    },
+    {
+      "name": "匿名跨账号操作不泄露账号存在性",
+      "okay": true
+    },
+    {
+      "name": "普通用户无法读取用户列表或伪造身份",
+      "okay": true
+    },
+    {
+      "name": "普通用户无法读取用户列表或伪造身份",
+      "okay": true
+    },
+    {
+      "name": "普通用户无法读取用户列表或伪造身份",
+      "okay": true
+    },
+    {
+      "name": "普通用户跨账号操作不泄露账号存在性",
+      "okay": true
+    },
+    {
+      "name": "普通用户跨账号操作不泄露账号存在性",
+      "okay": true
+    },
+    {
+      "name": "管理员查询受保护且禁止缓存",
+      "okay": true
+    },
+    {
+      "name": "返回实际用户汇总",
+      "okay": true
+    },
+    {
+      "name": "管理列表仅含运营字段",
+      "okay": true
+    },
+    {
+      "name": "邮箱查询精确找到目标",
+      "okay": true
+    },
+    {
+      "name": "账号 ID 查询找到目标",
+      "okay": true
+    },
+    {
+      "name": "查询把通配符按字面处理",
+      "okay": true
+    },
+    {
+      "name": "错误查询参数返回 400",
+      "okay": true
+    },
+    {
+      "name": "错误查询参数返回 400",
+      "okay": true
+    },
+    {
+      "name": "错误查询参数返回 400",
+      "okay": true
+    },
+    {
+      "name": "错误查询参数返回 400",
+      "okay": true
+    },
+    {
+      "name": "查询和分页保留真实汇总",
+      "okay": true
+    },
+    {
+      "name": "稳定分页没有重复账号",
+      "okay": true
+    },
+    {
+      "name": "空结果和超界页正常处理",
+      "okay": true
+    },
+    {
+      "name": "模型夹具账号取得已知10000赠送积分且无购买余额",
+      "okay": true
+    },
+    {
+      "name": "模型夹具账号取得已知10000赠送积分且无购买余额",
+      "okay": true
+    },
+    {
+      "name": "模型夹具账号取得已知10000赠送积分且无购买余额",
+      "okay": true
+    },
+    {
+      "name": "停用前阶段会话可调用模型",
+      "okay": true
+    },
+    {
+      "name": "停用前阶段会话可调用模型且回复已持久化",
+      "okay": true
+    },
+    {
+      "name": "停用前旧聊天可调用模型且 SSE 完整完成",
+      "okay": true
+    },
+    {
+      "name": "通过正式来源消息创建资料并持久保留正文",
+      "okay": true
+    },
+    {
+      "name": "停用前润色可调用模型且返回正文",
+      "okay": true
+    },
+    {
+      "name": "三个入口确实发生供应商请求",
+      "okay": true
+    },
+    {
+      "name": "三个入口可靠用量均已结算且仍有余额可供停用检查",
+      "okay": true
+    },
+    {
+      "name": "不允许管理员停用自己",
+      "okay": true
+    },
+    {
+      "name": "不存在账号安全返回 404",
+      "okay": true
+    },
+    {
+      "name": "停用需要有效说明",
+      "okay": true
+    },
+    {
+      "name": "过长说明被拒绝",
+      "okay": true
+    },
+    {
+      "name": "跨站提交被拒绝",
+      "okay": true
+    },
+    {
+      "name": "表单跨站提交被拒绝",
+      "okay": true
+    },
+    {
+      "name": "拒绝过大请求体",
+      "okay": true
+    },
+    {
+      "name": "普通用户页面无法读取后台",
+      "okay": true
+    },
+    {
+      "name": "普通用户个人中心不显示管理入口",
+      "okay": true
+    },
+    {
+      "name": "匿名访问后台页面跳转登录",
+      "okay": true
+    },
+    {
+      "name": "管理员从个人中心进入后台",
+      "okay": true
+    },
+    {
+      "name": "页面分页到第二页且保留剩余四个账号",
+      "okay": true
+    },
+    {
+      "name": "页面筛选显示目标账号",
+      "okay": true
+    },
+    {
+      "name": "页面停用正式提交成功",
+      "okay": true
+    },
+    {
+      "name": "刷新后停用状态与说明持久存在",
+      "okay": true
+    },
+    {
+      "name": "审计记录操作者、时间和业务说明",
+      "okay": true
+    },
+    {
+      "name": "停用后用户数量汇总正确",
+      "okay": true
+    },
+    {
+      "name": "重复停用语义稳定且不覆盖原审计",
+      "okay": true
+    },
+    {
+      "name": "窄屏页面无整体横向溢出",
+      "okay": true
+    },
+    {
+      "name": "窄屏表格可键盘访问且独立滚动",
+      "okay": true
+    },
+    {
+      "name": "后台只有一个主要内容地标",
+      "okay": true
+    },
+    {
+      "name": "后台不含用户正文",
+      "okay": true
+    },
+    {
+      "name": "停用前取得的旧登录状态不能继续阶段会话",
+      "okay": true
+    },
+    {
+      "name": "停用前取得的旧登录状态不能继续旧聊天",
+      "okay": true
+    },
+    {
+      "name": "停用前取得的旧登录状态不能继续润色",
+      "okay": true
+    },
+    {
+      "name": "停用后供应商新增调用为零",
+      "okay": true
+    },
+    {
+      "name": "停用账号不能重新登录",
+      "okay": true
+    },
+    {
+      "name": "旧状态不能继续管理或业务 API",
+      "okay": true
+    },
+    {
+      "name": "停用账号仍可通过正式入口申请找回验证码",
+      "okay": true
+    },
+    {
+      "name": "停用账号通过正式验证码完成密码重置",
+      "okay": true
+    },
+    {
+      "name": "重置密码不会重新激活停用账号",
+      "okay": true
+    },
+    {
+      "name": "重置后停用状态和原审计仍然持久保留",
+      "okay": true
+    },
+    {
+      "name": "停用与重置流程未额外调用供应商",
+      "okay": true
+    },
+    {
+      "name": "正常用户仍可生成模型回复",
+      "okay": true
+    },
+    {
+      "name": "正常用户仍可生成模型回复且回复已持久化",
+      "okay": true
+    },
+    {
+      "name": "正常用户请求确实到达供应商",
+      "okay": true
+    },
+    {
+      "name": "管理员仍可正常生成模型回复",
+      "okay": true
+    },
+    {
+      "name": "管理员仍可正常生成模型回复且回复已持久化",
+      "okay": true
+    },
+    {
+      "name": "管理员正常模型请求确实到达供应商",
+      "okay": true
+    },
+    {
+      "name": "正常用户仍可新增项目",
+      "okay": true
+    },
+    {
+      "name": "停用不删除原账号和旧升级项目",
+      "okay": true
+    },
+    {
+      "name": "旧升级资料在停用与重置后正文仍保持",
+      "okay": true
+    },
+    {
+      "name": "管理员身份不提供跨账号正文特权",
+      "okay": true
+    }
+  ]
+}

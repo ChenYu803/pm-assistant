@@ -1,0 +1,1410 @@
+{
+  "pass": 324,
+  "fail": 0,
+  "aiMode": "replay",
+  "applicationAiMode": "live",
+  "fixture": true,
+  "live": false,
+  "realLlmCostCny": "0",
+  "workflows": [
+    "permissions-and-three-model-entrypoints",
+    "missing-invalid-and-delayed-usage",
+    "faults-stops-and-disconnections",
+    "queries-pagination-cumulative-summary-and-private-response",
+    "admin-page-desktop-mobile"
+  ],
+  "assertions": [
+    {
+      "name": "注册隔离账号",
+      "okay": true
+    },
+    {
+      "name": "注册隔离账号",
+      "okay": true
+    },
+    {
+      "name": "指定管理员登录身份正确",
+      "okay": true
+    },
+    {
+      "name": "模型调用账号登录成功",
+      "okay": true
+    },
+    {
+      "name": "注册隔离账号",
+      "okay": true
+    },
+    {
+      "name": "匿名不能读取成本 API",
+      "okay": true
+    },
+    {
+      "name": "匿名拒绝响应不含账本或正文",
+      "okay": true
+    },
+    {
+      "name": "匿名不能用伪造角色获得权限",
+      "okay": true
+    },
+    {
+      "name": "普通用户不能读取成本 API",
+      "okay": true
+    },
+    {
+      "name": "普通用户拒绝响应不含账本或正文",
+      "okay": true
+    },
+    {
+      "name": "普通用户不能用伪造角色获得权限",
+      "okay": true
+    },
+    {
+      "name": "空库成本为零且没有待确认请求",
+      "okay": true
+    },
+    {
+      "name": "权限与查询请求不触发模型",
+      "okay": true
+    },
+    {
+      "name": "独立金额算例：高峰含缓存成本为 0.002016",
+      "okay": true
+    },
+    {
+      "name": "独立金额算例：空闲含缓存成本为 0.001008",
+      "okay": true
+    },
+    {
+      "name": "normal请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "normal开始时间与实际 HTTP 请求的 UTC 窗口一致",
+      "okay": true
+    },
+    {
+      "name": "normal正式旧会话 SSE 返回正文",
+      "okay": true
+    },
+    {
+      "name": "normal业务回复正常完成并持久化",
+      "okay": true
+    },
+    {
+      "name": "normal状态与可靠用量",
+      "okay": true
+    },
+    {
+      "name": "normal缓存、输出和推理用量准确（推理已包含在输出中）",
+      "okay": true
+    },
+    {
+      "name": "normal隔离价格有标识且不冒充官方 live",
+      "okay": true
+    },
+    {
+      "name": "normal保存适用价格和可重算依据",
+      "okay": true
+    },
+    {
+      "name": "normal含缓存人民币成本精确且不重复计推理",
+      "okay": true
+    },
+    {
+      "name": "normal模型、供应商标识、起止时间可追溯",
+      "okay": true
+    },
+    {
+      "name": "normal供应商两个关联 ID 保持一致",
+      "okay": true
+    },
+    {
+      "name": "缺省 onReceipt 的真实旧 chat 入口仍完成可靠计量",
+      "okay": true
+    },
+    {
+      "name": "旧会话关联用途、项目和会话",
+      "okay": true
+    },
+    {
+      "name": "旧会话完成回复确实持久化",
+      "okay": true
+    },
+    {
+      "name": "新阶段会话正常返回且回复持久化",
+      "okay": true
+    },
+    {
+      "name": "new-stage请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "新阶段状态与可靠用量",
+      "okay": true
+    },
+    {
+      "name": "新阶段缓存、输出和推理用量准确（推理已包含在输出中）",
+      "okay": true
+    },
+    {
+      "name": "新阶段隔离价格有标识且不冒充官方 live",
+      "okay": true
+    },
+    {
+      "name": "新阶段保存适用价格和可重算依据",
+      "okay": true
+    },
+    {
+      "name": "新阶段含缓存人民币成本精确且不重复计推理",
+      "okay": true
+    },
+    {
+      "name": "新阶段模型、供应商标识、起止时间可追溯",
+      "okay": true
+    },
+    {
+      "name": "缺省 onReceipt 的真实 stage 入口仍完成可靠计量",
+      "okay": true
+    },
+    {
+      "name": "新阶段用途和供应商关联正确",
+      "okay": true
+    },
+    {
+      "name": "润色前从公开 files API 读到目标文件正文与版本",
+      "okay": true
+    },
+    {
+      "name": "润色非流式入口正常返回正文",
+      "okay": true
+    },
+    {
+      "name": "polish请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "润色状态与可靠用量",
+      "okay": true
+    },
+    {
+      "name": "润色缓存、输出和推理用量准确（推理已包含在输出中）",
+      "okay": true
+    },
+    {
+      "name": "润色隔离价格有标识且不冒充官方 live",
+      "okay": true
+    },
+    {
+      "name": "润色保存适用价格和可重算依据",
+      "okay": true
+    },
+    {
+      "name": "润色含缓存人民币成本精确且不重复计推理",
+      "okay": true
+    },
+    {
+      "name": "润色模型、供应商标识、起止时间可追溯",
+      "okay": true
+    },
+    {
+      "name": "缺省 onReceipt 的真实 completion 入口仍完成可靠计量",
+      "okay": true
+    },
+    {
+      "name": "润色用途、文件与项目关联正确",
+      "okay": true
+    },
+    {
+      "name": "润色预览未应用也保留供应商成本且不覆盖文件",
+      "okay": true
+    },
+    {
+      "name": "三入口恰好三次真实应用到替身调用",
+      "okay": true
+    },
+    {
+      "name": "三入口记录发给上游的输出上限与传输类型",
+      "okay": true
+    },
+    {
+      "name": "missing请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "missing开始时间与实际 HTTP 请求的 UTC 窗口一致",
+      "okay": true
+    },
+    {
+      "name": "missing正式旧会话 SSE 返回正文",
+      "okay": true
+    },
+    {
+      "name": "missing业务回复正常完成并持久化",
+      "okay": true
+    },
+    {
+      "name": "missing保留实际状态且成本待确认",
+      "okay": true
+    },
+    {
+      "name": "missing供应商两个关联 ID 保持一致",
+      "okay": true
+    },
+    {
+      "name": "negative请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "negative开始时间与实际 HTTP 请求的 UTC 窗口一致",
+      "okay": true
+    },
+    {
+      "name": "negative正式旧会话 SSE 返回正文",
+      "okay": true
+    },
+    {
+      "name": "negative业务回复正常完成并持久化",
+      "okay": true
+    },
+    {
+      "name": "negative保留实际状态且成本待确认",
+      "okay": true
+    },
+    {
+      "name": "negative供应商两个关联 ID 保持一致",
+      "okay": true
+    },
+    {
+      "name": "fractional请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "fractional开始时间与实际 HTTP 请求的 UTC 窗口一致",
+      "okay": true
+    },
+    {
+      "name": "fractional正式旧会话 SSE 返回正文",
+      "okay": true
+    },
+    {
+      "name": "fractional业务回复正常完成并持久化",
+      "okay": true
+    },
+    {
+      "name": "fractional保留实际状态且成本待确认",
+      "okay": true
+    },
+    {
+      "name": "fractional供应商两个关联 ID 保持一致",
+      "okay": true
+    },
+    {
+      "name": "string请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "string开始时间与实际 HTTP 请求的 UTC 窗口一致",
+      "okay": true
+    },
+    {
+      "name": "string正式旧会话 SSE 返回正文",
+      "okay": true
+    },
+    {
+      "name": "string业务回复正常完成并持久化",
+      "okay": true
+    },
+    {
+      "name": "string保留实际状态且成本待确认",
+      "okay": true
+    },
+    {
+      "name": "string供应商两个关联 ID 保持一致",
+      "okay": true
+    },
+    {
+      "name": "unsafe请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "unsafe开始时间与实际 HTTP 请求的 UTC 窗口一致",
+      "okay": true
+    },
+    {
+      "name": "unsafe正式旧会话 SSE 返回正文",
+      "okay": true
+    },
+    {
+      "name": "unsafe业务回复正常完成并持久化",
+      "okay": true
+    },
+    {
+      "name": "unsafe保留实际状态且成本待确认",
+      "okay": true
+    },
+    {
+      "name": "unsafe供应商两个关联 ID 保持一致",
+      "okay": true
+    },
+    {
+      "name": "total-mismatch请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "total-mismatch开始时间与实际 HTTP 请求的 UTC 窗口一致",
+      "okay": true
+    },
+    {
+      "name": "total-mismatch正式旧会话 SSE 返回正文",
+      "okay": true
+    },
+    {
+      "name": "total-mismatch业务回复正常完成并持久化",
+      "okay": true
+    },
+    {
+      "name": "total-mismatch保留实际状态且成本待确认",
+      "okay": true
+    },
+    {
+      "name": "total-mismatch供应商两个关联 ID 保持一致",
+      "okay": true
+    },
+    {
+      "name": "cache-mismatch请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "cache-mismatch开始时间与实际 HTTP 请求的 UTC 窗口一致",
+      "okay": true
+    },
+    {
+      "name": "cache-mismatch正式旧会话 SSE 返回正文",
+      "okay": true
+    },
+    {
+      "name": "cache-mismatch业务回复正常完成并持久化",
+      "okay": true
+    },
+    {
+      "name": "cache-mismatch保留实际状态且成本待确认",
+      "okay": true
+    },
+    {
+      "name": "cache-mismatch供应商两个关联 ID 保持一致",
+      "okay": true
+    },
+    {
+      "name": "reasoning-invalid请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "reasoning-invalid开始时间与实际 HTTP 请求的 UTC 窗口一致",
+      "okay": true
+    },
+    {
+      "name": "reasoning-invalid正式旧会话 SSE 返回正文",
+      "okay": true
+    },
+    {
+      "name": "reasoning-invalid业务回复正常完成并持久化",
+      "okay": true
+    },
+    {
+      "name": "reasoning-invalid保留实际状态且成本待确认",
+      "okay": true
+    },
+    {
+      "name": "reasoning-invalid供应商两个关联 ID 保持一致",
+      "okay": true
+    },
+    {
+      "name": "conflicting请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "conflicting开始时间与实际 HTTP 请求的 UTC 窗口一致",
+      "okay": true
+    },
+    {
+      "name": "conflicting正式旧会话 SSE 返回正文",
+      "okay": true
+    },
+    {
+      "name": "conflicting业务回复正常完成并持久化",
+      "okay": true
+    },
+    {
+      "name": "conflicting保留实际状态且成本待确认",
+      "okay": true
+    },
+    {
+      "name": "conflicting供应商两个关联 ID 保持一致",
+      "okay": true
+    },
+    {
+      "name": "delayed请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "delayed开始时间与实际 HTTP 请求的 UTC 窗口一致",
+      "okay": true
+    },
+    {
+      "name": "delayed正式旧会话 SSE 返回正文",
+      "okay": true
+    },
+    {
+      "name": "delayed业务回复正常完成并持久化",
+      "okay": true
+    },
+    {
+      "name": "delayed状态与可靠用量",
+      "okay": true
+    },
+    {
+      "name": "delayed缓存、输出和推理用量准确（推理已包含在输出中）",
+      "okay": true
+    },
+    {
+      "name": "delayed隔离价格有标识且不冒充官方 live",
+      "okay": true
+    },
+    {
+      "name": "delayed保存适用价格和可重算依据",
+      "okay": true
+    },
+    {
+      "name": "delayed含缓存人民币成本精确且不重复计推理",
+      "okay": true
+    },
+    {
+      "name": "delayed模型、供应商标识、起止时间可追溯",
+      "okay": true
+    },
+    {
+      "name": "delayed供应商两个关联 ID 保持一致",
+      "okay": true
+    },
+    {
+      "name": "finish 后延迟 usage-only 尾块被完整读取",
+      "okay": true
+    },
+    {
+      "name": "每个流式入口都向上游请求 include_usage",
+      "okay": true
+    },
+    {
+      "name": "failed-known请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "failed-known开始时间与实际 HTTP 请求的 UTC 窗口一致",
+      "okay": true
+    },
+    {
+      "name": "failed-known正式旧会话 SSE 返回正文",
+      "okay": true
+    },
+    {
+      "name": "failed-known状态与可靠用量",
+      "okay": true
+    },
+    {
+      "name": "failed-known缓存、输出和推理用量准确（推理已包含在输出中）",
+      "okay": true
+    },
+    {
+      "name": "failed-known隔离价格有标识且不冒充官方 live",
+      "okay": true
+    },
+    {
+      "name": "failed-known保存适用价格和可重算依据",
+      "okay": true
+    },
+    {
+      "name": "failed-known含缓存人民币成本精确且不重复计推理",
+      "okay": true
+    },
+    {
+      "name": "failed-known模型、供应商标识、起止时间可追溯",
+      "okay": true
+    },
+    {
+      "name": "failed-known供应商两个关联 ID 保持一致",
+      "okay": true
+    },
+    {
+      "name": "failed-known保留故障标识及网站承担事实",
+      "okay": true
+    },
+    {
+      "name": "故障免单没有抹除已知供应商成本",
+      "okay": true
+    },
+    {
+      "name": "failed-unknown请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "failed-unknown开始时间与实际 HTTP 请求的 UTC 窗口一致",
+      "okay": true
+    },
+    {
+      "name": "failed-unknown正式旧会话 SSE 返回正文",
+      "okay": true
+    },
+    {
+      "name": "failed-unknown保留实际状态且成本待确认",
+      "okay": true
+    },
+    {
+      "name": "failed-unknown供应商两个关联 ID 保持一致",
+      "okay": true
+    },
+    {
+      "name": "failed-unknown保留故障标识及网站承担事实",
+      "okay": true
+    },
+    {
+      "name": "interrupted请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "interrupted开始时间与实际 HTTP 请求的 UTC 窗口一致",
+      "okay": true
+    },
+    {
+      "name": "interrupted正式旧会话 SSE 返回正文",
+      "okay": true
+    },
+    {
+      "name": "interrupted保留实际状态且成本待确认",
+      "okay": true
+    },
+    {
+      "name": "interrupted供应商两个关联 ID 保持一致",
+      "okay": true
+    },
+    {
+      "name": "interrupted保留故障标识及网站承担事实",
+      "okay": true
+    },
+    {
+      "name": "disconnect请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "disconnect开始时间与实际 HTTP 请求的 UTC 窗口一致",
+      "okay": true
+    },
+    {
+      "name": "disconnect正式旧会话 SSE 返回正文",
+      "okay": true
+    },
+    {
+      "name": "disconnect保留实际状态且成本待确认",
+      "okay": true
+    },
+    {
+      "name": "disconnect供应商两个关联 ID 保持一致",
+      "okay": true
+    },
+    {
+      "name": "disconnect保留故障标识及网站承担事实",
+      "okay": true
+    },
+    {
+      "name": "insufficient-system-resource请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "insufficient-system-resource开始时间与实际 HTTP 请求的 UTC 窗口一致",
+      "okay": true
+    },
+    {
+      "name": "insufficient-system-resource正式旧会话 SSE 返回正文",
+      "okay": true
+    },
+    {
+      "name": "insufficient-system-resource状态与可靠用量",
+      "okay": true
+    },
+    {
+      "name": "insufficient-system-resource缓存、输出和推理用量准确（推理已包含在输出中）",
+      "okay": true
+    },
+    {
+      "name": "insufficient-system-resource隔离价格有标识且不冒充官方 live",
+      "okay": true
+    },
+    {
+      "name": "insufficient-system-resource保存适用价格和可重算依据",
+      "okay": true
+    },
+    {
+      "name": "insufficient-system-resource含缓存人民币成本精确且不重复计推理",
+      "okay": true
+    },
+    {
+      "name": "insufficient-system-resource模型、供应商标识、起止时间可追溯",
+      "okay": true
+    },
+    {
+      "name": "insufficient-system-resource供应商两个关联 ID 保持一致",
+      "okay": true
+    },
+    {
+      "name": "HTTP200 流式资源不足按业务失败而非完成",
+      "okay": true
+    },
+    {
+      "name": "流式资源不足保留 finish、可靠成本并由网站承担",
+      "okay": true
+    },
+    {
+      "name": "HTTP200 completion 资源不足按业务失败且不返回成功预览",
+      "okay": true
+    },
+    {
+      "name": "completion-resource请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "completion 资源不足状态与可靠用量",
+      "okay": true
+    },
+    {
+      "name": "completion 资源不足缓存、输出和推理用量准确（推理已包含在输出中）",
+      "okay": true
+    },
+    {
+      "name": "completion 资源不足隔离价格有标识且不冒充官方 live",
+      "okay": true
+    },
+    {
+      "name": "completion 资源不足保存适用价格和可重算依据",
+      "okay": true
+    },
+    {
+      "name": "completion 资源不足含缓存人民币成本精确且不重复计推理",
+      "okay": true
+    },
+    {
+      "name": "completion 资源不足模型、供应商标识、起止时间可追溯",
+      "okay": true
+    },
+    {
+      "name": "completion 资源不足保留 finish、可靠成本并由网站承担",
+      "okay": true
+    },
+    {
+      "name": "供应商成功后网站快照失败返回业务失败并清理生成状态",
+      "okay": true
+    },
+    {
+      "name": "site-processing-failure请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "网站持久化失败状态与可靠用量",
+      "okay": true
+    },
+    {
+      "name": "网站持久化失败缓存、输出和推理用量准确（推理已包含在输出中）",
+      "okay": true
+    },
+    {
+      "name": "网站持久化失败隔离价格有标识且不冒充官方 live",
+      "okay": true
+    },
+    {
+      "name": "网站持久化失败保存适用价格和可重算依据",
+      "okay": true
+    },
+    {
+      "name": "网站持久化失败含缓存人民币成本精确且不重复计推理",
+      "okay": true
+    },
+    {
+      "name": "网站持久化失败模型、供应商标识、起止时间可追溯",
+      "okay": true
+    },
+    {
+      "name": "网站持久化失败不抹除已知供应商成本",
+      "okay": true
+    },
+    {
+      "name": "网站失败后同会话可再次生成证明业务锁已释放",
+      "okay": true
+    },
+    {
+      "name": "site-processing-retry请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "网站失败后重试状态与可靠用量",
+      "okay": true
+    },
+    {
+      "name": "网站失败后重试缓存、输出和推理用量准确（推理已包含在输出中）",
+      "okay": true
+    },
+    {
+      "name": "网站失败后重试隔离价格有标识且不冒充官方 live",
+      "okay": true
+    },
+    {
+      "name": "网站失败后重试保存适用价格和可重算依据",
+      "okay": true
+    },
+    {
+      "name": "网站失败后重试含缓存人民币成本精确且不重复计推理",
+      "okay": true
+    },
+    {
+      "name": "网站失败后重试模型、供应商标识、起止时间可追溯",
+      "okay": true
+    },
+    {
+      "name": "stop-known上游到达预定停止边界",
+      "okay": true
+    },
+    {
+      "name": "stop-known生成中查询返回待确认请求",
+      "okay": true
+    },
+    {
+      "name": "stop-known正式主动停止 HTTP 成功",
+      "okay": true
+    },
+    {
+      "name": "stop-known业务消息以停止状态结束",
+      "okay": true
+    },
+    {
+      "name": "stop-known请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "stop-known状态与可靠用量",
+      "okay": true
+    },
+    {
+      "name": "stop-known缓存、输出和推理用量准确（推理已包含在输出中）",
+      "okay": true
+    },
+    {
+      "name": "stop-known隔离价格有标识且不冒充官方 live",
+      "okay": true
+    },
+    {
+      "name": "stop-known保存适用价格和可重算依据",
+      "okay": true
+    },
+    {
+      "name": "stop-known含缓存人民币成本精确且不重复计推理",
+      "okay": true
+    },
+    {
+      "name": "stop-known模型、供应商标识、起止时间可追溯",
+      "okay": true
+    },
+    {
+      "name": "stop-known主动停止不误标网站故障承担",
+      "okay": true
+    },
+    {
+      "name": "stop-known取消传播至供应商连接",
+      "okay": true
+    },
+    {
+      "name": "stop-unknown上游到达预定停止边界",
+      "okay": true
+    },
+    {
+      "name": "stop-unknown生成中查询返回待确认请求",
+      "okay": true
+    },
+    {
+      "name": "stop-unknown正式主动停止 HTTP 成功",
+      "okay": true
+    },
+    {
+      "name": "stop-unknown业务消息以停止状态结束",
+      "okay": true
+    },
+    {
+      "name": "stop-unknown请求持久化且在有界轮询内落终态",
+      "okay": true
+    },
+    {
+      "name": "stop-unknown保留实际状态且成本待确认",
+      "okay": true
+    },
+    {
+      "name": "stop-unknown主动停止不误标网站故障承担",
+      "okay": true
+    },
+    {
+      "name": "stop-unknown取消传播至供应商连接",
+      "okay": true
+    },
+    {
+      "name": "成本查询存在可靠样本与两页数据",
+      "okay": true
+    },
+    {
+      "name": "完整请求 ID精确查询",
+      "okay": true
+    },
+    {
+      "name": "完整请求 ID查询不改变全累计 summary",
+      "okay": true
+    },
+    {
+      "name": "完整用户 ID精确查询",
+      "okay": true
+    },
+    {
+      "name": "完整用户 ID查询不改变全累计 summary",
+      "okay": true
+    },
+    {
+      "name": "完整 provider ID精确查询",
+      "okay": true
+    },
+    {
+      "name": "完整 provider ID查询不改变全累计 summary",
+      "okay": true
+    },
+    {
+      "name": "完整上游请求 ID精确查询",
+      "okay": true
+    },
+    {
+      "name": "完整上游请求 ID查询不改变全累计 summary",
+      "okay": true
+    },
+    {
+      "name": "不匹配或非完整 ID 不命中：d438b9bd",
+      "okay": true
+    },
+    {
+      "name": "不匹配或非完整 ID 不命中：fixture-8d55",
+      "okay": true
+    },
+    {
+      "name": "不匹配或非完整 ID 不命中：FIXTURE-8D55A40D-08A",
+      "okay": true
+    },
+    {
+      "name": "不匹配或非完整 ID 不命中：D438B9BD-DB1B-4AAB-A",
+      "okay": true
+    },
+    {
+      "name": "不匹配或非完整 ID 不命中：cost-ccb845f4-9888-4",
+      "okay": true
+    },
+    {
+      "name": "不匹配或非完整 ID 不命中：不存在-fde860c4-84e6-4c",
+      "okay": true
+    },
+    {
+      "name": "不匹配或非完整 ID 不命中：' OR 1=1 --",
+      "okay": true
+    },
+    {
+      "name": "状态/用量联合筛选 all/all",
+      "okay": true
+    },
+    {
+      "name": "联合筛选保留全累计 summary all/all",
+      "okay": true
+    },
+    {
+      "name": "状态/用量联合筛选 all/reliable",
+      "okay": true
+    },
+    {
+      "name": "联合筛选保留全累计 summary all/reliable",
+      "okay": true
+    },
+    {
+      "name": "状态/用量联合筛选 all/pending",
+      "okay": true
+    },
+    {
+      "name": "联合筛选保留全累计 summary all/pending",
+      "okay": true
+    },
+    {
+      "name": "状态/用量联合筛选 running/all",
+      "okay": true
+    },
+    {
+      "name": "联合筛选保留全累计 summary running/all",
+      "okay": true
+    },
+    {
+      "name": "状态/用量联合筛选 running/reliable",
+      "okay": true
+    },
+    {
+      "name": "联合筛选保留全累计 summary running/reliable",
+      "okay": true
+    },
+    {
+      "name": "状态/用量联合筛选 running/pending",
+      "okay": true
+    },
+    {
+      "name": "联合筛选保留全累计 summary running/pending",
+      "okay": true
+    },
+    {
+      "name": "状态/用量联合筛选 processing/all",
+      "okay": true
+    },
+    {
+      "name": "联合筛选保留全累计 summary processing/all",
+      "okay": true
+    },
+    {
+      "name": "状态/用量联合筛选 processing/reliable",
+      "okay": true
+    },
+    {
+      "name": "联合筛选保留全累计 summary processing/reliable",
+      "okay": true
+    },
+    {
+      "name": "状态/用量联合筛选 processing/pending",
+      "okay": true
+    },
+    {
+      "name": "联合筛选保留全累计 summary processing/pending",
+      "okay": true
+    },
+    {
+      "name": "状态/用量联合筛选 completed/all",
+      "okay": true
+    },
+    {
+      "name": "联合筛选保留全累计 summary completed/all",
+      "okay": true
+    },
+    {
+      "name": "状态/用量联合筛选 completed/reliable",
+      "okay": true
+    },
+    {
+      "name": "联合筛选保留全累计 summary completed/reliable",
+      "okay": true
+    },
+    {
+      "name": "状态/用量联合筛选 completed/pending",
+      "okay": true
+    },
+    {
+      "name": "联合筛选保留全累计 summary completed/pending",
+      "okay": true
+    },
+    {
+      "name": "状态/用量联合筛选 stopped/all",
+      "okay": true
+    },
+    {
+      "name": "联合筛选保留全累计 summary stopped/all",
+      "okay": true
+    },
+    {
+      "name": "状态/用量联合筛选 stopped/reliable",
+      "okay": true
+    },
+    {
+      "name": "联合筛选保留全累计 summary stopped/reliable",
+      "okay": true
+    },
+    {
+      "name": "状态/用量联合筛选 stopped/pending",
+      "okay": true
+    },
+    {
+      "name": "联合筛选保留全累计 summary stopped/pending",
+      "okay": true
+    },
+    {
+      "name": "状态/用量联合筛选 failed/all",
+      "okay": true
+    },
+    {
+      "name": "联合筛选保留全累计 summary failed/all",
+      "okay": true
+    },
+    {
+      "name": "状态/用量联合筛选 failed/reliable",
+      "okay": true
+    },
+    {
+      "name": "联合筛选保留全累计 summary failed/reliable",
+      "okay": true
+    },
+    {
+      "name": "状态/用量联合筛选 failed/pending",
+      "okay": true
+    },
+    {
+      "name": "联合筛选保留全累计 summary failed/pending",
+      "okay": true
+    },
+    {
+      "name": "状态/用量联合筛选 interrupted/all",
+      "okay": true
+    },
+    {
+      "name": "联合筛选保留全累计 summary interrupted/all",
+      "okay": true
+    },
+    {
+      "name": "状态/用量联合筛选 interrupted/reliable",
+      "okay": true
+    },
+    {
+      "name": "联合筛选保留全累计 summary interrupted/reliable",
+      "okay": true
+    },
+    {
+      "name": "状态/用量联合筛选 interrupted/pending",
+      "okay": true
+    },
+    {
+      "name": "联合筛选保留全累计 summary interrupted/pending",
+      "okay": true
+    },
+    {
+      "name": "两页记录完整、无重复且按稳定顺序返回",
+      "okay": true
+    },
+    {
+      "name": "越界页夹至末页且全累计汇总保持",
+      "okay": true
+    },
+    {
+      "name": "非法查询返回 400 {\"status\":\"bad\"}",
+      "okay": true
+    },
+    {
+      "name": "非法查询返回 400 {\"usage\":\"awaitingUsage\"}",
+      "okay": true
+    },
+    {
+      "name": "非法查询返回 400 {\"page\":\"0\"}",
+      "okay": true
+    },
+    {
+      "name": "非法查询返回 400 {\"page\":\"-1\"}",
+      "okay": true
+    },
+    {
+      "name": "非法查询返回 400 {\"page\":\"1.5\"}",
+      "okay": true
+    },
+    {
+      "name": "非法查询返回 400 {\"page\":\"NaN\"}",
+      "okay": true
+    },
+    {
+      "name": "非法查询返回 400 {\"page\":\"1000001\"}",
+      "okay": true
+    },
+    {
+      "name": "非法查询返回 400 {\"q\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "okay": true
+    },
+    {
+      "name": "累计请求数、已知金额和待确认数量可逐笔核对",
+      "okay": true
+    },
+    {
+      "name": "网站承担已知金额与未知数量分开累计",
+      "okay": true
+    },
+    {
+      "name": "预算为累计 200 元且披露历史覆盖限制",
+      "okay": true
+    },
+    {
+      "name": "成本 API 使用 private, no-store",
+      "okay": true
+    },
+    {
+      "name": "成本 API 不泄露对话文件异常正文或供应商凭据",
+      "okay": true
+    },
+    {
+      "name": "ledger 默认结构无原始消息、正文、请求头和密钥字段",
+      "okay": true
+    },
+    {
+      "name": "请求 0380f4fa-0de6-4f28-a785-5747933c44ce元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "请求 d438b9bd-db1b-4aab-ad7e-fd97ec179f80元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "请求 ca4e93c2-b351-4033-b706-fa724a644471元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "请求 a2963081-93f9-430d-8cc5-817bf55faf2f元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "请求 2bcc730c-e8a0-4cb1-8d9e-a51f2c86770b元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "请求 d10f31d0-9636-4e59-af6c-b2353e57344e元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "请求 37587a09-a086-43c5-92d0-62faa317aa00元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "请求 a057b500-271c-410b-9b20-d0c9a84072b0元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "请求 5d0444f5-8d4a-4c7a-989e-b27a1219fbbb元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "请求 c4948aeb-aa57-4c0e-b618-cb2a8d01b433元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "请求 2bba0194-9b80-4c6d-b4ab-b4178cc9a654元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "请求 38f50ab5-9ef6-487c-bd40-9d14dad08fd5元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "请求 03bc14bc-fc4c-4c61-b20c-a04ff3f1e5ca元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "请求 04818955-617a-4ebb-88cd-0ab3601a8e46元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "请求 466c9e3c-22f6-488c-98bb-7350c51bfd06元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "请求 df636ce6-9203-4bfa-a9f0-2e3292076072元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "请求 826e3e15-c353-4443-9b83-90d98cb7b24f元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "请求 0442e105-fde0-41bf-978b-1536306f1a7f元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "请求 ee9737cb-4949-4ea1-87ad-27030c616c7b元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "请求 fd55d008-ab4e-46a7-9144-841a2b28f448元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "请求 43808784-4fa6-4866-8d5d-ec207131e59d元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "请求 7834656e-a699-4b27-92ab-f13e6359930d元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "请求 d7b3fbef-9846-4888-89ce-0eb72b044a8b元数据类型、UTC 时间和替身身份",
+      "okay": true
+    },
+    {
+      "name": "普通用户直访成本页面无权且不泄露列表",
+      "okay": true
+    },
+    {
+      "name": "匿名直访成本页面跳转登录",
+      "okay": true
+    },
+    {
+      "name": "管理员可从后台导航进入正式成本页面",
+      "okay": true
+    },
+    {
+      "name": "桌面列表第一页显示 20 笔且累计成本准确",
+      "okay": true
+    },
+    {
+      "name": "桌面正文与 HTML 不泄露对话、文件、异常正文或凭据",
+      "okay": true
+    },
+    {
+      "name": "开发模式成本页面 HTTP 响应使用 no-cache 与 must-revalidate",
+      "okay": true
+    },
+    {
+      "name": "桌面分页第二页记录数量正确",
+      "okay": true
+    },
+    {
+      "name": "页面已知故障样本存在",
+      "okay": true
+    },
+    {
+      "name": "页面组合筛选重置页码并显示已知故障成本",
+      "okay": true
+    },
+    {
+      "name": "页面筛选不改变累计汇总",
+      "okay": true
+    },
+    {
+      "name": "页面可展开价格、用量与隔离依据",
+      "okay": true
+    },
+    {
+      "name": "刷新保留筛选与持久结果",
+      "okay": true
+    },
+    {
+      "name": "390px 手机页面无整体横向溢出",
+      "okay": true
+    },
+    {
+      "name": "手机表格可键盘聚焦且独立横向滚动",
+      "okay": true
+    },
+    {
+      "name": "手机筛选缺失用量明确显示待确认而非零元",
+      "okay": true
+    },
+    {
+      "name": "桌面/手机页面和 HTML 不含正文或凭据",
+      "okay": true
+    },
+    {
+      "name": "页面无未捕获浏览器异常",
+      "okay": true
+    },
+    {
+      "name": "后台查询和浏览页面不产生额外模型调用",
+      "okay": true
+    }
+  ],
+  "observations": [
+    {
+      "name": "normal",
+      "ledgerId": "d7b3fbef-9846-4888-89ce-0eb72b044a8b",
+      "priceWindow": "off-peak",
+      "costCny": "0.00100800"
+    },
+    {
+      "name": "新阶段",
+      "ledgerId": "7834656e-a699-4b27-92ab-f13e6359930d",
+      "priceWindow": "off-peak",
+      "costCny": "0.00100800"
+    },
+    {
+      "name": "润色",
+      "ledgerId": "43808784-4fa6-4866-8d5d-ec207131e59d",
+      "priceWindow": "off-peak",
+      "costCny": "0.00100800"
+    },
+    {
+      "name": "polish-preview-file-unchanged",
+      "path": "/api/projects/23d4e4c6-cbeb-45fe-8aa8-d0bc342c8db3/files/8321887b-1254-40a8-b59d-adb97511171c",
+      "before": {
+        "id": "8321887b-1254-40a8-b59d-adb97511171c",
+        "projectId": "23d4e4c6-cbeb-45fe-8aa8-d0bc342c8db3",
+        "filename": "需求分析.md",
+        "version": 1,
+        "contentBytes": 85,
+        "contentSha256": "1bf3da781a573f64415b94658e8e3ede36b051ce4039ea4bd4d7d0319fd68205"
+      },
+      "after": {
+        "id": "8321887b-1254-40a8-b59d-adb97511171c",
+        "projectId": "23d4e4c6-cbeb-45fe-8aa8-d0bc342c8db3",
+        "filename": "需求分析.md",
+        "version": 1,
+        "contentBytes": 85,
+        "contentSha256": "1bf3da781a573f64415b94658e8e3ede36b051ce4039ea4bd4d7d0319fd68205"
+      },
+      "ledgerId": "43808784-4fa6-4866-8d5d-ec207131e59d",
+      "costCny": "0.00100800",
+      "usageStatus": "reliable"
+    },
+    {
+      "name": "delayed",
+      "ledgerId": "2bba0194-9b80-4c6d-b4ab-b4178cc9a654",
+      "priceWindow": "off-peak",
+      "costCny": "0.00100800"
+    },
+    {
+      "name": "failed-known",
+      "ledgerId": "c4948aeb-aa57-4c0e-b618-cb2a8d01b433",
+      "priceWindow": "off-peak",
+      "costCny": "0.00100800"
+    },
+    {
+      "name": "insufficient-system-resource",
+      "ledgerId": "d10f31d0-9636-4e59-af6c-b2353e57344e",
+      "priceWindow": "off-peak",
+      "costCny": "0.00100800"
+    },
+    {
+      "name": "completion 资源不足",
+      "ledgerId": "2bcc730c-e8a0-4cb1-8d9e-a51f2c86770b",
+      "priceWindow": "off-peak",
+      "costCny": "0.00100800"
+    },
+    {
+      "name": "网站持久化失败",
+      "ledgerId": "a2963081-93f9-430d-8cc5-817bf55faf2f",
+      "priceWindow": "off-peak",
+      "costCny": "0.00100800"
+    },
+    {
+      "name": "网站失败后重试",
+      "ledgerId": "ca4e93c2-b351-4033-b706-fa724a644471",
+      "priceWindow": "off-peak",
+      "costCny": "0.00100800"
+    },
+    {
+      "name": "stop-known",
+      "ledgerId": "d438b9bd-db1b-4aab-ad7e-fd97ec179f80",
+      "priceWindow": "off-peak",
+      "costCny": "0.00100800"
+    },
+    {
+      "name": "model-cost-page-dev-cache-control",
+      "serverMode": "development",
+      "cacheControl": "no-cache, must-revalidate"
+    }
+  ],
+  "limitations": [
+    "页面仅校验 Next development 的 no-cache, must-revalidate；生产页面禁缓存由独立 production 构建验证。",
+    "金额双时段算例均独立核对；正式 HTTP 仅证明本次实际落库价格时段，未修改生产时钟。",
+    "不发起官方 live 样本；共享 runner 中 aiMode=replay 是 scenario 子进程保护值，applicationAiMode=live 的正式服务只连接 127.0.0.1 替身。",
+    "网站快照失败与重试通过正式 HTTP 注入；计量补标 SQL 自身抛错没有正式 HTTP 注入边界，本专项未模拟该异常。"
+  ]
+}

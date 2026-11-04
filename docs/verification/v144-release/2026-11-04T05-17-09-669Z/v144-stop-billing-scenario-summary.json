@@ -1,0 +1,775 @@
+{
+  "pass": 115,
+  "fail": 0,
+  "aiMode": "replay",
+  "applicationAiMode": "live",
+  "fixture": true,
+  "live": false,
+  "realLlmCostCny": "0",
+  "workflows": [
+    "polish-explicit-stop-pending",
+    "stage-stop-reliable-and-unknown",
+    "polish-known-stop-completion-race",
+    "provider-failures-release-and-retain-cost",
+    "site-write-failures-release-and-retain-cost",
+    "late-cost-after-explicit-failure",
+    "browser-disconnect-does-not-stop-provider",
+    "parallel-holds-and-durable-restart",
+    "processing-stop-regressions",
+    "browser-stop-and-responsive-fees"
+  ],
+  "workflowResults": [
+    {
+      "name": "polish-explicit-stop-pending",
+      "pass": 3,
+      "fail": 0
+    },
+    {
+      "name": "stage-stop-reliable-and-unknown",
+      "pass": 11,
+      "fail": 0
+    },
+    {
+      "name": "polish-known-stop-completion-race",
+      "pass": 3,
+      "fail": 0
+    },
+    {
+      "name": "provider-failures-release-and-retain-cost",
+      "pass": 36,
+      "fail": 0
+    },
+    {
+      "name": "site-write-failures-release-and-retain-cost",
+      "pass": 4,
+      "fail": 0
+    },
+    {
+      "name": "late-cost-after-explicit-failure",
+      "pass": 3,
+      "fail": 0
+    },
+    {
+      "name": "browser-disconnect-does-not-stop-provider",
+      "pass": 4,
+      "fail": 0
+    },
+    {
+      "name": "parallel-holds-and-durable-restart",
+      "pass": 3,
+      "fail": 0
+    },
+    {
+      "name": "processing-stop-regressions",
+      "pass": 20,
+      "fail": 0
+    },
+    {
+      "name": "browser-stop-and-responsive-fees",
+      "pass": 25,
+      "fail": 0
+    }
+  ],
+  "selectedWorkflow": null,
+  "assertions": [
+    {
+      "name": "生成候选但尚未写入文件",
+      "okay": true
+    },
+    {
+      "name": "显式确认后文件存在",
+      "okay": true
+    },
+    {
+      "name": "润色有独立主动停止入口",
+      "okay": true
+    },
+    {
+      "name": "主动停止缺用量保持待核对",
+      "okay": true
+    },
+    {
+      "name": "后台持久区分主动停止",
+      "okay": true
+    },
+    {
+      "name": "stop-known重复停止至少一次确认",
+      "okay": true
+    },
+    {
+      "name": "stop-known持久状态是主动停止",
+      "okay": true
+    },
+    {
+      "name": "停止可靠用量只消费实际费用",
+      "okay": true
+    },
+    {
+      "name": "停止后消费与余额守恒",
+      "okay": true
+    },
+    {
+      "name": "stop-known重试与重复结算不再调用或改账",
+      "okay": true
+    },
+    {
+      "name": "stop-known取消及时传播供应商",
+      "okay": true
+    },
+    {
+      "name": "stop-unknown重复停止至少一次确认",
+      "okay": true
+    },
+    {
+      "name": "stop-unknown持久状态是主动停止",
+      "okay": true
+    },
+    {
+      "name": "停止缺用量不猜扣不释放",
+      "okay": true
+    },
+    {
+      "name": "stop-unknown重试与重复结算不再调用或改账",
+      "okay": true
+    },
+    {
+      "name": "stop-unknown取消及时传播供应商",
+      "okay": true
+    },
+    {
+      "name": "润色停止遇到可靠完整用量按实结算",
+      "okay": true
+    },
+    {
+      "name": "润色重复取消和重发保持同一费用",
+      "okay": true
+    },
+    {
+      "name": "正常结束先提交则停止不改终态",
+      "okay": true
+    },
+    {
+      "name": "stage request-error 返回持久账单",
+      "okay": true
+    },
+    {
+      "name": "stage request-error 故障立即免单释放自身预留",
+      "okay": true
+    },
+    {
+      "name": "stage request-error 后台保留故障与成本分类",
+      "okay": true
+    },
+    {
+      "name": "stage request-error 错误重试无重复费用",
+      "okay": true
+    },
+    {
+      "name": "stage failed-known 返回持久账单",
+      "okay": true
+    },
+    {
+      "name": "stage failed-known 故障立即免单释放自身预留",
+      "okay": true
+    },
+    {
+      "name": "stage failed-known 后台保留故障与成本分类",
+      "okay": true
+    },
+    {
+      "name": "stage failed-known 错误重试无重复费用",
+      "okay": true
+    },
+    {
+      "name": "stage failed-unknown 返回持久账单",
+      "okay": true
+    },
+    {
+      "name": "stage failed-unknown 故障立即免单释放自身预留",
+      "okay": true
+    },
+    {
+      "name": "stage failed-unknown 后台保留故障与成本分类",
+      "okay": true
+    },
+    {
+      "name": "stage failed-unknown 错误重试无重复费用",
+      "okay": true
+    },
+    {
+      "name": "stage disconnect 返回持久账单",
+      "okay": true
+    },
+    {
+      "name": "stage disconnect 故障立即免单释放自身预留",
+      "okay": true
+    },
+    {
+      "name": "stage disconnect 后台保留故障与成本分类",
+      "okay": true
+    },
+    {
+      "name": "stage disconnect 错误重试无重复费用",
+      "okay": true
+    },
+    {
+      "name": "stage interrupted 返回持久账单",
+      "okay": true
+    },
+    {
+      "name": "stage interrupted 故障立即免单释放自身预留",
+      "okay": true
+    },
+    {
+      "name": "stage interrupted 后台保留故障与成本分类",
+      "okay": true
+    },
+    {
+      "name": "stage interrupted 错误重试无重复费用",
+      "okay": true
+    },
+    {
+      "name": "polish request-error 返回持久账单",
+      "okay": true
+    },
+    {
+      "name": "polish request-error 故障立即免单释放自身预留",
+      "okay": true
+    },
+    {
+      "name": "polish request-error 后台保留故障与成本分类",
+      "okay": true
+    },
+    {
+      "name": "polish request-error 错误重试无重复费用",
+      "okay": true
+    },
+    {
+      "name": "polish failed-known 返回持久账单",
+      "okay": true
+    },
+    {
+      "name": "polish failed-known 故障立即免单释放自身预留",
+      "okay": true
+    },
+    {
+      "name": "polish failed-known 后台保留故障与成本分类",
+      "okay": true
+    },
+    {
+      "name": "polish failed-known 错误重试无重复费用",
+      "okay": true
+    },
+    {
+      "name": "polish failed-unknown 返回持久账单",
+      "okay": true
+    },
+    {
+      "name": "polish failed-unknown 故障立即免单释放自身预留",
+      "okay": true
+    },
+    {
+      "name": "polish failed-unknown 后台保留故障与成本分类",
+      "okay": true
+    },
+    {
+      "name": "polish failed-unknown 错误重试无重复费用",
+      "okay": true
+    },
+    {
+      "name": "polish disconnect 返回持久账单",
+      "okay": true
+    },
+    {
+      "name": "polish disconnect 故障立即免单释放自身预留",
+      "okay": true
+    },
+    {
+      "name": "polish disconnect 后台保留故障与成本分类",
+      "okay": true
+    },
+    {
+      "name": "polish disconnect 错误重试无重复费用",
+      "okay": true
+    },
+    {
+      "name": "settlement写入失败原子免单且不遗留预留",
+      "okay": true
+    },
+    {
+      "name": "settlement写入失败仍保留网站真实成本",
+      "okay": true
+    },
+    {
+      "name": "polish写入失败原子免单且不遗留预留",
+      "okay": true
+    },
+    {
+      "name": "polish写入失败仍保留网站真实成本",
+      "okay": true
+    },
+    {
+      "name": "明确网站故障在用量未知时立即释放",
+      "okay": true
+    },
+    {
+      "name": "迟到可靠用量只补网站成本",
+      "okay": true
+    },
+    {
+      "name": "迟到成本不向用户追扣",
+      "okay": true
+    },
+    {
+      "name": "stage浏览器断开未冒充主动停止或故障",
+      "okay": true
+    },
+    {
+      "name": "stage断开后照实扣分只发生一次",
+      "okay": true
+    },
+    {
+      "name": "polish浏览器断开未冒充主动停止或故障",
+      "okay": true
+    },
+    {
+      "name": "polish断开后照实扣分只发生一次",
+      "okay": true
+    },
+    {
+      "name": "故障只释放自身，其他并行冻结不变",
+      "okay": true
+    },
+    {
+      "name": "进程重启保留停止待核对及账本",
+      "okay": true
+    },
+    {
+      "name": "重启后原失败请求只恢复终态",
+      "okay": true
+    },
+    {
+      "name": "可靠用量先进入processing+reserved",
+      "okay": true
+    },
+    {
+      "name": "可靠用量完成事务拒绝已持久stop",
+      "okay": true
+    },
+    {
+      "name": "正文保存前守卫拒绝持久stop：true",
+      "okay": true
+    },
+    {
+      "name": "processing竞争收敛且无reserved：true",
+      "okay": true
+    },
+    {
+      "name": "HTTP费用与竞争终态守恒：true",
+      "okay": true
+    },
+    {
+      "name": "竞争重试不重复扣费或释放：true",
+      "okay": true
+    },
+    {
+      "name": "未知用量先进入processing+reserved",
+      "okay": true
+    },
+    {
+      "name": "未知用量完成事务拒绝已持久stop",
+      "okay": true
+    },
+    {
+      "name": "正文保存前守卫拒绝持久stop：false",
+      "okay": true
+    },
+    {
+      "name": "processing竞争收敛且无reserved：false",
+      "okay": true
+    },
+    {
+      "name": "HTTP费用与竞争终态守恒：false",
+      "okay": true
+    },
+    {
+      "name": "竞争重试不重复扣费或释放：false",
+      "okay": true
+    },
+    {
+      "name": "complete拒绝故障终态：failed",
+      "okay": true
+    },
+    {
+      "name": "complete拒绝故障终态：interrupted",
+      "okay": true
+    },
+    {
+      "name": "跨价窗口故障迟到可靠usage保留快照",
+      "okay": true
+    },
+    {
+      "name": "跨价迟到证据保持免单且重试不追扣",
+      "okay": true
+    },
+    {
+      "name": "辅助函数竞争及跨价反例没有供应商调用",
+      "okay": true
+    },
+    {
+      "name": "生成器已yield上游文本",
+      "okay": true
+    },
+    {
+      "name": "消费方return识别持久stop而非故障免单",
+      "okay": true
+    },
+    {
+      "name": "新反例无running或processing遗留",
+      "okay": true
+    },
+    {
+      "name": "1440px真实按钮停止且持久待核对",
+      "okay": true
+    },
+    {
+      "name": "1440px停止无可靠用量不猜扣且原文保留",
+      "okay": true
+    },
+    {
+      "name": "390px真实按钮停止且持久待核对",
+      "okay": true
+    },
+    {
+      "name": "390px停止无可靠用量不猜扣且原文保留",
+      "okay": true
+    },
+    {
+      "name": "停止待核对 1440px费用状态与说明",
+      "okay": true
+    },
+    {
+      "name": "停止待核对 1440px账号可用与冻结一致",
+      "okay": true
+    },
+    {
+      "name": "停止待核对 1440px费用可见且无横向溢出",
+      "okay": true
+    },
+    {
+      "name": "停止待核对 390px费用状态与说明",
+      "okay": true
+    },
+    {
+      "name": "停止待核对 390px账号可用与冻结一致",
+      "okay": true
+    },
+    {
+      "name": "停止待核对 390px费用可见且无横向溢出",
+      "okay": true
+    },
+    {
+      "name": "浏览器请求前错误免单且余额不变",
+      "okay": true
+    },
+    {
+      "name": "故障免单 1440px费用状态与说明",
+      "okay": true
+    },
+    {
+      "name": "故障免单 1440px账号可用与冻结一致",
+      "okay": true
+    },
+    {
+      "name": "故障免单 1440px费用可见且无横向溢出",
+      "okay": true
+    },
+    {
+      "name": "故障免单 390px费用状态与说明",
+      "okay": true
+    },
+    {
+      "name": "故障免单 390px账号可用与冻结一致",
+      "okay": true
+    },
+    {
+      "name": "故障免单 390px费用可见且无横向溢出",
+      "okay": true
+    },
+    {
+      "name": "响应丢失保留原请求身份与正文",
+      "okay": true
+    },
+    {
+      "name": "响应丢失重试同key只调用和结算一次",
+      "okay": true
+    },
+    {
+      "name": "正常结算 1440px费用状态与说明",
+      "okay": true
+    },
+    {
+      "name": "正常结算 1440px账号可用与冻结一致",
+      "okay": true
+    },
+    {
+      "name": "正常结算 1440px费用可见且无横向溢出",
+      "okay": true
+    },
+    {
+      "name": "正常结算 390px费用状态与说明",
+      "okay": true
+    },
+    {
+      "name": "正常结算 390px账号可用与冻结一致",
+      "okay": true
+    },
+    {
+      "name": "正常结算 390px费用可见且无横向溢出",
+      "okay": true
+    },
+    {
+      "name": "浏览器无运行时异常",
+      "okay": true
+    }
+  ],
+  "observations": [
+    {
+      "mode": "stop-known",
+      "call": {
+        "id": "ecd18d26-09cd-4867-9c82-15eb721b411a",
+        "messageId": "7cf1dd95-ecbd-4ee2-a7ee-ae3f4381350c",
+        "state": "settled",
+        "reserved": "314.156",
+        "consumed": "2.016",
+        "reason": "stopped_confirmed"
+      },
+      "row": {
+        "id": "ecd18d26-09cd-4867-9c82-15eb721b411a",
+        "userId": "71a6ad54-fab2-4530-ab94-f58f7237b658",
+        "purpose": "stage_chat",
+        "projectId": "9336bc23-38eb-4cc0-a7d6-9abb8efe2fba",
+        "sessionId": "c7a2e561-1602-4e04-92cc-ba8df11d0f44",
+        "fileId": null,
+        "requestedModel": "deepseek-v4-flash",
+        "maxOutputTokens": 16384,
+        "transport": "stream",
+        "actualModel": "deepseek-v4-flash",
+        "providerId": "fixture-54517103-970b-4aa9-944c-d366ccd085d1",
+        "upstreamRequestId": "upstream-b7fea57a-50cc-4c50-8495-be8332d529e0",
+        "startedAt": "2026-11-04T05:26:53.841000Z",
+        "endedAt": "2026-11-04T05:26:55.128000Z",
+        "status": "stopped",
+        "finishReason": "stop",
+        "errorCode": "user_stop",
+        "usageStatus": "reliable",
+        "price": {
+          "end": {
+            "peak": false,
+            "model": "deepseek-flash",
+            "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
+            "version": "deepseek-flash-cny-2026-11-03",
+            "currency": "CNY",
+            "verifiedAt": "2026-11-03",
+            "outputPerMillion": "4",
+            "inputHitPerMillion": "0.02",
+            "inputMissPerMillion": "1"
+          },
+          "rule": "same_price_window_only",
+          "start": {
+            "peak": false,
+            "model": "deepseek-flash",
+            "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
+            "version": "deepseek-flash-cny-2026-11-03",
+            "currency": "CNY",
+            "verifiedAt": "2026-11-03",
+            "outputPerMillion": "4",
+            "inputHitPerMillion": "0.02",
+            "inputMissPerMillion": "1"
+          },
+          "fixture": true,
+          "official": false,
+          "usageValidated": true,
+          "windowConfirmed": true
+        },
+        "costCny": "0.00100800",
+        "costReason": "confirmed",
+        "websiteBorne": false,
+        "usage": {
+          "total_tokens": 1100,
+          "prompt_tokens": 1000,
+          "reasoning_tokens": 20,
+          "completion_tokens": 100,
+          "prompt_cache_hit_tokens": 400,
+          "prompt_cache_miss_tokens": 600
+        }
+      }
+    },
+    {
+      "mode": "stop-unknown",
+      "call": {
+        "id": "b269e0b6-3d05-44c3-8ade-02a5ac3d5b23",
+        "messageId": "5292f143-9e1f-4880-a909-df8f84621c1e",
+        "state": "pending",
+        "reserved": "314.164",
+        "consumed": null,
+        "reason": "stopped_usage_unconfirmed"
+      },
+      "row": {
+        "id": "b269e0b6-3d05-44c3-8ade-02a5ac3d5b23",
+        "userId": "71a6ad54-fab2-4530-ab94-f58f7237b658",
+        "purpose": "stage_chat",
+        "projectId": "9336bc23-38eb-4cc0-a7d6-9abb8efe2fba",
+        "sessionId": "f9549135-d4d2-4db4-8748-571095c4f911",
+        "fileId": null,
+        "requestedModel": "deepseek-v4-flash",
+        "maxOutputTokens": 16384,
+        "transport": "stream",
+        "actualModel": "deepseek-v4-flash",
+        "providerId": "fixture-5c715a59-7eb8-4035-9024-73ee14b17be5",
+        "upstreamRequestId": "upstream-481bcd7b-936a-44bb-b8e4-e35d03ee2ae3",
+        "startedAt": "2026-11-04T05:26:55.574000Z",
+        "endedAt": "2026-11-04T05:26:55.700000Z",
+        "status": "stopped",
+        "finishReason": null,
+        "errorCode": "user_stop",
+        "usageStatus": "pending",
+        "price": {
+          "end": {
+            "peak": false,
+            "model": "deepseek-flash",
+            "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
+            "version": "deepseek-flash-cny-2026-11-03",
+            "currency": "CNY",
+            "verifiedAt": "2026-11-03",
+            "outputPerMillion": "4",
+            "inputHitPerMillion": "0.02",
+            "inputMissPerMillion": "1"
+          },
+          "rule": "same_price_window_only",
+          "start": {
+            "peak": false,
+            "model": "deepseek-flash",
+            "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
+            "version": "deepseek-flash-cny-2026-11-03",
+            "currency": "CNY",
+            "verifiedAt": "2026-11-03",
+            "outputPerMillion": "4",
+            "inputHitPerMillion": "0.02",
+            "inputMissPerMillion": "1"
+          },
+          "fixture": true,
+          "official": false,
+          "usageValidated": true,
+          "windowConfirmed": true
+        },
+        "costCny": null,
+        "costReason": "usage_unconfirmed",
+        "websiteBorne": false,
+        "usage": null
+      }
+    },
+    {
+      "preserved": {
+        "gift": {
+          "available": "8814.616",
+          "reserved": "1173.288"
+        },
+        "purchased": {
+          "available": "0",
+          "reserved": "0"
+        }
+      },
+      "restored": {
+        "gift": {
+          "available": "8814.616",
+          "reserved": "1173.288"
+        },
+        "purchased": {
+          "available": "0",
+          "reserved": "0"
+        }
+      }
+    },
+    {
+      "processingStopRegressions": {
+        "ids": [
+          "99dc6576-e58e-4dd3-b62e-1ccf63df21f3",
+          "f913f4f4-23b3-4119-970b-38620293a7dd",
+          "4cb2dea5-e98c-4f14-ba34-55b53884a736",
+          "42339d87-8417-4b2c-aec9-8a37954f50f3",
+          "22d0af79-45ed-40a4-bcd0-e8bdadf5b24d",
+          "4d8591be-7679-40cf-abf0-318efae6adce"
+        ],
+        "lateUsage": {
+          "id": "22d0af79-45ed-40a4-bcd0-e8bdadf5b24d",
+          "userId": "71a6ad54-fab2-4530-ab94-f58f7237b658",
+          "purpose": "polish",
+          "projectId": "9336bc23-38eb-4cc0-a7d6-9abb8efe2fba",
+          "sessionId": null,
+          "fileId": "c859cd83-5c63-4c51-bafe-6f2aaa427040",
+          "requestedModel": "deepseek-flash",
+          "maxOutputTokens": 1024,
+          "transport": "completion",
+          "actualModel": "deepseek-flash",
+          "providerId": "fixture-helper-22d0af79-45ed-40a4-bcd0-e8bdadf5b24d",
+          "upstreamRequestId": null,
+          "startedAt": "2026-11-03T03:59:59.000000Z",
+          "endedAt": "2026-11-03T03:59:59.000000Z",
+          "status": "failed",
+          "finishReason": "stop",
+          "errorCode": "fixture_early_error",
+          "usageStatus": "reliable",
+          "price": {
+            "end": {
+              "peak": false,
+              "model": "deepseek-flash",
+              "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
+              "version": "deepseek-flash-cny-2026-11-03",
+              "currency": "CNY",
+              "verifiedAt": "2026-11-03",
+              "outputPerMillion": "4",
+              "inputHitPerMillion": "0.02",
+              "inputMissPerMillion": "1"
+            },
+            "rule": "same_price_window_only",
+            "start": {
+              "peak": true,
+              "model": "deepseek-flash",
+              "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
+              "version": "deepseek-flash-cny-2026-11-03",
+              "currency": "CNY",
+              "verifiedAt": "2026-11-03",
+              "outputPerMillion": "8",
+              "inputHitPerMillion": "0.04",
+              "inputMissPerMillion": "2"
+            },
+            "fixture": true,
+            "official": false,
+            "usageValidated": true,
+            "windowConfirmed": false
+          },
+          "costCny": null,
+          "costReason": "price_unconfirmed",
+          "websiteBorne": true,
+          "usage": {
+            "total_tokens": 1100,
+            "prompt_tokens": 1000,
+            "completion_tokens": 100,
+            "prompt_cache_hit_tokens": 400,
+            "prompt_cache_miss_tokens": 600
+          }
+        },
+        "returnReceipt": {
+          "id": "4d8591be-7679-40cf-abf0-318efae6adce",
+          "status": "stopped",
+          "usageStatus": "pending",
+          "costCny": null,
+          "costReason": "usage_unconfirmed"
+        },
+        "remaining": []
+      }
+    }
+  ],
+  "pageErrors": []
+}

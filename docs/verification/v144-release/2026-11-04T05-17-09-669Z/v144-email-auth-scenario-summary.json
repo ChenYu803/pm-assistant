@@ -1,0 +1,34 @@
+{
+  "pass": 241,
+  "fail": 0,
+  "skipped": [],
+  "aiMode": "replay",
+  "workflows": [
+    "email-auth-http-browser-desktop-mobile-upgrade"
+  ],
+  "durationMs": 54391,
+  "budget": {
+    "send": 31,
+    "verify": 61,
+    "action": 155
+  },
+  "screenshots": [
+    "1440-register-send-result.png",
+    "1440-register-code.png",
+    "1440-registered-project.png",
+    "1440-signed-out.png",
+    "1440-login-forgot-entry.png",
+    "1440-reset-error.png",
+    "1440-reset-complete.png",
+    "1440-recovered-project.png",
+    "390-register-send-result.png",
+    "390-register-code.png",
+    "390-registered-project.png",
+    "390-signed-out.png",
+    "390-login-forgot-entry.png",
+    "390-reset-error.png",
+    "390-reset-complete.png",
+    "390-recovered-project.png"
+  ],
+  "evidence": "HTTP 与浏览器；邮件外部边界替身；受限时钟；未读取验证码数据库；不代表真实邮件投递"
+}

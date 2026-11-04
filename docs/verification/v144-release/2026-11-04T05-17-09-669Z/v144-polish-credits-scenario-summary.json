@@ -1,0 +1,377 @@
+{
+  "pass": 57,
+  "fail": 0,
+  "aiMode": "replay",
+  "applicationAiMode": "live",
+  "fixture": true,
+  "live": false,
+  "realLlmCostCny": "0",
+  "workflows": [
+    "admission-ownership-and-free-file-actions",
+    "shared-reservation-settlement-and-retry",
+    "mixed-sources-and-competing-balance",
+    "browser-lost-response-discard-reopen-and-manual-save",
+    "pending-faults-restart-and-profile-traces"
+  ],
+  "assertions": [
+    {
+      "name": "生成候选但尚未写入文件",
+      "okay": true
+    },
+    {
+      "name": "显式确认后文件存在",
+      "okay": true
+    },
+    {
+      "name": "缺少请求身份被拦截",
+      "okay": true
+    },
+    {
+      "name": "其他账号不能调用或读取润色结果",
+      "okay": true
+    },
+    {
+      "name": "未登录不能读取或调用润色",
+      "okay": true
+    },
+    {
+      "name": "手工下载可用",
+      "okay": true
+    },
+    {
+      "name": "手工保存沿用内容修订",
+      "okay": true
+    },
+    {
+      "name": "手工修改来源保持用户操作",
+      "okay": true
+    },
+    {
+      "name": "手动上下文移除保持可用",
+      "okay": true
+    },
+    {
+      "name": "查看下载编辑保存和上下文管理均免费",
+      "okay": true
+    },
+    {
+      "name": "零积分402且没有访问上游或预留",
+      "okay": true
+    },
+    {
+      "name": "浏览器余额不足保留原输入",
+      "okay": true
+    },
+    {
+      "name": "刷新后被拒绝草稿仍可恢复",
+      "okay": true
+    },
+    {
+      "name": "润色与会话共享账号余额及冻结合计",
+      "okay": true
+    },
+    {
+      "name": "生成期间可查询本次预留",
+      "okay": true
+    },
+    {
+      "name": "同标识重复发送返回进行中",
+      "okay": true
+    },
+    {
+      "name": "同标识改内容或跨入口均409",
+      "okay": true
+    },
+    {
+      "name": "同文件不同标识不能重复生成",
+      "okay": true
+    },
+    {
+      "name": "完整润色已结算",
+      "okay": true
+    },
+    {
+      "name": "并行阶段会话正常完成",
+      "okay": true
+    },
+    {
+      "name": "润色按已知人民币账单乘2000计费",
+      "okay": true
+    },
+    {
+      "name": "并发结束余量释放且总余额守恒",
+      "okay": true
+    },
+    {
+      "name": "润色实际输出预算为32768并计入全部输入",
+      "okay": true
+    },
+    {
+      "name": "终态重试返回同一正文和费用且不重复调用",
+      "okay": true
+    },
+    {
+      "name": "生成结果不自动覆盖已确认文件",
+      "okay": true
+    },
+    {
+      "name": "个人账本保留关联文件与修订快照",
+      "okay": true
+    },
+    {
+      "name": "生成候选但尚未写入文件",
+      "okay": true
+    },
+    {
+      "name": "显式确认后文件存在",
+      "okay": true
+    },
+    {
+      "name": "购买来源与赠送混合润色成功",
+      "okay": true
+    },
+    {
+      "name": "赠送优先消费，剩余购买支付并释放原来源",
+      "okay": true
+    },
+    {
+      "name": "混合来源消费按类型追溯",
+      "okay": true
+    },
+    {
+      "name": "生成候选但尚未写入文件",
+      "okay": true
+    },
+    {
+      "name": "显式确认后文件存在",
+      "okay": true
+    },
+    {
+      "name": "余额只够一笔时润色和会话竞争仅一笔成功",
+      "okay": true
+    },
+    {
+      "name": "余额竞争不产生负数或遗留冻结",
+      "okay": true
+    },
+    {
+      "name": "未知500保留草稿与请求身份",
+      "okay": true
+    },
+    {
+      "name": "浏览器重试沿用原key只发生一次调用",
+      "okay": true
+    },
+    {
+      "name": "结果附近分别展示本次预留与实耗",
+      "okay": true
+    },
+    {
+      "name": "不采用结果仍保留正常消费",
+      "okay": true
+    },
+    {
+      "name": "关闭刷新重新打开仍显示费用与未采用草稿",
+      "okay": true
+    },
+    {
+      "name": "390px编辑器无横向溢出",
+      "okay": true
+    },
+    {
+      "name": "手工显式保存继续免费且修订成功",
+      "okay": true
+    },
+    {
+      "name": "保存撤回再编辑与服务器原文一致且不恢复已保存草稿",
+      "okay": true
+    },
+    {
+      "name": "保存撤回和再编辑不新增模型调用或积分费用",
+      "okay": true
+    },
+    {
+      "name": "保存撤回再编辑仍保留已发生的润色费用",
+      "okay": true
+    },
+    {
+      "name": "缺失可靠用量的完整预览仍可使用",
+      "okay": true
+    },
+    {
+      "name": "润色进入同一持久待核对而非零消费",
+      "okay": true
+    },
+    {
+      "name": "供应商失败免单释放且保留费用状态",
+      "okay": true
+    },
+    {
+      "name": "截断不返回成功预览且免单",
+      "okay": true
+    },
+    {
+      "name": "小于1积分按实耗保留小数",
+      "okay": true
+    },
+    {
+      "name": "真实应用重启后预览和待核对可恢复",
+      "okay": true
+    },
+    {
+      "name": "重启重发不重新调用或重复消费",
+      "okay": true
+    },
+    {
+      "name": "个人中心可见同一笔待核对",
+      "okay": true
+    },
+    {
+      "name": "个人流水可追踪润色文件",
+      "okay": true
+    },
+    {
+      "name": "业务项目可删除",
+      "okay": true
+    },
+    {
+      "name": "删除项目不抹除待核对或文件资金快照",
+      "okay": true
+    },
+    {
+      "name": "浏览器无运行时异常",
+      "okay": true
+    }
+  ],
+  "observations": [
+    {
+      "normal": {
+        "requestId": "dfa8f640-a48a-4ef5-b026-f64935467c68",
+        "creditCall": {
+          "id": "79730f92-8bc4-44ad-a79e-47778a36cdf1",
+          "messageId": "d8869774-6867-4569-a7a3-6fa1e5780c95",
+          "state": "settled",
+          "reserved": "545.064",
+          "consumed": "2.016",
+          "reason": "confirmed"
+        },
+        "state": "completed",
+        "polished": "供应商正文保护样本：测试回复与测试润色。"
+      },
+      "model": {
+        "id": "79730f92-8bc4-44ad-a79e-47778a36cdf1",
+        "userId": "538c2e69-3659-4f17-adef-97132ecc7c1e",
+        "purpose": "polish",
+        "projectId": "30a1845c-aa9b-4dd7-b67a-a123fca32644",
+        "sessionId": null,
+        "fileId": "b1ce989b-6665-4e39-a515-ac68e5d7b48e",
+        "requestedModel": "deepseek-v4-flash",
+        "maxOutputTokens": 32768,
+        "transport": "completion",
+        "actualModel": "deepseek-v4-flash",
+        "providerId": "fixture-6c89e05c-7acb-4d5c-9c67-a52b4facba30",
+        "upstreamRequestId": "upstream-e39d4b85-c630-4d17-8601-ec75bb011fad",
+        "startedAt": "2026-11-04T05:26:07.947000Z",
+        "endedAt": "2026-11-04T05:26:10.498000Z",
+        "status": "completed",
+        "finishReason": "stop",
+        "errorCode": null,
+        "usageStatus": "reliable",
+        "price": {
+          "end": {
+            "peak": false,
+            "model": "deepseek-flash",
+            "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
+            "version": "deepseek-flash-cny-2026-11-03",
+            "currency": "CNY",
+            "verifiedAt": "2026-11-03",
+            "outputPerMillion": "4",
+            "inputHitPerMillion": "0.02",
+            "inputMissPerMillion": "1"
+          },
+          "rule": "same_price_window_only",
+          "start": {
+            "peak": false,
+            "model": "deepseek-flash",
+            "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
+            "version": "deepseek-flash-cny-2026-11-03",
+            "currency": "CNY",
+            "verifiedAt": "2026-11-03",
+            "outputPerMillion": "4",
+            "inputHitPerMillion": "0.02",
+            "inputMissPerMillion": "1"
+          },
+          "fixture": true,
+          "official": false,
+          "usageValidated": true,
+          "windowConfirmed": true
+        },
+        "costCny": "0.00100800",
+        "costReason": "confirmed",
+        "websiteBorne": false,
+        "usage": {
+          "total_tokens": 1100,
+          "prompt_tokens": 1000,
+          "reasoning_tokens": 20,
+          "completion_tokens": 100,
+          "prompt_cache_hit_tokens": 400,
+          "prompt_cache_miss_tokens": 600
+        }
+      },
+      "before": {
+        "gift": {
+          "available": "4000",
+          "reserved": "0"
+        },
+        "purchased": {
+          "available": "0",
+          "reserved": "0"
+        }
+      },
+      "after": {
+        "gift": {
+          "available": "3995.968",
+          "reserved": "0"
+        },
+        "purchased": {
+          "available": "0",
+          "reserved": "0"
+        }
+      }
+    },
+    {
+      "pending": {
+        "requestId": "9084f029-8e7f-4236-9853-b3e30a5e1b05",
+        "creditCall": {
+          "id": "50d442d4-e3dc-4f3d-8163-510c3ece0439",
+          "messageId": "94df7f2b-e535-4c0a-8b17-8f2aecd8a914",
+          "state": "pending",
+          "reserved": "545.064",
+          "consumed": null,
+          "reason": "usage_or_price_unconfirmed"
+        },
+        "state": "completed",
+        "polished": "供应商正文保护样本：测试回复与测试润色。"
+      },
+      "balance": {
+        "gift": {
+          "available": "3448.888",
+          "reserved": "545.064"
+        },
+        "purchased": {
+          "available": "0",
+          "reserved": "0"
+        }
+      },
+      "restored": {
+        "id": "50d442d4-e3dc-4f3d-8163-510c3ece0439",
+        "messageId": "94df7f2b-e535-4c0a-8b17-8f2aecd8a914",
+        "state": "pending",
+        "reserved": "545.064",
+        "consumed": null,
+        "reason": "usage_or_price_unconfirmed"
+      }
+    }
+  ],
+  "pageErrors": []
+}

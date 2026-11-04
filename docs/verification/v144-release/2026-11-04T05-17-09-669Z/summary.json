@@ -1,0 +1,258 @@
+{
+  "boundary": "隔离 MySQL + 本机邮件/模型替身或 replay；无 live、目标机或生产资金证据",
+  "startedAt": "2026-11-04T05:17:09.829Z",
+  "head": "aaffb6267e9d514a30da3ffbea9f2fb4d58483c5",
+  "completeSuite": true,
+  "expectedSuites": [
+    "v144-email-auth",
+    "v144-email-unconfigured",
+    "v144-auth-limits",
+    "v144-auth-signout",
+    "v144-admin-controls",
+    "v144-admin-unconfigured",
+    "v144-credits",
+    "v144-gift-invites",
+    "v144-local-session-naming",
+    "v144-model-cost",
+    "v144-conversation-credits",
+    "v144-polish-credits",
+    "v144-stop-billing",
+    "v144-pending-usage",
+    "v144-manual-recharge",
+    "v144-manual-refund",
+    "v144-manual-refund-browser",
+    "v144-release-combination",
+    "v141-replay-foundation",
+    "v141-file-context-replay",
+    "v141-task-permission-replay",
+    "v141-deletion-failure-replay",
+    "v142-generation-stream",
+    "v142-production-preparation"
+  ],
+  "results": [
+    {
+      "suite": "v144-email-auth",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 249,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-email-auth-qu9uKi"
+    },
+    {
+      "suite": "v144-email-unconfigured",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 11,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-email-unconfigured-YIsDcs"
+    },
+    {
+      "suite": "v144-auth-limits",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 84,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-auth-limits-OYonfd"
+    },
+    {
+      "suite": "v144-auth-signout",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 30,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-auth-signout-voUZpI"
+    },
+    {
+      "suite": "v144-admin-controls",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 89,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-admin-controls-sHolKY"
+    },
+    {
+      "suite": "v144-admin-unconfigured",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 12,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-admin-unconfigured-lT8862"
+    },
+    {
+      "suite": "v144-credits",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 108,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-credits-X89Zb1"
+    },
+    {
+      "suite": "v144-gift-invites",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 24,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-gift-invites-GOhzJB"
+    },
+    {
+      "suite": "v144-local-session-naming",
+      "exitCode": 1,
+      "okay": false,
+      "pass": 8,
+      "fail": 2,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-local-session-naming-reMbrS"
+    },
+    {
+      "suite": "v144-model-cost",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 332,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-model-cost-2g8FYr"
+    },
+    {
+      "suite": "v144-conversation-credits",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 62,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-conversation-credits-yZn8xu"
+    },
+    {
+      "suite": "v144-polish-credits",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 65,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-polish-credits-G5cdAs"
+    },
+    {
+      "suite": "v144-stop-billing",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 123,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-stop-billing-EXBPcm"
+    },
+    {
+      "suite": "v144-pending-usage",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 31,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-pending-usage-JHC7EG"
+    },
+    {
+      "suite": "v144-manual-recharge",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 129,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-manual-recharge-6zY8Sb"
+    },
+    {
+      "suite": "v144-manual-refund",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 455,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-manual-refund-1Yp5kt"
+    },
+    {
+      "suite": "v144-manual-refund-browser",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 249,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-manual-refund-browser-3aTl9w"
+    },
+    {
+      "suite": "v144-release-combination",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 77,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-release-combination-H6NB6o"
+    },
+    {
+      "suite": "v141-replay-foundation",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 101,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-replay-foundation-QtVuwQ"
+    },
+    {
+      "suite": "v141-file-context-replay",
+      "exitCode": 1,
+      "okay": false,
+      "pass": 8,
+      "fail": 2,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-file-context-replay-LjqJlx"
+    },
+    {
+      "suite": "v141-task-permission-replay",
+      "exitCode": 1,
+      "okay": false,
+      "pass": 8,
+      "fail": 2,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-task-permission-replay-Lk3kcm"
+    },
+    {
+      "suite": "v141-deletion-failure-replay",
+      "exitCode": 1,
+      "okay": false,
+      "pass": 9,
+      "fail": 2,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-deletion-failure-replay-nfrJky"
+    },
+    {
+      "suite": "v142-generation-stream",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 24,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-generation-stream-fAPtHA"
+    },
+    {
+      "suite": "v142-production-preparation",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 63,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-production-preparation-pW4281"
+    }
+  ],
+  "pass": 2351,
+  "fail": 8,
+  "realLlmCostCny": "0",
+  "realFundsCny": "0",
+  "productionReadiness": "not-assessed",
+  "sourceUnchanged": true,
+  "endedAt": "2026-11-04T05:38:40.051Z",
+  "isolatedPassed": false
+}

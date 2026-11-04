@@ -5,6 +5,7 @@ import mysql from "mysql2/promise";
 import { randomUUID } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { requestRegistrationCode } from "./verify-email-fixture.mjs";
 
 const base = process.env.BASE_URL;
 const output = process.env.V141_REPLAY_OUTPUT_DIR;
@@ -23,6 +24,13 @@ async function api(path) {
 async function mutation(path, action, expected = 200) {
   const pending = page.waitForResponse((response) => new URL(response.url()).pathname === path && response.request().method() !== "GET");
   await action(); const response = await pending;
+  const contentType = response.headers()["content-type"] ?? "";
+  if (contentType.includes("text/event-stream")) {
+    if (response.status() !== expected) throw new Error("SSE transport status: " + response.status());
+    await page.getByLabel("输入消息").waitFor({ state: "visible" });
+    await page.waitForFunction(() => { const input = document.querySelector("textarea[aria-label=\"输入消息\"]"); return input && !input.disabled; });
+    return page.request.get(`${base}${path}`).then((result) => result.json());
+  }
   if (response.status() !== expected) throw new Error(`${response.request().method()} ${path} 返回 ${response.status()}：${await response.text()}`);
   return response.json();
 }
@@ -55,6 +63,7 @@ try {
     await page.goto(`${base}/register`); await page.fill("#email", email);
     await page.locator('input[type="password"]').first().fill("verify-pass-1234");
     await page.locator('input[type="password"]').nth(1).fill("verify-pass-1234");
+    await page.fill("#emailCode", await requestRegistrationCode(page.request, email));
     await mutation("/api/auth/register", () => page.locator('form button[type="submit"]').click(), 201);
     await page.waitForURL((url) => url.pathname === "/projects");
     check(`${prefix} 通过正式注册进入项目页`, (await api("/api/auth/session")).user.email === email);
@@ -107,7 +116,7 @@ try {
       const state = await api(`/api/iterations/${iteration.id}/workbench`);
       session = state.stages.find((item) => item.key === key).sessions[0] ?? null;
       if (!session) {
-        const created = await mutation(`/api/iterations/${iteration.id}/stages/${key}/sessions`, () => page.getByRole("button", { name: "开始本阶段工作" }).click(), 201); session = created.session;
+        const created = await mutation(`/api/iterations/${iteration.id}/stages/${key}/sessions`, () => page.getByRole("button", { name: "新建会话，开始这一阶段", exact: true }).click(), 201); session = created.session;
       }
       await eventually(() => page.getByLabel("输入消息").isEnabled(), Boolean, "会话可输入");
       return session;

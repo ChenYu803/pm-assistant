@@ -1,5 +1,6 @@
 // 验证入口只使用浏览器和应用 API；模型行为从本机供应商 HTTP 请求观察。
 import { chromium } from "playwright-core";
+import { randomUUID } from "node:crypto";
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { assertPlaywrightAvailable } from "./verify-mysql-fixtures.mjs";
@@ -24,6 +25,26 @@ async function api(url, body, method = "POST") {
   try { resultBody = text ? JSON.parse(text) : null; } catch { resultBody = text; }
   return { status: response.status(), body: resultBody };
 }
+// 复用积分专项的正式注册、CSRF 登录和管理员赠送流程，不调用内部账本函数。
+async function prepareCredit() {
+  const context = await browser.newContext();
+  const http = context.request, email = process.env.V144_ADMIN_EMAIL, password = 'verify-pass-1234';
+  try {
+    if (!email) throw new Error('缺少隔离指定管理员身份');
+    const registration = await http.post(base + '/api/auth/register', { data: { email, password, code: await requestRegistrationCode(http, email) } });
+    check('隔离管理员通过正式邮箱注册', registration.status() === 201);
+    const { csrfToken } = await (await http.get(base + '/api/auth/csrf')).json();
+    await http.post(base + '/api/auth/callback/credentials', { form: { email, password, csrfToken, callbackUrl: base + '/projects' }, headers: { 'X-Auth-Return-Redirect': '1' } });
+    const { user: admin } = await (await http.get(base + '/api/auth/session')).json();
+    check('隔离管理员正式登录身份一致', admin?.email === email && !!admin.id);
+    const { user } = await (await page.request.get(base + '/api/auth/session')).json();
+    check('积分准备针对已登录命名测试账号', !!user?.id && user.id !== admin.id);
+    const granted = await http.post(base + '/api/admin/users/' + user.id + '/credits', { data: { requestId: randomUUID(), type: 'grant', amount: '10000', reason: '本地命名专项隔离积分准备' } });
+    check('通过正式管理员入口准备命名测试积分', granted.status() === 200);
+    const statement = await (await page.request.get(base + '/api/credits')).json();
+    check('测试账号获赠10000积分且无初始冻结', statement.balance?.gift.available === '10000' && statement.balance.gift.reserved === '0' && statement.balance.purchased.available === '0');
+  } finally { await context.close(); }
+}
 let projectId;
 let iterationId;
 const sessionsPath = () => '/api/iterations/' + iterationId;
@@ -33,7 +54,7 @@ async function newSession(stage = "analysis") {
   return result.body.session.id;
 }
 async function readSession(id) { return (await api(sessionsPath() + '/sessions/' + id, undefined, "GET")).body; }
-async function send(id, content, stage = "analysis") { return api(sessionsPath() + '/stages/' + stage + '/sessions/' + id + '/messages', { content }); }
+async function send(id, content, stage = "analysis") { return api(sessionsPath() + '/stages/' + stage + '/sessions/' + id + '/messages', { content, requestId: randomUUID() }); }
 async function requests() { return (await fetch(provider + '/requests')).json(); }
 // 阶段证据单独落盘，避免 SSE 等待异常时只剩总运行器超时。
 async function progress(phase) {
@@ -57,6 +78,7 @@ try {
   await page.fill('#emailCode', await requestRegistrationCode(page.request, await page.inputValue('#email')));
   await page.locator('form button[type="submit"]').click();
   await page.waitForURL((url) => url.pathname === '/projects');
+  await prepareCredit();
   const project = await api('/api/projects', { name: '默认会话命名验证' });
   projectId = project.body.id;
   const iteration = await api('/api/projects/' + projectId + '/iterations', { displayName: '命名验证' });
@@ -121,10 +143,10 @@ try {
   }
   const history = await api(sessionsPath() + '/stages/analysis/sessions/' + id + '/messages', undefined, 'GET');
   const originalUser = history.body.messages.find((message) => message.role === 'user');
-  const edited = await api(sessionsPath() + '/sessions/' + id + '/messages/' + originalUser.id, { content: '编辑首条消息不改名' }, 'PATCH');
+  const edited = await api(sessionsPath() + '/sessions/' + id + '/messages/' + originalUser.id, { content: '编辑首条消息不改名', requestId: randomUUID() }, 'PATCH');
   check('编辑首条消息后保持已经确定的名称', edited.status === 200 && (await readSession(id)).title === '  Hello, 世');
   const regenerateId = edited.body.assistantMessage.id;
-  check('重新生成后名称不变', (await api(sessionsPath() + '/stages/analysis/sessions/' + id + '/messages', { regenerateMessageId: regenerateId })).status === 200 && (await readSession(id)).title === '  Hello, 世');
+  check('重新生成后名称不变', (await api(sessionsPath() + '/stages/analysis/sessions/' + id + '/messages', { regenerateMessageId: regenerateId, requestId: randomUUID() })).status === 200 && (await readSession(id)).title === '  Hello, 世');
   workflows.push('raw-first-prompt');
   await progress('raw-first-prompt');
 

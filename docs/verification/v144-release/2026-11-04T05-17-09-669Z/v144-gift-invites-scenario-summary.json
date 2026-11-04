@@ -1,0 +1,78 @@
+{
+  "pass": 16,
+  "fail": 0,
+  "workflows": [
+    "admin-one-time-batch-and-audit",
+    "registration-success-and-invalid-code",
+    "profile-redemption-idempotency-and-refresh",
+    "admin-void-audit-and-permissions",
+    "concurrent-code-and-account-claim"
+  ],
+  "assertions": [
+    {
+      "name": "管理员测试账号可注册且不自动获赠",
+      "passed": true
+    },
+    {
+      "name": "游客不能查询或初始化邀请码",
+      "passed": true
+    },
+    {
+      "name": "管理员一次初始化恰好 100 个不同码",
+      "passed": true
+    },
+    {
+      "name": "初始化重试不增发且列表不暴露明文码",
+      "passed": true
+    },
+    {
+      "name": "无效码不回滚已验证注册且明确未获赠送",
+      "passed": true
+    },
+    {
+      "name": "注册时有效码独立到账 2000 积分",
+      "passed": true
+    },
+    {
+      "name": "注册兑换流水与余额一致",
+      "passed": true
+    },
+    {
+      "name": "刷新个人中心隐藏已兑换入口",
+      "passed": true
+    },
+    {
+      "name": "重复提交返回原成功结果且只入账一次",
+      "passed": true
+    },
+    {
+      "name": "同账号第二码拒绝且不再增加余额",
+      "passed": true
+    },
+    {
+      "name": "窄屏个人中心刷新状态且页面无横向溢出",
+      "passed": true
+    },
+    {
+      "name": "管理员作废后领取和审计记录可查",
+      "passed": true
+    },
+    {
+      "name": "作废码兑换被拒绝且不改变既有领取",
+      "passed": true
+    },
+    {
+      "name": "后台桌面布局无横向溢出",
+      "passed": true
+    },
+    {
+      "name": "不同账号并发抢同码仅一人成功",
+      "passed": true
+    },
+    {
+      "name": "同账号并发提交多码仅一笔赠送",
+      "passed": true
+    }
+  ],
+  "aiMode": "replay"
+}

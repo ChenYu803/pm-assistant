@@ -1,0 +1,182 @@
+{
+  "pass": 24,
+  "fail": 0,
+  "aiMode": "replay",
+  "fixture": true,
+  "live": false,
+  "realLlmCostCny": "0",
+  "workflows": [
+    "reliable-evidence-before-expiry",
+    "expiry-evidence-races-and-retry",
+    "abandoned-process-recovery",
+    "offline-expiry-and-idempotency"
+  ],
+  "assertions": [
+    {
+      "name": "期限内可靠证据自动结算且释放余量",
+      "okay": true
+    },
+    {
+      "name": "跨时段核对保留原请求适用价格",
+      "okay": true
+    },
+    {
+      "name": "可靠核对只生成一次扣费",
+      "okay": true
+    },
+    {
+      "name": "明确故障立即免单且成本仍未知",
+      "okay": true
+    },
+    {
+      "name": "释放写入失败回滚且保留重试任务",
+      "okay": true
+    },
+    {
+      "name": "到期与可靠证据竞争不再扣分",
+      "okay": true
+    },
+    {
+      "name": "只释放到期调用不影响新预留",
+      "okay": true
+    },
+    {
+      "name": "到期仍保留已确认网站成本",
+      "okay": true
+    },
+    {
+      "name": "免单后的迟到证据不重新冻结或追扣",
+      "okay": true
+    },
+    {
+      "name": "到期与明确故障均可补网站成本",
+      "okay": true
+    },
+    {
+      "name": "新调用按自己的进入时间到期",
+      "okay": true
+    },
+    {
+      "name": "退出前事务已持久预留：running",
+      "okay": true
+    },
+    {
+      "name": "退出前事务已持久预留：processing",
+      "okay": true
+    },
+    {
+      "name": "发起进程退出后恢复不永久冻结",
+      "okay": true
+    },
+    {
+      "name": "中断已知与未知网站成本分开",
+      "okay": true
+    },
+    {
+      "name": "真实生成缺用量进入待核对",
+      "okay": true
+    },
+    {
+      "name": "仅冻结该笔额度",
+      "okay": true
+    },
+    {
+      "name": "其他可用积分仍可调用",
+      "okay": true
+    },
+    {
+      "name": "期限内无证据保持冻结",
+      "okay": true
+    },
+    {
+      "name": "页面关闭且应用重启后后台到期免单",
+      "okay": true
+    },
+    {
+      "name": "到期释放全部预留且未扣费",
+      "okay": true
+    },
+    {
+      "name": "用户待核对结束",
+      "okay": true
+    },
+    {
+      "name": "后台成本未知与免单分开记录",
+      "okay": true
+    },
+    {
+      "name": "重复并发恢复不重复释放",
+      "okay": true
+    }
+  ],
+  "observations": [
+    {
+      "name": "跨时段核对价格证据",
+      "originalPrice": {
+        "end": {
+          "peak": true,
+          "model": "deepseek-flash",
+          "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
+          "version": "deepseek-flash-cny-2026-11-03",
+          "currency": "CNY",
+          "verifiedAt": "2026-11-03",
+          "outputPerMillion": "8",
+          "inputHitPerMillion": "0.04",
+          "inputMissPerMillion": "2"
+        },
+        "rule": "same_price_window_only",
+        "start": {
+          "peak": true,
+          "model": "deepseek-flash",
+          "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
+          "version": "deepseek-flash-cny-2026-11-03",
+          "currency": "CNY",
+          "verifiedAt": "2026-11-03",
+          "outputPerMillion": "8",
+          "inputHitPerMillion": "0.04",
+          "inputMissPerMillion": "2"
+        },
+        "fixture": true,
+        "official": false,
+        "usageValidated": true,
+        "windowConfirmed": true
+      },
+      "verifiedPrice": {
+        "end": {
+          "peak": true,
+          "model": "deepseek-flash",
+          "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
+          "version": "deepseek-flash-cny-2026-11-03",
+          "currency": "CNY",
+          "verifiedAt": "2026-11-03",
+          "outputPerMillion": "8",
+          "inputHitPerMillion": "0.04",
+          "inputMissPerMillion": "2"
+        },
+        "rule": "same_price_window_only",
+        "start": {
+          "peak": true,
+          "model": "deepseek-flash",
+          "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
+          "version": "deepseek-flash-cny-2026-11-03",
+          "currency": "CNY",
+          "verifiedAt": "2026-11-03",
+          "outputPerMillion": "8",
+          "inputHitPerMillion": "0.04",
+          "inputMissPerMillion": "2"
+        },
+        "fixture": true,
+        "official": false,
+        "usageValidated": true,
+        "windowConfirmed": true
+      },
+      "startedAt": "2026-11-03T03:59:59.000000Z",
+      "endedAt": "2026-11-03T03:59:59.000000Z",
+      "evidenceAt": "2026-11-03T04:00:01.000Z",
+      "costCny": "0.00201600",
+      "expectedCostCny": "0.002016",
+      "expectedConsumed": "4.032",
+      "actualConsumed": "4.032"
+    }
+  ]
+}

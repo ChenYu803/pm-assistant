@@ -5,6 +5,7 @@ import mysql from "mysql2/promise";
 import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { requestRegistrationCode } from "./verify-email-fixture.mjs";
 import { getMysqlAppConfig, getMysqlConnectionOptions } from "../src/lib/mysql-config.ts";
 
 const base = process.env.BASE_URL; const output = process.env.V141_REPLAY_OUTPUT_DIR;
@@ -25,6 +26,13 @@ async function get(path) { const result = await api(path); if (result.status !==
 async function mutation(path, action, expected = 200) {
   const pending = page.waitForResponse((response) => new URL(response.url()).pathname === path && response.request().method() !== "GET");
   await action(); const response = await pending;
+  const contentType = response.headers()["content-type"] ?? "";
+  if (contentType.includes("text/event-stream")) {
+    if (response.status() !== 200) throw new Error("SSE transport status: " + response.status());
+    await page.getByLabel("输入消息").waitFor({ state: "visible" });
+    await page.waitForFunction(() => { const input = document.querySelector("textarea[aria-label=\"输入消息\"]"); return input && !input.disabled; });
+    return page.request.get(`${base}${path}`).then((result) => result.json());
+  }
   if (response.status() !== expected) throw new Error(`${path}: ${response.status()} ${await response.text()}`);
   return response.json();
 }
@@ -36,6 +44,7 @@ async function eventually(read, predicate, description) {
 async function register(actor, email) {
   await actor.goto(`${base}/register`); await actor.fill("#email", email);
   await actor.locator('input[type="password"]').first().fill("verify-pass-1234"); await actor.locator('input[type="password"]').nth(1).fill("verify-pass-1234");
+  await actor.fill("#emailCode", await requestRegistrationCode(actor.request, email));
   await actor.locator('form button[type="submit"]').click(); await actor.waitForURL((url) => url.pathname === "/projects");
 }
 
@@ -101,7 +110,7 @@ try {
         if (await skip.isVisible()) await skip.click(); await eventually(() => get(`${root()}/workbench`), (value) => value.currentStage === nextKey, "阶段保存"); key = nextKey;
       }
       await conversation(); session = (await get(`${root()}/workbench`)).stages.find((item) => item.key === key).sessions[0] ?? null;
-      if (!session) { session = (await mutation(`${root()}/stages/${key}/sessions`, () => page.getByRole("button", { name: "开始本阶段工作" }).click(), 201)).session; sessionIds.push(session.id); }
+      if (!session) { session = (await mutation(`${root()}/stages/${key}/sessions`, () => page.getByRole("button", { name: "新建会话，开始这一阶段", exact: true }).click(), 201)).session; sessionIds.push(session.id); }
       await eventually(() => page.getByLabel("输入消息").isEnabled(), Boolean, "可输入"); return session;
     }
     async function send(label, expected = 200, header) {
@@ -138,18 +147,25 @@ try {
     requireOkay(`${prefix} 正式上下文加入成功`, (await api(`${root()}/stages/analysis/sessions/${session.id}/context`, "POST", { fileId: file.id })).status === 200);
     await send("删除前未确认候选"); const sessionAssets = await assets();
     requireOkay(`${prefix} 删除前有非空旧版和未确认候选`, Boolean(sessionAssets.project_files.find((item) => item.id === file.id).previous_content) && (await connection.query("SELECT id FROM iteration_file_candidates WHERE session_id = ? AND status = 'pending'", [session.id]))[0].length > 0);
+    const workbenchPage = page; const deletionPage = await context.newPage(); deletionPage.setDefaultTimeout(20000); page = deletionPage; await openProject();
+    const generatingRow = page.locator(`[data-iteration-id="${owner.id}"]`); await generatingRow.getByRole("button", { name: "删除后保留成果 更多功能", exact: true }).click(); await generatingRow.getByRole("button", { name: "删除产品迭代", exact: true }).click();
+    const generatingDialog = page.getByRole("alertdialog", { name: "删除产品迭代？" }); await generatingDialog.waitFor(); page = workbenchPage;
     // 真正发送进行中的 replay 请求；SQL 等待生成预留，而非手工插入 generating 夹具。
     let settled = false; const flight = api(messagesPath(), "POST", { content: "这是真实进行中的生成" }, { "x-pm-verify-stream-delay": "1" }).finally(() => { settled = true; });
     await eventually(async () => (await connection.query("SELECT id FROM iteration_session_messages WHERE session_id = ? AND status = 'generating'", [session.id]))[0], (rows) => rows.length === 1, "真实生成预留");
     const duringGeneration = await assets(); const duringProcess = await processState(); const duringCandidates = (await connection.query("SELECT * FROM iteration_file_candidates WHERE session_id = ? ORDER BY id", [session.id]))[0];
     const generationSessionDelete = await api(sessionPath(), "DELETE"); const generationIterationDelete = await api(root(), "DELETE");
     requireOkay(`${prefix} 真正 in-flight 生成同时阻止会话和迭代删除`, !settled && generationSessionDelete.status === 409 && generationIterationDelete.status === 409 && generationIterationDelete.body.reason === "generating");
-    requireOkay(`${prefix} 生成中409完整会话消息上下文候选过程保持不变`, equal(duringProcess, await processState()) && equal(duringGeneration, await assets()));
+    const processAfterGenerationDelete = await processState();
+    const stableProcess = (state) => Object.fromEntries(Object.entries(state).filter(([table]) => table !== "iteration_session_messages").map(([table, rows]) => [table, table === "iteration_sessions" ? rows.map((row) => Object.fromEntries(Object.entries(row).filter(([key]) => key !== "updated_at"))) : rows]));
+    const oldMessagesIntact = duringProcess.iteration_session_messages.every((message) => { const current = processAfterGenerationDelete.iteration_session_messages.find((item) => item.id === message.id); return message.status === "generating" && message.role === "assistant" ? current && ["generating", "completed"].includes(current.status) : equal(message, current); });
+    const startedUserMessage = processAfterGenerationDelete.iteration_session_messages.filter((message) => message.role === "user" && message.content === "这是真实进行中的生成");
+    const generatedAssistantMessage = processAfterGenerationDelete.iteration_session_messages.filter((message) => message.role === "assistant").sort((left, right) => Math.abs(new Date(left.created_at).getTime() - new Date(startedUserMessage[0]?.created_at).getTime()) - Math.abs(new Date(right.created_at).getTime() - new Date(startedUserMessage[0]?.created_at).getTime()))[0];
+    const expectedGenerationPresent = startedUserMessage.length === 1 && generatedAssistantMessage && Math.abs(new Date(generatedAssistantMessage.created_at).getTime() - new Date(startedUserMessage[0].created_at).getTime()) < 5000 && ["generating", "completed"].includes(generatedAssistantMessage.status);
+    requireOkay(`${prefix} 生成中409保留既有消息、上下文、候选及资产，仅增加本次生成记录`, equal(stableProcess(duringProcess), stableProcess(processAfterGenerationDelete)) && oldMessagesIntact && expectedGenerationPresent && equal(duringGeneration, await assets()));
     // 同一真实进行中请求也从项目列表的删除确认得到阻止和停止入口。
-    const workbenchPage = page; page = await context.newPage(); page.setDefaultTimeout(20000); await openProject();
-    const generatingRow = page.locator(`[data-iteration-id="${owner.id}"]`); await generatingRow.getByRole("button", { name: "删除后保留成果 更多功能", exact: true }).click(); await generatingRow.getByRole("button", { name: "删除产品迭代", exact: true }).click();
-    const generatingDialog = page.getByRole("alertdialog", { name: "删除产品迭代？" }); await generatingDialog.waitFor(); await mutation(root(), () => generatingDialog.getByRole("button", { name: "确认删除迭代", exact: true }).click(), 409); await generatingDialog.getByRole("link", { name: "前往工作区停止生成", exact: true }).waitFor();
-    requireOkay(`${prefix} 真实生成阻止迭代UI删除并保留对象和全部过程`, !settled && await generatingDialog.isVisible() && await generatingRow.count() === 1 && await page.locator(".iteration-toast").count() === 0 && equal(duringProcess, await processState())); await capture("iteration-generation-blocked"); await page.close(); page = workbenchPage;
+    page = deletionPage; await mutation(root(), () => generatingDialog.getByRole("button", { name: "确认删除迭代", exact: true }).click(), 409); await generatingDialog.getByRole("link", { name: "前往工作区停止生成", exact: true }).waitFor();
+    requireOkay(`${prefix} 真实生成阻止迭代UI删除并保留对象和全部过程`, !settled && await generatingDialog.isVisible() && await generatingRow.count() === 1 && await deletionPage.locator(".iteration-toast").count() === 0 && equal(stableProcess(duringProcess), stableProcess(await processState()))); await capture("iteration-generation-blocked"); await deletionPage.close(); page = workbenchPage;
     await page.reload(); if (compact) await page.getByRole("navigation", { name: "工作台区域" }).getByRole("button", { name: /阶段会话/ }).click();
     const sessionRow = () => page.locator(".session-list-item").filter({ has: page.locator(`[data-session-id="${analysisSession.id}"]`) });
     const sessionDialog = page.getByRole("alertdialog", { name: "删除阶段会话？" });
@@ -176,7 +192,7 @@ try {
     requireOkay(`${prefix} 会话删除清理消息上下文普通候选但保留全部成果`, (await api(sessionPath())).status === 404 && equal(sessionAssets, await assets()));
     for (const table of ["iteration_session_messages", "iteration_session_context_files", "iteration_file_candidates"]) requireOkay(`${prefix} 会话删除清空${table}`, (await connection.query(`SELECT * FROM ${table} WHERE session_id = ?`, [analysisSession.id]))[0].length === 0);
     check(`${prefix} 会话删除后历史来源保留精确会话名称快照及已删除状态`, (await get(`/api/projects/${projectId}/files/${file.id}/history`)).changes.filter((item) => item.actor === "agent").every((item) => item.sessionDeleted && item.sessionName === sessionAssets.project_file_changes.find((change) => change.id === item.id)?.session_name));
-    await conversation(); await page.getByRole("button", { name: "开始本阶段工作", exact: true }).waitFor();
+    await conversation(); await page.getByRole("button", { name: "新建会话，开始这一阶段", exact: true }).waitFor();
     const prototypeSession = await stage("prototype", "原型设计"); const beforeGeneration = await assets();
     const failed = await send("快照故障", 502, "x-pm-verify-snapshot-failure"); const failedMessage = failed.messages.at(-1);
     requireOkay(`${prefix} HTML快照真实提交故障回滚候选快照且消息 failed 可重试`, equal(beforeGeneration, await assets()) && failedMessage.status === "failed" && !failedMessage.candidate && (await connection.query("SELECT * FROM iteration_file_candidates WHERE session_id = ?", [prototypeSession.id]))[0].length === 0);

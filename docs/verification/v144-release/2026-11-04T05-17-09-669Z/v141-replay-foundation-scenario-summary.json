@@ -1,0 +1,427 @@
+{
+  "pass": 94,
+  "fail": 0,
+  "aiMode": "replay",
+  "workflows": [
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "projectId": "3a5d8b18-5816-42d3-8e3b-92d0b63a5c0e",
+      "iterationIds": [
+        "3dc9f316-7782-44e6-82b9-fccaa3bfcf50",
+        "0603a99c-c113-4704-b9a4-1709f59648d0"
+      ],
+      "sessionIds": [
+        "99b52cef-ed9a-4e59-875a-27c1d7dc07d1",
+        "21a107d1-be22-41d8-9e8d-e95f22b66af0"
+      ],
+      "fixtureId": "332f0be7-d087-4829-a99d-bf36de373f03",
+      "fixturePurpose": "非空上下文隔离与项目级目录共享；不验收产品成果写入"
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "projectId": "97ce8dfa-bf82-450a-b8f5-40e1f0bf5af3",
+      "iterationIds": [
+        "b5252035-17a4-4c28-8f13-70c459fba32d",
+        "3f50d4be-189f-4047-a319-14eced27623e"
+      ],
+      "sessionIds": [
+        "7a1ebfc2-0e06-4f78-b9d4-8e6333280457",
+        "7fd91edd-70a0-45a8-a2f1-c9ebb266d594"
+      ],
+      "fixtureId": "f2ec1256-92e8-4777-aa0b-2f0ac83cd036",
+      "fixturePurpose": "非空上下文隔离与项目级目录共享；不验收产品成果写入"
+    }
+  ],
+  "screenshots": [
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-replay-foundation-QtVuwQ\\foundation-1440-empty-navigation.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-replay-foundation-QtVuwQ\\foundation-1440-sessions.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-replay-foundation-QtVuwQ\\foundation-1440-shared-files.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-replay-foundation-QtVuwQ\\foundation-390-empty-navigation.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-replay-foundation-QtVuwQ\\foundation-390-sessions.png",
+    "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-replay-foundation-QtVuwQ\\foundation-390-shared-files.png"
+  ],
+  "assertions": [
+    {
+      "name": "发送聊天前确认服务端固定回放",
+      "okay": true
+    },
+    {
+      "name": "浏览器回放开始前没有用户",
+      "okay": true
+    },
+    {
+      "name": "1440×900 正式注册成功进入项目页",
+      "okay": true
+    },
+    {
+      "name": "1440×900 显式退出清除认证",
+      "okay": true
+    },
+    {
+      "name": "1440×900 原账号登录成功",
+      "okay": true
+    },
+    {
+      "name": "1440×900 新建目标没有默认选项",
+      "okay": true
+    },
+    {
+      "name": "1440×900 第一轮目标保存且稳定编号为 1",
+      "okay": true
+    },
+    {
+      "name": "1440×900 新建目标没有默认选项",
+      "okay": true
+    },
+    {
+      "name": "1440×900 暂不填写先明确展示已知与未知边界",
+      "okay": true
+    },
+    {
+      "name": "1440×900 风险返回保留选择与名称",
+      "okay": true
+    },
+    {
+      "name": "1440×900 风险返回保留目标草稿",
+      "okay": true
+    },
+    {
+      "name": "1440×900 确认后本次创建不重复警告",
+      "okay": true
+    },
+    {
+      "name": "1440×900 第二轮目标为空且编号递增",
+      "okay": true
+    },
+    {
+      "name": "1440×900 稳定编号展示为只读",
+      "okay": true
+    },
+    {
+      "name": "1440×900 展示名称可改且稳定编号不变",
+      "okay": true
+    },
+    {
+      "name": "1440×900 四环初始未开始且无会话",
+      "okay": true
+    },
+    {
+      "name": "1440×900 需求分析一级导航可见",
+      "okay": true
+    },
+    {
+      "name": "1440×900 原型设计一级导航可见",
+      "okay": true
+    },
+    {
+      "name": "1440×900 PRD一级导航可见",
+      "okay": true
+    },
+    {
+      "name": "1440×900 任务拆分一级导航可见",
+      "okay": true
+    },
+    {
+      "name": "1440×900 跳过前置环节的提示允许返回",
+      "okay": true
+    },
+    {
+      "name": "1440×900 可直接进入空任务拆分",
+      "okay": true
+    },
+    {
+      "name": "1440×900 可直接进入空原型设计",
+      "okay": true
+    },
+    {
+      "name": "1440×900 可直接进入空PRD",
+      "okay": true
+    },
+    {
+      "name": "1440×900 空阶段来回导航不建会话、不变状态、不写文件",
+      "okay": true
+    },
+    {
+      "name": "1440×900 显式创建会话进入进行中",
+      "okay": true
+    },
+    {
+      "name": "1440×900 零写入也能完成阶段",
+      "okay": true
+    },
+    {
+      "name": "1440×900 刷新保持完成状态和输入锁定",
+      "okay": true
+    },
+    {
+      "name": "1440×900 显式重新打开恢复进行中",
+      "okay": true
+    },
+    {
+      "name": "1440×900 正常回复经过 token 与唯一 result 完成",
+      "okay": true
+    },
+    {
+      "name": "1440×900 新会话输入和消息为空",
+      "okay": true
+    },
+    {
+      "name": "1440×900 新会话不继承另一会话上下文",
+      "okay": true
+    },
+    {
+      "name": "1440×900 生成状态仅属于第二会话",
+      "okay": true
+    },
+    {
+      "name": "1440×900 停止保留 HTTP 200 并以 result 409 结束",
+      "okay": true
+    },
+    {
+      "name": "1440×900 两会话消息和过程状态独立",
+      "okay": true
+    },
+    {
+      "name": "1440×900 切回会话一恢复独立草稿",
+      "okay": true
+    },
+    {
+      "name": "1440×900 会话一对话正文不显示会话二消息",
+      "okay": true
+    },
+    {
+      "name": "1440×900 切回会话一恢复已加载文件",
+      "okay": true
+    },
+    {
+      "name": "1440×900 切回会话二恢复独立草稿",
+      "okay": true
+    },
+    {
+      "name": "1440×900 会话二对话正文不显示会话一消息",
+      "okay": true
+    },
+    {
+      "name": "1440×900 迭代 2 可见同一项目文件",
+      "okay": true
+    },
+    {
+      "name": "1440×900 迭代 1 可见同一项目文件",
+      "okay": true
+    },
+    {
+      "name": "1440×900 文件视图无横向溢出",
+      "okay": true
+    },
+    {
+      "name": "1440×900 导航、候选、切会话和切迭代均未自动写入文件",
+      "okay": true
+    },
+    {
+      "name": "1440×900 数据库最终消息事实与两会话 API 一致",
+      "okay": true
+    },
+    {
+      "name": "1440×900 数据库引用只属于会话一",
+      "okay": true
+    },
+    {
+      "name": "1440×900 最终两个编号为 1/2 且下一编号为 3",
+      "okay": true
+    },
+    {
+      "name": "1440×900 浏览器无运行时错误",
+      "okay": true
+    },
+    {
+      "name": "390×844 正式注册成功进入项目页",
+      "okay": true
+    },
+    {
+      "name": "390×844 显式退出清除认证",
+      "okay": true
+    },
+    {
+      "name": "390×844 原账号登录成功",
+      "okay": true
+    },
+    {
+      "name": "390×844 新建目标没有默认选项",
+      "okay": true
+    },
+    {
+      "name": "390×844 第一轮目标保存且稳定编号为 1",
+      "okay": true
+    },
+    {
+      "name": "390×844 新建目标没有默认选项",
+      "okay": true
+    },
+    {
+      "name": "390×844 暂不填写先明确展示已知与未知边界",
+      "okay": true
+    },
+    {
+      "name": "390×844 风险返回保留选择与名称",
+      "okay": true
+    },
+    {
+      "name": "390×844 风险返回保留目标草稿",
+      "okay": true
+    },
+    {
+      "name": "390×844 确认后本次创建不重复警告",
+      "okay": true
+    },
+    {
+      "name": "390×844 第二轮目标为空且编号递增",
+      "okay": true
+    },
+    {
+      "name": "390×844 稳定编号展示为只读",
+      "okay": true
+    },
+    {
+      "name": "390×844 展示名称可改且稳定编号不变",
+      "okay": true
+    },
+    {
+      "name": "390×844 四环初始未开始且无会话",
+      "okay": true
+    },
+    {
+      "name": "390×844 需求分析一级导航可见",
+      "okay": true
+    },
+    {
+      "name": "390×844 原型设计一级导航可见",
+      "okay": true
+    },
+    {
+      "name": "390×844 PRD一级导航可见",
+      "okay": true
+    },
+    {
+      "name": "390×844 任务拆分一级导航可见",
+      "okay": true
+    },
+    {
+      "name": "390×844 跳过前置环节的提示允许返回",
+      "okay": true
+    },
+    {
+      "name": "390×844 可直接进入空任务拆分",
+      "okay": true
+    },
+    {
+      "name": "390×844 可直接进入空原型设计",
+      "okay": true
+    },
+    {
+      "name": "390×844 可直接进入空PRD",
+      "okay": true
+    },
+    {
+      "name": "390×844 空阶段来回导航不建会话、不变状态、不写文件",
+      "okay": true
+    },
+    {
+      "name": "390×844 显式创建会话进入进行中",
+      "okay": true
+    },
+    {
+      "name": "390×844 零写入也能完成阶段",
+      "okay": true
+    },
+    {
+      "name": "390×844 刷新保持完成状态和输入锁定",
+      "okay": true
+    },
+    {
+      "name": "390×844 显式重新打开恢复进行中",
+      "okay": true
+    },
+    {
+      "name": "390×844 正常回复经过 token 与唯一 result 完成",
+      "okay": true
+    },
+    {
+      "name": "390×844 新会话输入和消息为空",
+      "okay": true
+    },
+    {
+      "name": "390×844 新会话不继承另一会话上下文",
+      "okay": true
+    },
+    {
+      "name": "390×844 生成状态仅属于第二会话",
+      "okay": true
+    },
+    {
+      "name": "390×844 停止保留 HTTP 200 并以 result 409 结束",
+      "okay": true
+    },
+    {
+      "name": "390×844 两会话消息和过程状态独立",
+      "okay": true
+    },
+    {
+      "name": "390×844 切回会话一恢复独立草稿",
+      "okay": true
+    },
+    {
+      "name": "390×844 会话一对话正文不显示会话二消息",
+      "okay": true
+    },
+    {
+      "name": "390×844 切回会话一恢复已加载文件",
+      "okay": true
+    },
+    {
+      "name": "390×844 切回会话二恢复独立草稿",
+      "okay": true
+    },
+    {
+      "name": "390×844 会话二对话正文不显示会话一消息",
+      "okay": true
+    },
+    {
+      "name": "390×844 迭代 2 可见同一项目文件",
+      "okay": true
+    },
+    {
+      "name": "390×844 迭代 1 可见同一项目文件",
+      "okay": true
+    },
+    {
+      "name": "390×844 文件视图无横向溢出",
+      "okay": true
+    },
+    {
+      "name": "390×844 导航、候选、切会话和切迭代均未自动写入文件",
+      "okay": true
+    },
+    {
+      "name": "390×844 数据库最终消息事实与两会话 API 一致",
+      "okay": true
+    },
+    {
+      "name": "390×844 数据库引用只属于会话一",
+      "okay": true
+    },
+    {
+      "name": "390×844 最终两个编号为 1/2 且下一编号为 3",
+      "okay": true
+    },
+    {
+      "name": "390×844 浏览器无运行时错误",
+      "okay": true
+    }
+  ]
+}

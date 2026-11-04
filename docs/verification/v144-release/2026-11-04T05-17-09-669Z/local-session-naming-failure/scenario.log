@@ -1,0 +1,7 @@
+✅ 用户注册并创建项目和迭代
+✅ 通过 API 创建阶段会话
+❌ Error: 主回复没有到达本机 HTTP 供应商边界
+    at until (file:///D:/Project/4.Project/Agent2/scripts/verify-v144-local-session-naming-scenario.mjs:50:9)
+    at async waitForWorkbenchReply (file:///D:/Project/4.Project/Agent2/scripts/verify-v144-local-session-naming-scenario.mjs:43:3)
+    at async file:///D:/Project/4.Project/Agent2/scripts/verify-v144-local-session-naming-scenario.mjs:72:3
+结果: 2 通过, 1 失败

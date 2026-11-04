@@ -5,6 +5,7 @@ import mysql from "mysql2/promise";
 import { randomUUID } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { requestRegistrationCode } from "./verify-email-fixture.mjs";
 
 const base = process.env.BASE_URL; const output = process.env.V141_REPLAY_OUTPUT_DIR;
 let pass = 0; let fail = 0; let browser; let connection; let page;
@@ -26,6 +27,13 @@ async function api(path, actor = page) {
 async function mutation(path, action, expected = 200) {
   const pending = page.waitForResponse((response) => new URL(response.url()).pathname === path && response.request().method() !== "GET");
   await action(); const response = await pending;
+  const contentType = response.headers()["content-type"] ?? "";
+  if (contentType.includes("text/event-stream")) {
+    if (response.status() !== expected) throw new Error("SSE transport status: " + response.status());
+    await page.getByLabel("输入消息").waitFor({ state: "visible" });
+    await page.waitForFunction(() => { const input = document.querySelector("textarea[aria-label=\"输入消息\"]"); return input && !input.disabled; });
+    return page.request.get(`${base}${path}`).then((result) => result.json());
+  }
   if (response.status() !== expected) throw new Error(`${response.request().method()} ${path} 返回 ${response.status()}：${await response.text()}`);
   return response.json();
 }
@@ -38,6 +46,7 @@ async function register(actor, email) {
   await actor.goto(`${base}/register`); await actor.fill("#email", email);
   await actor.locator('input[type="password"]').first().fill("verify-pass-1234");
   await actor.locator('input[type="password"]').nth(1).fill("verify-pass-1234");
+  await actor.fill("#emailCode", await requestRegistrationCode(actor.request, email));
   await actor.locator('form button[type="submit"]').click();
   await actor.waitForURL((url) => url.pathname === "/projects");
 }
@@ -103,7 +112,7 @@ try {
         await eventually(() => api(`/api/iterations/${iteration.id}/workbench`), (value) => value.currentStage === "tickets", "任务阶段保存");
       }
       await conversation(); const latest = await api(`/api/iterations/${iteration.id}/workbench`); session = latest.stages.find((item) => item.key === "tickets").sessions[0] ?? null;
-      if (!session) session = (await mutation(`/api/iterations/${iteration.id}/stages/tickets/sessions`, () => page.getByRole("button", { name: "开始本阶段工作" }).click(), 201)).session;
+      if (!session) session = (await mutation(`/api/iterations/${iteration.id}/stages/tickets/sessions`, () => page.getByRole("button", { name: "新建会话，开始这一阶段", exact: true }).click(), 201)).session;
       await eventually(() => page.getByLabel("输入消息").isEnabled(), Boolean, "任务会话可输入"); return session;
     }
     async function assets() {

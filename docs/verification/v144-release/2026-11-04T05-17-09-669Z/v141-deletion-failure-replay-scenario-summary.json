@@ -1,0 +1,25 @@
+{
+  "pass": 3,
+  "fail": 1,
+  "aiMode": "replay",
+  "workflows": [],
+  "screenshots": [],
+  "assertions": [
+    {
+      "name": "权限泄露保护能识别嵌套响应中含换行和引号的MD及HTML原文",
+      "okay": true
+    },
+    {
+      "name": "发送前正式服务确认 AI_MODE=replay",
+      "okay": true
+    },
+    {
+      "name": "专项注册前独立数据库没有用户",
+      "okay": true
+    },
+    {
+      "name": "专项回放中断：page.waitForURL: Timeout 60000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+      "okay": false
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "pass": 2,
+  "fail": 1,
+  "aiMode": "replay",
+  "workflows": [],
+  "screenshots": [],
+  "assertions": [
+    {
+      "name": "聊天前服务端确认 AI_MODE=replay",
+      "okay": true
+    },
+    {
+      "name": "专项从零用户空库开始",
+      "okay": true
+    },
+    {
+      "name": "专项回放中断：page.waitForURL: Timeout 60000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n============================================================",
+      "okay": false
+    }
+  ]
+}

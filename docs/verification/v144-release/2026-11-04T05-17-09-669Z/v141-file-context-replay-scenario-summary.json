@@ -1,0 +1,21 @@
+{
+  "pass": 2,
+  "fail": 1,
+  "aiMode": "replay",
+  "workflows": [],
+  "screenshots": [],
+  "assertions": [
+    {
+      "name": "聊天前确认服务端 AI_MODE=replay",
+      "okay": true
+    },
+    {
+      "name": "专项开始前 MySQL 没有用户",
+      "okay": true
+    },
+    {
+      "name": "专项回放中断：page.waitForResponse: Timeout 20000ms exceeded while waiting for event \"response\"",
+      "okay": false
+    }
+  ]
+}

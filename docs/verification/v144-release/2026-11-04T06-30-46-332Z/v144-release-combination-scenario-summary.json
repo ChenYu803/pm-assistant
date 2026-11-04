@@ -1,0 +1,2768 @@
+{
+  "pass": 70,
+  "fail": 0,
+  "workflows": [
+    "both-invites-and-concurrent-recharge",
+    "gift-first-generation-retry-naming-restart-password-reset",
+    "unused-original-purchase-refund-and-permissions",
+    "desktop-and-narrow-profile-workspace"
+  ],
+  "assertions": [
+    {
+      "name": "只允许隔离库和本机供应商",
+      "okay": true
+    },
+    {
+      "name": "POST /api/auth/register HTTP 201",
+      "okay": true
+    },
+    {
+      "name": "GET /api/auth/csrf HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "GET /api/auth/session HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "正式登录账号身份一致",
+      "okay": true
+    },
+    {
+      "name": "POST /api/admin/gift-invites HTTP 201",
+      "okay": true
+    },
+    {
+      "name": "首批邀请码有效且唯一",
+      "okay": true
+    },
+    {
+      "name": "POST /api/auth/register HTTP 201",
+      "okay": true
+    },
+    {
+      "name": "GET /api/auth/csrf HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "GET /api/auth/session HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "正式登录账号身份一致",
+      "okay": true
+    },
+    {
+      "name": "注册兑换已到账",
+      "okay": true
+    },
+    {
+      "name": "POST /api/auth/register HTTP 201",
+      "okay": true
+    },
+    {
+      "name": "GET /api/auth/csrf HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "GET /api/auth/session HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "正式登录账号身份一致",
+      "okay": true
+    },
+    {
+      "name": "POST /api/gift-invites HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "GET /api/credits HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "注册入口初始账单2000赠送/0购买/0冻结",
+      "okay": true
+    },
+    {
+      "name": "POST /api/admin/recharges HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "POST /api/admin/recharges HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "并发充值相同操作仅同一到账事实",
+      "okay": true
+    },
+    {
+      "name": "GET /api/credits HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "充值后赠送2000/购买10",
+      "okay": true
+    },
+    {
+      "name": "POST /api/projects HTTP 201",
+      "okay": true
+    },
+    {
+      "name": "POST /api/projects/d12f59ed-2663-4454-8495-aa2cc319c7b8/iterations HTTP 201",
+      "okay": true
+    },
+    {
+      "name": "POST /api/iterations/1d01037d-6a3e-48cc-ae9b-89daffe7b807/stages/analysis/sessions HTTP 201",
+      "okay": true
+    },
+    {
+      "name": "POST /api/iterations/1d01037d-6a3e-48cc-ae9b-89daffe7b807/stages/analysis/sessions/dedb4647-3446-408c-9741-a92388518b75/messages HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "正常生成可靠结算且使用赠送积分",
+      "okay": true
+    },
+    {
+      "name": "POST /api/iterations/1d01037d-6a3e-48cc-ae9b-89daffe7b807/stages/analysis/sessions/dedb4647-3446-408c-9741-a92388518b75/messages HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "网络重发不新增上游或隐藏命名调用",
+      "okay": true
+    },
+    {
+      "name": "GET /api/iterations/1d01037d-6a3e-48cc-ae9b-89daffe7b807/sessions/dedb4647-3446-408c-9741-a92388518b75 HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "默认名称按Unicode首十字符持久化",
+      "okay": true
+    },
+    {
+      "name": "GET /api/credits HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "消费账单赠送优先且购买10保持完整",
+      "okay": true
+    },
+    {
+      "name": "GET /api/credits HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "重启后余额与流水完整保留",
+      "okay": true
+    },
+    {
+      "name": "POST /api/auth/email-code HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "POST /api/auth/reset-password HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "GET /api/auth/csrf HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "GET /api/auth/session HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "正式登录账号身份一致",
+      "okay": true
+    },
+    {
+      "name": "GET /api/credits HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "找回后同一账号及资金记录",
+      "okay": true
+    },
+    {
+      "name": "POST /api/admin/refunds HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "GET /api/credits HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "原购买10全部退款锁定，赠送消费不受影响",
+      "okay": true
+    },
+    {
+      "name": "POST /api/admin/refunds HTTP 403",
+      "okay": true
+    },
+    {
+      "name": "GET /api/iterations/1d01037d-6a3e-48cc-ae9b-89daffe7b807/stages/analysis/sessions/dedb4647-3446-408c-9741-a92388518b75/messages HTTP 404",
+      "okay": true
+    },
+    {
+      "name": "PATCH /api/admin/refunds/cb46d283-d512-4d9e-bf40-1d160c19d0c0 HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "退款最终已完成且保留原充值来源",
+      "okay": true
+    },
+    {
+      "name": "POST /api/admin/refunds HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "PATCH /api/admin/refunds/cb46d283-d512-4d9e-bf40-1d160c19d0c0 HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "GET /api/credits HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "最终赠送1995.968或1997.984，购买0，退款锁0",
+      "okay": true
+    },
+    {
+      "name": "跨票审计仅一次充值/消费/退款",
+      "okay": true
+    },
+    {
+      "name": "GET /api/admin/model-requests HTTP 200",
+      "okay": true
+    },
+    {
+      "name": "运营者能核对同一消费的可靠用量及隔离价格",
+      "okay": true
+    },
+    {
+      "name": "profile 1440无整页横向溢出",
+      "okay": true
+    },
+    {
+      "name": "profile 1440显示可访问的页面主体",
+      "okay": true
+    },
+    {
+      "name": "改密与退款后页面含当前账号",
+      "okay": true
+    },
+    {
+      "name": "workspace 1440无整页横向溢出",
+      "okay": true
+    },
+    {
+      "name": "workspace 1440显示可访问的页面主体",
+      "okay": true
+    },
+    {
+      "name": "1440无页面运行异常",
+      "okay": true
+    },
+    {
+      "name": "profile 390无整页横向溢出",
+      "okay": true
+    },
+    {
+      "name": "profile 390显示可访问的页面主体",
+      "okay": true
+    },
+    {
+      "name": "改密与退款后页面含当前账号",
+      "okay": true
+    },
+    {
+      "name": "workspace 390无整页横向溢出",
+      "okay": true
+    },
+    {
+      "name": "workspace 390显示可访问的页面主体",
+      "okay": true
+    },
+    {
+      "name": "390无页面运行异常",
+      "okay": true
+    }
+  ],
+  "responses": [
+    {
+      "method": "POST",
+      "route": "/api/auth/register",
+      "status": 201,
+      "body": {
+        "id": "66a2867e-0e22-4827-a532-f1250830e488",
+        "email": "admin-05c39c3dea306414@test.local",
+        "giftInvite": {
+          "redeemed": false
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "route": "/api/auth/csrf",
+      "status": 200,
+      "body": {
+        "csrfToken": "f1204b0d3269aee9ae9387549f4c3986a9b4215e7a086abe857cb20448ede7d5"
+      }
+    },
+    {
+      "method": "GET",
+      "route": "/api/auth/session",
+      "status": 200,
+      "body": {
+        "user": {
+          "email": "admin-05c39c3dea306414@test.local",
+          "id": "66a2867e-0e22-4827-a532-f1250830e488"
+        },
+        "expires": "2026-12-04T06:44:55.000Z"
+      }
+    },
+    {
+      "method": "POST",
+      "route": "/api/admin/gift-invites",
+      "status": 201,
+      "body": {
+        "batchId": "v144-first-100",
+        "codes": [
+          "DWMAEDWGTOMKE5N7H5V1",
+          "A7TRH_VITLGC_MIVHG1W",
+          "1H8ZBS1LDLJKTM8WILYJ",
+          "8KVMI0IT37H1LG2BVNTU",
+          "LSKGV3P0_YZEO6LFQZCR",
+          "SKGCNU9_KATIWJFJ-JE4",
+          "8FGGEIKC1CRNOBMJXMOF",
+          "5CCFF8W2QUZD6X4FT_PW",
+          "FJMC4BF6IZQO5ACS_KIY",
+          "LKF82RYC6BOQ4_AHMJEA",
+          "LABANGREUHT6AJ79AYSA",
+          "55SYLB5SBWOGBMQEBTOI",
+          "OPE5WZX4Y3BX2Q9ZXUDU",
+          "CHOK75MLIAGHTP82O98I",
+          "NBBZSMBVARY2MPX1ZU55",
+          "Y3CUVWKNMS8NK9A9Z9TO",
+          "NLLSNQ4CYKSRYI4YZJAJ",
+          "CXDG-OGEYW_G86D3789N",
+          "HVWHMTQHLHRNIH-G6LQE",
+          "82AEDUF3F-BFAIGJWGLU",
+          "16RD_HELJXO5CJOII9I4",
+          "UHU2CR-QRQQ6-0PWWC4M",
+          "UHEBORFJFWKJ2EG6ERFW",
+          "BRBYSB2ZTIZG2ZUU42HN",
+          "QSW9V2TOHN0AVJHU3O1M",
+          "ROWCET6ZAUYBJN8CGQZW",
+          "32IH6036AT_SZLO9LU2P",
+          "JRTDUFURMQYWZU4RZPTX",
+          "GDH-YYHP_WBSIXH0CJ70",
+          "EALDUBHLUZRP62N3KOFZ",
+          "XI7LM02OWFZY1DHBVJRW",
+          "OUAQMWEE1PXXZSLHLNEF",
+          "0FCVIRMXOFOY0ZB5REBZ",
+          "ETYBZ4BJCK2DQHBIJX8Z",
+          "J52NEN4NBUM0ZM19DK7J",
+          "IFDCZICRH3IV4SQY_ZFY",
+          "UDZZKKJGSPJR9TATDLSJ",
+          "ZSBHMHXTQI21ORCV74AF",
+          "TZF2GVMDQWECUUNVMUFA",
+          "O09FO2BMECUNGUVSGTTC",
+          "WA-RKBUI8FLGFXRCMHRA",
+          "DBMOVSZ7KDHVHP0D6-VK",
+          "IZGJFABY3E8F_NHBIDT6",
+          "MTYTHDR4UUQV1TDRLOZC",
+          "M1H78T-SRTUUY0DERPEQ",
+          "TIWIGRMNE22OCDYBZ3FT",
+          "VR4QR-LO9YDOAA-X-AHO",
+          "A8IJBQOG3SS517LMS045",
+          "ZAEQIS4VAKCXZ5AFXZI4",
+          "CNMKFE38FHAS6AHDK_AU",
+          "GG3NL58PT-T9AIVXE-GH",
+          "L2YNPH3TGKG_NHN_CCM1",
+          "D7GUHPBEWVACORTP_FFP",
+          "2DMXLG7DRPGD0CYQEKWC",
+          "NROSADVIJG33PXH6LQB-",
+          "K4LOSUO_QZTAACAAJRZI",
+          "BQY_AJZWWW-HYUNDDPV_",
+          "CFSUL73WFVO2Q4WEZ7LG",
+          "REHRJKBBPCIEXOG-RWWH",
+          "GCWKAYKPDQGRN1DEELJ4",
+          "ZPUMMC0OJ4P54AAFXMD_",
+          "X6OFGQVIPUTNDX4URHMO",
+          "RARH7ISZW9VQ2KIGARBY",
+          "XJU99PLFZP7BHSNJ9AAA",
+          "1KZ90TA9YFDN87R_SOHY",
+          "VZD19W_CWTJK1WAPH_MD",
+          "8X6I-H7WVXAPTEF9TLBX",
+          "1TKKTEAHE4K9YKR9H6X1",
+          "SQ03LORJDSMLSV4N9A52",
+          "HBOA6LTSDUAZGZ9DWOY6",
+          "2FLF2I3TWVEOW383HLNW",
+          "RDJPU5GI-EB10HHEQEVD",
+          "FZBEGB1HIPGDFQFWGSXP",
+          "ZSN0XM09J56CFZ_E1P-C",
+          "P_DL0WI2XOO35VCWFBA3",
+          "UPPXGLACFN0R-T4MJXSC",
+          "ABZAAT2Q9U_1QDH2JC1-",
+          "7YETSGWX8VTJJUWDA_BV",
+          "E1NR9MDAKZRYVURH0MWT",
+          "NTMT1HCHZLXK0VQAWD3R",
+          "MNU5XNKF5VVZONQMVEVB",
+          "XP9UXCJCVHORHBQZA4BM",
+          "J3V5OT_I6_4DZEQBP2SB",
+          "00CYCYU9U3WVZP1GOEXO",
+          "CAN6BJY_4JKVWS-AVRC1",
+          "7XKZHJ7WUGA0CGE7BTSO",
+          "9UZEIBY1GN-I5UP7OWUU",
+          "THRXEVVBO-L33CVUPLC1",
+          "OH3628UJDUGSAUKTS2XQ",
+          "Q0FGSP0JMKQX96YA8BWG",
+          "KAP8FKQHHQZTUEI2R6ME",
+          "TOGP8EROOBTW9OCPDF8O",
+          "GDTQQOX9RUSYVVYXYALQ",
+          "9NYTPJIVWWPQDS0UL6ZU",
+          "AGD3OE-47NM42DX1TW-1",
+          "DKW8AIJDJLYG1JHFNHIB",
+          "35W12CLWPCMPOUNOMMF8",
+          "FUCL3-BTQIGMGWJML_ZW",
+          "24AICDPF0YWKTYHGJNYK",
+          "7ICGDQFRL4QJLFO4NG9H"
+        ]
+      }
+    },
+    {
+      "method": "POST",
+      "route": "/api/auth/register",
+      "status": 201,
+      "body": {
+        "id": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+        "email": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+        "giftInvite": {
+          "redeemed": true,
+          "credits": "2000"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "route": "/api/auth/csrf",
+      "status": 200,
+      "body": {
+        "csrfToken": "bd878fe9c741cff3fac4b6656cbfc38ae2c4b78f797c7ebf8b5a939a866a1528"
+      }
+    },
+    {
+      "method": "GET",
+      "route": "/api/auth/session",
+      "status": 200,
+      "body": {
+        "user": {
+          "email": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+          "id": "f73cff90-d5cb-4544-8b36-8c4fab04ff84"
+        },
+        "expires": "2026-12-04T06:44:56.000Z"
+      }
+    },
+    {
+      "method": "POST",
+      "route": "/api/auth/register",
+      "status": 201,
+      "body": {
+        "id": "cf0467e7-179f-4035-8f68-366e0c505624",
+        "email": "release-66272e94-0ffa-4c88-ac9d-5c8efd6ea021@test.local",
+        "giftInvite": {
+          "redeemed": false
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "route": "/api/auth/csrf",
+      "status": 200,
+      "body": {
+        "csrfToken": "c66b51887ce271fda837b8dfb7bf41070fe7d4b1de473fd56d5b4d428651a41b"
+      }
+    },
+    {
+      "method": "GET",
+      "route": "/api/auth/session",
+      "status": 200,
+      "body": {
+        "user": {
+          "email": "release-66272e94-0ffa-4c88-ac9d-5c8efd6ea021@test.local",
+          "id": "cf0467e7-179f-4035-8f68-366e0c505624"
+        },
+        "expires": "2026-12-04T06:44:57.000Z"
+      }
+    },
+    {
+      "method": "POST",
+      "route": "/api/gift-invites",
+      "status": 200,
+      "body": {
+        "redeemed": true,
+        "replayed": false,
+        "credits": "2000",
+        "balance": {
+          "gift": {
+            "available": "2000",
+            "reserved": "0"
+          },
+          "purchased": {
+            "available": "0",
+            "reserved": "0"
+          }
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "route": "/api/credits",
+      "status": 200,
+      "body": {
+        "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+        "balance": {
+          "gift": {
+            "available": "2000",
+            "reserved": "0"
+          },
+          "purchased": {
+            "available": "0",
+            "reserved": "0"
+          }
+        },
+        "pendingCalls": [],
+        "refunds": [],
+        "refundTotal": 0,
+        "refundHeld": "0",
+        "entries": [
+          {
+            "id": "42986340-453a-4826-bcb3-23f98e577a83",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "actorEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "requestId": "register-df814d0c-90b6-4af7-aa82-efc68b948552",
+            "businessType": "invite_redemption",
+            "reason": "兑换赠送邀请码",
+            "amount": "2000",
+            "sourceKind": "gift",
+            "before": {
+              "gift": {
+                "reserved": "0",
+                "available": "0"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "allocations": [
+              {
+                "amount": "2000",
+                "sourceId": "a033454a-c7d6-4de7-b828-34868ad9a1a7"
+              }
+            ],
+            "context": {
+              "inviteId": "6f96568f-0fcb-4724-a6fe-cfdf9baa61cc"
+            },
+            "createdAt": "2026-11-04T06:44:56.203Z"
+          }
+        ],
+        "total": 1,
+        "page": 1,
+        "pageSize": 20
+      }
+    },
+    {
+      "method": "POST",
+      "route": "/api/admin/recharges",
+      "status": 200,
+      "body": {
+        "entry": {
+          "id": "453b23e1-5fa4-4085-80c5-06940297897a",
+          "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+          "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+          "actorId": "66a2867e-0e22-4827-a532-f1250830e488",
+          "actorEmail": "admin-05c39c3dea306414@test.local",
+          "requestId": "7f6fa3ef-25da-4cd8-9e54-52c8baf9f603",
+          "businessType": "manual_recharge",
+          "reason": "隔离人工充值，非真实资金",
+          "amount": "10",
+          "sourceKind": "purchased",
+          "before": {
+            "gift": {
+              "available": "2000",
+              "reserved": "0"
+            },
+            "purchased": {
+              "available": "0",
+              "reserved": "0"
+            }
+          },
+          "after": {
+            "gift": {
+              "available": "2000",
+              "reserved": "0"
+            },
+            "purchased": {
+              "available": "10",
+              "reserved": "0"
+            }
+          },
+          "allocations": [
+            {
+              "sourceId": "f9b8ae4e-afe8-4dc3-91b6-686367f88a66",
+              "amount": "10"
+            }
+          ],
+          "context": {
+            "entryId": "453b23e1-5fa4-4085-80c5-06940297897a",
+            "receiptReference": "RELEASE-91BCAF2E-434C-4369-AB6E-78BED7C51F39",
+            "originalPaidRmb": "0.01"
+          },
+          "createdAt": "2026-11-04T06:44:57.813Z"
+        },
+        "replayed": false
+      }
+    },
+    {
+      "method": "POST",
+      "route": "/api/admin/recharges",
+      "status": 200,
+      "body": {
+        "entry": {
+          "id": "453b23e1-5fa4-4085-80c5-06940297897a",
+          "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+          "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+          "actorId": "66a2867e-0e22-4827-a532-f1250830e488",
+          "actorEmail": "admin-05c39c3dea306414@test.local",
+          "requestId": "7f6fa3ef-25da-4cd8-9e54-52c8baf9f603",
+          "businessType": "manual_recharge",
+          "reason": "隔离人工充值，非真实资金",
+          "amount": "10",
+          "sourceKind": "purchased",
+          "before": {
+            "gift": {
+              "reserved": "0",
+              "available": "2000"
+            },
+            "purchased": {
+              "reserved": "0",
+              "available": "0"
+            }
+          },
+          "after": {
+            "gift": {
+              "reserved": "0",
+              "available": "2000"
+            },
+            "purchased": {
+              "reserved": "0",
+              "available": "10"
+            }
+          },
+          "allocations": [
+            {
+              "amount": "10",
+              "sourceId": "f9b8ae4e-afe8-4dc3-91b6-686367f88a66"
+            }
+          ],
+          "context": {
+            "entryId": "453b23e1-5fa4-4085-80c5-06940297897a",
+            "originalPaidRmb": "0.01",
+            "receiptReference": "RELEASE-91BCAF2E-434C-4369-AB6E-78BED7C51F39"
+          },
+          "createdAt": "2026-11-04T06:44:57.813Z"
+        },
+        "replayed": true
+      }
+    },
+    {
+      "method": "GET",
+      "route": "/api/credits",
+      "status": 200,
+      "body": {
+        "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+        "balance": {
+          "gift": {
+            "available": "2000",
+            "reserved": "0"
+          },
+          "purchased": {
+            "available": "10",
+            "reserved": "0"
+          }
+        },
+        "pendingCalls": [],
+        "refunds": [],
+        "refundTotal": 0,
+        "refundHeld": "0",
+        "entries": [
+          {
+            "id": "453b23e1-5fa4-4085-80c5-06940297897a",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "66a2867e-0e22-4827-a532-f1250830e488",
+            "actorEmail": "admin-05c39c3dea306414@test.local",
+            "requestId": "7f6fa3ef-25da-4cd8-9e54-52c8baf9f603",
+            "businessType": "manual_recharge",
+            "reason": "隔离人工充值，非真实资金",
+            "amount": "10",
+            "sourceKind": "purchased",
+            "before": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "allocations": [
+              {
+                "amount": "10",
+                "sourceId": "f9b8ae4e-afe8-4dc3-91b6-686367f88a66"
+              }
+            ],
+            "context": {
+              "entryId": "453b23e1-5fa4-4085-80c5-06940297897a",
+              "originalPaidRmb": "0.01",
+              "receiptReference": "RELEASE-91BCAF2E-434C-4369-AB6E-78BED7C51F39"
+            },
+            "createdAt": "2026-11-04T06:44:57.813Z"
+          },
+          {
+            "id": "42986340-453a-4826-bcb3-23f98e577a83",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "actorEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "requestId": "register-df814d0c-90b6-4af7-aa82-efc68b948552",
+            "businessType": "invite_redemption",
+            "reason": "兑换赠送邀请码",
+            "amount": "2000",
+            "sourceKind": "gift",
+            "before": {
+              "gift": {
+                "reserved": "0",
+                "available": "0"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "allocations": [
+              {
+                "amount": "2000",
+                "sourceId": "a033454a-c7d6-4de7-b828-34868ad9a1a7"
+              }
+            ],
+            "context": {
+              "inviteId": "6f96568f-0fcb-4724-a6fe-cfdf9baa61cc"
+            },
+            "createdAt": "2026-11-04T06:44:56.203Z"
+          }
+        ],
+        "total": 2,
+        "page": 1,
+        "pageSize": 20
+      }
+    },
+    {
+      "method": "POST",
+      "route": "/api/projects",
+      "status": 201,
+      "body": {
+        "id": "d12f59ed-2663-4454-8495-aa2cc319c7b8",
+        "name": "发布跨票组合",
+        "created_at": "2026-11-04T06:44:58.026Z"
+      }
+    },
+    {
+      "method": "POST",
+      "route": "/api/projects/d12f59ed-2663-4454-8495-aa2cc319c7b8/iterations",
+      "status": 201,
+      "body": {
+        "id": "1d01037d-6a3e-48cc-ae9b-89daffe7b807",
+        "project_id": "d12f59ed-2663-4454-8495-aa2cc319c7b8",
+        "iteration_number": 1,
+        "display_name": "发布验证",
+        "goal": null,
+        "created_at": "2026-11-04T06:44:59.004Z",
+        "updated_at": "2026-11-04T06:44:59.004Z"
+      }
+    },
+    {
+      "method": "POST",
+      "route": "/api/iterations/1d01037d-6a3e-48cc-ae9b-89daffe7b807/stages/analysis/sessions",
+      "status": 201,
+      "body": {
+        "session": {
+          "id": "dedb4647-3446-408c-9741-a92388518b75",
+          "title": "新会话",
+          "updatedAt": "2026-11-04T06:45:00.118Z"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "route": "/api/iterations/1d01037d-6a3e-48cc-ae9b-89daffe7b807/stages/analysis/sessions/dedb4647-3446-408c-9741-a92388518b75/messages",
+      "status": 200,
+      "body": {
+        "messages": [
+          {
+            "id": "b44987cf-8cfa-48c1-81bf-2b511603dc96",
+            "role": "user",
+            "content": "😀 发布组合首条提示词保留空格",
+            "status": "completed",
+            "errorMessage": null,
+            "createdAt": "2026-11-04T06:45:01.215Z"
+          },
+          {
+            "id": "8ec6c0c8-8956-457f-a5ce-6e8a47f83ea8",
+            "role": "assistant",
+            "content": "供应商正文保护样本：测试回复与测试润色。",
+            "status": "completed",
+            "errorMessage": null,
+            "createdAt": "2026-11-04T06:45:01.217Z",
+            "creditCall": {
+              "id": "7c79e3d4-1853-4fbf-bbc8-07a057134712",
+              "messageId": "8ec6c0c8-8956-457f-a5ce-6e8a47f83ea8",
+              "state": "settled",
+              "reserved": "313.768",
+              "consumed": "4.032",
+              "reason": "confirmed"
+            }
+          }
+        ],
+        "userMessage": {
+          "id": "b44987cf-8cfa-48c1-81bf-2b511603dc96",
+          "role": "user",
+          "content": "😀 发布组合首条提示词保留空格",
+          "createdAt": "2026-11-04T06:45:01.215Z"
+        },
+        "assistantMessage": {
+          "id": "8ec6c0c8-8956-457f-a5ce-6e8a47f83ea8",
+          "role": "assistant",
+          "content": "供应商正文保护样本：测试回复与测试润色。",
+          "status": "completed",
+          "errorMessage": null,
+          "createdAt": "2026-11-04T06:45:01.217Z"
+        }
+      }
+    },
+    {
+      "method": "POST",
+      "route": "/api/iterations/1d01037d-6a3e-48cc-ae9b-89daffe7b807/stages/analysis/sessions/dedb4647-3446-408c-9741-a92388518b75/messages",
+      "status": 200,
+      "body": {
+        "messages": [
+          {
+            "id": "b44987cf-8cfa-48c1-81bf-2b511603dc96",
+            "role": "user",
+            "content": "😀 发布组合首条提示词保留空格",
+            "status": "completed",
+            "errorMessage": null,
+            "createdAt": "2026-11-04T06:45:01.215Z"
+          },
+          {
+            "id": "8ec6c0c8-8956-457f-a5ce-6e8a47f83ea8",
+            "role": "assistant",
+            "content": "供应商正文保护样本：测试回复与测试润色。",
+            "status": "completed",
+            "errorMessage": null,
+            "createdAt": "2026-11-04T06:45:01.217Z",
+            "creditCall": {
+              "id": "7c79e3d4-1853-4fbf-bbc8-07a057134712",
+              "messageId": "8ec6c0c8-8956-457f-a5ce-6e8a47f83ea8",
+              "state": "settled",
+              "reserved": "313.768",
+              "consumed": "4.032",
+              "reason": "confirmed"
+            }
+          }
+        ],
+        "userMessage": null,
+        "assistantMessage": {
+          "id": "8ec6c0c8-8956-457f-a5ce-6e8a47f83ea8",
+          "role": "assistant",
+          "content": "供应商正文保护样本：测试回复与测试润色。",
+          "status": "completed",
+          "errorMessage": null,
+          "createdAt": "2026-11-04T06:45:01.217Z",
+          "creditCall": {
+            "id": "7c79e3d4-1853-4fbf-bbc8-07a057134712",
+            "messageId": "8ec6c0c8-8956-457f-a5ce-6e8a47f83ea8",
+            "state": "settled",
+            "reserved": "313.768",
+            "consumed": "4.032",
+            "reason": "confirmed"
+          }
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "route": "/api/iterations/1d01037d-6a3e-48cc-ae9b-89daffe7b807/sessions/dedb4647-3446-408c-9741-a92388518b75",
+      "status": 200,
+      "body": {
+        "id": "dedb4647-3446-408c-9741-a92388518b75",
+        "iteration_id": "1d01037d-6a3e-48cc-ae9b-89daffe7b807",
+        "stage": "analysis",
+        "title": "😀 发布组合首条提示",
+        "created_at": "2026-11-04T06:45:00.118Z",
+        "updated_at": "2026-11-04T06:45:01.267Z"
+      }
+    },
+    {
+      "method": "GET",
+      "route": "/api/credits",
+      "status": 200,
+      "body": {
+        "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+        "balance": {
+          "gift": {
+            "available": "1995.968",
+            "reserved": "0"
+          },
+          "purchased": {
+            "available": "10",
+            "reserved": "0"
+          }
+        },
+        "pendingCalls": [],
+        "refunds": [],
+        "refundTotal": 0,
+        "refundHeld": "0",
+        "entries": [
+          {
+            "id": "482852ea-3422-4430-b3bc-d2a949d248f6",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "actorEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "requestId": "7c79e3d4-1853-4fbf-bbc8-07a057134712:release:gift",
+            "businessType": "model_release",
+            "reason": "释放未用预留",
+            "amount": "0",
+            "sourceKind": "gift",
+            "before": {
+              "gift": {
+                "reserved": "309.736",
+                "available": "1686.232"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "0",
+                "available": "1995.968"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "allocations": [
+              {
+                "kind": "gift",
+                "amount": "309.736",
+                "sourceId": "a033454a-c7d6-4de7-b828-34868ad9a1a7"
+              }
+            ],
+            "context": {
+              "stage": "analysis",
+              "callId": "7c79e3d4-1853-4fbf-bbc8-07a057134712",
+              "projectId": "d12f59ed-2663-4454-8495-aa2cc319c7b8",
+              "sessionId": "dedb4647-3446-408c-9741-a92388518b75",
+              "iterationId": "1d01037d-6a3e-48cc-ae9b-89daffe7b807",
+              "projectName": "发布跨票组合",
+              "sessionTitle": "新会话",
+              "iterationName": "发布验证",
+              "iterationNumber": 1
+            },
+            "createdAt": "2026-11-04T06:45:01.275Z"
+          },
+          {
+            "id": "7ff9b720-b095-40a1-9a5f-0873b41ca9b6",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "actorEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "requestId": "7c79e3d4-1853-4fbf-bbc8-07a057134712:settle:gift",
+            "businessType": "model_settle",
+            "reason": "按可靠用量结算",
+            "amount": "-4.032",
+            "sourceKind": "gift",
+            "before": {
+              "gift": {
+                "reserved": "313.768",
+                "available": "1686.232"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "309.736",
+                "available": "1686.232"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "allocations": [
+              {
+                "kind": "gift",
+                "amount": "4.032",
+                "sourceId": "a033454a-c7d6-4de7-b828-34868ad9a1a7"
+              }
+            ],
+            "context": {
+              "stage": "analysis",
+              "callId": "7c79e3d4-1853-4fbf-bbc8-07a057134712",
+              "projectId": "d12f59ed-2663-4454-8495-aa2cc319c7b8",
+              "sessionId": "dedb4647-3446-408c-9741-a92388518b75",
+              "iterationId": "1d01037d-6a3e-48cc-ae9b-89daffe7b807",
+              "projectName": "发布跨票组合",
+              "sessionTitle": "新会话",
+              "iterationName": "发布验证",
+              "iterationNumber": 1
+            },
+            "createdAt": "2026-11-04T06:45:01.275Z"
+          },
+          {
+            "id": "4a8869fa-eaff-485d-ad10-bd46e76aadb5",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "actorEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "requestId": "7c79e3d4-1853-4fbf-bbc8-07a057134712:reserve:gift",
+            "businessType": "model_reserve",
+            "reason": "生成前预留",
+            "amount": "0",
+            "sourceKind": "gift",
+            "before": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "313.768",
+                "available": "1686.232"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "allocations": [
+              {
+                "kind": "gift",
+                "amount": "313.768",
+                "sourceId": "a033454a-c7d6-4de7-b828-34868ad9a1a7"
+              }
+            ],
+            "context": {
+              "stage": "analysis",
+              "callId": "7c79e3d4-1853-4fbf-bbc8-07a057134712",
+              "projectId": "d12f59ed-2663-4454-8495-aa2cc319c7b8",
+              "sessionId": "dedb4647-3446-408c-9741-a92388518b75",
+              "iterationId": "1d01037d-6a3e-48cc-ae9b-89daffe7b807",
+              "projectName": "发布跨票组合",
+              "sessionTitle": "新会话",
+              "iterationName": "发布验证",
+              "iterationNumber": 1
+            },
+            "createdAt": "2026-11-04T06:45:01.230Z"
+          },
+          {
+            "id": "453b23e1-5fa4-4085-80c5-06940297897a",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "66a2867e-0e22-4827-a532-f1250830e488",
+            "actorEmail": "admin-05c39c3dea306414@test.local",
+            "requestId": "7f6fa3ef-25da-4cd8-9e54-52c8baf9f603",
+            "businessType": "manual_recharge",
+            "reason": "隔离人工充值，非真实资金",
+            "amount": "10",
+            "sourceKind": "purchased",
+            "before": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "allocations": [
+              {
+                "amount": "10",
+                "sourceId": "f9b8ae4e-afe8-4dc3-91b6-686367f88a66"
+              }
+            ],
+            "context": {
+              "entryId": "453b23e1-5fa4-4085-80c5-06940297897a",
+              "originalPaidRmb": "0.01",
+              "receiptReference": "RELEASE-91BCAF2E-434C-4369-AB6E-78BED7C51F39"
+            },
+            "createdAt": "2026-11-04T06:44:57.813Z"
+          },
+          {
+            "id": "42986340-453a-4826-bcb3-23f98e577a83",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "actorEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "requestId": "register-df814d0c-90b6-4af7-aa82-efc68b948552",
+            "businessType": "invite_redemption",
+            "reason": "兑换赠送邀请码",
+            "amount": "2000",
+            "sourceKind": "gift",
+            "before": {
+              "gift": {
+                "reserved": "0",
+                "available": "0"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "allocations": [
+              {
+                "amount": "2000",
+                "sourceId": "a033454a-c7d6-4de7-b828-34868ad9a1a7"
+              }
+            ],
+            "context": {
+              "inviteId": "6f96568f-0fcb-4724-a6fe-cfdf9baa61cc"
+            },
+            "createdAt": "2026-11-04T06:44:56.203Z"
+          }
+        ],
+        "total": 5,
+        "page": 1,
+        "pageSize": 20
+      }
+    },
+    {
+      "method": "GET",
+      "route": "/api/credits",
+      "status": 200,
+      "body": {
+        "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+        "balance": {
+          "gift": {
+            "available": "1995.968",
+            "reserved": "0"
+          },
+          "purchased": {
+            "available": "10",
+            "reserved": "0"
+          }
+        },
+        "pendingCalls": [],
+        "refunds": [],
+        "refundTotal": 0,
+        "refundHeld": "0",
+        "entries": [
+          {
+            "id": "482852ea-3422-4430-b3bc-d2a949d248f6",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "actorEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "requestId": "7c79e3d4-1853-4fbf-bbc8-07a057134712:release:gift",
+            "businessType": "model_release",
+            "reason": "释放未用预留",
+            "amount": "0",
+            "sourceKind": "gift",
+            "before": {
+              "gift": {
+                "reserved": "309.736",
+                "available": "1686.232"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "0",
+                "available": "1995.968"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "allocations": [
+              {
+                "kind": "gift",
+                "amount": "309.736",
+                "sourceId": "a033454a-c7d6-4de7-b828-34868ad9a1a7"
+              }
+            ],
+            "context": {
+              "stage": "analysis",
+              "callId": "7c79e3d4-1853-4fbf-bbc8-07a057134712",
+              "projectId": "d12f59ed-2663-4454-8495-aa2cc319c7b8",
+              "sessionId": "dedb4647-3446-408c-9741-a92388518b75",
+              "iterationId": "1d01037d-6a3e-48cc-ae9b-89daffe7b807",
+              "projectName": "发布跨票组合",
+              "sessionTitle": "新会话",
+              "iterationName": "发布验证",
+              "iterationNumber": 1
+            },
+            "createdAt": "2026-11-04T06:45:01.275Z"
+          },
+          {
+            "id": "7ff9b720-b095-40a1-9a5f-0873b41ca9b6",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "actorEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "requestId": "7c79e3d4-1853-4fbf-bbc8-07a057134712:settle:gift",
+            "businessType": "model_settle",
+            "reason": "按可靠用量结算",
+            "amount": "-4.032",
+            "sourceKind": "gift",
+            "before": {
+              "gift": {
+                "reserved": "313.768",
+                "available": "1686.232"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "309.736",
+                "available": "1686.232"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "allocations": [
+              {
+                "kind": "gift",
+                "amount": "4.032",
+                "sourceId": "a033454a-c7d6-4de7-b828-34868ad9a1a7"
+              }
+            ],
+            "context": {
+              "stage": "analysis",
+              "callId": "7c79e3d4-1853-4fbf-bbc8-07a057134712",
+              "projectId": "d12f59ed-2663-4454-8495-aa2cc319c7b8",
+              "sessionId": "dedb4647-3446-408c-9741-a92388518b75",
+              "iterationId": "1d01037d-6a3e-48cc-ae9b-89daffe7b807",
+              "projectName": "发布跨票组合",
+              "sessionTitle": "新会话",
+              "iterationName": "发布验证",
+              "iterationNumber": 1
+            },
+            "createdAt": "2026-11-04T06:45:01.275Z"
+          },
+          {
+            "id": "4a8869fa-eaff-485d-ad10-bd46e76aadb5",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "actorEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "requestId": "7c79e3d4-1853-4fbf-bbc8-07a057134712:reserve:gift",
+            "businessType": "model_reserve",
+            "reason": "生成前预留",
+            "amount": "0",
+            "sourceKind": "gift",
+            "before": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "313.768",
+                "available": "1686.232"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "allocations": [
+              {
+                "kind": "gift",
+                "amount": "313.768",
+                "sourceId": "a033454a-c7d6-4de7-b828-34868ad9a1a7"
+              }
+            ],
+            "context": {
+              "stage": "analysis",
+              "callId": "7c79e3d4-1853-4fbf-bbc8-07a057134712",
+              "projectId": "d12f59ed-2663-4454-8495-aa2cc319c7b8",
+              "sessionId": "dedb4647-3446-408c-9741-a92388518b75",
+              "iterationId": "1d01037d-6a3e-48cc-ae9b-89daffe7b807",
+              "projectName": "发布跨票组合",
+              "sessionTitle": "新会话",
+              "iterationName": "发布验证",
+              "iterationNumber": 1
+            },
+            "createdAt": "2026-11-04T06:45:01.230Z"
+          },
+          {
+            "id": "453b23e1-5fa4-4085-80c5-06940297897a",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "66a2867e-0e22-4827-a532-f1250830e488",
+            "actorEmail": "admin-05c39c3dea306414@test.local",
+            "requestId": "7f6fa3ef-25da-4cd8-9e54-52c8baf9f603",
+            "businessType": "manual_recharge",
+            "reason": "隔离人工充值，非真实资金",
+            "amount": "10",
+            "sourceKind": "purchased",
+            "before": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "allocations": [
+              {
+                "amount": "10",
+                "sourceId": "f9b8ae4e-afe8-4dc3-91b6-686367f88a66"
+              }
+            ],
+            "context": {
+              "entryId": "453b23e1-5fa4-4085-80c5-06940297897a",
+              "originalPaidRmb": "0.01",
+              "receiptReference": "RELEASE-91BCAF2E-434C-4369-AB6E-78BED7C51F39"
+            },
+            "createdAt": "2026-11-04T06:44:57.813Z"
+          },
+          {
+            "id": "42986340-453a-4826-bcb3-23f98e577a83",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "actorEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "requestId": "register-df814d0c-90b6-4af7-aa82-efc68b948552",
+            "businessType": "invite_redemption",
+            "reason": "兑换赠送邀请码",
+            "amount": "2000",
+            "sourceKind": "gift",
+            "before": {
+              "gift": {
+                "reserved": "0",
+                "available": "0"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "allocations": [
+              {
+                "amount": "2000",
+                "sourceId": "a033454a-c7d6-4de7-b828-34868ad9a1a7"
+              }
+            ],
+            "context": {
+              "inviteId": "6f96568f-0fcb-4724-a6fe-cfdf9baa61cc"
+            },
+            "createdAt": "2026-11-04T06:44:56.203Z"
+          }
+        ],
+        "total": 5,
+        "page": 1,
+        "pageSize": 20
+      }
+    },
+    {
+      "method": "POST",
+      "route": "/api/auth/email-code",
+      "status": 200,
+      "body": {
+        "message": "验证码已发送，10 分钟内有效；重新发送后仅最新验证码有效。",
+        "retryAfter": 60,
+        "expiresIn": 600
+      }
+    },
+    {
+      "method": "POST",
+      "route": "/api/auth/reset-password",
+      "status": 200,
+      "body": {
+        "message": "密码已重置，请使用新密码登录。"
+      }
+    },
+    {
+      "method": "GET",
+      "route": "/api/auth/csrf",
+      "status": 200,
+      "body": {
+        "csrfToken": "1e28bce229cd6d97393a9b252f7cca40f534d0bca542578999c4d3592802374e"
+      }
+    },
+    {
+      "method": "GET",
+      "route": "/api/auth/session",
+      "status": 200,
+      "body": {
+        "user": {
+          "email": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+          "id": "f73cff90-d5cb-4544-8b36-8c4fab04ff84"
+        },
+        "expires": "2026-12-04T06:45:06.000Z"
+      }
+    },
+    {
+      "method": "GET",
+      "route": "/api/credits",
+      "status": 200,
+      "body": {
+        "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+        "balance": {
+          "gift": {
+            "available": "1995.968",
+            "reserved": "0"
+          },
+          "purchased": {
+            "available": "10",
+            "reserved": "0"
+          }
+        },
+        "pendingCalls": [],
+        "refunds": [],
+        "refundTotal": 0,
+        "refundHeld": "0",
+        "entries": [
+          {
+            "id": "482852ea-3422-4430-b3bc-d2a949d248f6",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "actorEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "requestId": "7c79e3d4-1853-4fbf-bbc8-07a057134712:release:gift",
+            "businessType": "model_release",
+            "reason": "释放未用预留",
+            "amount": "0",
+            "sourceKind": "gift",
+            "before": {
+              "gift": {
+                "reserved": "309.736",
+                "available": "1686.232"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "0",
+                "available": "1995.968"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "allocations": [
+              {
+                "kind": "gift",
+                "amount": "309.736",
+                "sourceId": "a033454a-c7d6-4de7-b828-34868ad9a1a7"
+              }
+            ],
+            "context": {
+              "stage": "analysis",
+              "callId": "7c79e3d4-1853-4fbf-bbc8-07a057134712",
+              "projectId": "d12f59ed-2663-4454-8495-aa2cc319c7b8",
+              "sessionId": "dedb4647-3446-408c-9741-a92388518b75",
+              "iterationId": "1d01037d-6a3e-48cc-ae9b-89daffe7b807",
+              "projectName": "发布跨票组合",
+              "sessionTitle": "新会话",
+              "iterationName": "发布验证",
+              "iterationNumber": 1
+            },
+            "createdAt": "2026-11-04T06:45:01.275Z"
+          },
+          {
+            "id": "7ff9b720-b095-40a1-9a5f-0873b41ca9b6",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "actorEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "requestId": "7c79e3d4-1853-4fbf-bbc8-07a057134712:settle:gift",
+            "businessType": "model_settle",
+            "reason": "按可靠用量结算",
+            "amount": "-4.032",
+            "sourceKind": "gift",
+            "before": {
+              "gift": {
+                "reserved": "313.768",
+                "available": "1686.232"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "309.736",
+                "available": "1686.232"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "allocations": [
+              {
+                "kind": "gift",
+                "amount": "4.032",
+                "sourceId": "a033454a-c7d6-4de7-b828-34868ad9a1a7"
+              }
+            ],
+            "context": {
+              "stage": "analysis",
+              "callId": "7c79e3d4-1853-4fbf-bbc8-07a057134712",
+              "projectId": "d12f59ed-2663-4454-8495-aa2cc319c7b8",
+              "sessionId": "dedb4647-3446-408c-9741-a92388518b75",
+              "iterationId": "1d01037d-6a3e-48cc-ae9b-89daffe7b807",
+              "projectName": "发布跨票组合",
+              "sessionTitle": "新会话",
+              "iterationName": "发布验证",
+              "iterationNumber": 1
+            },
+            "createdAt": "2026-11-04T06:45:01.275Z"
+          },
+          {
+            "id": "4a8869fa-eaff-485d-ad10-bd46e76aadb5",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "actorEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "requestId": "7c79e3d4-1853-4fbf-bbc8-07a057134712:reserve:gift",
+            "businessType": "model_reserve",
+            "reason": "生成前预留",
+            "amount": "0",
+            "sourceKind": "gift",
+            "before": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "313.768",
+                "available": "1686.232"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "allocations": [
+              {
+                "kind": "gift",
+                "amount": "313.768",
+                "sourceId": "a033454a-c7d6-4de7-b828-34868ad9a1a7"
+              }
+            ],
+            "context": {
+              "stage": "analysis",
+              "callId": "7c79e3d4-1853-4fbf-bbc8-07a057134712",
+              "projectId": "d12f59ed-2663-4454-8495-aa2cc319c7b8",
+              "sessionId": "dedb4647-3446-408c-9741-a92388518b75",
+              "iterationId": "1d01037d-6a3e-48cc-ae9b-89daffe7b807",
+              "projectName": "发布跨票组合",
+              "sessionTitle": "新会话",
+              "iterationName": "发布验证",
+              "iterationNumber": 1
+            },
+            "createdAt": "2026-11-04T06:45:01.230Z"
+          },
+          {
+            "id": "453b23e1-5fa4-4085-80c5-06940297897a",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "66a2867e-0e22-4827-a532-f1250830e488",
+            "actorEmail": "admin-05c39c3dea306414@test.local",
+            "requestId": "7f6fa3ef-25da-4cd8-9e54-52c8baf9f603",
+            "businessType": "manual_recharge",
+            "reason": "隔离人工充值，非真实资金",
+            "amount": "10",
+            "sourceKind": "purchased",
+            "before": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "allocations": [
+              {
+                "amount": "10",
+                "sourceId": "f9b8ae4e-afe8-4dc3-91b6-686367f88a66"
+              }
+            ],
+            "context": {
+              "entryId": "453b23e1-5fa4-4085-80c5-06940297897a",
+              "originalPaidRmb": "0.01",
+              "receiptReference": "RELEASE-91BCAF2E-434C-4369-AB6E-78BED7C51F39"
+            },
+            "createdAt": "2026-11-04T06:44:57.813Z"
+          },
+          {
+            "id": "42986340-453a-4826-bcb3-23f98e577a83",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "actorEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "requestId": "register-df814d0c-90b6-4af7-aa82-efc68b948552",
+            "businessType": "invite_redemption",
+            "reason": "兑换赠送邀请码",
+            "amount": "2000",
+            "sourceKind": "gift",
+            "before": {
+              "gift": {
+                "reserved": "0",
+                "available": "0"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "allocations": [
+              {
+                "amount": "2000",
+                "sourceId": "a033454a-c7d6-4de7-b828-34868ad9a1a7"
+              }
+            ],
+            "context": {
+              "inviteId": "6f96568f-0fcb-4724-a6fe-cfdf9baa61cc"
+            },
+            "createdAt": "2026-11-04T06:44:56.203Z"
+          }
+        ],
+        "total": 5,
+        "page": 1,
+        "pageSize": 20
+      }
+    },
+    {
+      "method": "POST",
+      "route": "/api/admin/refunds",
+      "status": 200,
+      "body": {
+        "refund": {
+          "id": "cb46d283-d512-4d9e-bf40-1d160c19d0c0",
+          "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+          "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+          "rechargeEntryId": "453b23e1-5fa4-4085-80c5-06940297897a",
+          "sourceId": "f9b8ae4e-afe8-4dc3-91b6-686367f88a66",
+          "actorId": "66a2867e-0e22-4827-a532-f1250830e488",
+          "actorEmail": "admin-05c39c3dea306414@test.local",
+          "requestId": "54beea94-98be-424f-a725-4c7ab633123b",
+          "refundRmb": "0.01",
+          "credits": "10",
+          "reason": "隔离退还尚未消费的原充值",
+          "transferStatus": "unverified",
+          "accountingStatus": "held",
+          "externalReference": null,
+          "transferReason": null,
+          "createdAt": "2026-11-04T06:45:07.117Z",
+          "updatedAt": "2026-11-04T06:45:07.117Z"
+        },
+        "replayed": false
+      }
+    },
+    {
+      "method": "GET",
+      "route": "/api/credits",
+      "status": 200,
+      "body": {
+        "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+        "balance": {
+          "gift": {
+            "available": "1995.968",
+            "reserved": "0"
+          },
+          "purchased": {
+            "available": "0",
+            "reserved": "0"
+          }
+        },
+        "pendingCalls": [],
+        "refunds": [
+          {
+            "id": "cb46d283-d512-4d9e-bf40-1d160c19d0c0",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "rechargeEntryId": "453b23e1-5fa4-4085-80c5-06940297897a",
+            "sourceId": "f9b8ae4e-afe8-4dc3-91b6-686367f88a66",
+            "actorId": "66a2867e-0e22-4827-a532-f1250830e488",
+            "actorEmail": "admin-05c39c3dea306414@test.local",
+            "requestId": "54beea94-98be-424f-a725-4c7ab633123b",
+            "refundRmb": "0.01",
+            "credits": "10",
+            "reason": "隔离退还尚未消费的原充值",
+            "transferStatus": "unverified",
+            "accountingStatus": "held",
+            "externalReference": null,
+            "transferReason": null,
+            "createdAt": "2026-11-04T06:45:07.117Z",
+            "updatedAt": "2026-11-04T06:45:07.117Z"
+          }
+        ],
+        "refundTotal": 1,
+        "refundHeld": "10",
+        "entries": [
+          {
+            "id": "ef997594-bc33-4c2f-8249-a5bced7b2694",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "66a2867e-0e22-4827-a532-f1250830e488",
+            "actorEmail": "admin-05c39c3dea306414@test.local",
+            "requestId": "54beea94-98be-424f-a725-4c7ab633123b",
+            "businessType": "manual_refund_hold",
+            "reason": "隔离退还尚未消费的原充值",
+            "amount": "0",
+            "sourceKind": "purchased",
+            "before": {
+              "gift": {
+                "reserved": "0",
+                "available": "1995.968"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "0",
+                "available": "1995.968"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "allocations": [
+              {
+                "amount": "10",
+                "sourceId": "f9b8ae4e-afe8-4dc3-91b6-686367f88a66"
+              }
+            ],
+            "context": {
+              "refundId": "cb46d283-d512-4d9e-bf40-1d160c19d0c0",
+              "refundRmb": "0.01",
+              "refundCredits": "10",
+              "transferStatus": "unverified",
+              "rechargeEntryId": "453b23e1-5fa4-4085-80c5-06940297897a",
+              "accountingStatus": "held",
+              "externalReference": null
+            },
+            "createdAt": "2026-11-04T06:45:07.119Z"
+          },
+          {
+            "id": "482852ea-3422-4430-b3bc-d2a949d248f6",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "actorEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "requestId": "7c79e3d4-1853-4fbf-bbc8-07a057134712:release:gift",
+            "businessType": "model_release",
+            "reason": "释放未用预留",
+            "amount": "0",
+            "sourceKind": "gift",
+            "before": {
+              "gift": {
+                "reserved": "309.736",
+                "available": "1686.232"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "0",
+                "available": "1995.968"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "allocations": [
+              {
+                "kind": "gift",
+                "amount": "309.736",
+                "sourceId": "a033454a-c7d6-4de7-b828-34868ad9a1a7"
+              }
+            ],
+            "context": {
+              "stage": "analysis",
+              "callId": "7c79e3d4-1853-4fbf-bbc8-07a057134712",
+              "projectId": "d12f59ed-2663-4454-8495-aa2cc319c7b8",
+              "sessionId": "dedb4647-3446-408c-9741-a92388518b75",
+              "iterationId": "1d01037d-6a3e-48cc-ae9b-89daffe7b807",
+              "projectName": "发布跨票组合",
+              "sessionTitle": "新会话",
+              "iterationName": "发布验证",
+              "iterationNumber": 1
+            },
+            "createdAt": "2026-11-04T06:45:01.275Z"
+          },
+          {
+            "id": "7ff9b720-b095-40a1-9a5f-0873b41ca9b6",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "actorEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "requestId": "7c79e3d4-1853-4fbf-bbc8-07a057134712:settle:gift",
+            "businessType": "model_settle",
+            "reason": "按可靠用量结算",
+            "amount": "-4.032",
+            "sourceKind": "gift",
+            "before": {
+              "gift": {
+                "reserved": "313.768",
+                "available": "1686.232"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "309.736",
+                "available": "1686.232"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "allocations": [
+              {
+                "kind": "gift",
+                "amount": "4.032",
+                "sourceId": "a033454a-c7d6-4de7-b828-34868ad9a1a7"
+              }
+            ],
+            "context": {
+              "stage": "analysis",
+              "callId": "7c79e3d4-1853-4fbf-bbc8-07a057134712",
+              "projectId": "d12f59ed-2663-4454-8495-aa2cc319c7b8",
+              "sessionId": "dedb4647-3446-408c-9741-a92388518b75",
+              "iterationId": "1d01037d-6a3e-48cc-ae9b-89daffe7b807",
+              "projectName": "发布跨票组合",
+              "sessionTitle": "新会话",
+              "iterationName": "发布验证",
+              "iterationNumber": 1
+            },
+            "createdAt": "2026-11-04T06:45:01.275Z"
+          },
+          {
+            "id": "4a8869fa-eaff-485d-ad10-bd46e76aadb5",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "actorEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "requestId": "7c79e3d4-1853-4fbf-bbc8-07a057134712:reserve:gift",
+            "businessType": "model_reserve",
+            "reason": "生成前预留",
+            "amount": "0",
+            "sourceKind": "gift",
+            "before": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "313.768",
+                "available": "1686.232"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "allocations": [
+              {
+                "kind": "gift",
+                "amount": "313.768",
+                "sourceId": "a033454a-c7d6-4de7-b828-34868ad9a1a7"
+              }
+            ],
+            "context": {
+              "stage": "analysis",
+              "callId": "7c79e3d4-1853-4fbf-bbc8-07a057134712",
+              "projectId": "d12f59ed-2663-4454-8495-aa2cc319c7b8",
+              "sessionId": "dedb4647-3446-408c-9741-a92388518b75",
+              "iterationId": "1d01037d-6a3e-48cc-ae9b-89daffe7b807",
+              "projectName": "发布跨票组合",
+              "sessionTitle": "新会话",
+              "iterationName": "发布验证",
+              "iterationNumber": 1
+            },
+            "createdAt": "2026-11-04T06:45:01.230Z"
+          },
+          {
+            "id": "453b23e1-5fa4-4085-80c5-06940297897a",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "66a2867e-0e22-4827-a532-f1250830e488",
+            "actorEmail": "admin-05c39c3dea306414@test.local",
+            "requestId": "7f6fa3ef-25da-4cd8-9e54-52c8baf9f603",
+            "businessType": "manual_recharge",
+            "reason": "隔离人工充值，非真实资金",
+            "amount": "10",
+            "sourceKind": "purchased",
+            "before": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "allocations": [
+              {
+                "amount": "10",
+                "sourceId": "f9b8ae4e-afe8-4dc3-91b6-686367f88a66"
+              }
+            ],
+            "context": {
+              "entryId": "453b23e1-5fa4-4085-80c5-06940297897a",
+              "originalPaidRmb": "0.01",
+              "receiptReference": "RELEASE-91BCAF2E-434C-4369-AB6E-78BED7C51F39"
+            },
+            "createdAt": "2026-11-04T06:44:57.813Z"
+          },
+          {
+            "id": "42986340-453a-4826-bcb3-23f98e577a83",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "actorEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "requestId": "register-df814d0c-90b6-4af7-aa82-efc68b948552",
+            "businessType": "invite_redemption",
+            "reason": "兑换赠送邀请码",
+            "amount": "2000",
+            "sourceKind": "gift",
+            "before": {
+              "gift": {
+                "reserved": "0",
+                "available": "0"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "allocations": [
+              {
+                "amount": "2000",
+                "sourceId": "a033454a-c7d6-4de7-b828-34868ad9a1a7"
+              }
+            ],
+            "context": {
+              "inviteId": "6f96568f-0fcb-4724-a6fe-cfdf9baa61cc"
+            },
+            "createdAt": "2026-11-04T06:44:56.203Z"
+          }
+        ],
+        "total": 6,
+        "page": 1,
+        "pageSize": 20
+      }
+    },
+    {
+      "method": "POST",
+      "route": "/api/admin/refunds",
+      "status": 403,
+      "body": {
+        "error": "无权访问管理功能。"
+      }
+    },
+    {
+      "method": "GET",
+      "route": "/api/iterations/1d01037d-6a3e-48cc-ae9b-89daffe7b807/stages/analysis/sessions/dedb4647-3446-408c-9741-a92388518b75/messages",
+      "status": 404,
+      "body": {
+        "error": "阶段会话不存在或无权访问"
+      }
+    },
+    {
+      "method": "PATCH",
+      "route": "/api/admin/refunds/cb46d283-d512-4d9e-bf40-1d160c19d0c0",
+      "status": 200,
+      "body": {
+        "refund": {
+          "id": "cb46d283-d512-4d9e-bf40-1d160c19d0c0",
+          "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+          "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+          "rechargeEntryId": "453b23e1-5fa4-4085-80c5-06940297897a",
+          "sourceId": "f9b8ae4e-afe8-4dc3-91b6-686367f88a66",
+          "actorId": "66a2867e-0e22-4827-a532-f1250830e488",
+          "actorEmail": "admin-05c39c3dea306414@test.local",
+          "requestId": "54beea94-98be-424f-a725-4c7ab633123b",
+          "refundRmb": "0.01",
+          "credits": "10",
+          "reason": "隔离退还尚未消费的原充值",
+          "transferStatus": "succeeded",
+          "accountingStatus": "completed",
+          "externalReference": "ISOLATED-OUT-5132C75B-C595-4FF0-9EF9-DADC08D167CD",
+          "transferReason": "隔离模拟外部成功，无真实转账",
+          "createdAt": "2026-11-04T06:45:07.117Z",
+          "updatedAt": "2026-11-04T06:45:09.466Z"
+        },
+        "replayed": false
+      }
+    },
+    {
+      "method": "POST",
+      "route": "/api/admin/refunds",
+      "status": 200,
+      "body": {
+        "refund": {
+          "id": "cb46d283-d512-4d9e-bf40-1d160c19d0c0",
+          "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+          "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+          "rechargeEntryId": "453b23e1-5fa4-4085-80c5-06940297897a",
+          "sourceId": "f9b8ae4e-afe8-4dc3-91b6-686367f88a66",
+          "actorId": "66a2867e-0e22-4827-a532-f1250830e488",
+          "actorEmail": "admin-05c39c3dea306414@test.local",
+          "requestId": "54beea94-98be-424f-a725-4c7ab633123b",
+          "refundRmb": "0.01",
+          "credits": "10",
+          "reason": "隔离退还尚未消费的原充值",
+          "transferStatus": "succeeded",
+          "accountingStatus": "completed",
+          "externalReference": "ISOLATED-OUT-5132C75B-C595-4FF0-9EF9-DADC08D167CD",
+          "transferReason": "隔离模拟外部成功，无真实转账",
+          "createdAt": "2026-11-04T06:45:07.117Z",
+          "updatedAt": "2026-11-04T06:45:09.466Z"
+        },
+        "replayed": true
+      }
+    },
+    {
+      "method": "PATCH",
+      "route": "/api/admin/refunds/cb46d283-d512-4d9e-bf40-1d160c19d0c0",
+      "status": 200,
+      "body": {
+        "refund": {
+          "id": "cb46d283-d512-4d9e-bf40-1d160c19d0c0",
+          "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+          "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+          "rechargeEntryId": "453b23e1-5fa4-4085-80c5-06940297897a",
+          "sourceId": "f9b8ae4e-afe8-4dc3-91b6-686367f88a66",
+          "actorId": "66a2867e-0e22-4827-a532-f1250830e488",
+          "actorEmail": "admin-05c39c3dea306414@test.local",
+          "requestId": "54beea94-98be-424f-a725-4c7ab633123b",
+          "refundRmb": "0.01",
+          "credits": "10",
+          "reason": "隔离退还尚未消费的原充值",
+          "transferStatus": "succeeded",
+          "accountingStatus": "completed",
+          "externalReference": "ISOLATED-OUT-5132C75B-C595-4FF0-9EF9-DADC08D167CD",
+          "transferReason": "隔离模拟外部成功，无真实转账",
+          "createdAt": "2026-11-04T06:45:07.117Z",
+          "updatedAt": "2026-11-04T06:45:09.466Z"
+        },
+        "replayed": true
+      }
+    },
+    {
+      "method": "GET",
+      "route": "/api/credits",
+      "status": 200,
+      "body": {
+        "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+        "balance": {
+          "gift": {
+            "available": "1995.968",
+            "reserved": "0"
+          },
+          "purchased": {
+            "available": "0",
+            "reserved": "0"
+          }
+        },
+        "pendingCalls": [],
+        "refunds": [
+          {
+            "id": "cb46d283-d512-4d9e-bf40-1d160c19d0c0",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "rechargeEntryId": "453b23e1-5fa4-4085-80c5-06940297897a",
+            "sourceId": "f9b8ae4e-afe8-4dc3-91b6-686367f88a66",
+            "actorId": "66a2867e-0e22-4827-a532-f1250830e488",
+            "actorEmail": "admin-05c39c3dea306414@test.local",
+            "requestId": "54beea94-98be-424f-a725-4c7ab633123b",
+            "refundRmb": "0.01",
+            "credits": "10",
+            "reason": "隔离退还尚未消费的原充值",
+            "transferStatus": "succeeded",
+            "accountingStatus": "completed",
+            "externalReference": "ISOLATED-OUT-5132C75B-C595-4FF0-9EF9-DADC08D167CD",
+            "transferReason": "隔离模拟外部成功，无真实转账",
+            "createdAt": "2026-11-04T06:45:07.117Z",
+            "updatedAt": "2026-11-04T06:45:09.466Z"
+          }
+        ],
+        "refundTotal": 1,
+        "refundHeld": "0",
+        "entries": [
+          {
+            "id": "4d90438b-9977-4ec0-af44-33ad8ac89757",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "66a2867e-0e22-4827-a532-f1250830e488",
+            "actorEmail": "admin-05c39c3dea306414@test.local",
+            "requestId": "cb46d283-d512-4d9e-bf40-1d160c19d0c0:complete",
+            "businessType": "manual_refund",
+            "reason": "外部退款已核实，完成对应购买积分扣账。",
+            "amount": "-10",
+            "sourceKind": "purchased",
+            "before": {
+              "gift": {
+                "reserved": "0",
+                "available": "1995.968"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "0",
+                "available": "1995.968"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "allocations": [
+              {
+                "amount": "-10",
+                "sourceId": "f9b8ae4e-afe8-4dc3-91b6-686367f88a66"
+              }
+            ],
+            "context": {
+              "refundId": "cb46d283-d512-4d9e-bf40-1d160c19d0c0",
+              "refundRmb": "0.01",
+              "refundCredits": "10",
+              "transferStatus": "succeeded",
+              "rechargeEntryId": "453b23e1-5fa4-4085-80c5-06940297897a",
+              "accountingStatus": "completed",
+              "externalReference": "ISOLATED-OUT-5132C75B-C595-4FF0-9EF9-DADC08D167CD"
+            },
+            "createdAt": "2026-11-04T06:45:09.467Z"
+          },
+          {
+            "id": "5c9b1f41-651f-4588-b07f-f041454f84c3",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "66a2867e-0e22-4827-a532-f1250830e488",
+            "actorEmail": "admin-05c39c3dea306414@test.local",
+            "requestId": "cb46d283-d512-4d9e-bf40-1d160c19d0c0:transfer",
+            "businessType": "manual_refund_transfer",
+            "reason": "隔离模拟外部成功，无真实转账",
+            "amount": "0",
+            "sourceKind": "purchased",
+            "before": {
+              "gift": {
+                "reserved": "0",
+                "available": "1995.968"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "0",
+                "available": "1995.968"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "allocations": [
+              {
+                "amount": "10",
+                "sourceId": "f9b8ae4e-afe8-4dc3-91b6-686367f88a66"
+              }
+            ],
+            "context": {
+              "refundId": "cb46d283-d512-4d9e-bf40-1d160c19d0c0",
+              "refundRmb": "0.01",
+              "refundCredits": "10",
+              "transferStatus": "succeeded",
+              "rechargeEntryId": "453b23e1-5fa4-4085-80c5-06940297897a",
+              "accountingStatus": "held",
+              "externalReference": "ISOLATED-OUT-5132C75B-C595-4FF0-9EF9-DADC08D167CD"
+            },
+            "createdAt": "2026-11-04T06:45:09.453Z"
+          },
+          {
+            "id": "ef997594-bc33-4c2f-8249-a5bced7b2694",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "66a2867e-0e22-4827-a532-f1250830e488",
+            "actorEmail": "admin-05c39c3dea306414@test.local",
+            "requestId": "54beea94-98be-424f-a725-4c7ab633123b",
+            "businessType": "manual_refund_hold",
+            "reason": "隔离退还尚未消费的原充值",
+            "amount": "0",
+            "sourceKind": "purchased",
+            "before": {
+              "gift": {
+                "reserved": "0",
+                "available": "1995.968"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "0",
+                "available": "1995.968"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "allocations": [
+              {
+                "amount": "10",
+                "sourceId": "f9b8ae4e-afe8-4dc3-91b6-686367f88a66"
+              }
+            ],
+            "context": {
+              "refundId": "cb46d283-d512-4d9e-bf40-1d160c19d0c0",
+              "refundRmb": "0.01",
+              "refundCredits": "10",
+              "transferStatus": "unverified",
+              "rechargeEntryId": "453b23e1-5fa4-4085-80c5-06940297897a",
+              "accountingStatus": "held",
+              "externalReference": null
+            },
+            "createdAt": "2026-11-04T06:45:07.119Z"
+          },
+          {
+            "id": "482852ea-3422-4430-b3bc-d2a949d248f6",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "actorEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "requestId": "7c79e3d4-1853-4fbf-bbc8-07a057134712:release:gift",
+            "businessType": "model_release",
+            "reason": "释放未用预留",
+            "amount": "0",
+            "sourceKind": "gift",
+            "before": {
+              "gift": {
+                "reserved": "309.736",
+                "available": "1686.232"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "0",
+                "available": "1995.968"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "allocations": [
+              {
+                "kind": "gift",
+                "amount": "309.736",
+                "sourceId": "a033454a-c7d6-4de7-b828-34868ad9a1a7"
+              }
+            ],
+            "context": {
+              "stage": "analysis",
+              "callId": "7c79e3d4-1853-4fbf-bbc8-07a057134712",
+              "projectId": "d12f59ed-2663-4454-8495-aa2cc319c7b8",
+              "sessionId": "dedb4647-3446-408c-9741-a92388518b75",
+              "iterationId": "1d01037d-6a3e-48cc-ae9b-89daffe7b807",
+              "projectName": "发布跨票组合",
+              "sessionTitle": "新会话",
+              "iterationName": "发布验证",
+              "iterationNumber": 1
+            },
+            "createdAt": "2026-11-04T06:45:01.275Z"
+          },
+          {
+            "id": "7ff9b720-b095-40a1-9a5f-0873b41ca9b6",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "actorEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "requestId": "7c79e3d4-1853-4fbf-bbc8-07a057134712:settle:gift",
+            "businessType": "model_settle",
+            "reason": "按可靠用量结算",
+            "amount": "-4.032",
+            "sourceKind": "gift",
+            "before": {
+              "gift": {
+                "reserved": "313.768",
+                "available": "1686.232"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "309.736",
+                "available": "1686.232"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "allocations": [
+              {
+                "kind": "gift",
+                "amount": "4.032",
+                "sourceId": "a033454a-c7d6-4de7-b828-34868ad9a1a7"
+              }
+            ],
+            "context": {
+              "stage": "analysis",
+              "callId": "7c79e3d4-1853-4fbf-bbc8-07a057134712",
+              "projectId": "d12f59ed-2663-4454-8495-aa2cc319c7b8",
+              "sessionId": "dedb4647-3446-408c-9741-a92388518b75",
+              "iterationId": "1d01037d-6a3e-48cc-ae9b-89daffe7b807",
+              "projectName": "发布跨票组合",
+              "sessionTitle": "新会话",
+              "iterationName": "发布验证",
+              "iterationNumber": 1
+            },
+            "createdAt": "2026-11-04T06:45:01.275Z"
+          },
+          {
+            "id": "4a8869fa-eaff-485d-ad10-bd46e76aadb5",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "actorEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "requestId": "7c79e3d4-1853-4fbf-bbc8-07a057134712:reserve:gift",
+            "businessType": "model_reserve",
+            "reason": "生成前预留",
+            "amount": "0",
+            "sourceKind": "gift",
+            "before": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "313.768",
+                "available": "1686.232"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "allocations": [
+              {
+                "kind": "gift",
+                "amount": "313.768",
+                "sourceId": "a033454a-c7d6-4de7-b828-34868ad9a1a7"
+              }
+            ],
+            "context": {
+              "stage": "analysis",
+              "callId": "7c79e3d4-1853-4fbf-bbc8-07a057134712",
+              "projectId": "d12f59ed-2663-4454-8495-aa2cc319c7b8",
+              "sessionId": "dedb4647-3446-408c-9741-a92388518b75",
+              "iterationId": "1d01037d-6a3e-48cc-ae9b-89daffe7b807",
+              "projectName": "发布跨票组合",
+              "sessionTitle": "新会话",
+              "iterationName": "发布验证",
+              "iterationNumber": 1
+            },
+            "createdAt": "2026-11-04T06:45:01.230Z"
+          },
+          {
+            "id": "453b23e1-5fa4-4085-80c5-06940297897a",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "66a2867e-0e22-4827-a532-f1250830e488",
+            "actorEmail": "admin-05c39c3dea306414@test.local",
+            "requestId": "7f6fa3ef-25da-4cd8-9e54-52c8baf9f603",
+            "businessType": "manual_recharge",
+            "reason": "隔离人工充值，非真实资金",
+            "amount": "10",
+            "sourceKind": "purchased",
+            "before": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "10"
+              }
+            },
+            "allocations": [
+              {
+                "amount": "10",
+                "sourceId": "f9b8ae4e-afe8-4dc3-91b6-686367f88a66"
+              }
+            ],
+            "context": {
+              "entryId": "453b23e1-5fa4-4085-80c5-06940297897a",
+              "originalPaidRmb": "0.01",
+              "receiptReference": "RELEASE-91BCAF2E-434C-4369-AB6E-78BED7C51F39"
+            },
+            "createdAt": "2026-11-04T06:44:57.813Z"
+          },
+          {
+            "id": "42986340-453a-4826-bcb3-23f98e577a83",
+            "accountId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "accountEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "actorId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "actorEmail": "release-162cc466-b6e6-4199-979b-1de4b912aeb9@test.local",
+            "requestId": "register-df814d0c-90b6-4af7-aa82-efc68b948552",
+            "businessType": "invite_redemption",
+            "reason": "兑换赠送邀请码",
+            "amount": "2000",
+            "sourceKind": "gift",
+            "before": {
+              "gift": {
+                "reserved": "0",
+                "available": "0"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "after": {
+              "gift": {
+                "reserved": "0",
+                "available": "2000"
+              },
+              "purchased": {
+                "reserved": "0",
+                "available": "0"
+              }
+            },
+            "allocations": [
+              {
+                "amount": "2000",
+                "sourceId": "a033454a-c7d6-4de7-b828-34868ad9a1a7"
+              }
+            ],
+            "context": {
+              "inviteId": "6f96568f-0fcb-4724-a6fe-cfdf9baa61cc"
+            },
+            "createdAt": "2026-11-04T06:44:56.203Z"
+          }
+        ],
+        "total": 8,
+        "page": 1,
+        "pageSize": 20
+      }
+    },
+    {
+      "method": "GET",
+      "route": "/api/admin/model-requests?q=7c79e3d4-1853-4fbf-bbc8-07a057134712",
+      "status": 200,
+      "body": {
+        "requests": [
+          {
+            "id": "7c79e3d4-1853-4fbf-bbc8-07a057134712",
+            "userId": "f73cff90-d5cb-4544-8b36-8c4fab04ff84",
+            "purpose": "stage_chat",
+            "projectId": "d12f59ed-2663-4454-8495-aa2cc319c7b8",
+            "sessionId": "dedb4647-3446-408c-9741-a92388518b75",
+            "fileId": null,
+            "requestedModel": "deepseek-v4-flash",
+            "maxOutputTokens": 16384,
+            "transport": "stream",
+            "actualModel": "deepseek-v4-flash",
+            "providerId": "fixture-f9656aa2-4a0b-4248-9880-558f57768957",
+            "upstreamRequestId": "upstream-c69a123a-ad2a-41df-9777-4474a8e32703",
+            "startedAt": "2026-11-04T06:45:01.226000Z",
+            "endedAt": "2026-11-04T06:45:01.251000Z",
+            "status": "completed",
+            "finishReason": "stop",
+            "errorCode": null,
+            "usageStatus": "reliable",
+            "price": {
+              "end": {
+                "peak": true,
+                "model": "deepseek-flash",
+                "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
+                "version": "deepseek-flash-cny-2026-11-03",
+                "currency": "CNY",
+                "verifiedAt": "2026-11-03",
+                "outputPerMillion": "8",
+                "inputHitPerMillion": "0.04",
+                "inputMissPerMillion": "2"
+              },
+              "rule": "same_price_window_only",
+              "start": {
+                "peak": true,
+                "model": "deepseek-flash",
+                "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
+                "version": "deepseek-flash-cny-2026-11-03",
+                "currency": "CNY",
+                "verifiedAt": "2026-11-03",
+                "outputPerMillion": "8",
+                "inputHitPerMillion": "0.04",
+                "inputMissPerMillion": "2"
+              },
+              "fixture": true,
+              "official": false,
+              "usageValidated": true,
+              "windowConfirmed": true
+            },
+            "costCny": "0.00201600",
+            "costReason": "confirmed",
+            "websiteBorne": false,
+            "usage": {
+              "total_tokens": 1100,
+              "prompt_tokens": 1000,
+              "reasoning_tokens": 20,
+              "completion_tokens": 100,
+              "prompt_cache_hit_tokens": 400,
+              "prompt_cache_miss_tokens": 600
+            }
+          }
+        ],
+        "total": 1,
+        "page": 1,
+        "pageSize": 20,
+        "summary": {
+          "requests": 1,
+          "confirmedCostCny": "0.002016",
+          "pending": 0,
+          "websiteCostCny": "0",
+          "websitePending": 0,
+          "budgetCny": "200",
+          "budgetPeriod": "本轮开发验证至首批试用累计，不按月重置",
+          "historicalCoverage": "仅统计计量上线后写入的请求；此前模型验证支出尚未补录，不能据此认定剩余预算。"
+        }
+      }
+    }
+  ],
+  "screenshots": [
+    "release-1440-profile.png",
+    "release-1440-workspace.png",
+    "release-390-profile.png",
+    "release-390-workspace.png"
+  ],
+  "aiMode": "replay",
+  "realLlmCostCny": "0",
+  "realFundsCny": "0"
+}

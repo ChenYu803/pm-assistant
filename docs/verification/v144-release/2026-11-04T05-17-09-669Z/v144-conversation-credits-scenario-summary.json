@@ -1,0 +1,300 @@
+{
+  "pass": 54,
+  "fail": 0,
+  "aiMode": "replay",
+  "applicationAiMode": "live",
+  "fixture": true,
+  "live": false,
+  "realLlmCostCny": "0",
+  "workflows": [
+    "zero-balance-and-browser",
+    "reservation-settlement-and-idempotency",
+    "mixed-sources-and-shared-concurrency",
+    "pending-restart-delete-and-browser"
+  ],
+  "assertions": [
+    {
+      "name": "零余额返回402与兑换充值指引",
+      "okay": true
+    },
+    {
+      "name": "管理员没有隐藏免费通道",
+      "okay": true
+    },
+    {
+      "name": "零余额没有访问供应商",
+      "okay": true
+    },
+    {
+      "name": "零余额输入已持久保留",
+      "okay": true
+    },
+    {
+      "name": "浏览器余额不足保留输入",
+      "okay": true
+    },
+    {
+      "name": "工作台显示账号总余额入口",
+      "okay": true
+    },
+    {
+      "name": "浏览器拒绝与页面浏览仍不访问上游",
+      "okay": true
+    },
+    {
+      "name": "准备完整文件候选",
+      "okay": true
+    },
+    {
+      "name": "调用进行中冻结且余额总额守恒",
+      "okay": true
+    },
+    {
+      "name": "进行中结算重试不提前释放",
+      "okay": true
+    },
+    {
+      "name": "同会话互斥返回409",
+      "okay": true
+    },
+    {
+      "name": "正常生成完成",
+      "okay": true
+    },
+    {
+      "name": "独立账单按缓存命中与输出结算",
+      "okay": true
+    },
+    {
+      "name": "释放余量且资金守恒",
+      "okay": true
+    },
+    {
+      "name": "来源优先消费赠送",
+      "okay": true
+    },
+    {
+      "name": "重复提交返回原回复",
+      "okay": true
+    },
+    {
+      "name": "同标识改内容被拒绝",
+      "okay": true
+    },
+    {
+      "name": "互斥与重发只有一次供应商调用",
+      "okay": true
+    },
+    {
+      "name": "真实并发结算重试不新增消费或流水",
+      "okay": true
+    },
+    {
+      "name": "完整系统与历史输入进入保守预算",
+      "okay": true
+    },
+    {
+      "name": "实际完整注入文件和系统消息计入预算",
+      "okay": true
+    },
+    {
+      "name": "不足1积分不向上取整",
+      "okay": true
+    },
+    {
+      "name": "第二轮实际发送了完整历史",
+      "okay": true
+    },
+    {
+      "name": "达到输出上限明确提示未完成且不静默保存",
+      "okay": true
+    },
+    {
+      "name": "供应商故障释放预留且不扣分",
+      "okay": true
+    },
+    {
+      "name": "故障请求重发仍返回失败且不访问上游",
+      "okay": true
+    },
+    {
+      "name": "生成期间展示本次预留",
+      "okay": true
+    },
+    {
+      "name": "500后浏览器保留输入与请求身份",
+      "okay": true
+    },
+    {
+      "name": "500重试沿用标识且不重复调用扣费",
+      "okay": true
+    },
+    {
+      "name": "购买来源夹具明确只作用于隔离账号",
+      "okay": true
+    },
+    {
+      "name": "混合来源生成成功",
+      "okay": true
+    },
+    {
+      "name": "混合来源先耗尽赠送，再消费购买",
+      "okay": true
+    },
+    {
+      "name": "逐笔流水快照与来源变动一致：model_release:purchased",
+      "okay": true
+    },
+    {
+      "name": "逐笔流水快照与来源变动一致：model_settle:purchased",
+      "okay": true
+    },
+    {
+      "name": "逐笔流水快照与来源变动一致：model_settle:gift",
+      "okay": true
+    },
+    {
+      "name": "逐笔流水快照与来源变动一致：model_reserve:purchased",
+      "okay": true
+    },
+    {
+      "name": "逐笔流水快照与来源变动一致：model_reserve:gift",
+      "okay": true
+    },
+    {
+      "name": "两类来源消费可逐笔核对",
+      "okay": true
+    },
+    {
+      "name": "不同会话真实并行共享账号冻结总额",
+      "okay": true
+    },
+    {
+      "name": "已预留的并行调用都完成",
+      "okay": true
+    },
+    {
+      "name": "共享余额竞争只有一笔获准，另一笔402",
+      "okay": true
+    },
+    {
+      "name": "余额不足请求不抵达上游",
+      "okay": true
+    },
+    {
+      "name": "竞争后没有负余额或遗留冻结",
+      "okay": true
+    },
+    {
+      "name": "无可靠用量仍保存正常回复",
+      "okay": true
+    },
+    {
+      "name": "缺失用量持久待核对，不估算扣分",
+      "okay": true
+    },
+    {
+      "name": "超出预算边界保留待核对且不扣负余额",
+      "okay": true
+    },
+    {
+      "name": "待核对不阻止其他会话使用剩余积分",
+      "okay": true
+    },
+    {
+      "name": "实际应用重启后余额与待核对不丢失",
+      "okay": true
+    },
+    {
+      "name": "重启后原请求重发不再次生成或扣费",
+      "okay": true
+    },
+    {
+      "name": "工作台刷新从服务端恢复全账号冻结总额",
+      "okay": true
+    },
+    {
+      "name": "390px工作台无页面横向溢出",
+      "okay": true
+    },
+    {
+      "name": "个人中心显示同一待核对记录",
+      "okay": true
+    },
+    {
+      "name": "删除业务迭代成功",
+      "okay": true
+    },
+    {
+      "name": "业务删除保留资金与追溯快照",
+      "okay": true
+    }
+  ],
+  "observations": [
+    {
+      "normalCost": "2.016",
+      "settledCall": {
+        "id": "6762cbfd-18a6-47af-b357-a68b5b994d9c",
+        "messageId": "055d0e4b-f13f-4216-8baf-53dda72e1683",
+        "state": "settled",
+        "reserved": "347.992",
+        "consumed": "2.016",
+        "reason": "confirmed"
+      },
+      "heldBalance": {
+        "gift": {
+          "available": "3649.992",
+          "reserved": "347.992"
+        },
+        "purchased": {
+          "available": "0",
+          "reserved": "0"
+        }
+      },
+      "afterBalance": {
+        "gift": {
+          "available": "3995.968",
+          "reserved": "0"
+        },
+        "purchased": {
+          "available": "0",
+          "reserved": "0"
+        }
+      },
+      "requestKeys": [
+        "07b26f8e-3a24-439d-9f11-8db8e5e75e8d",
+        "07b26f8e-3a24-439d-9f11-8db8e5e75e8d"
+      ]
+    },
+    {
+      "pendingCall": {
+        "id": "2cc16b9e-8fe2-4e77-afcb-1f2fe2970146",
+        "messageId": "4caf444e-9a5e-4420-9711-9df9b5bf2c17",
+        "state": "pending",
+        "reserved": "314.104",
+        "consumed": null,
+        "reason": "usage_or_price_unconfirmed"
+      },
+      "before": {
+        "gift": {
+          "available": "3361.678",
+          "reserved": "628.232"
+        },
+        "purchased": {
+          "available": "0",
+          "reserved": "0"
+        }
+      },
+      "restored": {
+        "gift": {
+          "available": "3361.668",
+          "reserved": "628.232"
+        },
+        "purchased": {
+          "available": "0",
+          "reserved": "0"
+        }
+      }
+    }
+  ]
+}

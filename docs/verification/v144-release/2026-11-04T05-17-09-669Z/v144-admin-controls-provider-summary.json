@@ -1,0 +1,1 @@
+{"count":5,"realProvider":false,"model":"deepseek-v4-flash","usage":{"prompt_tokens":1000,"prompt_cache_hit_tokens":400,"prompt_cache_miss_tokens":600,"completion_tokens":100,"total_tokens":1100,"completion_tokens_details":{"reasoning_tokens":20}},"pricing":"应用内已核实 Flash 价格，仅本机协议替身"}

@@ -1,0 +1,502 @@
+{
+  "pass": 122,
+  "fail": 0,
+  "workflows": [
+    "known-amount-permission-validation-audit",
+    "concurrent-global-reference-and-atomic-rollback",
+    "browser-response-loss-persistent-retry",
+    "user-contact-record-filter-and-pagination",
+    "process-restart-contact-configured"
+  ],
+  "assertions": [
+    {
+      "name": "隔离账号成功建立",
+      "okay": true
+    },
+    {
+      "name": "实收12.34元只发放12340购买积分",
+      "okay": true
+    },
+    {
+      "name": "用户从统一账本看到购买积分12340",
+      "okay": true
+    },
+    {
+      "name": "完整充值审计与实收来源可追溯",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "同一操作重试返回同一流水",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "相同转账的新操作ID不重复到账",
+      "okay": true
+    },
+    {
+      "name": "入账状态 400",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "参考号大小写不形成第二笔",
+      "okay": true
+    },
+    {
+      "name": "入账状态 409",
+      "okay": true
+    },
+    {
+      "name": "跨账号重复转账明确返回原账号和流水",
+      "okay": true
+    },
+    {
+      "name": "入账状态 409",
+      "okay": true
+    },
+    {
+      "name": "入账状态 409",
+      "okay": true
+    },
+    {
+      "name": "入账状态 409",
+      "okay": true
+    },
+    {
+      "name": "入账状态 400",
+      "okay": true
+    },
+    {
+      "name": "入账状态 400",
+      "okay": true
+    },
+    {
+      "name": "入账状态 400",
+      "okay": true
+    },
+    {
+      "name": "入账状态 400",
+      "okay": true
+    },
+    {
+      "name": "入账状态 400",
+      "okay": true
+    },
+    {
+      "name": "入账状态 400",
+      "okay": true
+    },
+    {
+      "name": "入账状态 400",
+      "okay": true
+    },
+    {
+      "name": "入账状态 400",
+      "okay": true
+    },
+    {
+      "name": "入账状态 400",
+      "okay": true
+    },
+    {
+      "name": "入账状态 404",
+      "okay": true
+    },
+    {
+      "name": "入账状态 400",
+      "okay": true
+    },
+    {
+      "name": "入账状态 400",
+      "okay": true
+    },
+    {
+      "name": "入账状态 400",
+      "okay": true
+    },
+    {
+      "name": "入账状态 400",
+      "okay": true
+    },
+    {
+      "name": "入账状态 400",
+      "okay": true
+    },
+    {
+      "name": "入账状态 403",
+      "okay": true
+    },
+    {
+      "name": "入账状态 403",
+      "okay": true
+    },
+    {
+      "name": "入账状态 401",
+      "okay": true
+    },
+    {
+      "name": "充值记录不向普通账号或匿名开放",
+      "okay": true
+    },
+    {
+      "name": "充值记录不向普通账号或匿名开放",
+      "okay": true
+    },
+    {
+      "name": "用户流水不支持跨账号查询",
+      "okay": true
+    },
+    {
+      "name": "跨站写入被拒绝",
+      "okay": true
+    },
+    {
+      "name": "校验失败与越权不改变购买余额",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "同一操作8路并发只入账一笔",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "两个管理员同参考号并发仅一个购买来源",
+      "okay": true
+    },
+    {
+      "name": "不同管理员跨账号竞争同转账仅一个成功",
+      "okay": true
+    },
+    {
+      "name": "并发冲突包含可核对原交易",
+      "okay": true
+    },
+    {
+      "name": "入账状态 503",
+      "okay": true
+    },
+    {
+      "name": "来源已写但审计失败时余额流水全部回滚",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "写入故障解除后同操作恢复且仅到账一次",
+      "okay": true
+    },
+    {
+      "name": "充值未改变已有赠送余额",
+      "okay": true
+    },
+    {
+      "name": "界面入账前购买余额符合全部已知实收金额",
+      "okay": true
+    },
+    {
+      "name": "正常界面实收0.04元成功入账40购买积分",
+      "okay": true
+    },
+    {
+      "name": "正常界面入账仅新增一笔且购买余额等于已知预期",
+      "okay": true
+    },
+    {
+      "name": "正常界面入账后后台购买余额刷新为已知金额",
+      "okay": true
+    },
+    {
+      "name": "响应丢失前服务端已经提交一笔",
+      "okay": true
+    },
+    {
+      "name": "响应丢失刷新后原ID恢复不重复到账",
+      "okay": true
+    },
+    {
+      "name": "丢响应重试后后台购买余额等于已知金额",
+      "okay": true
+    },
+    {
+      "name": "服务端刷新后后台余额已同步",
+      "okay": true
+    },
+    {
+      "name": "入账表单390px不产生整页横向溢出",
+      "okay": true
+    },
+    {
+      "name": "pending-retry-403：首次未知结果已持久保存原requestId",
+      "okay": true
+    },
+    {
+      "name": "pending-retry-403：请求中断后已形成原ID待确认操作",
+      "okay": true
+    },
+    {
+      "name": "pending-retry-403：回包后sessionStorage保留原ID和全部输入",
+      "okay": true
+    },
+    {
+      "name": "pending-retry-403：重试发送原requestId和全部原输入",
+      "okay": true
+    },
+    {
+      "name": "pending-retry-403：回包后仍保留原requestId待确认提示",
+      "okay": true
+    },
+    {
+      "name": "pending-retry-403：回包后保留实收金额参考号和说明",
+      "okay": true
+    },
+    {
+      "name": "pending-retry-403：全部输入保持锁定且禁止另建充值",
+      "okay": true
+    },
+    {
+      "name": "pending-retry-403：刷新后sessionStorage仍保留原ID和全部输入",
+      "okay": true
+    },
+    {
+      "name": "pending-retry-403：刷新仍保留原操作全部输入并禁止另建",
+      "okay": true
+    },
+    {
+      "name": "pending-retry-empty-200：首次未知结果已持久保存原requestId",
+      "okay": true
+    },
+    {
+      "name": "pending-retry-empty-200：请求中断后已形成原ID待确认操作",
+      "okay": true
+    },
+    {
+      "name": "pending-retry-empty-200：回包后sessionStorage保留原ID和全部输入",
+      "okay": true
+    },
+    {
+      "name": "pending-retry-empty-200：重试发送原requestId和全部原输入",
+      "okay": true
+    },
+    {
+      "name": "pending-retry-empty-200：回包后仍保留原requestId待确认提示",
+      "okay": true
+    },
+    {
+      "name": "pending-retry-empty-200：回包后保留实收金额参考号和说明",
+      "okay": true
+    },
+    {
+      "name": "pending-retry-empty-200：全部输入保持锁定且禁止另建充值",
+      "okay": true
+    },
+    {
+      "name": "200空JSON显示中文未知结果而非成功或原生异常",
+      "okay": true
+    },
+    {
+      "name": "pending-retry-empty-200：刷新后sessionStorage仍保留原ID和全部输入",
+      "okay": true
+    },
+    {
+      "name": "pending-retry-empty-200：刷新仍保留原操作全部输入并禁止另建",
+      "okay": true
+    },
+    {
+      "name": "异常响应UI替身不改变服务端余额或流水",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "入账状态 200",
+      "okay": true
+    },
+    {
+      "name": "账号筛选分页且两页流水无重复",
+      "okay": true
+    },
+    {
+      "name": "交易参考号精确筛选返回原充值",
+      "okay": true
+    },
+    {
+      "name": "邮箱筛选与账号结果一致",
+      "okay": true
+    },
+    {
+      "name": "非法筛选和页码拒绝",
+      "okay": true
+    },
+    {
+      "name": "后台可见分页能翻到第2页",
+      "okay": true
+    },
+    {
+      "name": "分页样本后购买余额与全部已知实收核对一致",
+      "okay": true
+    },
+    {
+      "name": "个人中心购买余额显示已知预期金额",
+      "okay": true
+    },
+    {
+      "name": "用户联系页有完整账号与早期人工处理说明",
+      "okay": true
+    },
+    {
+      "name": "未配置真实联系方式明确关闭，不显示占位微信",
+      "okay": true
+    },
+    {
+      "name": "联系页窄屏无溢出",
+      "okay": true
+    },
+    {
+      "name": "应用进程重启后余额和审计不丢失",
+      "okay": true
+    },
+    {
+      "name": "配置后展示隔离测试微信与当前账号",
+      "okay": true
+    },
+    {
+      "name": "相关页面无运行时异常",
+      "okay": true
+    }
+  ],
+  "aiMode": "replay"
+}

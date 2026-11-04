@@ -1,0 +1,224 @@
+{
+  "fixture": true,
+  "live": false,
+  "realLlmCostCny": "0",
+  "calls": [
+    {
+      "mode": "context-document",
+      "providerId": "fixture-52c0be99-c647-442b-93d1-198386977491",
+      "upstreamId": "upstream-7b089240-de6b-46e6-8a88-7e7f760f4ab9",
+      "stream": true,
+      "includeUsage": true,
+      "requestedModel": "deepseek-v4-flash",
+      "maxTokens": 16384,
+      "inputBytes": 8272,
+      "messageCount": 2,
+      "fullContextIncluded": false,
+      "inputHashes": [
+        "9be3e0f12a3e51927983951ed4992b89950f23a0f2101105fed1fa10c07dd7c1",
+        "1a2c1c6da1c4ce59e879293c4941ff3779a60c35e9fd871162eb764290d9dee4"
+      ],
+      "phase": "done",
+      "closed": true
+    },
+    {
+      "mode": "hold",
+      "providerId": "fixture-6c89e05c-7acb-4d5c-9c67-a52b4facba30",
+      "upstreamId": "upstream-e39d4b85-c630-4d17-8601-ec75bb011fad",
+      "stream": false,
+      "includeUsage": false,
+      "requestedModel": "deepseek-v4-flash",
+      "maxTokens": 32768,
+      "inputBytes": 586,
+      "messageCount": 2,
+      "fullContextIncluded": false,
+      "inputHashes": [
+        "f954f66e1847be436fe34e26608fdc7455222a1d523932333694bc4cf79b8ce6",
+        "6e65b3badc3464f496da05a54d3aa42291d9ece2d91750a60c8c684be30b2485"
+      ],
+      "phase": "done",
+      "closed": true
+    },
+    {
+      "mode": "hold",
+      "providerId": "fixture-c18c6968-7530-428e-8416-cfb6e760fc67",
+      "upstreamId": "upstream-ade6a6f9-e6c6-438f-948e-cde6ee0ca9a9",
+      "stream": true,
+      "includeUsage": true,
+      "requestedModel": "deepseek-v4-flash",
+      "maxTokens": 16384,
+      "inputBytes": 8376,
+      "messageCount": 2,
+      "fullContextIncluded": false,
+      "inputHashes": [
+        "739f7de313c069a2014bb3d7ccb9e183217009ebf578a9e88bd31a711cf23bfd",
+        "691e84dba059bf1e691da99c34a4eff6153035cdab4d4e0d52dc6d5dbe977b0e"
+      ],
+      "phase": "done",
+      "closed": true
+    },
+    {
+      "mode": "context-document",
+      "providerId": "fixture-d3483d0b-849b-4bed-b052-f416bb9bd884",
+      "upstreamId": "upstream-daeb2eb2-33e5-4d35-99c2-d314aa8c98cc",
+      "stream": true,
+      "includeUsage": true,
+      "requestedModel": "deepseek-v4-flash",
+      "maxTokens": 16384,
+      "inputBytes": 8272,
+      "messageCount": 2,
+      "fullContextIncluded": false,
+      "inputHashes": [
+        "9be3e0f12a3e51927983951ed4992b89950f23a0f2101105fed1fa10c07dd7c1",
+        "1a2c1c6da1c4ce59e879293c4941ff3779a60c35e9fd871162eb764290d9dee4"
+      ],
+      "phase": "done",
+      "closed": true
+    },
+    {
+      "mode": "normal",
+      "providerId": "fixture-7b558b7f-d405-4c10-a167-fee639800905",
+      "upstreamId": "upstream-c03023b6-2739-4a61-a7dc-d950bd599c84",
+      "stream": false,
+      "includeUsage": false,
+      "requestedModel": "deepseek-v4-flash",
+      "maxTokens": 32768,
+      "inputBytes": 586,
+      "messageCount": 2,
+      "fullContextIncluded": false,
+      "inputHashes": [
+        "f954f66e1847be436fe34e26608fdc7455222a1d523932333694bc4cf79b8ce6",
+        "47eecf53e8f5ab88c89c569e6bc208f42ccf70a79a23150e49896dc7ecd386d4"
+      ],
+      "phase": "done",
+      "closed": true
+    },
+    {
+      "mode": "context-document",
+      "providerId": "fixture-6a8e547b-ae33-40e3-b73c-7a8f4441cc24",
+      "upstreamId": "upstream-037be159-4a6a-4caf-afc0-eb7000eb4dd1",
+      "stream": true,
+      "includeUsage": true,
+      "requestedModel": "deepseek-v4-flash",
+      "maxTokens": 16384,
+      "inputBytes": 8272,
+      "messageCount": 2,
+      "fullContextIncluded": false,
+      "inputHashes": [
+        "9be3e0f12a3e51927983951ed4992b89950f23a0f2101105fed1fa10c07dd7c1",
+        "1a2c1c6da1c4ce59e879293c4941ff3779a60c35e9fd871162eb764290d9dee4"
+      ],
+      "phase": "done",
+      "closed": true
+    },
+    {
+      "mode": "hold",
+      "providerId": "fixture-2387b221-51a6-475b-bf8c-2dbc025e2f6a",
+      "upstreamId": "upstream-fe7feddd-4784-4140-b1ef-3b9f029d46ba",
+      "stream": false,
+      "includeUsage": false,
+      "requestedModel": "deepseek-v4-flash",
+      "maxTokens": 32768,
+      "inputBytes": 575,
+      "messageCount": 2,
+      "fullContextIncluded": false,
+      "inputHashes": [
+        "f954f66e1847be436fe34e26608fdc7455222a1d523932333694bc4cf79b8ce6",
+        "31a8c35006da8e9496e1adc71a4d8e6866485f8d7519ea8a2b464697aa27c290"
+      ],
+      "phase": "done",
+      "closed": true
+    },
+    {
+      "mode": "hold",
+      "providerId": "fixture-edc863b2-4c36-4bb8-96db-43c949ef5e9d",
+      "upstreamId": "upstream-9d6cb21b-303c-435d-8f70-82a0b1b7d48f",
+      "stream": false,
+      "includeUsage": false,
+      "requestedModel": "deepseek-v4-flash",
+      "maxTokens": 32768,
+      "inputBytes": 602,
+      "messageCount": 2,
+      "fullContextIncluded": false,
+      "inputHashes": [
+        "f954f66e1847be436fe34e26608fdc7455222a1d523932333694bc4cf79b8ce6",
+        "36c4ae61ec4e9fae96936dd610a2762f183805857efd7ee753d7dd31ff184595"
+      ],
+      "phase": "done",
+      "closed": true
+    },
+    {
+      "mode": "missing",
+      "providerId": "fixture-db785c94-6aaa-464f-b3ce-b9e5eaf37863",
+      "upstreamId": "upstream-a74f72c9-2d7a-41fd-84c7-4a243f51e1af",
+      "stream": false,
+      "includeUsage": false,
+      "requestedModel": "deepseek-v4-flash",
+      "maxTokens": 32768,
+      "inputBytes": 586,
+      "messageCount": 2,
+      "fullContextIncluded": false,
+      "inputHashes": [
+        "f954f66e1847be436fe34e26608fdc7455222a1d523932333694bc4cf79b8ce6",
+        "47eecf53e8f5ab88c89c569e6bc208f42ccf70a79a23150e49896dc7ecd386d4"
+      ],
+      "phase": "done",
+      "closed": true
+    },
+    {
+      "mode": "insufficient-system-resource",
+      "providerId": "fixture-5d030d62-4bb0-47f2-be07-0ca000b416fc",
+      "upstreamId": "upstream-c11b9354-2b3b-4256-b641-b368ae35a761",
+      "stream": false,
+      "includeUsage": false,
+      "requestedModel": "deepseek-v4-flash",
+      "maxTokens": 32768,
+      "inputBytes": 586,
+      "messageCount": 2,
+      "fullContextIncluded": false,
+      "inputHashes": [
+        "f954f66e1847be436fe34e26608fdc7455222a1d523932333694bc4cf79b8ce6",
+        "47eecf53e8f5ab88c89c569e6bc208f42ccf70a79a23150e49896dc7ecd386d4"
+      ],
+      "phase": "done",
+      "closed": true
+    },
+    {
+      "mode": "output-length",
+      "providerId": "fixture-922d5a4f-3ff5-4531-a059-36fceb32047f",
+      "upstreamId": "upstream-d4eb56e8-8bfb-4ba5-a848-6e303eedd803",
+      "stream": false,
+      "includeUsage": false,
+      "requestedModel": "deepseek-v4-flash",
+      "maxTokens": 32768,
+      "inputBytes": 586,
+      "messageCount": 2,
+      "fullContextIncluded": false,
+      "inputHashes": [
+        "f954f66e1847be436fe34e26608fdc7455222a1d523932333694bc4cf79b8ce6",
+        "47eecf53e8f5ab88c89c569e6bc208f42ccf70a79a23150e49896dc7ecd386d4"
+      ],
+      "phase": "done",
+      "closed": true
+    },
+    {
+      "mode": "tiny",
+      "providerId": "fixture-3e26f04b-7a61-47a0-8e87-d92157f71271",
+      "upstreamId": "upstream-fc226544-859c-4f9a-8599-6c6ff845c274",
+      "stream": false,
+      "includeUsage": false,
+      "requestedModel": "deepseek-v4-flash",
+      "maxTokens": 32768,
+      "inputBytes": 586,
+      "messageCount": 2,
+      "fullContextIncluded": false,
+      "inputHashes": [
+        "f954f66e1847be436fe34e26608fdc7455222a1d523932333694bc4cf79b8ce6",
+        "47eecf53e8f5ab88c89c569e6bc208f42ccf70a79a23150e49896dc7ecd386d4"
+      ],
+      "phase": "done",
+      "closed": true
+    }
+  ],
+  "planned": null
+}

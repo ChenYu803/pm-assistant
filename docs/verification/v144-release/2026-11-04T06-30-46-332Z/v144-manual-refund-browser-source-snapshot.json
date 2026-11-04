@@ -1,0 +1,29 @@
+{
+  "at": "2026-11-04T06:43:40.603Z",
+  "sources": [
+    {
+      "path": "scripts/verify-v144-manual-refund-browser.mjs",
+      "sha256": "ab11c5c998248bc69eb998ee9f8a90e9cf20025eb509ef2d01b28e3d9091a29f"
+    },
+    {
+      "path": "scripts/verify-v144-manual-refund-browser-scenario.mjs",
+      "sha256": "86f5535efeba996f8570d04fdd8391bb7cb94da88ff00ef2455a5b07b26f673f"
+    },
+    {
+      "path": "src/components/ManualRefundForm.tsx",
+      "sha256": "d58ae8a116753e59299d41ad3078bbb6f49bb07a27c52b9e2670987670d46195"
+    },
+    {
+      "path": "src/components/ManualRefundAction.tsx",
+      "sha256": "d0aa2d19b2e760a956e313dad35956e36a03845a70f1a859112322eced3b39c7"
+    },
+    {
+      "path": "src/components/ManualRefundHistory.tsx",
+      "sha256": "fd04815bdaeb4a7e39ca8801e58ef3581adb58c2e6b28ac1584c248b9b69287f"
+    },
+    {
+      "path": "src/lib/manual-refunds.ts",
+      "sha256": "9cea3b96c25ba03c6b997c6793e525c0c3838757fa6b7ce197f02e49c0ff5e11"
+    }
+  ]
+}

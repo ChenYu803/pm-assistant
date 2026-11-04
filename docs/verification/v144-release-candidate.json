@@ -1,0 +1,171 @@
+{
+  "date": "2026-11-04",
+  "timezone": "Asia/Shanghai",
+  "implementationBaseline": "aaffb6267e9d514a30da3ffbea9f2fb4d58483c5",
+  "historicalServerHead": "77c76768a6ad1d6a9bcc02389bfc08ba465b6345",
+  "historicalServerHeadVerifiedDate": "2026-10-21",
+  "serverHeadVerifiedThisSession": false,
+  "remoteHeadVerifiedThisSession": false,
+  "branch": "codex-pm-assistant-v1.1-docs",
+  "candidateCommitsBeforeThisTicket": [
+    "aaffb6267e9d514a30da3ffbea9f2fb4d58483c5 feat(v1.44 #12): 实现购买积分人工退款与失败恢复",
+    "3ca0c16e76b4601ace7cd3e51115d812bbb0ac82 feat(v1.44 #11): 联系充值与可追溯人工入账",
+    "1ad66698088fb98dc46e7261a93d32e363124aca feat(v1.44 #10): 实现待核对自动恢复与24小时到期免单",
+    "feb20e9d939a8255a8b946d26b32bc6a709b3302 v1.44 #09 实现主动停止与故障免单结算",
+    "ed9e85671d110d4cb95a5647dcb870a7b2b6b016 v1.44 #08 文件润色复用积分预留与结算",
+    "e0b58eb0113f5a6b66551e7d666e902b7100534c v1.44 #07：会话积分预留与可靠用量结算",
+    "e9cfc4fbc2be0bd9e5d8cf440d58a1737d5feee4 docs(v1.44 #06): 补充新密钥官方请求与主动取消证据",
+    "8461e946c2cbbc98b592e414027a8e222ebc43c0 feat(v1.44 #06): 持久化官方模型用量、成本与后台追溯",
+    "466b5adc79635c7cac756e5b98820630dce221e9 docs: 更新 v1.44 前沿交接状态",
+    "4d42ee7c5bb83e314ab58a97fdddfb4a26f631c3 v1.44 #05 实现赠送邀请码兑换",
+    "d5aeeef008a901babb3f24ee83381f18f960e9c1 v1.44 #04 实现积分账本与管理员调整",
+    "95ef89b559ad5ad276fb2e2e99bd89356a7b75d3 v1.44 #03：确认生产管理员邮箱与发布交接",
+    "8927c87c2aea7c4579cefb4d24fe523ced8d71a5 v1.44 #03：补齐隔离回归与管理员停用验收记录",
+    "196843a5ccfdd4e4a125704c57a16e7abf675428 v1.44 #03：实现最小管理员入口与账号停用",
+    "53b32a96b17adb0f1e5f9c4b1509630ab50755b7 feat(v1.44 #02): 实现邮箱验证码注册与密码找回",
+    "0c4e754d9ecf6106c2154d0f2083d4b40648f4dd fix(v1.44 #01): 适配基础回放入口与 SSE 终态断言",
+    "1e5f529b0c5dac7c5f4f648f2984c857aa2e1414 chore: 保存基础回归修复前的工作区检查点",
+    "a2a7f7018a45c6ead3e4c70e6229d25bb67a0006 docs(v1.44 #01): 核验基础回归失配并记录解决难点",
+    "7b5d1aa9d69a5da5e575bf9cdb010cf59525f759 v1.44 #01：修复退出后迟到响应恢复认证",
+    "1cc82b7a9f4eb241ba24ee3059cbde20f25765f9 v1.44 #01：本地会话命名并撤除模型命名",
+    "4e3d2c8fc481381c396d87cc9058cbf50f4b3914 docs(v1.44 #01-#14): 发布正式票并更新实施前沿",
+    "8d9192a40837529c50ccfd45a080aee3ef60c080 docs(v1.44): 整理14项拆票方案与依赖，待确认后发布",
+    "0bb3618ab0c3cdc94ebabdddf4967cab6ff25c99 docs(v1.44): 发布首发账号积分与运营后台规格",
+    "5d02f867857d0e53c8231cdc1f15b1a1d0b7faa0 docs(v1.44): 确认待核对与并行计费体验并收口grilling",
+    "2b183cf2c7bddd22ed366559c9c2b475613a1fc6 docs(v1.44): 确认积分预留方案并整理剩余体验问题",
+    "507e2ed431d0e8e15111f26c1bcabfb125211835 docs(v1.44): 敲定首条提示词命名与逐轮积分结算",
+    "716ea980f4e961f2346b3a4f34a529e2189d2965 docs(v1.44): 记录第三轮结论及工作台可用冻结积分定义",
+    "9315f1aad4b2bcd152791b0a2f458d1cf6fd5859 docs(v1.44): 确认人工充值并收敛第三轮产品讨论",
+    "d02e55710839c37ec8b1309aff9cfa59f9666887 docs(v1.44): 记录首发人工充值提案并更新待决约束",
+    "a29034b7532a9871121832d70aae24836ac4e682 docs(v1.44): 收口第二轮积分认证规则并记录法规核查暂停点",
+    "3932cfb382d14de41fbb077e4556f585387f102a docs(v1.44): 收口官方API自动充值及邀请码规则",
+    "0ffdd0a77217afcd699a679e8d4bcee3715aab8d docs(v1.44): 记录首轮决策调整与官方 API 核查",
+    "febdd4e4292748ca296cadfa423afca652a46481 docs(v1.44): 启动细节 grilling 并补充积分术语",
+    "20f2a336c23ae8271e0e5eae56847a739fc00145 docs(v1.44): 记录免费积分预算与真实四环验收意向",
+    "b1ffe9dbf5d69dd98a946fc5c9138823e7c7049c docs(v1.44): 记录宣传前准备范围与工作流建议",
+    "ce2ead0a6c18d6a6b7901404acdc645fcd1d58bd chore: 更新工程 skills 配置并统一版本目录",
+    "fd6fb2c7216af8a1bee1eced7537996925da1ff1 feat(v1.43 #04): 首页深色与交付物接力动效",
+    "02978fc48517419e2ea4c37e868e3ca7d71471e9 fix(ui): prevent caret selection in controls",
+    "bc6eab1ef2aa0c9e44af3d4aec6e53a5de1ba163 fix(ui): make feedback disclosure explicit",
+    "c9617a10ab06d7b0a12b06f5b4abd0584a38f221 fix(ui): prevent scene action button wrapping",
+    "4e96ad1ca743c4fd6b57fe9a885ef332dac90682 fix(ui): align onboarding choice content",
+    "5d2d5621ed987e42d95696809a4826007918ba36 v1.43：统一认证品牌并优化克制动效",
+    "1a2694fc56145b02847a59d15dd0cafe50bae6b1 docs(deploy): 记录网站服务与本机健康检查",
+    "e37a17fb59aa803327de8235cc246da6cb8c5784 docs(v1.42 #03): 记录目标机数据库与备份恢复验收",
+    "6cda3c9d2facf3c1189b201ffb02c40b2e450960 docs(deploy): 确认引导密码异地副本",
+    "e6616f5e9ff7e37e1925e785ec19ba17cddea58f docs(deploy): 记录引导凭据回读验证",
+    "8a32e2337173914e9e0042638aeb0886420d40e0 docs(deploy): 记录引导账号凭据生成状态",
+    "a68a5750e1a1fa498d1981e1b420f9f112935f54 docs(deploy): 记录维护配置检查状态",
+    "25bc347184d9e74dfaee2503d0444af4e20ff58f docs(deploy): 记录运行凭据异地副本验证",
+    "8d9f4987439d67610f036377c217a8184e6f70b2 docs(deploy): 记录凭据保险箱与服务器版本核对",
+    "c47712a01b34a8a6e0be4addde260c41207b33e8 docs(v1.42 #02): 独立保存部署记录与逐项备份清单",
+    "ca80d7290521dfd8585125510c4b76adc194bde4 docs(v1.42 #02): 建立上线部署记录备份纪律与交接入口",
+    "0b3592ab3c06cf4d1350ec4b7541cc390eac67b1 docs(v1.42 #02): 留存部署凭据用途与备份找回流程"
+  ],
+  "prerequisites": [
+    {
+      "ticket": "01-local-session-naming.md",
+      "title": "# 01: 默认名称取首条提示词，撤去模型命名",
+      "status": "resolved",
+      "checked": 5,
+      "unchecked": 0
+    },
+    {
+      "ticket": "02-email-verification-auth.md",
+      "title": "# 02: 邮箱验证码注册与密码找回",
+      "status": "ready-for-human",
+      "checked": 7,
+      "unchecked": 1
+    },
+    {
+      "ticket": "03-minimal-admin-account-controls.md",
+      "title": "# 03: 最小管理员入口与异常账号停用",
+      "status": "resolved",
+      "checked": 7,
+      "unchecked": 0
+    },
+    {
+      "ticket": "04-credit-balances-admin-grants.md",
+      "title": "# 04: 个人积分余额与有记录的管理员赠送、调整",
+      "status": "resolved",
+      "checked": 8,
+      "unchecked": 0
+    },
+    {
+      "ticket": "05-gift-invite-redemption.md",
+      "title": "# 05: 注册与个人中心兑换赠送邀请码",
+      "status": "resolved",
+      "checked": 8,
+      "unchecked": 0
+    },
+    {
+      "ticket": "06-official-model-usage-cost.md",
+      "title": "# 06: 官方模型用量、真实成本与故障可追溯",
+      "status": "resolved",
+      "checked": 9,
+      "unchecked": 0
+    },
+    {
+      "ticket": "07-conversation-credit-reservation.md",
+      "title": "# 07: 四环阶段会话预留积分并按实际用量结算",
+      "status": "resolved",
+      "checked": 10,
+      "unchecked": 0
+    },
+    {
+      "ticket": "08-polish-credit-settlement.md",
+      "title": "# 08: 文件润色接入同一积分计量与结算",
+      "status": "resolved",
+      "checked": 7,
+      "unchecked": 0
+    },
+    {
+      "ticket": "09-stop-and-failure-billing.md",
+      "title": "# 09: 主动停止按可靠用量结算，生成故障免单",
+      "status": "resolved",
+      "checked": 7,
+      "unchecked": 0
+    },
+    {
+      "ticket": "10-pending-usage-recovery.md",
+      "title": "# 10: 待核对自动恢复与 24 小时到期免单",
+      "status": "resolved",
+      "checked": 8,
+      "unchecked": 0
+    },
+    {
+      "ticket": "11-manual-recharge-crediting.md",
+      "title": "# 11: 联系充值与后台人工入账",
+      "status": "ready-for-agent → claimed → resolved",
+      "checked": 7,
+      "unchecked": 0
+    },
+    {
+      "ticket": "12-manual-unused-credit-refunds.md",
+      "title": "# 12: 未消费购买积分人工退款与失败恢复",
+      "status": "resolved",
+      "checked": 7,
+      "unchecked": 0
+    }
+  ],
+  "liveEvidenceReused": [
+    "v144-model-usage-live.json",
+    "v144-model-usage-live-key-retry.json"
+  ],
+  "newPaidModelRequests": 0,
+  "modelCostHistoricalTotalVerified": false,
+  "productionOperationsExecuted": false,
+  "releaseGate": {
+    "evidenceDirectory": "docs/verification/v144-release/2026-11-04T06-30-46-332Z",
+    "suites": 24,
+    "pass": 3041,
+    "fail": 0,
+    "allCleaned": true,
+    "sourceUnchanged": true,
+    "realLlmCostCny": "0",
+    "realFundsCny": "0",
+    "productionReadiness": "not-assessed",
+    "endedAt": "2026-11-04T06:53:17.936Z"
+  },
+  "ticketStatus": "ready-for-human"
+}

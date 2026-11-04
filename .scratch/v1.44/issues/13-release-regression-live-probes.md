@@ -4,7 +4,7 @@
 
 **Blocked by:** [01：默认名称取首条提示词，撤去模型命名](01-local-session-naming.md)；[05：注册与个人中心兑换赠送邀请码](05-gift-invite-redemption.md)；[09：主动停止按可靠用量结算，生成故障免单](09-stop-and-failure-billing.md)；[10：待核对自动恢复与 24 小时到期免单](10-pending-usage-recovery.md)；[12：未消费购买积分人工退款与失败恢复](12-manual-unused-credit-refunds.md)
 
-**Status:** ready-for-agent
+**Status:** ready-for-human
 
 **Type:** task
 

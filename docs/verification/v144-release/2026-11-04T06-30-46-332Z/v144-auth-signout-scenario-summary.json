@@ -1,0 +1,8 @@
+{
+  "pass": 23,
+  "fail": 0,
+  "aiMode": "replay",
+  "workflows": [
+    "auth-signout-http-and-browser"
+  ]
+}
