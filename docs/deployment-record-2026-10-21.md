@@ -19,6 +19,13 @@
 - 本地旧 SSH 别名和凭据说明的 Downloads/TheFirst.pem 已不存在，当前密钥入口以本记录为准。
 - v1.44 #02 提供邮箱认证实现与Resend适配，但真实发信身份、域名/凭据、注册/找回收件证据尚缺。生产准备需补邮件配置并刷新安全副本，见 [邮箱认证验收](verification/v144-email-auth.md)。
 
+## 2026-11-04 本机个人中心数据库迁移
+
+- 用户确认修复目标为本机 `127.0.0.1:3306/pm_assistant`，不是线上服务器。MySQL 为 9.7.2；迁移前最新记录为 `0022_v142_ai_daily_usage`，个人中心报错对应 `users.account_status` 列缺失。
+- 迁移前备份位于 `D:\Backups\IdeaStage\pm_assistant-local-before-profile-migration-20261104\pm_assistant.sql`，大小 1,510,637 bytes，SHA-256 `f83b978df9b74b1f20743e4d94f05bc4d945aff5b0e3c62a440da8200ed549c0`。目录 ACL 仅授予当前 Windows 管理员与 SYSTEM 完全控制。备份通过临时隔离库实际恢复验证：22 张表、328 个账号、309 个项目及 22 条迁移记录；隔离库已删除。应用账号缺少导出所需的 `FLUSH_TABLES` 权限，因此备份由本机维护管理员导出，未修改数据库账号或授权。
+- 使用 `src/lib/mysql-bootstrap.ts` 的 `migrateMysql` 迁移入口，以本机维护管理员身份应用 0023–0032 共 10 项；没有运行会重设应用账号密码/授权的 `db:init`。迁移后 32 条迁移均登记，`account_status` 为非空列且默认 `active`；users 仍为 328，projects 仍为 309，`test1@example.com` 记录存在。未修改/清理业务行，未访问生产库。
+- 本机 `npm run dev` 已启动于 `http://localhost:3000`。未登录 GET `/profile` 返回 302 并重定向到 `/login?callbackUrl=%2Fprofile`，未复现数据库 500；由于没有用户登录态，仍需用户刷新个人中心确认页面。该记录仅证明本机操作，不代表目标服务器迁移、备份或发布已完成。
+
 ## 基础设施与访问
 
 - 域名：`ideastage.top`；服务器公网 IPv4：`101.33.79.30`。

@@ -1,14 +1,18 @@
 # PROGRESS.md - 项目状态与交接
 
+### 2026-11-04：修复本机 `/profile` 缺失列
+
+用户确认目标为本机 `127.0.0.1:3306/pm_assistant` 后，先在 `D:\Backups\IdeaStage\pm_assistant-local-before-profile-migration-20261104\pm_assistant.sql` 创建受限备份（1,510,637 bytes，SHA-256 `f83b978df9b74b1f20743e4d94f05bc4d945aff5b0e3c62a440da8200ed549c0`），并实际恢复到临时隔离库验证 22 张表、328 个账号、309 个项目、22 条旧迁移记录，之后删除隔离库。使用项目 `migrateMysql` 入口应用 0023–0032；未调用会更改应用账号密码/授权的 `db:init`，未触碰生产库。迁移后 10 条迁移均已登记，`users.account_status` 存在且默认 `active`，账号仍为 328、项目仍为 309，`test1@example.com` 记录仍在。启动本机 Next dev 后，未登录 `/profile` 返回预期 302 到登录页；登录态页面须用户刷新确认。操作细节见 [部署记录](docs/deployment-record-2026-10-21.md)。
+
 ### 2026-11-04：指定 `test1@example.com` 为本机/隔离测试账号
 
-用户指定 `test1@example.com` 作为本人测试账号，可用于本机开发、`replay` 和随机隔离验收；不代表真实可收信邮箱，不授予管理员权限、不绕过邮箱验证，也不授权写入日常/生产数据或产生未批准的真实模型费用。决策详见 [ADR-0008](docs/adr/0008-designated-test-account.md)，#13 工单及发布证据已交叉引用。真实注册/找回收信仍需可收信邮箱。用户截图中的 `/profile` 报错为当前数据库缺少 `account_status` 列；本轮只记录决策，未操作数据库或执行迁移，修复前须按部署纪律核实目标和备份。
+用户指定 `test1@example.com` 作为本人测试账号，可用于本机开发、`replay` 和随机隔离验收；不代表真实可收信邮箱，不授予管理员权限、不绕过邮箱验证，也不授权写入日常/生产数据或产生未批准的真实模型费用。决策详见 [ADR-0008](docs/adr/0008-designated-test-account.md)，#13 工单及发布证据已交叉引用。真实注册/找回收信仍需可收信邮箱。用户截图中的 `/profile` 缺失 `account_status` 已按上方记录完成本机迁移；生产库未操作。
 
 ### 2026-11-04：v1.44 #13 隔离发布回归完成，外部发布证据待人工补齐
 
 新增跨票组合和完整发布 gate。24/24 隔离专项3041/3041通过、0失败，全部cleaned=true，前后源码哈希一致；Spec复审确认生命周期组合（润色/停止/免单/待核对）尚未串入组合scenario，作为未完成AC保留；组合专项77/77，删除专项170/170。TypeScript、相关脚本ESLint、拒绝非法专项门禁、diff检查及runner退出后的串行生产构建通过。证据见docs/verification/v144-release-regression.md与docs/verification/v144-release/2026-11-04T06-30-46-332Z。
 
-票保持ready-for-human，不因replay/替身通过而resolved。RESEND_API_KEY/EMAIL_FROM未配置，真实注册与找回收信未做；200元累计API预算未完整对账、供应商停止后最终usage和隐藏包装成本上界未证实；既有live样本未经过应用计量账本，未新增付费模型调用。目标机HEAD、迁移备份恢复、timer、live与生产持久化仍由#14核验。本轮仅随机隔离库与本机服务，不操作日常/生产账号或资金，未部署、未push。下一前沿为#14前的人工作业/证据补齐，发布候选差集须以目标机实际HEAD核实。
+票保持ready-for-human，不因replay/替身通过而resolved。RESEND_API_KEY/EMAIL_FROM未配置，真实注册与找回收信未做；200元累计API预算未完整对账、供应商停止后最终usage和隐藏包装成本上界未证实；既有live样本未经过应用计量账本，未新增付费模型调用。目标机HEAD、生产迁移/备份恢复、timer、live与生产持久化仍由#14核验；本机迁移不构成生产证据。未部署、未push。下一前沿为#14前的人工作业/证据补齐，发布候选差集须以目标机实际HEAD核实。
 
 新坑：工作台删除回放的UI确认框必须在固定30秒生成延迟开始前预开，才能检验同一in-flight请求；SSE HTTP 200表示传输建立，故障业务结局应检查持久化消息状态，不能把业务期望HTTP码套到SSE传输。
 
