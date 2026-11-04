@@ -1,0 +1,21 @@
+{
+  "sourceCandidate": "a20931375da54551ee348dfa983a5271830c31ad",
+  "implementationBaseline": "1165f8a34e0013c95dec504e785b02d980f79e9a",
+  "command": "node --import tsx scripts/verify-v144-release-combination.mjs",
+  "association": "组合第二轮通过后的同一源码已提交；后续无脚本修改，最终相关专项另保存前后哈希。",
+  "sourceHashes": {
+    "scripts/verify-model-provider-fixture.mjs": "cbaca4b263e0bbde0a64b83993d5aa8fcc51e00dda03730d6c3585030a24be18",
+    "scripts/verify-v144-release-combination.mjs": "50ec29f394b95c225c4f8cffce4e98126abfc7f8fdb7575a53661d4eef6cd38d",
+    "scripts/verify-v144-release-combination-scenario.mjs": "eab94706b75fd113aa76824ef54c3d06b05d8d6549bc62d3ec3652dc15ecd9f9"
+  },
+  "pass": 257,
+  "fail": 0,
+  "scenarioPass": 250,
+  "workflows": 5,
+  "clockReset": true,
+  "realLlmCostCny": "0",
+  "realFundsCny": "0",
+  "coverageLimitations": [
+    "现有公开流程不能对已完成且缺 usage 的 pending 调用补查供应商；本组合未覆盖 pending 在24小时内补齐可靠证据并转扣费。held-usage 验证的是仍运行请求的可靠完成，以及 deadline 免单后原响应迟到 usage 只补网站成本。"
+  ]
+}

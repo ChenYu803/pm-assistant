@@ -1,0 +1,251 @@
+✅ 只允许隔离库和本机供应商
+✅ POST /api/auth/register HTTP 201
+✅ GET /api/auth/csrf HTTP 200
+✅ GET /api/auth/session HTTP 200
+✅ 正式登录账号身份一致
+✅ POST /api/admin/gift-invites HTTP 201
+✅ 首批邀请码有效且唯一
+✅ POST /api/auth/register HTTP 201
+✅ GET /api/auth/csrf HTTP 200
+✅ GET /api/auth/session HTTP 200
+✅ 正式登录账号身份一致
+✅ 注册兑换已到账
+✅ POST /api/auth/register HTTP 201
+✅ GET /api/auth/csrf HTTP 200
+✅ GET /api/auth/session HTTP 200
+✅ 正式登录账号身份一致
+✅ POST /api/gift-invites HTTP 200
+✅ GET /api/credits HTTP 200
+✅ 注册入口初始账单2000赠送/0购买/0冻结
+✅ POST /api/admin/recharges HTTP 200
+✅ POST /api/admin/recharges HTTP 200
+✅ 并发充值相同操作仅同一到账事实
+✅ GET /api/credits HTTP 200
+✅ 充值后赠送2000/购买10
+✅ POST /api/projects HTTP 201
+✅ POST /api/projects/cd9bce82-388b-4f33-9a26-e4c8afbdbfdc/iterations HTTP 201
+✅ POST /api/iterations/014d0b24-85f3-4b3d-98df-8d668c1e79a0/stages/analysis/sessions HTTP 201
+✅ POST /api/iterations/014d0b24-85f3-4b3d-98df-8d668c1e79a0/stages/analysis/sessions/ca5404ee-c697-4ef0-97ba-0bb6fa53832c/messages HTTP 200
+✅ 正常生成可靠结算且使用赠送积分
+✅ POST /api/iterations/014d0b24-85f3-4b3d-98df-8d668c1e79a0/stages/analysis/sessions/ca5404ee-c697-4ef0-97ba-0bb6fa53832c/messages HTTP 200
+✅ 网络重发不新增上游或隐藏命名调用
+✅ GET /api/iterations/014d0b24-85f3-4b3d-98df-8d668c1e79a0/sessions/ca5404ee-c697-4ef0-97ba-0bb6fa53832c HTTP 200
+✅ 默认名称按Unicode首十字符持久化
+✅ GET /api/credits HTTP 200
+✅ 消费账单赠送优先且购买10保持完整
+✅ GET /api/credits HTTP 200
+✅ 重启后余额与流水完整保留
+✅ POST /api/auth/email-code HTTP 200
+✅ POST /api/auth/reset-password HTTP 200
+✅ GET /api/auth/csrf HTTP 200
+✅ GET /api/auth/session HTTP 200
+✅ 正式登录账号身份一致
+✅ GET /api/credits HTTP 200
+✅ 找回后同一账号及资金记录
+✅ POST /api/iterations/014d0b24-85f3-4b3d-98df-8d668c1e79a0/stages/analysis/sessions/ca5404ee-c697-4ef0-97ba-0bb6fa53832c/messages HTTP 200
+✅ 润色前通过正式会话生成候选并可靠结算
+✅ POST /api/iterations/014d0b24-85f3-4b3d-98df-8d668c1e79a0/sessions/ca5404ee-c697-4ef0-97ba-0bb6fa53832c/candidates/8dffa2db-3dc6-404f-9c04-ae31c8b09f0e HTTP 200
+✅ GET /api/projects/cd9bce82-388b-4f33-9a26-e4c8afbdbfdc/files HTTP 200
+✅ 正式写入后文件可用于润色
+✅ POST /api/projects/cd9bce82-388b-4f33-9a26-e4c8afbdbfdc/files/2ead339c-c527-4fa5-b7cf-71d004d40dc0/polish HTTP 200
+✅ 正常润色走正式API且可靠结算
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ 正常润色预留、结算、释放流水唯一
+✅ 润色后来源余额与退款锁均非负
+✅ 润色后账号冻结总额等于全部未结调用预留
+✅ 润色后完整流水净额等于可用、冻结与退款锁总额
+✅ POST /api/projects/cd9bce82-388b-4f33-9a26-e4c8afbdbfdc/files/2ead339c-c527-4fa5-b7cf-71d004d40dc0/polish HTTP 200
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ 润色原请求重试不重复扣费或调用供应商
+✅ POST /api/iterations/014d0b24-85f3-4b3d-98df-8d668c1e79a0/stages/analysis/sessions HTTP 201
+✅ 可靠用量到达时重复停止请求均被安全处理
+✅ GET /api/iterations/014d0b24-85f3-4b3d-98df-8d668c1e79a0/stages/analysis/sessions/92a17100-46d0-479d-a3b6-002db945ff9d/messages HTTP 200
+✅ 停止场景按可靠用量只结算一次
+✅ GET /api/credits HTTP 200
+✅ 停止重复请求未重复记账
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ 主动停止预留、结算、释放流水唯一
+✅ POST /api/iterations/014d0b24-85f3-4b3d-98df-8d668c1e79a0/stages/analysis/sessions HTTP 201
+✅ 未知故障立即免单且不遗留冻结
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ 未知故障前后来源余额不变
+✅ 未知故障预留、结算、释放流水唯一
+✅ POST /api/iterations/014d0b24-85f3-4b3d-98df-8d668c1e79a0/stages/analysis/sessions HTTP 201
+✅ POST /api/iterations/014d0b24-85f3-4b3d-98df-8d668c1e79a0/stages/analysis/sessions/42c30087-e935-4190-981e-f298285ac620/messages HTTP 502
+✅ 已知可靠成本的供应商故障仍立即免单
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ 已知故障前后来源余额不变
+✅ 已知故障预留、结算、释放流水唯一
+✅ GET /api/admin/model-requests HTTP 200
+✅ 故障已知成本保留后台且由网站承担
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ 正常、润色、停止与故障之后来源余额与退款锁均非负
+✅ 正常、润色、停止与故障之后账号冻结总额等于全部未结调用预留
+✅ 正常、润色、停止与故障之后完整流水净额等于可用、冻结与退款锁总额
+✅ POST /api/iterations/014d0b24-85f3-4b3d-98df-8d668c1e79a0/stages/analysis/sessions HTTP 201
+✅ POST /api/iterations/014d0b24-85f3-4b3d-98df-8d668c1e79a0/stages/analysis/sessions/3d9adae7-f0e0-4195-9e7e-57af78e76648/messages HTTP 200
+✅ 缺失用量的正式请求完成并进入待核对
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ 待核对只冻结赠送、不消费也不动购买积分
+✅ 缺失用量待核对来源余额与退款锁均非负
+✅ 缺失用量待核对账号冻结总额等于全部未结调用预留
+✅ 缺失用量待核对完整流水净额等于可用、冻结与退款锁总额
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ 应用重启完整保留待核对、资金与已有流水
+✅ 重启后未到期恢复CLI成功且无失败项
+✅ 重启后重复恢复恢复CLI成功且无失败项
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ 无可靠证据时重复恢复不凭估算扣费
+✅ POST /api/iterations/014d0b24-85f3-4b3d-98df-8d668c1e79a0/stages/analysis/sessions HTTP 201
+✅ GET /api/iterations/014d0b24-85f3-4b3d-98df-8d668c1e79a0/stages/analysis/sessions/58cd3644-3c63-4c8b-98cd-14f58c0dae79/messages HTTP 200
+✅ 持有usage后正常完成由正式消息API产生持久预留
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ 不同会话待核对与运行中预留同时可见
+✅ 两会话同时冻结来源余额与退款锁均非负
+✅ 两会话同时冻结账号冻结总额等于全部未结调用预留
+✅ 两会话同时冻结完整流水净额等于可用、冻结与退款锁总额
+✅ 运行中请求未到deadline恢复CLI成功且无失败项
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ 恢复worker不误动有效运行中的预留
+✅ 释放原供应商usage后的应用HTTP 200
+✅ 持有后原响应可靠完成并仅扣实际消耗
+✅ GET /api/credits HTTP 200
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ 持有后正常结算预留、结算、释放流水唯一
+✅ 一笔结算另一笔待核对来源余额与退款锁均非负
+✅ 一笔结算另一笔待核对账号冻结总额等于全部未结调用预留
+✅ 一笔结算另一笔待核对完整流水净额等于可用、冻结与退款锁总额
+✅ POST /api/iterations/014d0b24-85f3-4b3d-98df-8d668c1e79a0/stages/analysis/sessions/58cd3644-3c63-4c8b-98cd-14f58c0dae79/messages HTTP 200
+✅ 可靠结算后再次恢复恢复CLI成功且无失败项
+✅ GET /api/credits HTTP 200
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ 可靠完成的请求重发与恢复不重复访问上游或记账
+✅ POST /api/iterations/014d0b24-85f3-4b3d-98df-8d668c1e79a0/stages/analysis/sessions HTTP 201
+✅ GET /api/iterations/014d0b24-85f3-4b3d-98df-8d668c1e79a0/stages/analysis/sessions/e7908690-1148-4eec-96ab-74aabc0a4c3c/messages HTTP 200
+✅ deadline免单后原响应迟到usage由正式消息API产生持久预留
+✅ GET /api/credits HTTP 200
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ 迟到证据请求仍运行来源余额与退款锁均非负
+✅ 迟到证据请求仍运行账号冻结总额等于全部未结调用预留
+✅ 迟到证据请求仍运行完整流水净额等于可用、冻结与退款锁总额
+✅ 运行请求超过deadline恢复CLI成功且无失败项
+✅ GET /api/credits HTTP 200
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ deadline恢复仅释放运行请求、另一笔pending继续冻结
+✅ deadline免单预留、结算、释放流水唯一
+✅ deadline释放后来源余额与退款锁均非负
+✅ deadline释放后账号冻结总额等于全部未结调用预留
+✅ deadline释放后完整流水净额等于可用、冻结与退款锁总额
+✅ GET /api/admin/model-requests HTTP 200
+✅ 迟到usage前后台明确记为中断、网站承担且成本待确认
+✅ deadline释放后重复恢复恢复CLI成功且无失败项
+✅ GET /api/credits HTTP 200
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ 重复恢复不重复释放冻结
+✅ 释放原供应商usage后的应用HTTP 502
+✅ GET /api/iterations/014d0b24-85f3-4b3d-98df-8d668c1e79a0/stages/analysis/sessions/e7908690-1148-4eec-96ab-74aabc0a4c3c/messages HTTP 200
+✅ 迟到可靠证据不能将免单改写为扣费
+✅ GET /api/credits HTTP 200
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ 迟到证据后资金与所有流水完全不变
+✅ GET /api/admin/model-requests HTTP 200
+✅ 原供应商响应的迟到可靠usage只补网站真实成本
+✅ 迟到证据后再次恢复恢复CLI成功且无失败项
+✅ GET /api/credits HTTP 200
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ 补齐成本后重复恢复仍不追扣
+✅ pending23小时恢复CLI成功且无失败项
+✅ GET /api/credits HTTP 200
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ pending23小时仍保持原冻结且无结算
+✅ pending满24小时并发恢复B恢复CLI成功且无失败项
+✅ pending满24小时并发恢复A恢复CLI成功且无失败项
+✅ GET /api/credits HTTP 200
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ pending满24小时免单释放全部剩余冻结
+✅ pending24小时免单预留、结算、释放流水唯一
+✅ 24小时释放后来源余额与退款锁均非负
+✅ 24小时释放后账号冻结总额等于全部未结调用预留
+✅ 24小时释放后完整流水净额等于可用、冻结与退款锁总额
+✅ 24小时释放后重复恢复恢复CLI成功且无失败项
+✅ GET /api/credits HTTP 200
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ 到期后重复恢复无重复记账
+✅ GET /api/credits HTTP 200
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ 最终重启保留免单、可靠结算、来源余额与唯一流水
+✅ GET /api/credits HTTP 200
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ POST /api/admin/refunds HTTP 200
+✅ GET /api/credits HTTP 200
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ 原购买积分退款锁定来源余额与退款锁均非负
+✅ 原购买积分退款锁定账号冻结总额等于全部未结调用预留
+✅ 原购买积分退款锁定完整流水净额等于可用、冻结与退款锁总额
+✅ 原购买10全部退款锁定，赠送余额不变
+✅ POST /api/admin/refunds HTTP 403
+✅ GET /api/iterations/014d0b24-85f3-4b3d-98df-8d668c1e79a0/stages/analysis/sessions/ca5404ee-c697-4ef0-97ba-0bb6fa53832c/messages HTTP 404
+✅ PATCH /api/admin/refunds/01e068ff-25f6-4163-9a4c-bd1d59dda75a HTTP 200
+✅ 退款最终已完成且保留原充值来源
+✅ POST /api/admin/refunds HTTP 200
+✅ PATCH /api/admin/refunds/01e068ff-25f6-4163-9a4c-bd1d59dda75a HTTP 200
+✅ GET /api/credits HTTP 200
+✅ GET /api/credits HTTP 200
+✅ 公开账单分页无遗漏或重复
+✅ 退款完成来源余额与退款锁均非负
+✅ 退款完成账号冻结总额等于全部未结调用预留
+✅ 退款完成完整流水净额等于可用、冻结与退款锁总额
+✅ 退款完成后赠送余额不变、购买和退款锁均为0
+✅ 最终可靠调用63520ebe-865c-47ed-9bd4-2322d450a67a预留、结算、释放流水唯一
+✅ 该笔实际消费与公开账单金额相符
+✅ 最终可靠调用6db24f07-9c36-49b3-b4e0-16f84753d02f预留、结算、释放流水唯一
+✅ 该笔实际消费与公开账单金额相符
+✅ 最终可靠调用01e94c95-03eb-41c5-a944-0aaf0faf1be4预留、结算、释放流水唯一
+✅ 该笔实际消费与公开账单金额相符
+✅ 最终可靠调用aa258ba2-2e53-4929-87e8-8b6749cbf9f3预留、结算、释放流水唯一
+✅ 该笔实际消费与公开账单金额相符
+✅ 最终可靠调用f603807c-773e-4e20-b2ec-527cf822adfd预留、结算、释放流水唯一
+✅ 该笔实际消费与公开账单金额相符
+✅ 最终赠送余额等于2000减去五笔已验收可靠消耗
+✅ 充值、首笔可靠消费及本次退款均仅记账一次
+✅ GET /api/admin/model-requests HTTP 200
+✅ 运营者能核对同一消费的可靠用量及隔离价格
+✅ profile 1440无整页横向溢出
+✅ profile 1440显示可访问的页面主体
+✅ 改密与退款后页面含当前账号
+✅ 1440页面显示最终赠送与购买来源余额
+✅ workspace 1440无整页横向溢出
+✅ workspace 1440显示可访问的页面主体
+✅ 1440无页面运行异常
+✅ profile 390无整页横向溢出
+✅ profile 390显示可访问的页面主体
+✅ 改密与退款后页面含当前账号
+✅ 390页面显示最终赠送与购买来源余额
+✅ workspace 390无整页横向溢出
+✅ workspace 390显示可访问的页面主体
+✅ 390无页面运行异常
+组合结果：250通过，0失败

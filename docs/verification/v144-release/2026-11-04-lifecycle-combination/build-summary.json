@@ -1,0 +1,14 @@
+{
+  "sourceCandidate": "a20931375da54551ee348dfa983a5271830c31ad",
+  "command": "npm run build",
+  "exitCode": 0,
+  "passed": true,
+  "log": "docs/verification/v144-release/2026-11-04-lifecycle-combination/build.log",
+  "executedAfterIsolatedRunnersExited": true,
+  "sourceHashes": {
+    "scripts/verify-model-provider-fixture.mjs": "cbaca4b263e0bbde0a64b83993d5aa8fcc51e00dda03730d6c3585030a24be18",
+    "scripts/verify-v144-release-combination.mjs": "50ec29f394b95c225c4f8cffce4e98126abfc7f8fdb7575a53661d4eef6cd38d",
+    "scripts/verify-v144-release-combination-scenario.mjs": "eab94706b75fd113aa76824ef54c3d06b05d8d6549bc62d3ec3652dc15ecd9f9"
+  },
+  "logPresentation": "持久化文本日志仅统一换行、行尾空白和缩进；保留命令、构建输出及退出码。"
+}

@@ -1,0 +1,68 @@
+{
+  "boundary": "隔离 MySQL + 本机邮件/模型替身或 replay；无 live、目标机或生产资金证据",
+  "startedAt": "2026-11-04T11:45:00.110Z",
+  "head": "a20931375da54551ee348dfa983a5271830c31ad",
+  "completeSuite": false,
+  "expectedSuites": [
+    "v144-model-cost",
+    "v144-conversation-credits",
+    "v144-polish-credits",
+    "v144-stop-billing",
+    "v144-pending-usage"
+  ],
+  "results": [
+    {
+      "suite": "v144-model-cost",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 332,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-model-cost-HTpcZx"
+    },
+    {
+      "suite": "v144-conversation-credits",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 62,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-conversation-credits-r2oL5u"
+    },
+    {
+      "suite": "v144-polish-credits",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 65,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-polish-credits-fcCOuS"
+    },
+    {
+      "suite": "v144-stop-billing",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 123,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-stop-billing-BFB79x"
+    },
+    {
+      "suite": "v144-pending-usage",
+      "exitCode": 0,
+      "okay": true,
+      "pass": 31,
+      "fail": 0,
+      "cleaned": true,
+      "evidenceDir": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\v141-pending-usage-pVtG6A"
+    }
+  ],
+  "pass": 613,
+  "fail": 0,
+  "realLlmCostCny": "0",
+  "realFundsCny": "0",
+  "productionReadiness": "not-assessed",
+  "sourceUnchanged": true,
+  "endedAt": "2026-11-04T11:50:51.270Z",
+  "isolatedPassed": false
+}

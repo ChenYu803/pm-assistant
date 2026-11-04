@@ -167,7 +167,7 @@
     "productionReadiness": "not-assessed",
     "endedAt": "2026-11-04T06:53:17.936Z"
   },
-  "ticketStatus": "claimed",
+  "ticketStatus": "resolved",
   "continuation": {
     "planningCommit": "1165f8a34e0013c95dec504e785b02d980f79e9a",
     "risk": "L2",
@@ -189,6 +189,94 @@
       "aaffb6267e9d514a30da3ffbea9f2fb4d58483c5"
     ],
     "newPaidModelRequests": 0,
-    "productionOperationsExecuted": false
+    "productionOperationsExecuted": false,
+    "sourceCandidate": "a20931375da54551ee348dfa983a5271830c31ad",
+    "sourceHashes": {
+      "scripts/verify-model-provider-fixture.mjs": "cbaca4b263e0bbde0a64b83993d5aa8fcc51e00dda03730d6c3585030a24be18",
+      "scripts/verify-v144-release-combination.mjs": "50ec29f394b95c225c4f8cffce4e98126abfc7f8fdb7575a53661d4eef6cd38d",
+      "scripts/verify-v144-release-combination-scenario.mjs": "eab94706b75fd113aa76824ef54c3d06b05d8d6549bc62d3ec3652dc15ecd9f9"
+    },
+    "combination": {
+      "evidenceDirectory": "docs/verification/v144-release/2026-11-04-lifecycle-combination",
+      "command": "node --import tsx scripts/verify-v144-release-combination.mjs",
+      "pass": 257,
+      "fail": 0,
+      "scenarioPass": 250,
+      "workflows": 5,
+      "cleaned": true,
+      "clockReset": true
+    },
+    "relatedSuites": {
+      "evidenceDirectory": "docs/verification/v144-release/2026-11-04T11-44-59-785Z",
+      "sourceCandidate": "a20931375da54551ee348dfa983a5271830c31ad",
+      "suites": [
+        {
+          "suite": "v144-model-cost",
+          "pass": 332,
+          "fail": 0,
+          "cleaned": true
+        },
+        {
+          "suite": "v144-conversation-credits",
+          "pass": 62,
+          "fail": 0,
+          "cleaned": true
+        },
+        {
+          "suite": "v144-polish-credits",
+          "pass": 65,
+          "fail": 0,
+          "cleaned": true
+        },
+        {
+          "suite": "v144-stop-billing",
+          "pass": 123,
+          "fail": 0,
+          "cleaned": true
+        },
+        {
+          "suite": "v144-pending-usage",
+          "pass": 31,
+          "fail": 0,
+          "cleaned": true
+        }
+      ],
+      "pass": 613,
+      "fail": 0,
+      "sourceUnchanged": true,
+      "completeSuite": false,
+      "interpretation": "五项选定专项全部通过；不是重新执行全量24项门禁，isolatedPassed=false为全量标记。"
+    },
+    "staticChecks": {
+      "typescript": "passed",
+      "eslint": "passed, zero warnings",
+      "syntax": "passed",
+      "productionBuild": {
+        "sourceCandidate": "a20931375da54551ee348dfa983a5271830c31ad",
+        "command": "npm run build",
+        "exitCode": 0,
+        "passed": true,
+        "log": "docs/verification/v144-release/2026-11-04-lifecycle-combination/build.log",
+        "executedAfterIsolatedRunnersExited": true,
+        "sourceHashes": {
+          "scripts/verify-model-provider-fixture.mjs": "cbaca4b263e0bbde0a64b83993d5aa8fcc51e00dda03730d6c3585030a24be18",
+          "scripts/verify-v144-release-combination.mjs": "50ec29f394b95c225c4f8cffce4e98126abfc7f8fdb7575a53661d4eef6cd38d",
+          "scripts/verify-v144-release-combination-scenario.mjs": "eab94706b75fd113aa76824ef54c3d06b05d8d6549bc62d3ec3652dc15ecd9f9"
+        },
+        "logPresentation": "持久化文本日志仅统一换行、行尾空白和缩进；保留命令、构建输出及退出码。"
+      }
+    },
+    "review": {
+      "evidence": "docs/verification/v144-release/2026-11-04-lifecycle-combination/review.md",
+      "standardsUnresolvedHardViolations": 0,
+      "standardsUnresolvedHeuristics": 0,
+      "specDeviations": 0,
+      "scopeCreep": 0
+    },
+    "coverageLimitations": [
+      "现有公开流程不能对已完成且缺 usage 的 pending 调用补查供应商；本组合未覆盖 pending 在24小时内补齐可靠证据并转扣费。held-usage 验证的是仍运行请求的可靠完成，以及 deadline 免单后原响应迟到 usage 只补网站成本。"
+    ],
+    "nextFrontier": 14,
+    "releaseDecision": "#13 resolved，候选可进入#14受控升级；正式开放等待#15目标环境真实验收。"
   }
 }
