@@ -6,7 +6,7 @@
 
 已保存源码/数据库/runtime加密包及维护/系统配置补充包，下载至D:/Backups/IdeaStage/v144-upgrade-20261104，通过哈希与本机AES-GCM解密；现有密钥另存在C:/Users/Administrator/.ideastage-recovery/backup.key，两个目录ACL仅Administrators/SYSTEM。本机随机隔离恢复22表/22迁移及空业务，演练库/临时配置/验收明文已清理；不能声称登录和正文恢复通过。KeePass本轮未解锁，目标机旧MYSQL_ADMIN凭据失效，迁移账号正常。
 
-候选production-check仅因真实RESEND_API_KEY和EMAIL_FROM缺失返回1，属于#14启动阻断；#15仍负责真实收信。管理员沿用3037116719@qq.com，但目标库无账号且白名单未配置；服务器live密钥/微信尚缺，本机已有官方模型配置。旧备份专项在附带旧AI入口因缺少生成操作标识提前失败（2通过/1失败、外部请求0），没有进入备份断言，不列通过。本轮模型费用/资金操作0。见[证据](docs/verification/v144-production-upgrade.md)与[继续执行单](docs/v144-production-upgrade-runbook.md)。下一步运营者私下补真实邮件字段，预检成功后落实受限入口、刷新备份及恢复、继续迁移验收。
+候选production-check仅因真实RESEND_API_KEY和EMAIL_FROM缺失返回1，属于#14启动阻断；#15仍负责真实收信。管理员沿用3037116719@qq.com，但目标库无账号且白名单未配置；服务器live密钥/微信尚缺，本机已有官方模型配置。旧备份专项在附带旧AI入口因缺少生成操作标识提前失败（2通过/1失败、外部请求0），没有进入备份断言，不列通过。本轮模型费用/资金操作0。见[证据](docs/verification/v144-production-upgrade.md)与[继续执行单](docs/v144-production-upgrade-runbook.md)。下一步运营者私下补真实邮件字段，预检成功后落实受限入口、刷新备份及恢复、继续迁移验收。 双轴审查规范违反/实现缺陷/范围蔓延均0，规格仍未完成；20:20旧站与备份timer复核正常，详见上述证据中的review和final-target-state。
 
 ### 2026-11-04：#13 生命周期组合与候选收口完成，前沿推进 #14
 

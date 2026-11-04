@@ -111,5 +111,23 @@
   "pushed": false,
   "paidModelRequests": 0,
   "trueFundOperations": 0,
-  "formallyReleased": false
+  "formallyReleased": false,
+  "finalTargetState": {
+    "checkedAt": "2026-11-04T20:20:35+08:00",
+    "current": "/srv/ideastage/releases/77c7678a6ad1d6a9bc02389bfc08ba465b6345",
+    "active": "active",
+    "backupTimer": "active",
+    "health": "{\"status\":\"ok\"}\n200"
+  },
+  "reviewStatus": "completed-with-release-requirements-still-incomplete",
+  "review": {
+    "reviewedCommit": "6b68217",
+    "standardsViolations": 0,
+    "heuristicSmells": 0,
+    "specIncompleteCategories": 2,
+    "implementationDefects": 0,
+    "scopeCreep": 0,
+    "releaseAccepted": false,
+    "report": "review.md"
+  }
 }
