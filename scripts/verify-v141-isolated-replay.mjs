@@ -188,6 +188,7 @@ export async function runIsolatedReplay({ slug, title, scenarioScript, capturePr
       secrets.push(emailFixture.token);
     }
     const serviceEnv = { ...env };
+    for (const name of Object.keys(serviceEnv)) if (name.startsWith("TENCENT_SES_")) delete serviceEnv[name];
     delete serviceEnv.RESEND_API_KEY;
     delete serviceEnv.EMAIL_FROM;
     if (providerFixtureUrl) {

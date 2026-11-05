@@ -1,5 +1,14 @@
 # PROGRESS.md - 项目状态与交接
 
+### 2026-11-05：#14 改接腾讯云 SES，凭据待私下填写
+
+用户确认优先采用腾讯云 SES，已反馈 mail.ideastage.top 域名验证通过、noreply 发信地址创建完成，注册模板68248／找回模板68249审核通过，地域广州；发信专用子用户与密钥已创建并保存。上述控制台状态是用户反馈，不能当作目标机真实送达证据。已在服务器新建 /etc/ideastage/email-ses.env（root:root 0600），预填非敏感字段，两个凭据空，旧站不读取该文件；只核验旧站active和EnvironmentFiles，不重启、不改runtime、不迁移／切current。
+
+本轮基准5c219e9，风险L2。auth-email-delivery改用腾讯云官方单产品SDK，按用途选择审核模板和code变量，走即时通道；tencent-ses-config供运行与生产门禁共用，不再要求Resend。隔离回放清除腾讯云凭据，补离线专项并更新原生产门禁夹具，tsc、生产build和腾讯云离线专项8/8通过；邮箱认证首次304通过/4失败，跨十五分钟限流窗口；保留原断言复核249/0，其余未配置邮件11/0、限流84/0、退出30/0、基础回放101/0，随机库与账号已清理。证据支持窗口与累计计数不一致，未在旧提交独立复现，不声称已修复；不据此推进升级。规范/规格独立审查均0项，详细验证结果见[接入验收](docs/verification/v144-tencent-ses.md)。a209313旧候选不含本补丁，必须生成新提交候选并重做目标机构建／门禁。#14保持needs-info，未受控升级，真实邮件验收仍交#15。
+
+下一步用户在服务器 sudo nano /etc/ideastage/email-ses.env，仅私下填SecretId／SecretKey；值不进聊天／Git。代理随后只核对字段状态和权限，先刷新原配置安全副本再合入runtime，变更后备份新凭据。详见[配置记录](docs/tencent-ses-setup.md)和[升级执行单](docs/v144-production-upgrade-runbook.md)。本轮没有真实邮件／模型调用、资金操作或push。
+
+
 ### 2026-11-04：#14 升级准备完成，真实邮件配置阻断切换
 
 用户调用implement执行#14，基准fceab832。目标机与远端实际HEAD均77c7676；精确候选a209313通过bundle放入新发行目录，目标机npm ci、build、tsc及权限收口通过，未push。旧站仍active、health200，正式库22迁移，账号/项目/文件均0。未迁移/切current/启用恢复timer，#14设needs-info，前沿仍#14，不作受控验收就绪结论。

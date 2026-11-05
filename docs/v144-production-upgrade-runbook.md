@@ -1,17 +1,17 @@
 # v1.44 #14 本次升级执行单
 
-2026-11-04。候选a20931375da54551ee348dfa983a5271830c31ad已在目标机同名releases目录构建。**下列继续升级步骤尚未执行。** 当前状态见[记录](verification/v144-production-upgrade.md)。没有真实邮件配置时不得停站、迁移或切换。
+2026-11-05 更新。此前候选 a20931375da54551ee348dfa983a5271830c31ad 已在目标机构建，但不含本次腾讯云 SES 接入。后续须纳入邮件补丁生成新精确候选、重新构建与离线预检，不沿用旧候选的通过结论。**下列继续升级步骤尚未执行。** 当前状态见[记录](verification/v144-production-upgrade.md)。没有真实邮件配置时不得停站、迁移或切换。
 
 ## 1. 私下补齐运行配置
 
-运营者在已有服务器SSH终端执行 sudoedit /etc/ideastage/runtime.env，保留原字段，仅新增/更新真实RESEND_API_KEY及服务商已经验证的EMAIL_FROM。不要将真实密钥发到聊天/Git，不填占位值，文件保持root:root 0600。若发信身份尚未验证，先在既有服务中完成验证，不自动购买服务。填写后代理只核对状态和权限，真实收信交#15。
+用户已选择腾讯云 SES，广州，注册模板 68248、找回模板 68249，发信地址 noreply@mail.ideastage.top；用户确认域名和模板已验证／审核通过。详见[接入记录](tencent-ses-setup.md)。运营者先在独立暂存文件 /etc/ideastage/email-ses.env 私下填写专用子用户 SecretId、SecretKey；其余非敏感字段已预填，root:root 0600。旧站不读取该文件。代理核对字段状态与权限，刷新安全副本后再保留原 runtime 字段合入 SES 配置；不再要求 RESEND_API_KEY。真实收信交 #15。
 
 代理在配置变化前后保存加密及服务器外副本，从本机已有官方配置安全注入live密钥/API地址/模型，设置ADMIN_EMAILS=3037116719@qq.com，不重复询问管理员身份。维护密码不得合入runtime。真实微信交#15，未配置时联系充值未开放。
 
-在候选目录执行以下离线检查，不连接数据库或调用邮件/模型，必须退出0才可继续：
+先将 RELEASE_DIR 设置为已核实的新候选绝对目录，执行以下离线检查，不连接数据库或调用邮件/模型，必须退出0才可继续：
 
 ~~~bash
-cd /srv/ideastage/releases/a20931375da54551ee348dfa983a5271830c31ad
+cd "${RELEASE_DIR:?请先设置已核实的新候选发行目录}"
 sudo /usr/bin/node --import tsx scripts/production-check.ts --env /etc/ideastage/runtime.env
 ~~~
 

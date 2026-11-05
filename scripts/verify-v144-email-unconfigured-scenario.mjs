@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 let pass = 0, fail = 0; const assertions = [];
 function check(name, okay) { assertions.push({name, okay}); console.log((okay ? "✅ " : "❌ ") + name); if (okay) pass++; else fail++; }
 try {
- if (!/^v141_replay_[a-f0-9]{16}$/.test(process.env.MYSQL_DATABASE ?? "") || process.env.V144_EMAIL_TEST_URL || process.env.RESEND_API_KEY) throw Error("必须关闭替身且清除真实邮件配置");
+ if (!/^v141_replay_[a-f0-9]{16}$/.test(process.env.MYSQL_DATABASE ?? "") || process.env.V144_EMAIL_TEST_URL || process.env.RESEND_API_KEY || process.env.TENCENT_SES_SECRET_ID || process.env.TENCENT_SES_SECRET_KEY) throw Error("必须关闭替身且清除真实邮件配置");
  const email = "unconfigured-" + randomUUID() + "@test.local";
  async function post(path, body) { return fetch(process.env.BASE_URL + path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }); }
  const sent = await post("/api/auth/email-code", { email, purpose: "register" }); const data = await sent.json();
