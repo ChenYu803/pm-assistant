@@ -141,3 +141,9 @@
 本人确认充值微信lh339683页面正确、2000测试赠送到账及对话正常。生产只读账本核对1个stage_chat请求，实际模型deepseek-flash、可靠输入1875/输出17，官方价格API成本0.001943 CNY；预留313.812、结算3.886、释放309.926，余额1996.114、冻结0，赠送/预留/结算/释放各1笔，无重复或pending。业务状态可持久读取。模型UTC字符串与积分本地DATETIME的探针解释见`normal-chat-time-conventions.json`，未修改时区或生产数据。
 
 累计保守计提0.011943 CNY，200 CNY预算保守余量199.988057；非精确账单/供应商余额。发行仍33df4878d3a2a30b2e9621211410cfb4a6fd27ab，本地仅补文档，未push、未切版、未解除公网限制。见`docs/verification/v144-live-acceptance-20261106/normal-chat-accounting-check.json`。主动停止及润色等剩余验收继续；现有已验证全量备份生成于赠送与调用前，不含新增业务，待样本批量完成后刷新并核验异地副本，不以本次只读查询声称恢复通过。
+
+### 2026-11-06：#15主动停止后账目与完整加密副本
+
+目标请求主动停止已记录，但缺最终usage，预留317.088、可用1679.026，无新正式扣分；真实费用未知，暂停后续付费样本。分钟恢复timer active且最近执行成功，到期规则及时间见`docs/verification/v144-live-acceptance-20261106/stop-accounting-check.json`。本地修复输入框残留尚未部署，线上发行未变。
+
+已启动既有backup.service刷新停止后的完整包，下载并用独立本机密钥认证解密通过，四成员完整；文件为`D:/Backups/IdeaStage/v144-live-acceptance-20261106/2026-11-06T14-47-13-123Z-8e7bdd17.isb`，SHA-256 `565ed08ba5c1919224aa48f52b6b2936d00f2efc3955c9a9fdcbf711dbcdcdfe`，元数据源码33df4878d3a2a30b2e9621211410cfb4a6fd27ab。新包未重复隔离库恢复，复用既有#14工具恢复证据，不声称新增业务恢复已实测。详细下载、哈希、解密及边界见`docs/verification/v144-live-acceptance-20261106/post-stop-backup-verification.json`。未清库、切版、push或解除公网限制。

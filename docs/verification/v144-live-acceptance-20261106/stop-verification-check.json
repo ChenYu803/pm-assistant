@@ -1,0 +1,40 @@
+{
+  "checkedAt": "2026-11-06T15:09:54.621Z",
+  "jsonFilesParsed": 24,
+  "files": [
+    "backup-verification.json",
+    "business-baseline.json",
+    "composer-draft-verification.json",
+    "config-backup-before.json",
+    "config-precheck.json",
+    "contact-change.json",
+    "contact-runtime-check.json",
+    "controlled-entry-status.json",
+    "next-application-check.json",
+    "next-stop-check.json",
+    "normal-chat-accounting-check.json",
+    "normal-chat-ledger-check.json",
+    "normal-chat-time-conventions.json",
+    "normal-chat-user-confirmation.json",
+    "official-pricing-check.json",
+    "official-protocol-check.json",
+    "password-recovery-confirmation.json",
+    "post-password-recovery-check.json",
+    "post-stop-backup-verification.json",
+    "sample-plan.json",
+    "stop-accounting-check.json",
+    "stop-ledger-check.json",
+    "stop-recovery-timer-check.json",
+    "stop-user-confirmation.json"
+  ],
+  "checksPassed": [
+    "主动停止与null用量/费用状态一致",
+    "仅新增预留、无正式扣分或释放",
+    "BigInt八位小数余额及预留复算",
+    "24小时UTC及北京时间规则一致",
+    "新增未知费用使当前可信预算余量为null，2/4请求并暂停",
+    "JSON解析及密钥特征脱敏检查"
+  ],
+  "typecheckEvidence": "composer-draft-verification.json",
+  "paidRequestsAddedByVerification": 0
+}

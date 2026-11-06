@@ -1,0 +1,7 @@
+{
+  "systemctlShow": "NextElapseUSecRealtime=Fri 2026-11-06 22:49:00 CST\nLastTriggerUSec=Fri 2026-11-06 22:48:00 CST\nResult=success\nId=ideastage-usage-recovery.timer\nActiveState=active\nSubState=waiting\n\nResult=success\nExecMainStatus=0\nId=ideastage-usage-recovery.service\nActiveState=inactive\nSubState=dead",
+  "deadlineAdvance": false,
+  "manualRecoveryRun": false,
+  "readOnly": true,
+  "checkedAt": "2026-11-06T14:48:47.0827445Z"
+}

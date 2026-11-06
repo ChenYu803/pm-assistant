@@ -1,0 +1,39 @@
+{
+  "recordedAt": "2026-11-06T15:07:36.566Z",
+  "source": "UI修复子代理实际工具执行结果；原始输出保留于会话工具记录，未落独立原始日志文件",
+  "agentId": "01a1b14c-2899-75a3-83db-0f209813f930",
+  "risk": "L1",
+  "testScript": "scripts/verify-v144-composer-draft.mjs",
+  "harness": "React renderer挂载真实ProductIterationWorkbench；替换网络和子组件，运行真实提交/停止/流解析/会话切换",
+  "baseline": {
+    "revision": "f35c4f2",
+    "command": "node scripts/verify-v144-composer-draft.mjs --revision=f35c4f2",
+    "exitCode": 1,
+    "passed": 7,
+    "failed": 8,
+    "reproduction": "主动停止后仍残留4050字原提示"
+  },
+  "fixed": {
+    "command": "node scripts/verify-v144-composer-draft.mjs",
+    "exitCode": 0,
+    "passed": 15,
+    "failed": 0,
+    "approximateRuntimeSeconds": 2
+  },
+  "typecheck": {
+    "command": "npx tsc --noEmit",
+    "exitCode": 0
+  },
+  "nextGuidesRead": [
+    "node_modules/next/dist/docs/01-app/03-api-reference/01-directives/use-client.md",
+    "node_modules/next/dist/docs/01-app/02-guides/testing/vitest.md"
+  ],
+  "temporaryRendererDependency": "react-test-renderer@19.2.8，按验证脚本头部命令安装于系统临时目录，未改package.json/lock",
+  "productionDeployed": false,
+  "browserAcceptancePerformed": false,
+  "paidRequestsAdded": 0,
+  "limitations": [
+    "接纳核对采用新用户消息ID与相同正文；跨设备同会话并发相同正文未覆盖",
+    "历史读取不可用且结果不明时保留草稿等待后续核对"
+  ]
+}

@@ -1,0 +1,376 @@
+{
+  "checkedAt": "2026-11-06T14:40:07.413Z",
+  "readOnly": true,
+  "release": "33df4878d3a2a30b2e9621211410cfb4a6fd27ab",
+  "timestampReadMethod": "dateStrings=true，model_requests按UTC字符串、积分created_at/settled_at按Asia/Shanghai存储，未做Date转换",
+  "counts": {
+    "users": 1,
+    "projects": 1,
+    "project_files": 0,
+    "model_requests": 2,
+    "conversation_credit_calls": 2,
+    "credit_sources": 1,
+    "credit_entries": 5
+  },
+  "models": [
+    {
+      "id": "f1b32761-e3c8-4ac0-843a-102c76febf34",
+      "purpose": "stage_chat",
+      "project_id": "674d89ad-20c5-44bf-9499-bfbbdd89fdd8",
+      "session_id": "d460080f-1d5e-4b70-961b-8b9fce637ab5",
+      "file_id": null,
+      "requested_model": "deepseek-v4-flash",
+      "max_output_tokens": 16384,
+      "transport": "stream",
+      "actual_model": "deepseek-flash",
+      "provider_id": "d27055a6-2195-4e47-bc22-6376bb34a013",
+      "upstream_request_id": null,
+      "started_at": "2026-11-06 14:07:09.311",
+      "ended_at": "2026-11-06 14:07:10.434",
+      "deadline_at": "2026-11-06 14:18:09.311",
+      "stop_requested_at": null,
+      "status": "completed",
+      "finish_reason": "stop",
+      "error_code": null,
+      "usage_status": "reliable",
+      "usage_json": {
+        "total_tokens": 1892,
+        "prompt_tokens": 1875,
+        "reasoning_tokens": 13,
+        "completion_tokens": 17,
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 1875
+      },
+      "price_json": {
+        "end": {
+          "peak": false,
+          "model": "deepseek-flash",
+          "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
+          "version": "deepseek-flash-cny-2026-11-03",
+          "currency": "CNY",
+          "verifiedAt": "2026-11-03",
+          "outputPerMillion": "4",
+          "inputHitPerMillion": "0.02",
+          "inputMissPerMillion": "1"
+        },
+        "rule": "same_price_window_only",
+        "start": {
+          "peak": false,
+          "model": "deepseek-flash",
+          "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
+          "version": "deepseek-flash-cny-2026-11-03",
+          "currency": "CNY",
+          "verifiedAt": "2026-11-03",
+          "outputPerMillion": "4",
+          "inputHitPerMillion": "0.02",
+          "inputMissPerMillion": "1"
+        },
+        "fixture": false,
+        "official": true,
+        "usageValidated": true,
+        "windowConfirmed": true
+      },
+      "cost_cny": "0.00194300",
+      "cost_reason": "confirmed",
+      "website_borne": 0
+    },
+    {
+      "id": "f72654ce-4521-4770-abea-7869ad117d20",
+      "purpose": "stage_chat",
+      "project_id": "674d89ad-20c5-44bf-9499-bfbbdd89fdd8",
+      "session_id": "d460080f-1d5e-4b70-961b-8b9fce637ab5",
+      "file_id": null,
+      "requested_model": "deepseek-v4-flash",
+      "max_output_tokens": 16384,
+      "transport": "stream",
+      "actual_model": "deepseek-flash",
+      "provider_id": "5e942edf-873b-4038-8703-aa4511c34cbf",
+      "upstream_request_id": null,
+      "started_at": "2026-11-06 14:35:50.162",
+      "ended_at": "2026-11-06 14:36:07.223",
+      "deadline_at": "2026-11-06 14:46:50.162",
+      "stop_requested_at": "2026-11-06 14:36:07.216",
+      "status": "stopped",
+      "finish_reason": null,
+      "error_code": "user_stop",
+      "usage_status": "pending",
+      "usage_json": null,
+      "price_json": {
+        "end": {
+          "peak": false,
+          "model": "deepseek-flash",
+          "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
+          "version": "deepseek-flash-cny-2026-11-03",
+          "currency": "CNY",
+          "verifiedAt": "2026-11-03",
+          "outputPerMillion": "4",
+          "inputHitPerMillion": "0.02",
+          "inputMissPerMillion": "1"
+        },
+        "rule": "same_price_window_only",
+        "start": {
+          "peak": false,
+          "model": "deepseek-flash",
+          "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
+          "version": "deepseek-flash-cny-2026-11-03",
+          "currency": "CNY",
+          "verifiedAt": "2026-11-03",
+          "outputPerMillion": "4",
+          "inputHitPerMillion": "0.02",
+          "inputMissPerMillion": "1"
+        },
+        "fixture": false,
+        "official": true,
+        "usageValidated": true,
+        "windowConfirmed": true
+      },
+      "cost_cny": null,
+      "cost_reason": "usage_unconfirmed",
+      "website_borne": 0
+    }
+  ],
+  "calls": [
+    {
+      "id": "f1b32761-e3c8-4ac0-843a-102c76febf34",
+      "request_key": "38cd312f-2047-4dd5-bf02-7834070270e5",
+      "message_id": "de909386-1120-46f0-8bb5-33e4ed2a2ab0",
+      "session_id": "d460080f-1d5e-4b70-961b-8b9fce637ab5",
+      "state": "settled",
+      "reserved": "313.81200000",
+      "consumed": "3.88600000",
+      "budget_json": {
+        "price": {
+          "inputPerMillion": "2",
+          "outputPerMillion": "8"
+        },
+        "method": "v4-utf8-bpe-chat-envelope-v1",
+        "reserved": "313.812",
+        "inputDigest": "f1952d29f5cd687dd5904380e8983107e23213d66d9a1230ca4caa7bc2a6e3a5",
+        "inputTokenBound": 12917,
+        "maxOutputTokens": 16384
+      },
+      "created_at": "2026-11-06 22:07:09.315",
+      "settled_at": "2026-11-06 22:07:10.461",
+      "pending_since": null,
+      "reason": "confirmed"
+    },
+    {
+      "id": "f72654ce-4521-4770-abea-7869ad117d20",
+      "request_key": "80df04c9-0b0c-4ab0-a404-ee738c3db593",
+      "message_id": "01a186ff-8999-45e9-81bf-d011d2b17898",
+      "session_id": "d460080f-1d5e-4b70-961b-8b9fce637ab5",
+      "state": "pending",
+      "reserved": "317.08800000",
+      "consumed": null,
+      "budget_json": {
+        "price": {
+          "inputPerMillion": "2",
+          "outputPerMillion": "8"
+        },
+        "method": "v4-utf8-bpe-chat-envelope-v1",
+        "reserved": "317.088",
+        "inputDigest": "24c06e43a3f8ebfd96c3f8e3d577fee312477fe97462e8534fb584e871632cf6",
+        "inputTokenBound": 13736,
+        "maxOutputTokens": 16384
+      },
+      "created_at": "2026-11-06 22:35:50.165",
+      "settled_at": null,
+      "pending_since": "2026-11-06 14:36:07.231",
+      "reason": "stopped_usage_unconfirmed"
+    }
+  ],
+  "sources": [
+    {
+      "id": "ccea71c0-63a9-4c30-acfa-4a34ef286432",
+      "kind": "gift",
+      "business_type": "admin_grant",
+      "business_reference": "8e2cb14c-6b77-466e-bfa4-93c8d2e72ee0",
+      "original_credits": "2000.00000000",
+      "available": "1679.02600000",
+      "reserved": "317.08800000",
+      "paid_rmb": null
+    }
+  ],
+  "entries": [
+    {
+      "id": "8e2cb14c-6b77-466e-bfa4-93c8d2e72ee0",
+      "request_id": "ba3976b0-fdf3-4ccc-9414-f446ffb00373",
+      "business_type": "admin_grant",
+      "amount": "2000.00000000",
+      "source_kind": "gift",
+      "balance_before": {
+        "gift": {
+          "reserved": "0",
+          "available": "0"
+        },
+        "purchased": {
+          "reserved": "0",
+          "available": "0"
+        }
+      },
+      "balance_after": {
+        "gift": {
+          "reserved": "0",
+          "available": "2000"
+        },
+        "purchased": {
+          "reserved": "0",
+          "available": "0"
+        }
+      },
+      "allocations": [
+        {
+          "amount": "2000",
+          "sourceId": "ccea71c0-63a9-4c30-acfa-4a34ef286432"
+        }
+      ],
+      "created_at": "2026-11-06 22:06:14.743"
+    },
+    {
+      "id": "517c037b-f751-496b-a5fe-0eb8a015ca4f",
+      "request_id": "f1b32761-e3c8-4ac0-843a-102c76febf34:reserve:gift",
+      "business_type": "model_reserve",
+      "amount": "0.00000000",
+      "source_kind": "gift",
+      "balance_before": {
+        "gift": {
+          "reserved": "0",
+          "available": "2000"
+        },
+        "purchased": {
+          "reserved": "0",
+          "available": "0"
+        }
+      },
+      "balance_after": {
+        "gift": {
+          "reserved": "313.812",
+          "available": "1686.188"
+        },
+        "purchased": {
+          "reserved": "0",
+          "available": "0"
+        }
+      },
+      "allocations": [
+        {
+          "kind": "gift",
+          "amount": "313.812",
+          "sourceId": "ccea71c0-63a9-4c30-acfa-4a34ef286432"
+        }
+      ],
+      "created_at": "2026-11-06 22:07:09.317"
+    },
+    {
+      "id": "3d41b602-4e80-4f9e-a11b-1a46a84dc3dc",
+      "request_id": "f1b32761-e3c8-4ac0-843a-102c76febf34:settle:gift",
+      "business_type": "model_settle",
+      "amount": "-3.88600000",
+      "source_kind": "gift",
+      "balance_before": {
+        "gift": {
+          "reserved": "313.812",
+          "available": "1686.188"
+        },
+        "purchased": {
+          "reserved": "0",
+          "available": "0"
+        }
+      },
+      "balance_after": {
+        "gift": {
+          "reserved": "309.926",
+          "available": "1686.188"
+        },
+        "purchased": {
+          "reserved": "0",
+          "available": "0"
+        }
+      },
+      "allocations": [
+        {
+          "kind": "gift",
+          "amount": "3.886",
+          "sourceId": "ccea71c0-63a9-4c30-acfa-4a34ef286432"
+        }
+      ],
+      "created_at": "2026-11-06 22:07:10.460"
+    },
+    {
+      "id": "69fcf613-ab53-4434-a790-aab7028c2539",
+      "request_id": "f1b32761-e3c8-4ac0-843a-102c76febf34:release:gift",
+      "business_type": "model_release",
+      "amount": "0.00000000",
+      "source_kind": "gift",
+      "balance_before": {
+        "gift": {
+          "reserved": "309.926",
+          "available": "1686.188"
+        },
+        "purchased": {
+          "reserved": "0",
+          "available": "0"
+        }
+      },
+      "balance_after": {
+        "gift": {
+          "reserved": "0",
+          "available": "1996.114"
+        },
+        "purchased": {
+          "reserved": "0",
+          "available": "0"
+        }
+      },
+      "allocations": [
+        {
+          "kind": "gift",
+          "amount": "309.926",
+          "sourceId": "ccea71c0-63a9-4c30-acfa-4a34ef286432"
+        }
+      ],
+      "created_at": "2026-11-06 22:07:10.460"
+    },
+    {
+      "id": "c9d26ab4-92c7-4649-abf2-d7b0e727df1a",
+      "request_id": "f72654ce-4521-4770-abea-7869ad117d20:reserve:gift",
+      "business_type": "model_reserve",
+      "amount": "0.00000000",
+      "source_kind": "gift",
+      "balance_before": {
+        "gift": {
+          "reserved": "0",
+          "available": "1996.114"
+        },
+        "purchased": {
+          "reserved": "0",
+          "available": "0"
+        }
+      },
+      "balance_after": {
+        "gift": {
+          "reserved": "317.088",
+          "available": "1679.026"
+        },
+        "purchased": {
+          "reserved": "0",
+          "available": "0"
+        }
+      },
+      "allocations": [
+        {
+          "kind": "gift",
+          "amount": "317.088",
+          "sourceId": "ccea71c0-63a9-4c30-acfa-4a34ef286432"
+        }
+      ],
+      "created_at": "2026-11-06 22:35:50.166"
+    }
+  ],
+  "clock": {
+    "database_now": "2026-11-06 22:40:07.412",
+    "database_utc": "2026-11-06 14:40:07.412",
+    "session_time_zone": "SYSTEM",
+    "system_time_zone": "CST"
+  }
+}

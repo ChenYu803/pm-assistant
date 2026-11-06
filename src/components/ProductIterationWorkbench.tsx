@@ -24,6 +24,7 @@ type Message = { creditCall?: CreditCallView; id: string; role: "user" | "assist
 type Project = { id: string; name: string };
 type Iteration = { id: string; project_id: string; iteration_number: number; display_name: string; goal: string | null };
 type FileRecord = ProjectFileEntry;
+type SubmittedDraft = { content: string; version: number; userIds: Set<string> };
 type DemoSession = { id: string; title: string; messages: ["user" | "assistant", string][] };
 
 function preferredSession(iterationId: string, stage: StageKey, entries: Session[]) {
@@ -112,6 +113,23 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
   const stoppedIds = useRef(new Set<string>());
   const liveReplies = useRef(new Map<string, { id: string; content: string }>());
   const creatingSessionRef = useRef(false);
+  const draftVersions = useRef<Record<string, number>>({});
+  const submittedDrafts = useRef(new Map<string, SubmittedDraft>());
+
+  const clearSubmittedDraft = useCallback((sessionId: string, submitted: SubmittedDraft) => {
+    if (submittedDrafts.current.get(sessionId) !== submitted) return;
+    submittedDrafts.current.delete(sessionId);
+    // 接纳只消费发送时的草稿；迟到响应不能清掉后来编辑过的内容（包括同文重写）。
+    setDrafts((previous) => draftVersions.current[sessionId] === submitted.version && previous[sessionId] === submitted.content
+      ? { ...previous, [sessionId]: "" } : previous);
+  }, []);
+
+  const reconcileSubmittedDraft = useCallback((sessionId: string, history: Message[]) => {
+    const submitted = submittedDrafts.current.get(sessionId);
+    if (submitted && history.some((message) => message.role === "user" && !submitted.userIds.has(message.id) && message.content === submitted.content)) {
+      clearSubmittedDraft(sessionId, submitted);
+    }
+  }, [clearSubmittedDraft]);
 
   const currentInfo = stageInfo.find((stage) => stage.key === currentStage) ?? stageInfo[0];
   const activeSession = sessions.find((session) => session.id === activeSessionId) ?? null;
@@ -270,6 +288,8 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
         request(`${base}/stages/${currentStage}/sessions/${sessionId}/messages`),
         request(`${base}/stages/${currentStage}/sessions/${sessionId}/context`),
       ]);
+      // 即使用户已切走，也只核对并清理原会话已接纳的草稿。
+      reconcileSubmittedDraft(sessionId, history.messages);
       if (requestSequence !== loadSequence.current || activeView.current.sessionId !== sessionId || activeView.current.stage !== currentStage) return;
       const liveReply = liveReplies.current.get(sessionId);
       if (liveReply) {
@@ -287,7 +307,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
     } finally {
       if (requestSequence === loadSequence.current) setMessagesLoading(false);
     }
-  }, [base, currentStage, request]);
+  }, [base, currentStage, request, reconcileSubmittedDraft]);
 
   useEffect(() => {
     if (!activeSessionId || messagesLoading) return;
@@ -298,6 +318,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
       const startedAtMessageVersion = messageVersion.current;
       try {
         const history = await request(`${base}/stages/${currentStage}/sessions/${activeSessionId}/messages`);
+        reconcileSubmittedDraft(activeSessionId, history.messages);
         if (activeView.current.sessionId !== activeSessionId || activeView.current.stage !== currentStage) return;
         if (sendingIds.current.has(activeSessionId)) {
           // 本地流式正文优先；仍同步服务端的本次预留，避免生成中只看到账号合计。
@@ -316,7 +337,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
     if (!sessionGenerating) return;
     const timer = window.setInterval(() => { void refresh(); }, 1000);
     return () => window.clearInterval(timer);
-  }, [activeSessionId, base, currentStage, messagesLoading, request, sessionGenerating]);
+  }, [activeSessionId, base, currentStage, messagesLoading, request, sessionGenerating, reconcileSubmittedDraft]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => { void loadMessages(activeSessionId); }, 0);
@@ -513,6 +534,9 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
     const sessionId = activeSessionId;
     const stage = currentStage;
     const storageKey = "stage-generation-request:" + sessionId;
+    const submitted = !editMessageId && !regenerateMessageId
+      ? { content, version: draftVersions.current[sessionId] ?? 0, userIds: new Set(messages.filter((message) => message.role === "user").map((message) => message.id)) }
+      : null;
     sendingIds.current.add(sessionId);
     stoppedIds.current.delete(sessionId);
     setSendingSessionIds([...sendingIds.current]);
@@ -522,6 +546,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
       const saved = JSON.parse(sessionStorage.getItem(storageKey) || "null") as { identity: string; requestId: string } | null;
       const requestId = saved?.identity === identity ? saved.requestId : crypto.randomUUID();
       sessionStorage.setItem(storageKey,JSON.stringify({identity,requestId}));
+      if (submitted) submittedDrafts.current.set(sessionId, submitted);
       let latestMessages: Message[] = [];
       if (editMessageId) {
         await streamGeneration(`${base}/sessions/${sessionId}/messages/${editMessageId}`, {
@@ -545,7 +570,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
         }
       }
       sessionStorage.removeItem(storageKey);
-      if (!editMessageId && !regenerateMessageId) setDrafts((previous) => ({ ...previous, [sessionId]: "" }));
+      if (submitted) clearSubmittedDraft(sessionId, submitted);
       if (stage === "prototype") {
         const latest = [...latestMessages].reverse().find((message) => message.role === "assistant" && message.status === "completed");
         if (latest?.content.includes("%%%HTML_BEGIN%%%") && activeView.current.stage === stage && activeView.current.sessionId === sessionId) {
@@ -706,7 +731,11 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
           {currentStage === "tickets" && activeSessionId && !selectedDemo && currentStatus !== "completed" && !sessionGenerating ? <TaskSetManualProposal key={activeSessionId} iterationId={iteration.id} sessionId={activeSessionId} onCreated={() => refreshCandidateState(activeSessionId, currentStage)} /> : null}
           <form className="workbench-composer" onSubmit={(event) => { event.preventDefault(); void sendMessage(input); }}>
             <button className="composer-context-button" type="button" onClick={() => { setContextTab("context"); openContextPanel(); }}>当前上下文 · {loadedFiles.length} 个文件</button>
-            <textarea value={input} onChange={(event) => { if (activeSessionId) setDrafts((previous) => ({ ...previous, [activeSessionId]: event.target.value })); }} disabled={!activeSession || sessionGenerating || currentStatus === "completed" || Boolean(selectedDemo) || messagesLoading || messagesFailed} placeholder={selectedDemo ? "演示会话为只读" : currentStatus === "completed" ? "重新打开阶段后可继续讨论" : messagesFailed ? "重新加载会话后可继续讨论" : activeSession ? "写下你现在想讨论的问题或判断……" : "开始本阶段工作后即可发送消息"} aria-label="输入消息"/>
+            <textarea value={input} onChange={(event) => { if (activeSessionId) {
+              const value = event.target.value;
+              draftVersions.current[activeSessionId] = (draftVersions.current[activeSessionId] ?? 0) + 1;
+              setDrafts((previous) => ({ ...previous, [activeSessionId]: value }));
+            } }} disabled={!activeSession || currentStatus === "completed" || Boolean(selectedDemo) || messagesLoading || messagesFailed} placeholder={selectedDemo ? "演示会话为只读" : currentStatus === "completed" ? "重新打开阶段后可继续讨论" : messagesFailed ? "重新加载会话后可继续讨论" : activeSession ? "写下你现在想讨论的问题或判断……" : "开始本阶段工作后即可发送消息"} aria-label="输入消息"/>
             <div>{sessionGenerating ? <button className="stop-generation-button" type="button" disabled={stoppingGeneration} onClick={() => void stopGeneration()}>{stoppingGeneration ? "正在停止…" : "停止生成"}</button> : null}<button type="submit" disabled={!activeSession || !input.trim() || sessionGenerating || currentStatus === "completed" || messagesLoading || messagesFailed}>{sending ? "发送中…" : "发送消息"}</button></div>
           </form>
         </section>

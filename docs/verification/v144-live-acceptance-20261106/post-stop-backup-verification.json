@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-11-06T15:07:36.565Z",
+  "name": "2026-11-06T14-47-13-123Z-8e7bdd17.isb",
+  "createdAt": "2026-11-06T14:47:11.940Z",
+  "indexRecordedAt": "2026-11-06T14:47:13.288Z",
+  "commit": "33df4878d3a2a30b2e9621211410cfb4a6fd27ab",
+  "bytes": 30405567,
+  "sha256": "565ed08ba5c1919224aa48f52b6b2936d00f2efc3955c9a9fdcbf711dbcdcdfe",
+  "localPath": "D:/Backups/IdeaStage/v144-live-acceptance-20261106/2026-11-06T14-47-13-123Z-8e7bdd17.isb",
+  "generatedBy": "服务器既有ideastage-backup.service",
+  "purpose": "保存测试赠送、正常对话及主动停止后的业务状态；未切版或更改业务账本",
+  "downloadMethod": "整包超时后以4个并发SSH连接分段读取同一个不可变加密包，拼接后核对完整SHA-256",
+  "downloaded": true,
+  "sha256Verified": true,
+  "authenticatedDecryptionPassed": true,
+  "independentKeyPath": "C:/Users/Administrator/.ideastage-recovery/backup.key",
+  "archiveMembersVerified": [
+    "database.sql",
+    "runtime.env",
+    "metadata.json",
+    "source.tar"
+  ],
+  "inspectCommand": "node --import tsx scripts/production-backup.ts inspect --file <本机加密包> --key <独立本机密钥>",
+  "fullDatabaseRestoreRepeated": false,
+  "restorationEvidenceReused": "docs/verification/v144-tencent-ses/20261106/isolated-login-user-confirmation.json",
+  "restorationLimitation": "新包通过哈希、认证解密、四成员及元数据检查，未对新包重复隔离库恢复；不把旧恢复证据扩大为新业务恢复验证",
+  "plaintextRetained": false
+}

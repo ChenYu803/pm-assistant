@@ -1,0 +1,37 @@
+{
+  "recordedAt": "2026-11-06T14:54:44.057Z",
+  "ledgerEvidence": "stop-ledger-check.json",
+  "userEvidence": "stop-user-confirmation.json",
+  "requestId": "f72654ce-4521-4770-abea-7869ad117d20",
+  "applicationStopConfirmed": true,
+  "status": "stopped",
+  "errorCode": "user_stop",
+  "stopRequestedAtUtc": "2026-11-06T14:36:07.216Z",
+  "endedAtUtc": "2026-11-06T14:36:07.223Z",
+  "usageStatus": "pending",
+  "reliableUsage": null,
+  "supplierCostCny": null,
+  "supplierCancellationOrBillingStopProven": false,
+  "creditState": "pending",
+  "reservedCredits": "317.088",
+  "consumedCredits": null,
+  "availableGiftCredits": "1679.026",
+  "originalGiftCredits": "2000",
+  "previousSettledCredits": "3.886",
+  "stopRequestLedgerEntries": [
+    {
+      "type": "model_reserve",
+      "amount": "0.00000000"
+    }
+  ],
+  "newFormalDebit": false,
+  "pendingSinceUtc": "2026-11-06T14:36:07.231Z",
+  "deadlineUtc": "2026-11-07T14:36:07.231Z",
+  "deadlineBeijing": "2026-11-07T22:36:07.231+08:00",
+  "deadlineMeaning": "规则预计：超过24小时仍无可靠用量则免单释放，由恢复调度执行；尚未实际到期或释放",
+  "recoveryTimerEvidence": "stop-recovery-timer-check.json",
+  "backupEvidence": "post-stop-backup-verification.json",
+  "acceptanceResult": "主动停止登记及缺用量待核对保护有真实证据；可靠停止计量与供应商停止计费未通过",
+  "furtherPaidSamplesPaused": true,
+  "estimateUsedForCharging": false
+}

@@ -1,6 +1,6 @@
 {
   "recordedAt": "2026-11-06T14:22:02.347Z",
-  "status": "待用户本人执行，尚未调用",
+  "status": "已执行一次，停止已登记但最终用量缺失；勿重复执行",
   "applicationRequests": 1,
   "automaticRetry": false,
   "goal": "核对主动停止后的应用状态、可靠usage、成本与积分；不以浏览器取消证明供应商取消计费",
@@ -17,5 +17,8 @@
     "可靠usage、实际模型、价格和API成本；缺失费用不按零处理",
     "积分最终状态、冻结/释放、持久化可读取"
   ],
-  "browserControlBoundary": "此前自动审批拒绝代理启动浏览器；不重试绕过、不读取Cookie或索取验证码密码，网页点击由本人完成"
+  "browserControlBoundary": "此前自动审批拒绝代理启动浏览器；不重试绕过、不读取Cookie或索取验证码密码，网页点击由本人完成",
+  "resultEvidence": "stop-accounting-check.json",
+  "completedByUser": true,
+  "furtherPaidSamplesPaused": true
 }

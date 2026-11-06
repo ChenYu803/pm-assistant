@@ -33,7 +33,8 @@
       "input": "同一受控测试账号，仅一次生成",
       "maxOutputTokens": 16384,
       "expectation": "主动停止后区分页面反馈、应用停止、供应商最终计量；缺usage保留待核对不记零",
-      "status": "not-performed"
+      "status": "performed-pending-usage",
+      "evidence": "stop-accounting-check.json"
     }
   ],
   "prerequisites": [
@@ -41,23 +42,33 @@
     "以有记录测试赠送取得额度，不操作真实购买或退款",
     "调用前核对实际输入与冻结量；上一正常请求已结算且无冻结；停止样本若缺usage保留待核对，暂停后续样本"
   ],
-  "performedRequests": 1,
-  "progressEvidence": "normal-chat-accounting-check.json",
-  "latestProgressAt": "2026-11-06T14:22:02.344Z",
+  "performedRequests": 2,
+  "progressEvidence": "stop-accounting-check.json",
+  "latestProgressAt": "2026-11-06T14:54:44.059Z",
   "currentBudget": {
     "historicalProvisionCny": "0.01",
     "roundConfirmedCostCny": "0.001943",
     "cumulativeConservativeProvisionCny": "0.011943",
     "cumulativeBudgetCny": "200",
-    "conservativeRemainingCny": "199.988057",
+    "conservativeRemainingCny": null,
     "roundOperationalCapCny": "1",
-    "roundOperationalRemainingCny": "0.998057",
-    "performedRequests": 1,
+    "roundOperationalRemainingCny": null,
+    "performedRequests": 2,
     "maximumRequests": 4,
-    "remainingRequests": 3,
+    "remainingRequests": 2,
     "isSupplierBalance": false,
     "isExactHistoricalBill": false,
-    "unknownHistoricalPerRequestCostsIncludedInProvision": true
+    "unknownHistoricalPerRequestCostsIncludedInProvision": true,
+    "lastKnownOnlyBalanceCny": "199.988057",
+    "lastConfirmedOnlyOperationalBalanceCny": "0.998057",
+    "unconfirmedRequestCount": 1,
+    "unconfirmedRequestIds": [
+      "f72654ce-4521-4770-abea-7869ad117d20"
+    ],
+    "unknownNewCostExcludedFromKnownProvision": true,
+    "currentBalanceExplanation": "已知累计计提仍为0.011943 CNY；新停止请求费用未知，199.988057及0.998057均未扣除此笔，不能作为当前可信余额；317.088积分预留不是供应商实际费用或已证明硬上界"
   },
-  "nextSample": "chat-stop"
+  "nextSample": null,
+  "executionState": "paused-unconfirmed-cost",
+  "resumeCondition": "先处理主动停止缺失最终用量的计量限制，再安排剩余应用样本；不自动重试"
 }
