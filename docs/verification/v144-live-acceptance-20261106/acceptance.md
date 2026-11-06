@@ -22,7 +22,13 @@
 
 自动审批分别拒绝“启动通道与可调试专用Chrome”的组合操作、去掉调试后的普通Chrome启动；未给出更具体原因，因此不能归因为缺少调试权限。未绕过拒绝、未注入Cookie、未读取密码或验证码。单独建立的SSH通道已成功，只绑定127.0.0.1:443，回环目标站health200，不开放公网。私有进程记录在`C:/Users/Administrator/.ideastage-recovery/live-acceptance-20261106/session.json`。
 
-当前最小下一步：用户在此前注册成功所用的专用Chrome中，打开`https://ideastage.top/forgot-password`；输入原注册邮箱，获取验证码，设置新密码，再用新密码正常登录。验证码和密码只填网页，不发给代理。完成后仅反馈“找回并登录成功”，再核实充值页与目标应用样本。若旧专用浏览器已关闭，则需要本人重新打开受控入口；代理未声称浏览器已启动。
+当前最小下一步：用户在此前注册成功所用的专用Chrome中，打开`https://ideastage.top/forgot-password`；输入原注册邮箱，获取验证码，设置新密码，再用新密码正常登录。验证码和密码只填网页，不发给代理。完成后仅反馈“找回并登录成功”，再核实充值页与目标应用样本。若旧专用浏览器已关闭，用户可在本机PowerShell执行下方已有受控入口命令；不必再启动SSH通道（本轮已启动），不修改hosts、不忽略证书验证。代理未声称浏览器已启动。
+
+~~~powershell
+& "C:\Program Files\Google\Chrome\Application\chrome.exe" --user-data-dir="C:\Users\Administrator\.ideastage-recovery\v144-browser" "--host-resolver-rules=MAP ideastage.top 127.0.0.1" --no-proxy-server "https://ideastage.top/forgot-password"
+~~~
+
+此命令只供用户手动执行，不是代理绕过自动审批。若出现证书警告或403，报告错误而不跳过证书/开放公网。后续网页交互由用户本人完成，代理通过受限后台只读核对请求与账本；当前没有可合法接管的浏览器会话，不承诺登录后能自动点击页面。通道有意保留供这一步，完成验收后按私有session.json核实进程身份再关闭，不终止其他SSH进程。
 
 ## 计量限制与最小修正方向
 

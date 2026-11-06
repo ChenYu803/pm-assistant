@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-11-06T13:25:29.848Z",
+  "loopbackTunnelReady": true,
+  "bindAddress": "127.0.0.1",
+  "localPort": 443,
+  "tunnelHealth": 200,
+  "publicHealth": 403,
+  "privateSessionPath": "C:/Users/Administrator/.ideastage-recovery/live-acceptance-20261106/session.json",
+  "automatedBrowserLaunchApproved": false,
+  "browserLaunchAttemptResults": [
+    "组合启动被自动审批拒绝：blocked by policy",
+    "去掉调试后的Chrome启动被自动审批拒绝：blocked by policy"
+  ],
+  "browserStartedByAgent": false,
+  "reasonDetailProvided": false,
+  "userManualBrowserStepRequired": true,
+  "passwordOrCodeOrCookieCollected": false,
+  "existingManualBrowserProfile": "C:/Users/Administrator/.ideastage-recovery/v144-browser",
+  "cleanupAfterHumanAcceptance": true
+}
