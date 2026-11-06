@@ -1,12 +1,12 @@
 # v1.44 #14 本次升级执行单
 
-2026-11-06 更新。邮件补丁的新精确候选33df4878d3a2a30b2e9621211410cfb4a6fd27ab已在目标机重新安装依赖、build、tsc及离线预检通过，6项SES字段已合入runtime并完成变更前后服务器外加密副本解密核验。旧站未重启、current未切换。**第2节及之后的受控升级步骤尚未执行。** 本轮证据见[邮件接入核验](verification/v144-tencent-ses.md)，旧盘点见[记录](verification/v144-production-upgrade.md)。不得把邮件字段齐备或离线预检当作真实授权／收信通过；受限与迁移前仍须刷新最新恢复点。
+2026-11-06 13:12（Asia/Shanghai）续执行状态：已安全注入live模型及管理员配置、限制普通公网、停止旧站、完成最新备份隔离恢复、增量迁移至32项并切换到精确候选33df4878d3a2a30b2e9621211410cfb4a6fd27ab，网站active/HTTPS health200；usage-recovery真实定时触发通过。升级后加密副本亦下载解密并隔离恢复35表/32迁移。**仍未完成真实注册与登录态验收，不标受控验收就绪或resolved。** 原库无账号/项目，下一步见第4.1节；完整证据见[续执行记录](verification/v144-controlled-upgrade-20261106.md)。以下保留操作方法，已完成的迁移和备份不应盲目重跑。
 
 ## 1. 运行配置准备（邮件字段已完成）
 
 用户已选择腾讯云 SES，广州，注册模板 68248、找回模板 68249，发信地址 noreply@mail.ideastage.top；用户确认域名和模板已验证／审核通过。详见[接入记录](tencent-ses-setup.md)。SecretId／SecretKey已私下填入 /etc/ideastage/email-ses.env，并在核对字段状态、权限和变更前安全副本后合入runtime，原其余字段保留；变更后副本也已下载并认证解密。两个配置文件均root:root 0600。不再要求 RESEND_API_KEY，用户无须重复填写密钥；真实权限和收信交 #15。
 
-第1节余下待办：本轮未切换AI_MODE或注入模型密钥，也未设置管理员白名单；离线门禁允许replay，不能据此宣称live已就绪。继续前应在配置变化前后保存加密及服务器外副本，从本机已有官方配置安全注入live密钥/API地址/模型，设置ADMIN_EMAILS=3037116719@qq.com，不重复询问管理员身份。维护密码不得合入runtime。真实微信交#15，未配置时联系充值未开放。
+第1节已续执行：从本机已有配置通过SSH stdin安全注入模型密钥/API地址/模型，AI_MODE=live、ADMIN_EMAILS=3037116719@qq.com，原其余字段保留；变更前后加密副本已下载解密，网站实际进程与runtime匹配。维护密码未合入runtime。配置匹配不代表真实模型、价格或收信已验收，仍交#15；真实微信未配置，联系充值未开放。
 
 先将 RELEASE_DIR 设置为已核实的新候选绝对目录，执行以下离线检查，不连接数据库或调用邮件/模型，必须退出0才可继续：
 
@@ -41,6 +41,26 @@ sudo /usr/bin/node --import tsx scripts/production-check.ts --env /etc/ideastage
 按[调度说明](pending-usage-recovery.md)安装候选service/timer，daemon-reload、手动start、enable --now。记录真实WorkingDirectory/User/EnvironmentFile、当前提交及目标数据库，核对failed=0、Result=success、ExecMainStatus=0、下一次执行时间和一次实际定时触发。核对系统时钟同步，不推进生产时钟或故障注入。无待核对行时scanned=0仅证明调度运行，不宣称实际到期释放通过。
 
 全部完成后刷新源码/数据库/配置的加密副本，下载并解密/恢复核验，保持受限。才可将#14标为受控验收就绪，交#15继续真实收信、模型逐笔对账、200元累计预算、微信及正式开放。
+
+### 4.1 在用户电脑打开受限验收入口
+
+目的：只让用户自己的电脑通过现有SSH身份访问正式HTTPS站点，保留普通公网403。以下只建通道与打开独立浏览器，不更改服务器数据库或网站权限，不填新凭据，不修改Windows hosts。自动启动请求被本机安全策略拦截，因此这两步需用户亲自执行。
+
+1. 打开PowerShell，执行以下命令并**保持这个窗口打开**。正常会持续运行而没有输出；退出表示通道失败，应先看错误，不继续注册。
+
+~~~powershell
+ssh -N -T -i "D:\SSH_pem\IdeaStage_SSH_2026.pem" -o BatchMode=yes -o StrictHostKeyChecking=yes -o ExitOnForwardFailure=yes -L 127.0.0.1:443:127.0.0.1:443 ubuntu@101.33.79.30
+~~~
+
+2. 再打开一个PowerShell窗口，执行以下命令。它用独立Chrome配置只把本窗口的ideastage.top解析到本机SSH入口，不影响日常浏览器；仍验证正式域名的HTTPS证书，不跳过任何证书校验。
+
+~~~powershell
+& "C:\Program Files\Google\Chrome\Application\chrome.exe" --user-data-dir="C:\Users\Administrator\.ideastage-recovery\v144-browser" "--host-resolver-rules=MAP ideastage.top 127.0.0.1" --no-proxy-server "https://ideastage.top/register"
+~~~
+
+页面正常打开后，以3037116719@qq.com注册，自行设置密码、收取并填写真实验证码。密码/验证码不发聊天。注册成功后告诉代理“已注册并登录”，再由代理继续权限与登录态验收；注册成功本身不等于全部发布闸通过。
+
+成功判据：专用浏览器能在无证书警告下打开真实域名注册页，普通浏览器/公网仍403。如果端口443已被占用或出现证书警告，停止并报错误原文，不关防火墙、不忽略证书、不重复改DNS。结束验收先关闭专用Chrome，再在隧道窗口按Ctrl+C即可撤销访问；独立浏览器资料留在本机受限目录，不入Git/备份源码。
 
 ## 5. 资金事实兼容的失败恢复
 

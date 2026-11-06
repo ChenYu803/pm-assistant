@@ -1,0 +1,18 @@
+33df4878d3a2a30b2e9621211410cfb4a6fd27ab
+active
+Result=success
+ExecMainStatus=0
+EnvironmentFiles=/etc/ideastage/runtime.env (ignore_errors=no)
+WorkingDirectory=/srv/ideastage/current
+User=ideastage
+root:root 600 /etc/ideastage/runtime.env
+root:root 600 /etc/ideastage/email-ses.env
+ideastage:ideastage 750 /srv/ideastage/current/.next/cache
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+NTPSynchronized=yes
+fatal: 'origin' does not appear to be a git repository
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.

@@ -1,0 +1,104 @@
+v24.22.0
+{
+  "createdAt": "2026-11-06T05:07:49.200Z",
+  "mode": "live",
+  "base": "https://api.deepseek.com",
+  "model": "deepseek-v4-flash",
+  "administrator": "3037116719@qq.com",
+  "keyPresent": true,
+  "mailFieldsPresent": true,
+  "from": "noreply@mail.ideastage.top",
+  "allConfiguredFieldsUnique": true,
+  "testFieldNames": [],
+  "database": "ideastage",
+  "mysqlVersion": "9.7.4",
+  "migrationCount": 32,
+  "migrations": [
+    "0001_mysql_bootstrap",
+    "0002_account_project_workspace",
+    "0003_tab_operations",
+    "0004_conversation_recovery_concurrency",
+    "0005_project_artifacts",
+    "0006_explicit_freeze",
+    "0007_tab_message_mutations",
+    "0008_product_iteration_lifecycle",
+    "0009_v141_product_iterations_reset",
+    "0010_v141_retire_legacy_iteration_columns",
+    "0011_v141_iteration_workbench",
+    "0012_account_nickname",
+    "0013_v141_first_file_candidate",
+    "0014_v141_exact_file_paths",
+    "0015_v141_iteration_prototype_snapshots",
+    "0016_v141_file_edit_restore",
+    "0017_v141_file_history",
+    "0018_v141_task_folder_ownership",
+    "0019_v141_task_deleted_ownership",
+    "0020_v141_backfill_task_ownership",
+    "0021_v141_task_set_candidates",
+    "0022_v142_ai_daily_usage",
+    "0023_v144_session_manual_title",
+    "0024_v144_email_verification",
+    "0025_v144_account_controls",
+    "0026_v144_credit_ledger",
+    "0027_v144_gift_invites",
+    "0028_v144_model_requests",
+    "0029_v144_conversation_credit_calls",
+    "0030_v144_polish_generation_results",
+    "0031_v144_model_stop_requests",
+    "0032_v144_manual_refunds"
+  ],
+  "tableCount": 35,
+  "counts": {
+    "account_admin_actions": 0,
+    "agent_file_contexts": 0,
+    "ai_daily_usage": 0,
+    "auth_rate_limits": 0,
+    "conversation_credit_calls": 0,
+    "credit_entries": 0,
+    "credit_refunds": 0,
+    "credit_sources": 0,
+    "email_verifications": 0,
+    "gift_invite_admin_actions": 0,
+    "gift_invite_batches": 0,
+    "gift_invite_codes": 0,
+    "gift_invite_redemptions": 0,
+    "iteration_file_candidates": 0,
+    "iteration_session_context_files": 0,
+    "iteration_session_messages": 0,
+    "iteration_sessions": 0,
+    "iteration_stage_states": 0,
+    "iteration_task_set_candidates": 0,
+    "message_file_writes": 0,
+    "messages": 0,
+    "model_requests": 0,
+    "polish_generation_results": 0,
+    "product_iterations": 0,
+    "project_file_changes": 0,
+    "project_files": 0,
+    "projects": 0,
+    "prototype_snapshots": 0,
+    "schema_migrations": 32,
+    "tab_deletion_operations": 0,
+    "tab_operations": 0,
+    "tabs": 0,
+    "task_folders": 0,
+    "users": 0,
+    "work_records": 0
+  },
+  "appGrantDmlOnly": true
+}
+Created symlink /etc/systemd/system/timers.target.wants/ideastage-usage-recovery.timer → /etc/systemd/system/ideastage-usage-recovery.timer.
+Result=success
+ExecMainStartTimestamp=
+ExecMainStatus=0
+EnvironmentFiles=/etc/ideastage/runtime.env (ignore_errors=no)
+WorkingDirectory=/srv/ideastage/current
+User=ideastage
+NEXT                        LEFT LAST PASSED UNIT                           ACTIVATES
+Fri 2026-11-06 13:08:00 CST   9s -         - ideastage-usage-recovery.timer ideastage-usage-recovery.service
+
+1 timers listed.
+Pass --all to see loaded but inactive timers, too.
+NTPSynchronized=yes
+journalctl: unrecognized option '--no-pager
+'

@@ -1,0 +1,26 @@
+{
+  "stage": "stopped-before-migration",
+  "createdAt": "2026-11-06T05:05:22.122Z",
+  "localDirectory": "D:/Backups/IdeaStage/v144-ses-20261106",
+  "sourceCommit": "77c76768a6ad1d6a9bcc02389bfc08ba465b6345",
+  "backups": [
+    {
+      "name": "2026-11-06T05-05-16-267Z-e56b937f.isb",
+      "sha256": "c0950f849e740244a085f7ab145473ddfa7c3b7e8136f09170900194887d78e3",
+      "createdAt": "2026-11-06T05:05:16.302Z",
+      "commit": "77c76768a6ad1d6a9bcc02389bfc08ba465b6345",
+      "bytes": 6106128,
+      "authenticatedDecryption": true,
+      "requiredEntriesPresent": true
+    },
+    {
+      "name": "2026-11-06T05-05-17-939Z-stopped-before-migration-bf1090a2.isb",
+      "sha256": "e708b87567751966e2b5954013eb78b72aba972709c814b75137eeec816f5260",
+      "bytes": 3276,
+      "authenticatedDecryption": true,
+      "requiredEntriesPresent": true
+    }
+  ],
+  "plaintextFilesWritten": false,
+  "restoreTestPerformed": false
+}

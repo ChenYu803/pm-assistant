@@ -1,0 +1,26 @@
+{
+  "stage": "after-upgrade",
+  "createdAt": "2026-11-06T05:08:43.362Z",
+  "localDirectory": "D:/Backups/IdeaStage/v144-ses-20261106",
+  "sourceCommit": "33df4878d3a2a30b2e9621211410cfb4a6fd27ab",
+  "backups": [
+    {
+      "name": "2026-11-06T05-08-02-844Z-a9049f99.isb",
+      "sha256": "1ffcbaf641684b5af7157eef55479bc22077f4c742bca05822f75101d61f598f",
+      "createdAt": "2026-11-06T05:08:03.031Z",
+      "commit": "33df4878d3a2a30b2e9621211410cfb4a6fd27ab",
+      "bytes": 30400630,
+      "authenticatedDecryption": true,
+      "requiredEntriesPresent": true
+    },
+    {
+      "name": "2026-11-06T05-08-05-131Z-after-upgrade-88d8e952.isb",
+      "sha256": "9091ab1627299005884dbf06a1aead421c9256e56505d96b192158681c512999",
+      "bytes": 3576,
+      "authenticatedDecryption": true,
+      "requiredEntriesPresent": true
+    }
+  ],
+  "plaintextFilesWritten": false,
+  "restoreTestPerformed": false
+}

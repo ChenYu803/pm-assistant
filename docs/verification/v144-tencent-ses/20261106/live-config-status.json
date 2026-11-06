@@ -1,0 +1,12 @@
+{
+  "createdAt": "2026-11-06T05:03:36.036Z",
+  "mode": "live",
+  "base": "https://api.deepseek.com",
+  "model": "deepseek-v4-flash",
+  "administrator": "3037116719@qq.com",
+  "keyPresent": true,
+  "unrelatedFieldsPreserved": true,
+  "restarted": false,
+  "paidModelCall": false,
+  "officialAliasRequiresPriceReverification": true
+}

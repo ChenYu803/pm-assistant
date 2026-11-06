@@ -1,0 +1,9 @@
+✅ 数据库准备完成：MySQL 9.7.4，新增迁移 是
+✅ 生产配置离线检查通过（不代表服务器或真实模型已验收）
+✅ 数据库版本与迁移检查通过
+active
+current_commit=33df4878d3a2a30b2e9621211410cfb4a6fd27ab
+https_health=200
+MainPID=3951155
+Result=success
+ExecMainStatus=0

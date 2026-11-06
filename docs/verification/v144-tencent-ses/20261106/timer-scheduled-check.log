@@ -1,0 +1,25 @@
+NextElapseUSecRealtime=Fri 2026-11-06 13:10:00 CST
+LastTriggerUSec=Fri 2026-11-06 13:09:00 CST
+ActiveState=active
+Result=success
+ExecMainStatus=0
+EnvironmentFiles=/etc/ideastage/runtime.env (ignore_errors=no)
+WorkingDirectory=/srv/ideastage/current
+User=ideastage
+Nov 06 13:07:49 VM-0-4-ubuntu systemd[1]: Starting ideastage-usage-recovery.service - IdeaStage 待核对积分恢复与到期免单...
+Nov 06 13:07:50 VM-0-4-ubuntu node[3951427]: {"scanned":0,"failed":0}
+Nov 06 13:07:50 VM-0-4-ubuntu systemd[1]: ideastage-usage-recovery.service: Deactivated successfully.
+Nov 06 13:07:50 VM-0-4-ubuntu systemd[1]: Finished ideastage-usage-recovery.service - IdeaStage 待核对积分恢复与到期免单.
+Nov 06 13:08:00 VM-0-4-ubuntu systemd[1]: Starting ideastage-usage-recovery.service - IdeaStage 待核对积分恢复与到期免单...
+Nov 06 13:08:00 VM-0-4-ubuntu node[3952102]: {"scanned":0,"failed":0}
+Nov 06 13:08:00 VM-0-4-ubuntu systemd[1]: ideastage-usage-recovery.service: Deactivated successfully.
+Nov 06 13:08:00 VM-0-4-ubuntu systemd[1]: Finished ideastage-usage-recovery.service - IdeaStage 待核对积分恢复与到期免单.
+Nov 06 13:09:00 VM-0-4-ubuntu systemd[1]: Starting ideastage-usage-recovery.service - IdeaStage 待核对积分恢复与到期免单...
+Nov 06 13:09:00 VM-0-4-ubuntu node[3952661]: {"scanned":0,"failed":0}
+Nov 06 13:09:00 VM-0-4-ubuntu systemd[1]: ideastage-usage-recovery.service: Deactivated successfully.
+Nov 06 13:09:00 VM-0-4-ubuntu systemd[1]: Finished ideastage-usage-recovery.service - IdeaStage 待核对积分恢复与到期免单.
+fatal: detected dubious ownership in repository at '/srv/ideastage/releases/33df4878d3a2a30b2e9621211410cfb4a6fd27ab'
+To add an exception for this directory, call:
+
+	git config --global --add safe.directory /srv/ideastage/releases/33df4878d3a2a30b2e9621211410cfb4a6fd27ab
+NTPSynchronized=yes

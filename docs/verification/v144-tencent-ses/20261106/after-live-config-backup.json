@@ -1,0 +1,26 @@
+{
+  "stage": "after-live-config",
+  "createdAt": "2026-11-06T05:04:01.289Z",
+  "localDirectory": "D:/Backups/IdeaStage/v144-ses-20261106",
+  "sourceCommit": "77c76768a6ad1d6a9bcc02389bfc08ba465b6345",
+  "backups": [
+    {
+      "name": "2026-11-06T05-03-38-767Z-86762832.isb",
+      "sha256": "422d2a719e92fd2f6c5267b5d0e3acc816cc4207c4fdb59428901cbc61c09f69",
+      "createdAt": "2026-11-06T05:03:38.804Z",
+      "commit": "77c76768a6ad1d6a9bcc02389bfc08ba465b6345",
+      "bytes": 6106120,
+      "authenticatedDecryption": true,
+      "requiredEntriesPresent": true
+    },
+    {
+      "name": "2026-11-06T05-03-40-585Z-after-live-config-c0d2a2cb.isb",
+      "sha256": "768f8c095b42ff81e5af8f7a26807d9462cf40ec93e4e878797a97101d52f9ac",
+      "bytes": 3148,
+      "authenticatedDecryption": true,
+      "requiredEntriesPresent": true
+    }
+  ],
+  "plaintextFilesWritten": false,
+  "restoreTestPerformed": false
+}

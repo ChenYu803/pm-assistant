@@ -1,0 +1,9 @@
+{
+  "createdAt": "2026-11-06T05:04:59.546Z",
+  "config": "/etc/nginx/sites-available/ideastage",
+  "backup": "/etc/nginx/sites-available/ideastage.before-v144-1793941499480",
+  "nginxTest": true,
+  "reloaded": true,
+  "loopbackOnly": true,
+  "peerAddressGate": true
+}
