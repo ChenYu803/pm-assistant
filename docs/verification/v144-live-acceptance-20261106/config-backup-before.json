@@ -1,0 +1,16 @@
+{
+  "checkedAt": "2026-11-06T13:01:36.027Z",
+  "scope": "仅runtime.env配置回退副本，非数据库或全量恢复验收",
+  "remotePath": "/var/backups/ideastage/v144-pre-contact-20261106.runtime.isb",
+  "localPath": "D:/Backups/IdeaStage/v144-live-acceptance-20261106/v144-pre-contact-20261106.runtime.isb",
+  "bytes": 1294,
+  "sha256": "2d0550cf9bce89d64386a3329088747556f9d478cf04fb240f2848c5eac776ac",
+  "decryptedUsingIndependentLocalKey": true,
+  "criticalFieldsPresent": true,
+  "plaintextWrittenToDisk": false,
+  "fullPreChangeBackupGenerated": true,
+  "fullPreChangeBackupDownloadComplete": true,
+  "existingFullRestoreEvidence": "docs/verification/v144-tencent-ses/20261106/isolated-login-user-confirmation.json",
+  "fullPreChangeBackupAuthenticatedDecryptionPassed": true,
+  "fullBackupEvidence": "docs/verification/v144-live-acceptance-20261106/backup-verification.json"
+}

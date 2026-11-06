@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-11-06T13:12:17.662Z",
+  "source": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing",
+  "retrievalMethod": "本机HTTPS直接获取官方页面，HTTP200",
+  "archiveSha256": "6205cf5d53a7903827bf21938eefb6a8ab6041bb5a73fcf43e4bdd6adc8d344b",
+  "requestedAlias": "deepseek-v4-flash",
+  "currentOfficialModelName": "deepseek-flash",
+  "documentedServingModel": "DeepSeek-V4.1-Flash-1017",
+  "aliasStillAccepted": true,
+  "currency": "CNY",
+  "unit": "每百万tokens",
+  "offPeak": {
+    "inputCacheHit": "0.02",
+    "inputCacheMiss": "1",
+    "output": "4"
+  },
+  "peak": {
+    "inputCacheHit": "0.04",
+    "inputCacheMiss": "2",
+    "output": "8"
+  },
+  "matchesExistingApplicationSnapshot": true,
+  "actualResponseModelVerified": false
+}

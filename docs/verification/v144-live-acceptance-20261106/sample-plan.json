@@ -1,0 +1,40 @@
+{
+  "recordedAt": "2026-11-06T13:12:17.664Z",
+  "authorized": true,
+  "agentOperationalCapCny": "1.00",
+  "maximumApplicationRequests": 4,
+  "plannedRequests": 3,
+  "automaticRetry": false,
+  "estimatedLlmRuntimeMinutes": "3–8（仅模型样本，不含本人登录与收信等待）",
+  "historicalProvisionCny": "0.01",
+  "plannedBudgetAfterReservingWholeRoundCny": "198.99",
+  "isSupplierAccountBalance": false,
+  "strictWorstCaseCostProven": false,
+  "costBoundaryLimitation": "隐藏包装token上界未经供应商确认，1元为操作预算而非已证明的供应商硬限额；待核对请求不能按零处理，有异常先停后续调用。",
+  "samples": [
+    {
+      "purpose": "chat",
+      "input": "全新测试项目，短提示，最多两句回答",
+      "maxOutputTokens": 16384,
+      "expectation": "自然流结束，可靠usage、实际模型、价格和积分结算对应"
+    },
+    {
+      "purpose": "polish",
+      "input": "仅自建的短测试文件",
+      "maxOutputTokens": 32768,
+      "expectation": "预览生成成功即结算，保留请求与文件关联"
+    },
+    {
+      "purpose": "chat-stop",
+      "input": "同一受控测试账号，仅一次生成",
+      "maxOutputTokens": 16384,
+      "expectation": "主动停止后区分页面反馈、应用停止、供应商最终计量；缺usage保留待核对不记零"
+    }
+  ],
+  "prerequisites": [
+    "用户正常登录，不伪造Cookie或邮箱验证",
+    "以有记录测试赠送取得额度，不操作真实购买或退款",
+    "调用前读取全部实际输入和既有冻结量，异常时取消剩余样本"
+  ],
+  "performedRequests": 0
+}

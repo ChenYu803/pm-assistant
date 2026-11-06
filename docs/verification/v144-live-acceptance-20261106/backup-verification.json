@@ -1,0 +1,30 @@
+{
+  "checkedAt": "2026-11-06T13:13:30.363Z",
+  "before": {
+    "name": "2026-11-06T12-54-21-768Z-062b03cd.isb",
+    "sha256": "2802a918e704e369d148250647582b4e96c96d9d63b14911333a764cd4b7dc9c",
+    "localPath": "D:/Backups/IdeaStage/v144-live-acceptance-20261106/2026-11-06T12-54-21-768Z-062b03cd.isb",
+    "commit": "33df4878d3a2a30b2e9621211410cfb4a6fd27ab"
+  },
+  "after": {
+    "name": "2026-11-06T13-09-10-169Z-447c099b.isb",
+    "sha256": "9b4fa51e7273a2c0779fb3b5868a92a1d3c1f29f213d536040a13a70ac4363d6",
+    "createdAt": "2026-11-06T13:09:10.314Z",
+    "commit": "33df4878d3a2a30b2e9621211410cfb4a6fd27ab",
+    "bytes": 30401965,
+    "localPath": "D:/Backups/IdeaStage/v144-live-acceptance-20261106/2026-11-06T13-09-10-169Z-447c099b.isb"
+  },
+  "bothDownloaded": true,
+  "bothSha256Verified": true,
+  "bothAuthenticatedDecryptionPassed": true,
+  "independentKeyPath": "C:/Users/Administrator/.ideastage-recovery/backup.key",
+  "archiveMembersVerified": [
+    "database.sql",
+    "runtime.env",
+    "metadata.json",
+    "source.tar"
+  ],
+  "fullDatabaseRestoreRepeated": false,
+  "restorationEvidenceReused": "docs/verification/v144-tencent-ses/20261106/isolated-login-user-confirmation.json",
+  "plaintextRetained": false
+}

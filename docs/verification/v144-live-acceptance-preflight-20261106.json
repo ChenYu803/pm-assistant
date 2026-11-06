@@ -3,7 +3,7 @@
   "timezone": "Asia/Shanghai",
   "ticket": "#15",
   "sourceCommit": "33df4878d3a2a30b2e9621211410cfb4a6fd27ab",
-  "status": "blocked-awaiting-protected-inputs",
+  "status": "in-progress-controlled-acceptance",
   "productionPaidModelCallsPerformed": false,
   "publicReleaseApproved": false,
   "historicalSample": {
@@ -29,15 +29,29 @@
     "registration": "docs/verification/v144-tencent-ses/20261106/registered-account-check.json"
   },
   "missingInputs": [
-    "受限邮件供应商与已验证发信身份核实",
-    "可收信注册/找回邮箱",
-    "本轮新增核验额度及费用上限",
-    "预计超过10分钟验证的执行授权",
-    "正式运营联系方式与开放授权"
+    "真实密码找回收信及正常应用登录的用户交互（仅实际需要时提出）",
+    "正式开放授权（发布闸满足后处理）"
   ],
   "blockers": [
     "尚无目标应用入口逐笔账本证据",
     "尚无真实密码找回收信证据",
     "停止后的供应商可靠用量/计费边界未证实"
-  ]
+  ],
+  "currentRound": {
+    "paidTestsAuthorizedByUser": true,
+    "agentOperationalCostCapCny": "1.00",
+    "maximumApplicationRequests": 4,
+    "automaticRetry": false,
+    "registrationReconfirmedByUser": true,
+    "rechargeWechatContact": "lh339683",
+    "publicReleaseApproved": false,
+    "pushApproved": false,
+    "performedApplicationRequests": 0,
+    "rechargeWechatConfigured": true,
+    "runningProcessContactVerified": true,
+    "rechargePageDisplayVerified": false,
+    "browserLaunchRejectedByAutomaticReview": true,
+    "normalBrowserTunnelReady": true,
+    "acceptanceEvidenceDirectory": "docs/verification/v144-live-acceptance-20261106"
+  }
 }

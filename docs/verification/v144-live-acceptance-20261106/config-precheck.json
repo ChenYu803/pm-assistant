@@ -1,0 +1,18 @@
+{
+  "checkedAt": "2026-11-06T12:55:05.879Z",
+  "mode": "live",
+  "baseURL": "https://api.deepseek.com",
+  "model": "deepseek-v4-flash",
+  "modelKeyConfigured": true,
+  "rechargeWechatConfigured": false,
+  "rechargeWechatMatchesExpected": false,
+  "mailFields": {
+    "TENCENT_SES_SECRET_ID": true,
+    "TENCENT_SES_SECRET_KEY": true,
+    "TENCENT_SES_REGION": "ap-guangzhou",
+    "TENCENT_SES_REGISTER_TEMPLATE_ID": true,
+    "TENCENT_SES_RESET_TEMPLATE_ID": true,
+    "EMAIL_FROM": true,
+    "ADMIN_EMAILS": true
+  }
+}

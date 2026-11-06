@@ -1,0 +1,14 @@
+{
+  "checkedAt": "2026-11-06T12:59:46.849Z",
+  "source": "https://api-docs.deepseek.com/zh-cn/api/create-chat-completion",
+  "httpStatus": 200,
+  "archiveSha256": "a1bd72f0e1648c5850805cce21088a29488f6ee39517b5b30ea24be7a0f913ac",
+  "perRequestUsageLookupEstablished": false,
+  "hiddenEnvelopeUpperBoundEstablished": false,
+  "findings": [
+    "max_tokens限制生成的completion token数量；官方允许范围1至393216，本应用对话16384、润色32768均在范围内。",
+    "流式最终块提供整次请求用量，include_usage使其余块也包含空的usage字段。",
+    "结束原因包含自然结束、长度限制、内容过滤、资源不足与中断。",
+    "本轮查阅页面未取得主动断开后逐笔查询最终用量的证据，也未取得隐藏聊天包装的正式token上界承诺。"
+  ]
+}

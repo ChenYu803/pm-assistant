@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-11-06T13:03:57.369Z",
+  "runningContactMatchesExpected": true,
+  "runningMode": "live",
+  "loopbackHealth": 200,
+  "unauthenticatedRechargeStatus": 302,
+  "runtimeMode": "600",
+  "service": "active",
+  "recoveryTimer": "active",
+  "sourceCommit": "33df4878d3a2a30b2e9621211410cfb4a6fd27ab",
+  "pageDisplayVerified": false,
+  "reason": "充值页需要正常登录，当前只核实运行环境和未登录重定向"
+}

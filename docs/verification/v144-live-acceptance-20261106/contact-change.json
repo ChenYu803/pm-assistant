@@ -1,0 +1,11 @@
+{
+  "changedAt": "2026-11-06T13:02:19.277Z",
+  "contact": "lh339683",
+  "configurationPath": "/etc/ideastage/runtime.env",
+  "onlyContactChanged": true,
+  "serviceRestarted": true,
+  "serviceActive": true,
+  "noSourceChanges": true,
+  "noPublicAccessChange": true,
+  "noDatabaseMutation": true
+}
