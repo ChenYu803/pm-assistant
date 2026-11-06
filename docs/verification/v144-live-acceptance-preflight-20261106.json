@@ -1,0 +1,36 @@
+{
+  "recordedAt": "2026-11-06",
+  "timezone": "Asia/Shanghai",
+  "ticket": "#15",
+  "sourceCommit": "33df4878d3a2a30b2e9621211410cfb4a6fd27ab",
+  "status": "blocked-awaiting-protected-inputs",
+  "productionPaidModelCallsPerformed": false,
+  "publicReleaseApproved": false,
+  "historicalSample": {
+    "requests": 8,
+    "confirmedCostCny": "0.000127",
+    "pendingCostRequests": 5,
+    "isCompleteCumulativeLedger": false,
+    "exactRemainingBudgetCny": null
+  },
+  "reusableEvidence": {
+    "controlledUpgrade": "docs/verification/v144-tencent-ses/20261106/controlled-ready-final-check.json",
+    "liveConfig": "docs/verification/v144-tencent-ses/20261106/live-config-status.json",
+    "registration": "docs/verification/v144-tencent-ses/20261106/registered-account-check.json"
+  },
+  "missingInputs": [
+    "受限邮件供应商与已验证发信身份核实",
+    "可收信注册/找回邮箱",
+    "历史累计模型支出与5笔待确认费用状态",
+    "供应商账单或余额证据",
+    "本轮新增核验额度及费用上限",
+    "预计超过10分钟验证的执行授权",
+    "正式运营联系方式与开放授权"
+  ],
+  "blockers": [
+    "无法据现有材料计算可信200 CNY剩余额度",
+    "尚无目标应用入口逐笔账本证据",
+    "尚无真实密码找回收信证据",
+    "停止后的供应商可靠用量/计费边界未证实"
+  ]
+}
