@@ -1,0 +1,31 @@
+{
+  "recordedAt": "2026-11-06T05:36:26.198Z",
+  "evidenceType": "user-confirmed-manual-browser-check",
+  "userConfirmation": "三个页面均正常",
+  "context": "用户经既有SSH专用通道，在真实注册并已登录的专用Chrome中按上一轮逐页说明确认",
+  "sourceCommit": "33df4878d3a2a30b2e9621211410cfb4a6fd27ab",
+  "pages": [
+    {
+      "path": "/profile",
+      "result": "user-confirmed-normal",
+      "expected": "邮箱、积分信息和管理后台入口"
+    },
+    {
+      "path": "/admin",
+      "result": "user-confirmed-normal",
+      "expected": "用户管理页面，1个正常账号"
+    },
+    {
+      "path": "/projects",
+      "result": "user-confirmed-normal",
+      "expected": "项目页正常，当前无项目"
+    }
+  ],
+  "automatedBrowserControl": false,
+  "screenshotsCollected": false,
+  "detailedVisualOrResponsiveAudit": false,
+  "originalAccountsAndProjectContent": "升级前均为空，无旧账号或原项目正文可验证",
+  "isolatedRestoreLoginVerified": false,
+  "productionReleasedToPublic": false,
+  "tunnelClosure": "已告知用户可先关闭专用Chrome，再在SSH通道窗口按Ctrl+C；尚未收到实际关闭确认"
+}

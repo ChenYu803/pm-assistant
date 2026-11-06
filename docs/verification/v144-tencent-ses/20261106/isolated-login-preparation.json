@@ -1,0 +1,46 @@
+{
+  "preparedAt": "2026-11-06T05:41:35.197Z",
+  "archive": "2026-11-06T05-25-12-723Z-79df57d3.isb",
+  "sourceCommit": "33df4878d3a2a30b2e9621211410cfb4a6fd27ab",
+  "sourceFilesVerifiedAgainstGit": 1387,
+  "isolatedDirectory": "D:\\Backups\\IdeaStage\\v144-ses-20261106\\login-recovery-369dcd9acd50fd28",
+  "isolatedDatabase": "ideastage_login_369dcd9acd50fd28",
+  "mysqlVersion": "9.7.2",
+  "temporaryApplicationAccount": "restore_login_369dcd9acd50fd28",
+  "applicationAccountPrivileges": "仅本次隔离库SELECT/INSERT/UPDATE/DELETE",
+  "runtimeMode": "Next dev --webpack；备份对应源码，未修改认证逻辑",
+  "baseUrl": "http://127.0.0.1:3444",
+  "bindAddress": "127.0.0.1",
+  "secretStorage": "D:\\Backups\\IdeaStage\\v144-ses-20261106\\login-recovery-369dcd9acd50fd28\\private-session.json",
+  "temporarySecretsPurpose": "仅本机隔离数据库访问及隔离会话，位于既有受限备份目录，验收后删除账号、数据库和私有会话文件；无需恢复为正式凭据",
+  "productionDatabaseModified": false,
+  "productionCredentialsCopiedIntoApp": false,
+  "emailAndModelCredentialsProvided": false,
+  "emailOrModelRequestsPerformed": false,
+  "browserLoginVerified": false,
+  "awaitingUserAction": "环境启动并健康后，由用户在本机页面自行输入刚注册的真实账号与原密码；不索取或导出密码、验证码、Cookie",
+  "cleanupComplete": false,
+  "healthCheckedAt": "2026-11-06T05:42:14.874Z",
+  "applicationPid": 4716,
+  "supervisorPid": 2224,
+  "healthChecks": [
+    {
+      "path": "/api/health",
+      "status": 200,
+      "body": {
+        "status": "ok"
+      }
+    },
+    {
+      "path": "/login",
+      "status": 200
+    }
+  ],
+  "applicationReady": true,
+  "unauthenticatedProfileCheck": {
+    "status": 302,
+    "location": "/login?callbackUrl=%2Fprofile",
+    "unauthenticated": true
+  },
+  "cleanupScript": "D:/Backups/IdeaStage/v144-ses-20261106/cleanup-login-recovery.cjs"
+}

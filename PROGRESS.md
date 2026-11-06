@@ -1,10 +1,12 @@
 # PROGRESS.md - 项目状态与交接
 
-### 2026-11-06：#14 真实注册已核实并完成含账号恢复；等待登录态页面验收
+### 2026-11-06：#14 正式站页面确认完成；本机恢复应用已就绪，待用户正常登录
+
+最新反馈：用户按逐页检查说明确认/profile、/admin、/projects“三个页面均正常”。记录为正式站真实登录后的人工确认，未接管浏览器、未采集截图，不扩大为细致视觉/窄屏审计或隔离恢复登录通过。已告知用户可以先关闭专用Chrome，再到SSH通道窗口按Ctrl+C；只给出关闭步骤，尚未核验用户已关闭。服务器公网限制继续保留，不解除nginx限制。#14仍保留隔离恢复后实际登录与最终交付待办，已在本机启动含新账号快照的隔离应用（http://127.0.0.1:3444，仅回环监听；备份1387源码文件逐一匹配33df487），health/login200且未登录profile302到登录；当前等待用户在本机页面以原账号密码正常登录，不提供密码/验证码/Cookie给代理。隔离库ideastage_login_369dcd9acd50fd28及一次性DML账号仅用于本轮，私有会话位于既有受限备份目录（仅Administrators/SYSTEM），用户确认恢复登录后执行该目录cleanup-login-recovery.cjs cleanup停止应用、删除临时库/账号/私有会话；该清理脚本目前仅语法校验通过，未执行。非敏感记录见[页面确认](docs/verification/v144-tencent-ses/20261106/authenticated-pages-user-confirmation.json)。
 
 本轮code-review固定范围8d95ade...2321d2f，Standards与Spec各由独立代理完整阅读8文件新增差异及4份新增JSON，已确认问题均0；只做静态规则、规格和证据内部一致性审查，未独立连接服务器、操作备份或验收浏览器。
 
-用户已通过专用SSH通道真实注册并登录。13:24（Asia/Shanghai）只读核验指定账号存在、active、邮箱已验证、匹配管理员配置，注册验证码used且摘要已清除；users=1、projects/project_files/model_requests/credit_entries均0。运行提交仍33df487，网站和恢复timer active、Result=success/ExecMainStatus=0，回环健康200、公网和源站403。13:26刷新注册后标准及补充加密包并下载、认证解密，13:28在本机随机新库实际恢复35表/32迁移，逐表计数与正式库一致，指定账号与邮箱验证状态保留，演练库及临时客户端配置已清理。未使用密码登录隔离库，也无项目正文，不能声称完整登录/正文恢复通过。当前专用Chrome无可附加调试连接，代理未读取或导出Cookie；后续由用户在当前已登录窗口打开/profile、/admin、/projects并确认页面，通道和窗口先保持打开。#14仍needs-info；证据见[续执行验收](docs/verification/v144-controlled-upgrade-20261106.md#真实注册后复核与新增恢复点)。
+用户已通过专用SSH通道真实注册并登录。13:24（Asia/Shanghai）只读核验指定账号存在、active、邮箱已验证、匹配管理员配置，注册验证码used且摘要已清除；users=1、projects/project_files/model_requests/credit_entries均0。运行提交仍33df487，网站和恢复timer active、Result=success/ExecMainStatus=0，回环健康200、公网和源站403。13:26刷新注册后标准及补充加密包并下载、认证解密，13:28在本机随机新库实际恢复35表/32迁移，逐表计数与正式库一致，指定账号与邮箱验证状态保留，演练库及临时客户端配置已清理。未使用密码登录隔离库，也无项目正文，不能声称完整登录/正文恢复通过。当前专用Chrome无可附加调试连接，代理未读取或导出Cookie；用户随后已确认/profile、/admin、/projects均正常，专用通道可关闭；恢复后实际登录仍未补证，#14仍needs-info；证据见[续执行验收](docs/verification/v144-controlled-upgrade-20261106.md#真实注册后复核与新增恢复点)。
 
 回应用户对代理无故停工的质疑，主动完成剩余可执行部署。按L2生产部署：变更前后均生成标准及维护/入口配置加密补充包，实际下载到D:/Backups/IdeaStage/v144-ses-20261106并使用独立既有密钥认证解密。仅经SSH stdin把本机既有官方DeepSeek配置安全注入runtime，AI_MODE=live、AI_MODEL=deepseek-v4-flash、ADMIN_EMAILS=3037116719@qq.com；核验运行进程与runtime匹配，不输出凭据、不执行付费模型或真实邮件调用。
 
@@ -12,7 +14,7 @@ nginx按真实连接对端限制仅127.0.0.1/::1，已nginx -t/reload；Cloudfla
 
 2026-11-06约13:07（Asia/Shanghai）原子切换current到精确提交33df4878d3a2a30b2e9621211410cfb4a6fd27ab，service active、HTTPS health200、运行live配置匹配。恢复service/timer已安装启用，13:08/13:09及后续真实分钟触发、Result=success/ExecMainStatus=0、scanned=0/failed=0；时钟同步。空队列只证明调度运行，不证明到期释放。升级后副本再次下载解密并在随机库恢复35表/32迁移、逐表数量一致，全部演练资源清理。
 
-#14保持needs-info，不标resolved或受控验收就绪：原库无任何账号/项目，不适用旧账号与旧正文验收；用户现已手动建立专用通道并完成真实注册/登录反馈，正式库账号与恢复已复核，个人中心、后台、项目页与视觉仍待当前登录窗口确认。此前自动启动请求被策略拒绝，仅用户手动操作成功，未改hosts；手动命令见执行单第4.1节。普通公网继续403。
+#14保持needs-info，不标resolved或受控验收就绪：原库无任何账号/项目，不适用旧账号与旧正文验收；用户现已手动建立专用通道并完成真实注册/登录反馈，正式库账号与恢复已复核，个人中心、后台与空项目页已由用户确认正常，未作细致视觉或窄屏审计；隔离恢复后实际登录仍待补证。此前自动启动请求被策略拒绝，仅用户手动操作成功，未改hosts；手动命令见执行单第4.1节。普通公网继续403。
 
 此前GitHub即时ls-remote失败；注册后续验现已重新只读查询成功，远端refs/heads/codex-pm-assistant-v1.1-docs确认为77c76768a6ad1d6a9bcc02389bfc08ba465b6345，目标仍运行本机bundle送达的33df487。候选和后续文档尚未push；推送仍需用户确认。完整CAM最小权限、找回邮件收信、官方模型标识和价格/逐笔计量/累计200元预算、运营微信及正式开放仍交#15；联系充值未开放。本轮无业务源码修改，不重复旧有效离线回归；tsc、差异校验、凭据特征扫描、证据一致性及手动命令语法通过。双轴静态审查已确认发现各0，Standards仅覆盖已读部分，不作完整23份证据复核结论。非敏感证据见[续执行验收](docs/verification/v144-controlled-upgrade-20261106.md)。
 
