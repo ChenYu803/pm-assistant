@@ -112,3 +112,5 @@
 最终SSH只读复核真实current路径及Git HEAD为33df4878d3a2a30b2e9621211410cfb4a6fd27ab，发行工作区干净；网站与usage-recovery.timer active，恢复服务Result=success/ExecMainStatus=0，回环HTTPS健康200，普通公网和直接源站均403。空队列运行证据仍不能替代24小时到期释放。见[最终检查](v144-tencent-ses/20261106/controlled-ready-final-check.json)。
 
 #14全部AC完成并标resolved，交付“受控验收就绪”，frontier推进#15。注册邮件真实链路已有用户正常注册及正式库验证码消费证据；找回邮件、CAM完整最小权限、官方模型/逐笔计量/停止、历史成本和累计200元预算、运营微信及正式开放仍待#15。保持nginx受限入口，无新增付费模型调用、资金操作或push；本地新增记录不改变正式运行提交。
+
+本次收尾检查：tsc通过，4份收尾JSON解析与一致性核对、9份改动文件凭据特征扫描及git diff --check通过。随后双轴审查固定e0ff4de...f77a84a，含准备与最终收尾两提交，完整覆盖10文件及5份新增JSON；Standards/Spec各0问题，仅静态审查，未独立复验运行事实。见[双轴报告](v144-tencent-ses/20261106/controlled-ready-review.md)。本段及审查报告为后续归档，不冒称属于被审查范围。
