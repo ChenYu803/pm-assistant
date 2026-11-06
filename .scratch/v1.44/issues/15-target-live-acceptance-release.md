@@ -66,3 +66,13 @@
 用户确认真实邮箱收取验证码、填写验证码、重置密码和新密码登录均成功。记录为用户人工验证，不采集密码、验证码或Cookie；真实注册结果继续复用，找回流程不再作为待用户输入。服务器脱敏佐证及应用计量仍继续核查，原组合AC不因此整体勾选，#15保持claimed。
 
 服务器已补充只读佐证：注册/找回凭证均used且摘要清空，账号正常已验证并匹配既有管理员；业务模型/积分仍0。见`post-password-recovery-check.json`及`next-application-check.json`。实际登录结果由本人确认；未新增付费调用，未修改业务数据，未解除公网限制。
+
+### 2026-11-06：正常对话、微信展示与测试赠送已核对
+
+用户本人确认微信正确、积分到账且回复正常，页面显示预留313.812、实际3.886积分。目标机只读证据关联到同一stage_chat请求：实际模型deepseek-flash，可靠用量输入1875、输出17（含推理13，不重复计费），官方空闲价复算API成本0.001943 CNY，按×2000结算3.886积分；预留释放309.926，2000测试赠送余额1996.114、冻结0。流水仅admin_grant、model_reserve、model_settle、model_release各1笔，无重复结算或pending；1项目、0文件，业务状态已持久读取。此处finish_reason=stop属于自然结束，不是主动停止。
+
+证据：`docs/verification/v144-live-acceptance-20261106/normal-chat-user-confirmation.json`、`docs/verification/v144-live-acceptance-20261106/normal-chat-ledger-check.json`和`docs/verification/v144-live-acceptance-20261106/normal-chat-accounting-check.json`。初次mysql2探针对UTC字符串DATETIME有8小时时区误解，已依据dateStrings原值规范化模型时间并保留原序列化供追溯；`docs/verification/v144-live-acceptance-20261106/normal-chat-time-conventions.json`解释业务deadline比较使用UTC参数，不以本地DB NOW()判断，不据存储约定差异推断业务故障。本次未修改生产数据或时区配置。
+
+历史费用保守计提0.01 CNY与本笔0.001943合计0.011943，200 CNY预算保守余量199.988057；不是供应商余额或精确历史账单。新增请求1/4、本轮1 CNY操作预算余量0.998057，不是硬费用上界。旧逐笔未知费用仍包含在历史计提中，不归零、不重复加计。
+
+下一步仅1次主动停止样本，操作见`docs/verification/v144-live-acceptance-20261106/next-stop-check.json`；如缺可靠usage先保留待核对并暂停后续样本。当前没有项目文件，润色需先经正常Agent对话生成短文档候选并由用户确认创建；若增加候选生成请求计入最多4次，不编造上传入口或绕过文件来源。邀请码与普通用户拒绝、SES身份/最小权限、停止计量与隐藏包装硬边界、样本完成后的备份刷新和正式开放仍待完成。已有备份不包含本次新增赠送及对话，不能将其声称为新增业务副本；样本批量完成后刷新。#15保持claimed，未切版、未push、未开放公网。

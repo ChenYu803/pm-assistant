@@ -1,0 +1,51 @@
+{
+  "checkedAt": "2026-11-06T14:22:02.342Z",
+  "source": "normal-chat-ledger-check.json + normal-chat-user-confirmation.json",
+  "arithmetic": "BigInt，金额与积分统一保留8位定点；不将reasoning_tokens重复加至completion_tokens",
+  "requestId": "f1b32761-e3c8-4ac0-843a-102c76febf34",
+  "application": "目标服务器受控网站正常对话，由用户操作；代理事后只读核账",
+  "officialActualModel": "deepseek-flash",
+  "naturalCompletion": true,
+  "activeStopTestPassed": false,
+  "normalizedStartedAt": "2026-11-06T14:07:09.311Z",
+  "normalizedEndedAt": "2026-11-06T14:07:10.434Z",
+  "formulaCny": "(0 × 0.02 + 1875 × 1 + 17 × 4) / 1000000 = 0.001943",
+  "confirmedApiCostCny": "0.001943",
+  "creditsPerCny": "2000",
+  "reservedCredits": "313.812",
+  "consumedCredits": "3.886",
+  "releasedCredits": "309.926",
+  "originalTestGiftCredits": "2000",
+  "availableGiftCredits": "1996.114",
+  "remainingReservedCredits": "0",
+  "purchasedCredits": "0",
+  "pendingCalls": 0,
+  "ledgerTypes": [
+    "admin_grant",
+    "model_release",
+    "model_reserve",
+    "model_settle"
+  ],
+  "noDuplicateSettlementObserved": true,
+  "budget": {
+    "historicalProvisionCny": "0.01",
+    "roundConfirmedCostCny": "0.001943",
+    "cumulativeConservativeProvisionCny": "0.011943",
+    "cumulativeBudgetCny": "200",
+    "conservativeRemainingCny": "199.988057",
+    "roundOperationalCapCny": "1",
+    "roundOperationalRemainingCny": "0.998057",
+    "performedRequests": 1,
+    "maximumRequests": 4,
+    "remainingRequests": 3,
+    "isSupplierBalance": false,
+    "isExactHistoricalBill": false,
+    "unknownHistoricalPerRequestCostsIncludedInProvision": true
+  },
+  "boundaries": [
+    "单一正常结束样本不证明隐藏包装token硬上界",
+    "finish_reason=stop是正常自然结束，不代表用户主动停止",
+    "未验证润色、主动停止、邀请码、普通用户后台拒绝或正式开放",
+    "只读持久化核账，不等同新增备份/隔离恢复；新增业务备份待样本批量完成后刷新"
+  ]
+}

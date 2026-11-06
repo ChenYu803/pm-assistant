@@ -1,0 +1,36 @@
+{
+  "checkedAt": "2026-11-06T14:11:42.143Z",
+  "readOnly": true,
+  "nodeDefaultTimeZone": "Asia/Shanghai",
+  "nodeLocalTime": "Fri Nov 06 2026 22:11:42 GMT+0800 (China Standard Time)",
+  "timestampReadMethod": "mysql2 dateStrings=true preserves stored DATETIME values without timezone conversion",
+  "times": [
+    {
+      "id": "f1b32761-e3c8-4ac0-843a-102c76febf34",
+      "started_at": "2026-11-06 14:07:09.311",
+      "ended_at": "2026-11-06 14:07:10.434",
+      "deadline_at": "2026-11-06 14:18:09.311",
+      "created_at": "2026-11-06 22:07:09.315",
+      "settled_at": "2026-11-06 22:07:10.461",
+      "stored_start_difference_seconds": 28800,
+      "deadline_vs_database_now_seconds": 28412
+    }
+  ],
+  "clock": {
+    "database_now": "2026-11-06 22:11:42.142",
+    "database_utc": "2026-11-06 14:11:42.142",
+    "session_time_zone": "SYSTEM",
+    "system_time_zone": "CST"
+  },
+  "interpretation": "model_requests时间按UTC字符串存储，积分call的created_at/settled_at按Asia/Shanghai存储。原始DATETIME差28800秒不能当作处理延迟；deadline_vs_database_now_seconds只是不同约定原值的比较，不是业务恢复的过期判断。",
+  "recoveryPredicate": {
+    "clock": "pendingUsageNow()生成UTC字符串",
+    "source": [
+      "src/lib/pending-usage-clock.ts",
+      "src/lib/pending-usage-recovery.ts",
+      "src/lib/conversation-credits.ts"
+    ],
+    "comparison": "deadline_at <= UTC参数；不使用本地DB NOW()判断该deadline",
+    "conclusion": "当前未由该存储差异证实提前过期或业务故障，无业务改动"
+  }
+}

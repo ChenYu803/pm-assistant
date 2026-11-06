@@ -1,0 +1,13 @@
+{
+  "recordedAt": "2026-11-06T14:09:13.183Z",
+  "source": "用户本人聊天反馈",
+  "rechargeWechatShownCorrectly": true,
+  "testGiftArrived": true,
+  "normalReplySucceeded": true,
+  "pageReservedCredits": "313.812",
+  "pageConsumedCredits": "3.886",
+  "serverCrossCheck": "已通过：同一请求可靠usage、官方价格、预留、结算、释放和余额一致",
+  "credentialsCollected": false,
+  "serverEvidence": "normal-chat-ledger-check.json",
+  "accountingEvidence": "normal-chat-accounting-check.json"
+}

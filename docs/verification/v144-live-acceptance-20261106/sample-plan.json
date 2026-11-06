@@ -16,25 +16,48 @@
       "purpose": "chat",
       "input": "全新测试项目，短提示，最多两句回答",
       "maxOutputTokens": 16384,
-      "expectation": "自然流结束，可靠usage、实际模型、价格和积分结算对应"
+      "expectation": "自然流结束，可靠usage、实际模型、价格和积分结算对应",
+      "status": "passed",
+      "evidence": "normal-chat-accounting-check.json"
     },
     {
       "purpose": "polish",
-      "input": "仅自建的短测试文件",
+      "input": "同一项目通过正常Agent对话产生短文档候选，用户确认创建后使用已有文件的AI润色入口；不伪造来源、不使用DB写入或旧API创建文件",
       "maxOutputTokens": 32768,
-      "expectation": "预览生成成功即结算，保留请求与文件关联"
+      "expectation": "预览生成成功即结算，保留请求与文件关联",
+      "status": "not-performed",
+      "prerequisiteRequest": "当前无项目文件；如需额外生成候选，计入最多4次请求，不能当作免费步骤"
     },
     {
       "purpose": "chat-stop",
       "input": "同一受控测试账号，仅一次生成",
       "maxOutputTokens": 16384,
-      "expectation": "主动停止后区分页面反馈、应用停止、供应商最终计量；缺usage保留待核对不记零"
+      "expectation": "主动停止后区分页面反馈、应用停止、供应商最终计量；缺usage保留待核对不记零",
+      "status": "not-performed"
     }
   ],
   "prerequisites": [
     "用户正常登录，不伪造Cookie或邮箱验证",
     "以有记录测试赠送取得额度，不操作真实购买或退款",
-    "调用前读取全部实际输入和既有冻结量，异常时取消剩余样本"
+    "调用前核对实际输入与冻结量；上一正常请求已结算且无冻结；停止样本若缺usage保留待核对，暂停后续样本"
   ],
-  "performedRequests": 0
+  "performedRequests": 1,
+  "progressEvidence": "normal-chat-accounting-check.json",
+  "latestProgressAt": "2026-11-06T14:22:02.344Z",
+  "currentBudget": {
+    "historicalProvisionCny": "0.01",
+    "roundConfirmedCostCny": "0.001943",
+    "cumulativeConservativeProvisionCny": "0.011943",
+    "cumulativeBudgetCny": "200",
+    "conservativeRemainingCny": "199.988057",
+    "roundOperationalCapCny": "1",
+    "roundOperationalRemainingCny": "0.998057",
+    "performedRequests": 1,
+    "maximumRequests": 4,
+    "remainingRequests": 3,
+    "isSupplierBalance": false,
+    "isExactHistoricalBill": false,
+    "unknownHistoricalPerRequestCostsIncludedInProvision": true
+  },
+  "nextSample": "chat-stop"
 }
