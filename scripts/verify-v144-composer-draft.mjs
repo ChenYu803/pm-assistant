@@ -228,4 +228,3 @@ await check("切走后A断流，返回A核对接纳并清旧草稿，B草稿保�
 console.error = originalError;
 console.log(`结果：${pass} 通过，${fail} 失败`);
 process.exit(fail > 0 ? 1 : 0);
-
