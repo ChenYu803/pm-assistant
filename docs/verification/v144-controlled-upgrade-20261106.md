@@ -50,3 +50,17 @@
 ## 附属运行证据
 
 [live配置状态](v144-tencent-ses/20261106/live-config-status.json)、[运行进程配置匹配](v144-tencent-ses/20261106/running-process-config.json)、[入口策略](v144-tencent-ses/20261106/restricted-entry-status.json)、[公网/回环探测](v144-tencent-ses/20261106/restricted-entry-http.json)、[迁移/启动日志](v144-tencent-ses/20261106/target-upgrade.log)、[实际定时触发](v144-tencent-ses/20261106/timer-scheduled-check.log)。
+
+## 本轮验证与独立审查
+
+主代理：tsc --noEmit、git diff --check、23份本轮文件的凭据特征扫描/JSON解析、备份认证解密状态与运行进程配置证据一致性、两段手动PowerShell命令纯语法解析均通过；未重新运行此前有效的业务离线回归。末次正式服务和timer均active、Result=success/ExecMainStatus=0、回环HTTPS健康200。直接源站请求附带伪造CF-Connecting-IP/X-Forwarded-For/X-Real-IP=127.0.0.1仍403。
+
+### Standards
+
+固定范围git diff a92b797...1214f6c；已确认硬性违规0、Fowler启发式发现0。备份解密、实际恢复、空业务与登录验收边界，失败批次与独立复核、票needs-info状态均如实记录。仅静态审查已读规则/文档差异及部分证据，未逐份完整阅读全部23份文件，也未独立访问服务器，不将局部静态审查当作全面重验。
+
+### Spec
+
+同一固定范围，真实问题0：虚报0、额外范围0、可确认配置/操作错误及证据矛盾0。未完成的#14真实登录/视觉/远端即时核验和#15真实邮件/模型/预算/微信/开放仍明确待办。只读仓库文档与证据，不独立重验目标机或备份实体。
+
+两轴已确认发现各0；Standards覆盖有上述限制。
