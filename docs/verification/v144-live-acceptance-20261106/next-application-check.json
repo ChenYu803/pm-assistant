@@ -1,0 +1,38 @@
+{
+  "recordedAt": "2026-11-06T13:41:26.977Z",
+  "requiresExistingAuthenticatedBrowser": true,
+  "agentBrowserControlAvailable": false,
+  "steps": [
+    {
+      "page": "/profile/recharge",
+      "action": "检查运营者微信是否显示lh339683；不转账",
+      "expected": "用户人工确认实际页面展示"
+    },
+    {
+      "page": "/admin",
+      "action": "当前账号点击“查看积分 / 赠送与调整”，在“赠送与余额纠正”选择“管理员赠送”、变动积分2000、原因“#15目标环境真实计量验收测试赠送”，点击“记录积分变动”一次",
+      "expected": "赠送可用2000，购买0，有管理员赠送流水"
+    },
+    {
+      "page": "/projects",
+      "action": "新建项目“#15验收”，在默认对话发送“这是上线验收测试，请只用一句话回复：已收到。”一次，等待自然结束",
+      "expected": "正常页面回复；代理随后只读核对实际usage、模型、成本与结算"
+    }
+  ],
+  "doNotContinueOn": [
+    "页面报错",
+    "余额未到账",
+    "调用显示待核对",
+    "发生重复或未知结果"
+  ],
+  "onUnknownResult": "停止新请求，先核对原操作，不重复点击",
+  "doesNotReplace": [
+    "文件润色样本",
+    "主动停止样本",
+    "邀请码兑换",
+    "普通用户后台拒绝",
+    "供应商最终计量或成本上界核验"
+  ],
+  "writesAlreadyExecutedByAgent": false,
+  "modelRequestsObservedAtProbe": 0
+}

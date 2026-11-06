@@ -131,3 +131,7 @@
 - 临时交接：`C:\Users\Administrator\AppData\Local\Temp\IdeaStage-deployment-handoff-2026-10-21.md`，供换窗口使用。长期事实与清单以项目中的本文及上述专题文件为准。
 
 已核对目标机发行目录内的 Git HEAD；MySQL `SELECT VERSION()` 实测为 9.7.4。目标库幂等初始化、生产数据库检查、迁移账号连接、每日加密备份、Windows 下载哈希核对、解密检查及随机库恢复均通过；临时引导账号已清理。网站 systemd 单实例已启动，启动前恢复检查成功，本机 health 200；nginx HTTP 引导返回 503。域名 `ideastage.top` 当前无 IPv4 解析，HTTPS、公网登录/业务及真实 AI 尚未验收；异地网盘副本和 SSH 私钥副本仍待用户整理。后续在本文追加日期、变化、证据与备份结果，`PROGRESS.md` 只更新短进度和入口。
+
+### 2026-11-06：#15真实密码找回及新密码登录确认
+
+用户本人确认找回收信、填写验证码、重设及新密码登录成功。服务器只读核对注册与找回凭证均used、摘要清空，账号active且已验证并匹配既有管理员；不采集认证凭据。应用模型与积分记录仍0，运行微信值匹配lh339683；发行仍33df4878d3a2a30b2e9621211410cfb4a6fd27ab，未切版或开放公网。证据：`docs/verification/v144-live-acceptance-20261106/password-recovery-confirmation.json`和`post-password-recovery-check.json`。下一步正常后台测试赠送及首次应用对话，不把本人验证扩大为整票或正式发布通过。
