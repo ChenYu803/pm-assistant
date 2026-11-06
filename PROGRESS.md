@@ -2,6 +2,8 @@
 
 ### 2026-11-06：#14 真实注册已核实并完成含账号恢复；等待登录态页面验收
 
+本轮code-review固定范围8d95ade...2321d2f，Standards与Spec各由独立代理完整阅读8文件新增差异及4份新增JSON，已确认问题均0；只做静态规则、规格和证据内部一致性审查，未独立连接服务器、操作备份或验收浏览器。
+
 用户已通过专用SSH通道真实注册并登录。13:24（Asia/Shanghai）只读核验指定账号存在、active、邮箱已验证、匹配管理员配置，注册验证码used且摘要已清除；users=1、projects/project_files/model_requests/credit_entries均0。运行提交仍33df487，网站和恢复timer active、Result=success/ExecMainStatus=0，回环健康200、公网和源站403。13:26刷新注册后标准及补充加密包并下载、认证解密，13:28在本机随机新库实际恢复35表/32迁移，逐表计数与正式库一致，指定账号与邮箱验证状态保留，演练库及临时客户端配置已清理。未使用密码登录隔离库，也无项目正文，不能声称完整登录/正文恢复通过。当前专用Chrome无可附加调试连接，代理未读取或导出Cookie；后续由用户在当前已登录窗口打开/profile、/admin、/projects并确认页面，通道和窗口先保持打开。#14仍needs-info；证据见[续执行验收](docs/verification/v144-controlled-upgrade-20261106.md#真实注册后复核与新增恢复点)。
 
 回应用户对代理无故停工的质疑，主动完成剩余可执行部署。按L2生产部署：变更前后均生成标准及维护/入口配置加密补充包，实际下载到D:/Backups/IdeaStage/v144-ses-20261106并使用独立既有密钥认证解密。仅经SSH stdin把本机既有官方DeepSeek配置安全注入runtime，AI_MODE=live、AI_MODEL=deepseek-v4-flash、ADMIN_EMAILS=3037116719@qq.com；核验运行进程与runtime匹配，不输出凭据、不执行付费模型或真实邮件调用。
