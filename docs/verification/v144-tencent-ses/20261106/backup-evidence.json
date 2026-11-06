@@ -1,0 +1,62 @@
+{
+  "before": {
+    "createdAt": "2026-11-06T04:35:45.802Z",
+    "sourceCommit": "77c76768a6ad1d6a9bcc02389bfc08ba465b6345",
+    "localDirectory": "D:/Backups/IdeaStage/v144-ses-20261106",
+    "keyStoredSeparately": true,
+    "backups": [
+      {
+        "name": "2026-11-06T04-34-31-220Z-e6ca1642.isb",
+        "sha256": "656e95dbbfc6626364411095eeeda477ce2ad7a3aa1ab1a60efe3142236d9b4e",
+        "bytes": 6106176,
+        "authenticatedDecryption": true,
+        "requiredEntriesPresent": true
+      },
+      {
+        "name": "2026-11-06-ses-before-config-8c3918de.isb",
+        "sha256": "ea782c91eeb5b2bd30165b4ef369e8f94155aebbdb1b189a97a8fd47b9a04b80",
+        "bytes": 1472,
+        "authenticatedDecryption": true,
+        "requiredEntriesPresent": true
+      }
+    ],
+    "plaintextFilesWritten": false,
+    "restoreTestPerformed": false
+  },
+  "after": {
+    "createdAt": "2026-11-06T04:37:05.875Z",
+    "sourceCommit": "77c76768a6ad1d6a9bcc02389bfc08ba465b6345",
+    "localDirectory": "D:/Backups/IdeaStage/v144-ses-20261106",
+    "keyStoredSeparately": true,
+    "backups": [
+      {
+        "name": "2026-11-06T04-37-03-319Z-929a11a7.isb",
+        "sha256": "5ce01e4f306741c60c36c2ec8336a58353499e7b0727f0da539fa4d0c1f6a33a",
+        "bytes": 6106130,
+        "authenticatedDecryption": true,
+        "requiredEntriesPresent": true
+      },
+      {
+        "name": "2026-11-06-ses-after-config-96ef4c9c.isb",
+        "sha256": "7b7d8d40a827f06d29842136884360c37225f4fd3aa15988231c5d34e8b169d9",
+        "bytes": 1468,
+        "authenticatedDecryption": true,
+        "requiredEntriesPresent": true
+      }
+    ],
+    "plaintextFilesWritten": false,
+    "restoreTestPerformed": false,
+    "runtimeSesFieldsMatchStaging": true
+  },
+  "targetCandidate": "33df4878d3a2a30b2e9621211410cfb4a6fd27ab",
+  "currentCommit": "77c76768a6ad1d6a9bcc02389bfc08ba465b6345",
+  "healthIndependentCheck": 200,
+  "targetBatchExit": 3,
+  "targetBatchFinalCurl": "000",
+  "targetBuildPassed": true,
+  "targetTypecheckPassed": true,
+  "offlineConfigurationCheckPassed": true,
+  "productionRestart": false,
+  "databaseMigration": false,
+  "trueDeliveryCheck": false
+}
