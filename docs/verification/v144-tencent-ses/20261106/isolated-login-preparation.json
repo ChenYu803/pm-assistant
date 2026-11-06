@@ -17,9 +17,9 @@
   "productionCredentialsCopiedIntoApp": false,
   "emailAndModelCredentialsProvided": false,
   "emailOrModelRequestsPerformed": false,
-  "browserLoginVerified": false,
-  "awaitingUserAction": "环境启动并健康后，由用户在本机页面自行输入刚注册的真实账号与原密码；不索取或导出密码、验证码、Cookie",
-  "cleanupComplete": false,
+  "browserLoginVerified": true,
+  "awaitingUserAction": null,
+  "cleanupComplete": true,
   "healthCheckedAt": "2026-11-06T05:42:14.874Z",
   "applicationPid": 4716,
   "supervisorPid": 2224,
@@ -36,11 +36,14 @@
       "status": 200
     }
   ],
-  "applicationReady": true,
+  "applicationReady": false,
   "unauthenticatedProfileCheck": {
     "status": 302,
     "location": "/login?callbackUrl=%2Fprofile",
     "unauthenticated": true
   },
-  "cleanupScript": "D:/Backups/IdeaStage/v144-ses-20261106/cleanup-login-recovery.cjs"
+  "cleanupScript": "D:/Backups/IdeaStage/v144-ses-20261106/cleanup-login-recovery.cjs",
+  "cleanupAt": "2026-11-06T05:59:51.026Z",
+  "browserLoginEvidenceMethod": "用户报告恢复环境登录成功；未自动观察浏览器",
+  "userConfirmationRecordedAt": "2026-11-06T06:02:53.730Z"
 }

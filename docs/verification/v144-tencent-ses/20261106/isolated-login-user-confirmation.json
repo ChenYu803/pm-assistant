@@ -1,0 +1,15 @@
+{
+  "recordedAt": "2026-11-06T06:02:53.730Z",
+  "evidenceMethod": "用户在聊天中报告，未自动接管浏览器或采集Cookie",
+  "userFeedback": "恢复环境登录成功。顺带一提，我没有“到运行 SSH 通道的 PowerShell 窗口按 Ctrl+C”，而是直接关闭了终端，抱歉",
+  "restoredLoginSucceeded": true,
+  "archive": "2026-11-06T05-25-12-723Z-79df57d3.isb",
+  "sourceCommit": "33df4878d3a2a30b2e9621211410cfb4a6fd27ab",
+  "database": "ideastage_login_369dcd9acd50fd28",
+  "baseUrl": "http://127.0.0.1:3444",
+  "originalRegisteredCredentialsEnteredByUser": true,
+  "credentialsCollectedByAgent": false,
+  "historicalProjectAndContentValidation": "不适用：升级前及注册后快照没有项目或正文；不声称正文恢复实测",
+  "runtimeMode": "本机Next dev --webpack，备份对应源码；不替代目标机生产构建验收",
+  "cleanupEvidence": "isolated-login-cleanup.json"
+}
