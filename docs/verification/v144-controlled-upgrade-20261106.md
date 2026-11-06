@@ -64,3 +64,18 @@
 同一固定范围，真实问题0：虚报0、额外范围0、可确认配置/操作错误及证据矛盾0。未完成的#14真实登录/视觉/远端即时核验和#15真实邮件/模型/预算/微信/开放仍明确待办。只读仓库文档与证据，不独立重验目标机或备份实体。
 
 两轴已确认发现各0；Standards覆盖有上述限制。
+
+## 真实注册后复核与新增恢复点
+
+2026-11-06，用户确认已经通过专用SSH入口注册并登录，询问能否关闭通道。告知保持通道和当前登录窗口，随后只读正式库复核，未索取密码、验证码或Cookie。
+
+- 13:24（Asia/Shanghai）：指定账号存在、active、邮箱已验证，匹配ADMIN_EMAILS；注册验证码state=used且code_digest已清除。users=1，projects/project_files/model_requests/credit_entries均0。真实注册反馈及消费记录支持注册邮件链路成功，不证明找回模板或完整CAM最小权限通过。详见[账号与服务证据](v144-tencent-ses/20261106/registered-account-check.json)。
+- 发行HEAD仍33df4878d3a2a30b2e9621211410cfb4a6fd27ab；网站与恢复timer均active，恢复Result=success/ExecMainStatus=0。回环健康200，公网与直接源站健康403。该次状态核验没有读取密码哈希、验证码或会话令牌，也没有新增模型、资金或项目写入。
+- 13:26：标准包2026-11-06T05-25-12-723Z-79df57d3.isb（SHA-256 0adfbff5f5831d6ded678724af08983f10ad42ceeaa5fd3375f67dd9695775fc）与同阶段配置补充包已下载至既有受限备份目录，并使用独立既有密钥认证解密、核对必需成员；未将明文配置落盘。详见[注册后备份](v144-tencent-ses/20261106/after-registration-backup.json)。
+- 13:28：该新标准包已在本机MySQL9.7.2随机新库实际恢复，35张表/32项迁移及逐表行数均与正式库一致，另确认指定真实账号active且邮箱验证时间保留。演练库及临时私有客户端配置已清理。详见[注册后恢复](v144-tencent-ses/20261106/after-registration-restore.json)。旧空库备份不作为新账号恢复证据。
+
+恢复验证未使用用户密码正常登录隔离库，且正式库没有项目和正文，因此loginAndContentValidation仍为false；没有把行数和字段核对当作完整登录、正文恢复。用户当前Chrome未启用可附加调试连接，代理未接管会话或导出Cookie。页面验收待用户在当前登录窗口打开/profile、/admin、/projects，确认账号与余额、管理后台及项目界面正常；此时通道先保持打开。原库无旧账号或旧资料，历史数据页面验收不适用。#14继续needs-info，不宣称受控验收就绪或正式开放。
+
+本轮重试只读git ls-remote成功：origin的refs/heads/codex-pm-assistant-v1.1-docs仍指向77c76768a6ad1d6a9bcc02389bfc08ba465b6345。此前连接失败事实保留，本次已取得即时远端状态；目标版本33df487由本机Git bundle送达，尚未推送。见[远端查询](v144-tencent-ses/20261106/remote-ref-check.json)。未执行push，仍待用户授权。
+
+本轮补记验证：tsc --noEmit、git diff --check通过；8份新增/改动文件凭据特征扫描0命中，新增JSON均可解析。备份目录及独立密钥ACL仍仅Administrators/SYSTEM，未残留restore-临时目录。既有有效业务回归未重复执行。

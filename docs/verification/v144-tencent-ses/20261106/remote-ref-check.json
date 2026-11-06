@@ -1,0 +1,10 @@
+{
+  "checkedAt": "2026-11-06T05:29:49.560Z",
+  "remote": "origin",
+  "ref": "refs/heads/codex-pm-assistant-v1.1-docs",
+  "commit": "77c76768a6ad1d6a9bcc02389bfc08ba465b6345",
+  "commandSucceeded": true,
+  "deployedCommit": "33df4878d3a2a30b2e9621211410cfb4a6fd27ab",
+  "pushPerformed": false,
+  "relation": "远端仍为旧提交；部署候选经本机Git bundle送达，尚未推送候选及后续文档"
+}

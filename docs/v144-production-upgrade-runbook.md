@@ -58,7 +58,7 @@ ssh -N -T -i "D:\SSH_pem\IdeaStage_SSH_2026.pem" -o BatchMode=yes -o StrictHostK
 & "C:\Program Files\Google\Chrome\Application\chrome.exe" --user-data-dir="C:\Users\Administrator\.ideastage-recovery\v144-browser" "--host-resolver-rules=MAP ideastage.top 127.0.0.1" --no-proxy-server "https://ideastage.top/register"
 ~~~
 
-页面正常打开后，以3037116719@qq.com注册，自行设置密码、收取并填写真实验证码。密码/验证码不发聊天。注册成功后告诉代理“已注册并登录”，再由代理继续权限与登录态验收；注册成功本身不等于全部发布闸通过。
+页面正常打开后，以3037116719@qq.com注册，自行设置密码、收取并填写真实验证码。密码/验证码不发聊天。注册成功后告诉代理“已注册并登录”，代理继续核实正式库账号状态及新增恢复点。当前独立Chrome未开启调试连接，代理不能直接接管该登录窗口；用户需在该窗口依次打开/profile（个人主页、账号与积分）、/admin（用户管理、当前账号正常）、/projects（项目界面），反馈页面是否正常。原库无项目时不以空项目页声称历史正文已验收；注册成功本身不等于全部发布闸通过。
 
 成功判据：专用浏览器能在无证书警告下打开真实域名注册页，普通浏览器/公网仍403。如果端口443已被占用或出现证书警告，停止并报错误原文，不关防火墙、不忽略证书、不重复改DNS。结束验收先关闭专用Chrome，再在隧道窗口按Ctrl+C即可撤销访问；独立浏览器资料留在本机受限目录，不入Git/备份源码。
 
