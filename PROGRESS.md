@@ -1,5 +1,12 @@
 # PROGRESS.md - 项目状态与交接
 
+### 2026-11-07：停止后可靠用量链路诊断与当前冻结只读复核
+
+北京时间11:46目标机只读核对：原停止请求仍stopped/user_stop、usage_json与finish_reason与cost_cny均NULL，317.088积分pending；pending_expired=0。24小时期限为2026-11-07 22:36:07.231，分钟恢复timer active且11:46执行成功；当前冻结不能据此判断到期释放故障，未手工触发恢复或修改资金。证据见`docs/verification/v144-live-acceptance-20261106/stop-usage-recheck-20261107.json`。
+
+代码根因已定位：`ai.ts`请求include_usage并把流块交给`model-metering.ts`的observe，finishRequest要求有效usage及finish_reason后才标记reliable；`model-request-control.ts`主动停止直接abort同一上游连接，可能在最终用量块前结束接收。`pending-usage-recovery.ts`仅扫描本地账目并重试结算/超期免单，没有调用供应商按请求补查用量；计量器支持补写迟到证据的分支也不产生新证据。本次只读诊断未修复停止计量，未部署或新增模型调用；可靠停止计量继续阻断正式开放。
+
+
 ### 2026-11-07：按用户要求恢复本人检查用的受控访问通道
 
 已恢复Windows本机SSH隧道，仅监听127.0.0.1:443；目标域名经隧道health200，公网health403，TLS正常校验。私有进程记录沿用`C:/Users/Administrator/.ideastage-recovery/live-acceptance-20261106/session.json`；浏览器仍由用户本人沿用原专用配置操作。未改服务器配置、未发起模型请求、未查新账本，不能由此判断停止请求已取得可靠用量或预留已释放。证据见`docs/verification/v144-live-acceptance-20261106/controlled-entry-reopened-20261107.json`。通道保留供用户检查，后续关闭须按私有记录核实进程身份。此前可靠停止计量和正式开放的阻断仍在。

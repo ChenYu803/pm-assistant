@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-11-07T03:46:09.860Z",
+  "readOnly": true,
+  "manualRecoveryRun": false,
+  "release": "/srv/ideastage/releases/33df4878d3a2a30b2e9621211410cfb4a6fd27ab",
+  "rows": [
+    {
+      "checked_at_utc": "2026-11-07 03:46:09.849",
+      "id": "f72654ce-4521-4770-abea-7869ad117d20",
+      "status": "stopped",
+      "error_code": "user_stop",
+      "finish_reason": null,
+      "usage_status": "pending",
+      "usage_json": null,
+      "cost_cny": null,
+      "cost_reason": "usage_unconfirmed",
+      "website_borne": 0,
+      "state": "pending",
+      "reserved": "317.08800000",
+      "consumed": null,
+      "pending_since": "2026-11-06 14:36:07.231",
+      "reason": "stopped_usage_unconfirmed",
+      "release_deadline_utc": "2026-11-07 14:36:07.231",
+      "pending_expired": 0
+    }
+  ],
+  "timer": "NextElapseUSecRealtime=Sat 2026-11-07 11:47:00 CST\nLastTriggerUSec=Sat 2026-11-07 11:46:00 CST\nResult=success\nId=ideastage-usage-recovery.timer\nActiveState=active\nSubState=waiting\n\nResult=success\nExecMainStatus=0\nId=ideastage-usage-recovery.service\nActiveState=inactive\nSubState=dead"
+}
