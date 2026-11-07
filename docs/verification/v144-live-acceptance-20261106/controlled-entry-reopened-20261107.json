@@ -1,0 +1,17 @@
+{
+  "checkedAt": "2026-11-07T03:43:03.9124748Z",
+  "purpose": "用户检查现有对话是否取得可靠用量",
+  "loopbackTunnelReady": true,
+  "bindAddress": "127.0.0.1",
+  "localPort": 443,
+  "tunnelHealth": 200,
+  "publicHealth": 403,
+  "publicAccessChanged": false,
+  "serverConfigurationChanged": false,
+  "modelRequestStartedByAgent": false,
+  "browserStartedByAgent": false,
+  "privateSessionPath": "C:/Users/Administrator/.ideastage-recovery/live-acceptance-20261106/session.json",
+  "existingManualBrowserProfile": "C:/Users/Administrator/.ideastage-recovery/v144-browser",
+  "usageRechecked": false,
+  "note": "仅恢复本机SSH受控通道；未核查账本当前状态，不据此判断停止请求已结算或预留已释放。"
+}
