@@ -514,6 +514,7 @@ export default function ChatArea({
   const [activeAssistantMessageId, setActiveAssistantMessageId] =
     useState<string | null>(null);
   const [isStopping, setIsStopping] = useState(false);
+  const stoppedMessageIds = useRef(new Set<string>());
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [error, setError] = useState("");
   // 配置类错误（API key 无效/未配置）——弹窗提示，不进对话区，也不提供重试
@@ -1107,6 +1108,7 @@ export default function ChatArea({
 
           switch (event.type) {
             case "token":
+              if (event.messageId && stoppedMessageIds.current.has(event.messageId)) break;
               if (event.content && event.messageId) {
                 setMessages((prev) =>
                   prev.map((message) =>
@@ -1364,6 +1366,7 @@ export default function ChatArea({
         throw new Error(data.error || "停止生成失败");
       }
       const { message, tabVersion: nextTabVersion } = await res.json();
+      stoppedMessageIds.current.add(activeAssistantMessageId);
       if (typeof nextTabVersion === "number") {
         onTabVersionChange?.(tabId, nextTabVersion);
       }
@@ -1941,7 +1944,7 @@ export default function ChatArea({
               {isStreaming ? (
                 <span className="flex items-center gap-1">
                   <span aria-hidden="true">■</span>
-                  {isStopping ? "正在停止" : "停止生成"}
+                  {isStopping ? "等待最终用量" : "停止显示"}
                 </span>
               ) : editingMessage ? (
                 "重新发送"
@@ -1951,7 +1954,7 @@ export default function ChatArea({
             </Button>
           </div>
           <div className="mt-1.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-xs">
-            <span className="text-gray-400">Enter 发送 · Shift+Enter 换行</span>
+            <span className="text-gray-400">Enter 发送 · Shift+Enter 换行{isStreaming && " · 停止显示后后台仍可能生成并计费，收到最终用量后结算"}</span>
             {contextUsage !== null && (
               <span
                 data-testid="context-usage"

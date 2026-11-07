@@ -145,7 +145,8 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
   const busySessions = sessions.filter((session) => busySessionIds.has(session.id));
   const otherBusySessions = busySessions.filter((session) => session.id !== activeSessionId || Boolean(selectedDemo));
   const stageGenerating = busySessionIds.size > 0;
-  const sessionGenerating = Boolean(activeSessionId && (sending || generatingSessionIds.includes(activeSessionId)));
+  const collectingStoppedUsage = messages.some(message => message.creditCall?.state === "reserved" && message.creditCall.reason === "stopped_collecting_usage");
+  const sessionGenerating = Boolean(activeSessionId && (sending || generatingSessionIds.includes(activeSessionId) || collectingStoppedUsage));
 
   const request = useCallback(async (url: string, init?: RequestInit) => {
     const response = await fetch(url, init);
@@ -499,7 +500,7 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
       stoppedIds.current.add(sessionId);
       await refreshStageFacts();
       if (activeView.current.sessionId === sessionId) await loadMessages(sessionId);
-      showToast("生成已停止");
+      showToast("已停止显示；后台收取最终用量后结算。");
     } catch (caught) { setError(caught instanceof Error ? caught.message : "停止生成失败。"); }
     finally { setStoppingGeneration(false); }
   }
@@ -736,7 +737,8 @@ export default function ProductIterationWorkbench({ project, iteration, demoSess
               draftVersions.current[activeSessionId] = (draftVersions.current[activeSessionId] ?? 0) + 1;
               setDrafts((previous) => ({ ...previous, [activeSessionId]: value }));
             } }} disabled={!activeSession || currentStatus === "completed" || Boolean(selectedDemo) || messagesLoading || messagesFailed} placeholder={selectedDemo ? "演示会话为只读" : currentStatus === "completed" ? "重新打开阶段后可继续讨论" : messagesFailed ? "重新加载会话后可继续讨论" : activeSession ? "写下你现在想讨论的问题或判断……" : "开始本阶段工作后即可发送消息"} aria-label="输入消息"/>
-            <div>{sessionGenerating ? <button className="stop-generation-button" type="button" disabled={stoppingGeneration} onClick={() => void stopGeneration()}>{stoppingGeneration ? "正在停止…" : "停止生成"}</button> : null}<button type="submit" disabled={!activeSession || !input.trim() || sessionGenerating || currentStatus === "completed" || messagesLoading || messagesFailed}>{sending ? "发送中…" : "发送消息"}</button></div>
+            <div>{sessionGenerating ? <button className="stop-generation-button" type="button" disabled={stoppingGeneration || collectingStoppedUsage} onClick={() => void stopGeneration()}>{collectingStoppedUsage ? "等待最终用量…" : stoppingGeneration ? "正在停止…" : "停止显示"}</button> : null}<button type="submit" disabled={!activeSession || !input.trim() || sessionGenerating || currentStatus === "completed" || messagesLoading || messagesFailed}>{sending ? "发送中…" : "发送消息"}</button></div>
+            {sessionGenerating && <p className="text-xs text-muted-foreground" role="status">停止显示后，后台请求仍可能继续生成并计费；收到最终用量后按实际消耗结算。</p>}
           </form>
         </section>
 

@@ -3,7 +3,7 @@ import { startModelRequest, assertModelProcessingActive, completeModelProcessing
 import { conversationBudget } from "../src/lib/conversation-credit-budget.ts";
 import { lockCreditUsers } from "../src/lib/credits-ledger.ts";
 import { requestModelStop, stopPolishRequest } from "../src/lib/model-request-control.ts";
-import { settleConversationCredits } from "../src/lib/conversation-credits.ts";
+import { findCreditCall, settleConversationCredits } from "../src/lib/conversation-credits.ts";
 import { getMysqlPool, closeMysqlPoolForTests } from "../src/lib/mysql.ts";
 import { chromium, request } from "playwright-core";
 import { createHash, randomUUID } from "node:crypto";
@@ -14,17 +14,18 @@ import { requestRegistrationCode } from "./verify-email-fixture.mjs";
 let base=process.env.BASE_URL;
 const output=process.env.V141_REPLAY_OUTPUT_DIR, clients=[],workflows=[],workflowResults=[],assertions=[],observations=[],pageErrors=[];
 let pass=0,fail=0,browser;
+const selectedWorkflows=new Set((process.env.V144_STOP_BILLING_WORKFLOWS??process.env.V144_STOP_BILLING_WORKFLOW??"").split(",").map(name=>name.trim()).filter(Boolean));
 function check(name,okay,actual) {assertions.push({name,okay:Boolean(okay),...(!okay?{actual}: {})}); console.log((okay?"✅ ":"❌ ")+name);if(okay)pass++;else fail++;}
 function must(name,okay) {check(name,okay);if(!okay)throw Error(name);}
 async function section(name,fn) {
- if(process.env.V144_STOP_BILLING_WORKFLOW&&name!==process.env.V144_STOP_BILLING_WORKFLOW)return;
+ if(selectedWorkflows.size&&!selectedWorkflows.has(name))return;
  const beforePass=pass,beforeFail=fail;
  try {await fn();}catch(error){check(name+"："+error.message,false,{stack:error.stack});}
  const result={name,pass:pass-beforePass,fail:fail-beforeFail};
  workflowResults.push(result);
  if(result.fail===0)workflows.push(name);
  // 每组结束落盘摘要，保留故障定位信号，不向主会话灌入对话输出。
- await writeFile(join(output,"scenario-progress.json"),JSON.stringify({pass,fail,workflowResults},null,2));
+ await writeFile(join(output,"scenario-progress.json"),JSON.stringify({pass,fail,workflowResults,failures:assertions.filter(a=>!a.okay)},null,2));
 }
 async function json(http,url,data){const r=data===undefined?await http.get(base+url):await http.post(base+url,{data});if(!r.ok())throw Error(url+" HTTP "+r.status());return r.json();}
 async function login(http,email,password="credits-12345"){const csrfToken=(await json(http,"/api/auth/csrf")).csrfToken;await http.post(base+"/api/auth/callback/credentials",{form:{email,password,csrfToken,callbackUrl:base+"/projects"},headers:{"X-Auth-Return-Redirect":"1"}});return(await json(http,"/api/auth/session")).user;}
@@ -49,6 +50,7 @@ async function session(work,stage="analysis"){const value=await json(work.actor.
 async function generate(target,mode="normal",content="完整输入样本 😀",requestId=randomUUID()){await fixture("/control",{mode});const r=await target.work.actor.http.post(base+target.path,{data:{content,requestId}});return {response:r,body:await r.json(),requestId,content};}
 async function statement(actor){return json(actor.http,"/api/credits");}
 async function lifecycle(type,payload={}){return new Promise((resolve,reject)=>{const timer=setTimeout(()=>{process.off("message",listener);reject(Error("隔离生命周期超时"));},60000);const listener=message=>{if(message.type!==type)return;clearTimeout(timer);process.off("message",listener);if(message.error)reject(Error(message.error));else resolve(message);};process.on("message",listener);process.send({type,...payload});});}
+function callEntries(statement,id,type){return statement.entries.filter(e=>e.context?.callId===id&&(!type||e.businessType===type));}
 async function model(admin,call){const result=await json(admin.http,"/api/admin/model-requests?q="+call.id);return result.requests.find(row=>row.id===call.id);}
 async function makeFile(work) {
  const target=await session(work);
@@ -72,9 +74,187 @@ try {
  const admin=await client(process.env.V144_ADMIN_EMAIL),actor=await client("stop-"+randomUUID()+"@test.local");
  await grant(admin,actor,"10000");
  const work=await makeFile(await make(actor));
+ await section("stop-delayed-usage",async()=>{
+  const initialFail=fail,target=await session(work),requestId=randomUUID(),content="停止后收集原请求最终用量";
+  const before=await statement(actor),plan=await fixture("/control",{mode:"stop-delayed-usage"});
+  const running=actor.http.post(base+target.path,{data:{content,requestId}});
+  // 立即挂异常处理，失败路径也释放供应商并等待原HTTP请求退出。
+  void running.catch(()=>{});
+  try {
+   await poll(()=>fixture("/stats"),s=>s.calls.some(c=>c.providerId===plan.providerId&&c.phase==="waiting-stop-usage-release"));
+   await poll(()=>json(actor.http,target.path),h=>h.messages.some(m=>m.role==="assistant"&&m.content?.includes("供应商正文保护样本")));
+   const stopping=await actor.http.post(base+"/api/iterations/"+work.iteration.id+"/sessions/"+target.id+"/stop");
+   must("停止入口立即返回成功",stopping.ok());
+   const immediate=await json(actor.http,target.path),reply=immediate.messages.find(m=>m.role==="assistant"),call=reply?.creditCall;
+   const upstream=(await fixture("/stats")).calls.find(c=>c.providerId===plan.providerId);
+   const held=await statement(actor);
+   observations.push({case:"stop-delayed-usage",phase:"after-stop-before-release",reply,upstream,balance:held.balance});
+   check("停止返回后立即GET消息已停止",reply?.status==="failed"&&!reply?.candidate,reply);
+   check("停止后原供应商连接保持打开",upstream?.closed===false&&upstream?.phase==="waiting-stop-usage-release",upstream);
+   check("停止收集中保留原预留及原因",call?.state==="reserved"&&call?.reason==="stopped_collecting_usage"&&call?.consumed===null&&units(call?.reserved??"0")>units("300"),call);
+   check("等待最终用量期间余额守恒且未扣分",total(held.balance)===total(before.balance)&&held.pendingCalls.some(c=>c.id===call?.id&&c.state==="reserved"),held);
+   // 红测在业务断言失败后退出，finally负责控制端清理，避免继续运行无意义用例。
+   if(fail>initialFail) return;
+   const countBeforeBlocked=(await fixture("/stats")).count;
+   const blocked=await actor.http.post(base+target.path,{data:{content:"同会话停止收尾期间禁止新增预留",requestId:randomUUID()}});
+   const blockedBalance=await statement(actor);
+   check("停止收尾期间同会话新请求被拒绝且不新增reserve",blocked.status()===409&&(await fixture("/stats")).count===countBeforeBlocked&&JSON.stringify(blockedBalance.balance)===JSON.stringify(held.balance)&&blockedBalance.total===held.total&&JSON.stringify(blockedBalance.pendingCalls)===JSON.stringify(held.pendingCalls),{httpStatus:blocked.status(),balance:blockedBalance.balance,total:blockedBalance.total});
+
+   await fixture("/release-usage",{providerId:plan.providerId});
+   await running;
+   const final=await poll(()=>json(actor.http,target.path),h=>h.messages.find(m=>m.role==="assistant")?.creditCall?.state==="settled");
+   const saved=final.messages.find(m=>m.role==="assistant"),row=await model(admin,saved.creditCall),after=await statement(actor);
+   const expected=row.price.start.peak?"4.032":"2.016";
+   check("停止后最终可靠用量按实结算",row.status==="stopped"&&row.usageStatus==="reliable"&&row.usage?.total_tokens===1100&&row.usage?.completion_tokens===100&&row.providerId===plan.providerId&&saved.creditCall.reason==="stopped_confirmed"&&saved.creditCall.consumed===expected,row);
+   check("最终余额只扣可靠费用并释放剩余预留",total(before.balance)-total(after.balance)===units(expected)&&after.balance.gift.reserved===before.balance.gift.reserved&&!after.pendingCalls.some(c=>c.id===call.id),after);
+   check("停止后的尾文和候选均未保存",saved.status==="failed"&&saved.content===reply.content&&!saved.candidate&&!JSON.stringify(final).includes("停止后禁止保存"),saved);
+   check("只产生一次消费流水及一次余额释放",callEntries(after,call.id,"model_settle").length===1&&callEntries(after,call.id,"model_settle")[0].amount==="-"+expected&&callEntries(after,call.id,"model_release").length===1,callEntries(after,call.id));
+   const count=(await fixture("/stats")).count;
+   await Promise.all([actor.http.post(base+"/api/iterations/"+work.iteration.id+"/sessions/"+target.id+"/stop"),actor.http.post(base+"/api/iterations/"+work.iteration.id+"/sessions/"+target.id+"/stop")]);
+   await actor.http.post(base+target.path,{data:{content,requestId}});
+   const replay=await statement(actor);
+   check("重复停止和原key重发不会再次结算或调用",(await fixture("/stats")).count===count&&JSON.stringify(replay.balance)===JSON.stringify(after.balance)&&JSON.stringify(callEntries(replay,call.id))===JSON.stringify(callEntries(after,call.id)),callEntries(replay,call.id));
+   observations.push({case:"stop-delayed-usage",phase:"settled",saved,row,balance:after.balance});
+  } finally {
+   await fixture("/release-usage",{providerId:plan.providerId}).catch(()=>{});
+   await running.catch(()=>{});
+  }
+ });
+ await section("polish-stop-reliable-usage",async()=>{
+  const requestId=randomUUID(),content="completion停止后只收可靠用量",before=await statement(actor);
+  const filesBefore=await json(actor.http,"/api/projects/"+work.project.id+"/files"),plan=await fixture("/control",{mode:"hold"});
+  const running=actor.http.post(base+work.path,{data:{content,requestId}});void running.catch(()=>{});
+  await poll(()=>fixture("/stats"),s=>s.calls.some(c=>c.providerId===plan.providerId));
+  const stopping=await actor.http.delete(base+work.path,{data:{requestId}});
+  const immediate=await json(actor.http,work.path+"?requestId="+requestId),upstream=(await fixture("/stats")).calls.find(c=>c.providerId===plan.providerId);
+  check("completion停止后保留running身份并登记收尾",stopping.status()===200&&immediate.state==="running"&&immediate.creditCall.state==="reserved"&&immediate.creditCall.reason==="stopped_collecting_usage",immediate);
+  check("completion保留原请求且尚无最终响应",upstream?.closed===false&&upstream?.phase==="opened",upstream);
+  await running;
+  const result=await poll(()=>json(actor.http,work.path+"?requestId="+requestId),r=>r.creditCall?.state==="settled"),row=await model(admin,result.creditCall),after=await statement(actor);
+  const expected=row.price.start.peak?"4.032":"2.016";
+  check("completion最终可靠用量按实结算",result.state==="stopped"&&result.creditCall.reason==="stopped_confirmed"&&result.creditCall.consumed===expected&&row.status==="stopped"&&row.usageStatus==="reliable"&&row.usage?.total_tokens===1100&&!row.websiteBorne,row);
+  check("停止润色没有保存结果或改写原文件",!Object.hasOwn(result,"polished")&&JSON.stringify(await json(actor.http,"/api/projects/"+work.project.id+"/files"))===JSON.stringify(filesBefore),result);
+  check("completion只扣一次且剩余预留释放",total(before.balance)-total(after.balance)===units(expected)&&after.balance.gift.reserved===before.balance.gift.reserved&&callEntries(after,result.creditCall.id,"model_settle").length===1&&callEntries(after,result.creditCall.id,"model_release").length===1,callEntries(after,result.creditCall.id));
+  const count=(await fixture("/stats")).count;
+  await Promise.all([actor.http.delete(base+work.path,{data:{requestId}}),actor.http.delete(base+work.path,{data:{requestId}})]);
+  await actor.http.post(base+work.path,{data:{content,requestId}});
+  const replay=await statement(actor);
+  check("completion重复停止及重发保持同一费用",JSON.stringify(replay.balance)===JSON.stringify(after.balance)&&JSON.stringify(callEntries(replay,result.creditCall.id))===JSON.stringify(callEntries(after,result.creditCall.id))&&(await fixture("/stats")).count===count);
+  observations.push({case:"polish-stop-reliable-usage",immediate,upstream,result,row,balance:after.balance});
+ });
+ await section("stop-usage-missing-and-disconnect",async()=>{
+  for(const mode of ["stop-delayed-missing","stop-delayed-disconnect"]) {
+   const target=await session(work),requestId=randomUUID(),before=await statement(actor),plan=await fixture("/control",{mode});
+   const running=actor.http.post(base+target.path,{data:{content:"停止后的缺用量兜底 "+mode,requestId}});void running.catch(()=>{});
+   try {
+    await poll(()=>fixture("/stats"),s=>s.calls.some(c=>c.providerId===plan.providerId&&c.phase==="waiting-stop-usage-release"));
+   await poll(()=>json(actor.http,target.path),h=>h.messages.some(m=>m.role==="assistant"&&m.content?.includes("供应商正文保护样本")));
+    const stopping=await actor.http.post(base+"/api/iterations/"+work.iteration.id+"/sessions/"+target.id+"/stop");
+    const immediate=await json(actor.http,target.path),reply=immediate.messages.find(m=>m.role==="assistant");
+    check(mode+"停止后保留预留等待原请求",stopping.ok()&&reply?.status==="failed"&&reply.creditCall.state==="reserved"&&reply.creditCall.reason==="stopped_collecting_usage",reply);
+    await fixture("/release-usage",{providerId:plan.providerId});await running;
+    const final=await poll(()=>json(actor.http,target.path),h=>h.messages.find(m=>m.role==="assistant")?.creditCall?.state===(mode==="stop-delayed-missing"?"pending":"released"));
+    const saved=final.messages.find(m=>m.role==="assistant"),row=await model(admin,saved.creditCall),after=await statement(actor);
+    if(mode==="stop-delayed-missing") {
+    check(mode+"没有usage则pending且成本未知",saved.creditCall.reason==="stopped_usage_unconfirmed"&&saved.creditCall.consumed===null&&row.status==="stopped"&&row.usageStatus!=="reliable"&&row.usage===null&&row.costCny===null&&!row.websiteBorne,row);
+    check(mode+"既不估扣也不释放预留",total(before.balance)===total(after.balance)&&units(after.balance.gift.reserved)===units(before.balance.gift.reserved)+units(saved.creditCall.reserved)&&units(after.balance.gift.available)===units(before.balance.gift.available)-units(saved.creditCall.reserved)&&after.pendingCalls.some(c=>c.id===saved.creditCall.id&&c.state==="pending"&&c.reserved===saved.creditCall.reserved)&&callEntries(after,saved.creditCall.id,"model_settle").length===0&&callEntries(after,saved.creditCall.id,"model_release").length===0,after.balance);
+    } else {
+     check(mode+"真实断流优先失败且成本未知",row.status==="failed"&&row.websiteBorne&&row.usageStatus!=="reliable"&&row.usage===null&&row.costCny===null,row);
+     check(mode+"真实断流立即免单释放不冻结",saved.creditCall.state==="released"&&saved.creditCall.consumed==="0"&&JSON.stringify(after.balance)===JSON.stringify(before.balance)&&!after.pendingCalls.some(c=>c.id===saved.creditCall.id)&&callEntries(after,saved.creditCall.id,"model_settle").length===0&&callEntries(after,saved.creditCall.id,"model_release").length===1,saved.creditCall);
+    }
+    check(mode+"停止后尾文与候选没有写入",saved.content===reply.content&&!saved.candidate&&!JSON.stringify(final).includes("停止后禁止保存"),saved);
+    observations.push({case:mode,immediate:reply,saved,row,balance:after.balance});
+   } finally {await fixture("/release-usage",{providerId:plan.providerId}).catch(()=>{});await running.catch(()=>{});}
+  }
+ });
+ await section("stop-usage-provider-failure",async()=>{
+  for(const [mode,finish,status,reliable] of [["stop-delayed-resource-error","insufficient_system_resource","failed",true],["stop-delayed-content-filter","content_filter","failed",true],["stop-delayed-length","length","failed",true],["stop-delayed-unknown-finish","fixture_unknown","interrupted",true],["stop-delayed-no-finish",null,"interrupted",false]]) {
+   const target=await session(work),requestId=randomUUID(),before=await statement(actor),plan=await fixture("/control",{mode});
+   const running=actor.http.post(base+target.path,{data:{content:"停止收尾后供应商明确失败 "+finish,requestId}});void running.catch(()=>{});
+   try {
+    await poll(()=>fixture("/stats"),s=>s.calls.some(c=>c.providerId===plan.providerId&&c.phase==="waiting-stop-usage-release"));
+   await poll(()=>json(actor.http,target.path),h=>h.messages.some(m=>m.role==="assistant"&&m.content?.includes("供应商正文保护样本")));
+    const stopping=await actor.http.post(base+"/api/iterations/"+work.iteration.id+"/sessions/"+target.id+"/stop");
+    const immediate=await json(actor.http,target.path),reply=immediate.messages.find(m=>m.role==="assistant");
+    must(mode+"先登记停止并保留原请求收尾",stopping.ok()&&reply.creditCall.state==="reserved"&&reply.creditCall.reason==="stopped_collecting_usage");
+    await fixture("/release-usage",{providerId:plan.providerId});await running;
+    const final=await json(actor.http,target.path),saved=final.messages.find(m=>m.role==="assistant"),row=await model(admin,saved.creditCall),after=await statement(actor);
+    check(mode+"供应商终态优先于停止并如实保留成本",row.status===status&&row.websiteBorne&&row.finishReason===finish&&(reliable?row.usageStatus==="reliable"&&row.usage?.total_tokens===1100&&row.costCny!==null:row.usageStatus!=="reliable"&&row.usage===null&&row.costCny===null),row);
+    check(mode+"停止后供应商明确失败仍免单并释放",saved.creditCall.state==="released"&&saved.creditCall.consumed==="0"&&JSON.stringify(after.balance)===JSON.stringify(before.balance)&&callEntries(after,saved.creditCall.id,"model_settle").length===0&&callEntries(after,saved.creditCall.id,"model_release").length===1&&!after.pendingCalls.some(c=>c.id===saved.creditCall.id),saved.creditCall);
+    check(mode+"故障尾文和候选均不采用",saved.content===reply.content&&!saved.candidate&&!JSON.stringify(final).includes("停止后禁止保存"),saved);
+    observations.push({case:mode,saved,row,balance:after.balance});
+   } finally {await fixture("/release-usage",{providerId:plan.providerId}).catch(()=>{});await running.catch(()=>{});}
+  }
+  // 非流式供应商在停止意图提交后返回真实HTTP故障，仍须免单。
+  const requestId=randomUUID(),before=await statement(actor),plan=await fixture("/control",{mode:"hold-http-error"});
+  const running=actor.http.post(base+work.path,{data:{content:"停止后HTTP故障",requestId}});void running.catch(()=>{});
+  try {
+   await poll(()=>fixture("/stats"),stats=>stats.calls.some(c=>c.providerId===plan.providerId&&c.phase==="waiting-completion-error"));
+   const stopping=await actor.http.delete(base+work.path,{data:{requestId}}),immediate=await json(actor.http,work.path+"?requestId="+requestId);
+   must("completion HTTP故障前保持原请求运行收尾",stopping.ok()&&immediate.state==="running"&&immediate.creditCall.state==="reserved"&&immediate.creditCall.reason==="stopped_collecting_usage");
+   await fixture("/release-usage",{providerId:plan.providerId});await running;
+   const final=await json(actor.http,work.path+"?requestId="+requestId),row=await model(admin,final.creditCall),after=await statement(actor);
+   check("completion停止后的HTTP故障优先failed且不伪造usage",final.state==="failed"&&row.status==="failed"&&row.websiteBorne&&row.usageStatus!=="reliable"&&row.usage===null&&row.costCny===null&&!Object.hasOwn(final,"polished"),{final,row});
+   check("completion停止后的HTTP故障免单释放一次",final.creditCall.state==="released"&&final.creditCall.consumed==="0"&&JSON.stringify(after.balance)===JSON.stringify(before.balance)&&callEntries(after,final.creditCall.id,"model_settle").length===0&&callEntries(after,final.creditCall.id,"model_release").length===1,final.creditCall);
+   observations.push({case:"hold-http-error",final,row,balance:after.balance});
+  } finally {await fixture("/release-usage",{providerId:plan.providerId}).catch(()=>{});await running.catch(()=>{});}
+
+ });
+ await section("stop-usage-timeout",async()=>{
+  // 全程时限由公开AI请求参数缩短；不篡改SDK、时钟、错误或账本。
+  // 此组覆盖SDK边界，HTTP应用组不改变正式调用的生产时限。
+  const fixtureUrl=new URL(process.env.V144_PROVIDER_FIXTURE_URL);
+  if(fixtureUrl.protocol!=="http:"||fixtureUrl.hostname!=="127.0.0.1"||new URL(process.env.AI_BASE_URL).href!==fixtureUrl.href||process.env.AI_API_KEY!=="isolated-provider-fixture")throw Error("拒绝非本机隔离供应商");
+  const previousMode=process.env.AI_MODE;
+  try {
+   process.env.AI_MODE="live";
+   const {createAIStream,createAICompletion}=await import("../src/lib/ai.ts?stop-usage-timeout-live-fixture");
+   for(const variant of ["stream-release","stream-timeout","completion-timeout"]) {
+    const transport=variant.startsWith("stream")?"stream":"completion",release=variant==="stream-release";
+    const requestKey=randomUUID(),messages=[{role:"user",content:"停止事务刚提交即return，保留原请求直到可靠usage或真实超时 "+variant}],before=await statement(actor);
+    const plan=await fixture("/control",{mode:transport==="stream"?"stop-delayed-usage":"hold-timeout"});
+    let id,receipt,iterator,error,elapsed,returnFinished=false;
+    const started=Date.now(),input={userId:actor.user.id,purpose:"polish",projectId:work.project.id,fileId:work.file.id,messages,model:"deepseek-flash",maxTokens:1024,timeoutMs:release?5000:1500,transport,creditBudget:conversationBudget(messages,1024),creditCall:{requestKey,requestDigest:createHash("sha256").update(requestKey).digest("hex"),messageId:randomUUID(),sessionId:work.file.id,context:{purpose:"polish",projectId:work.project.id,fileId:work.file.id}},onRequest:value=>{id=value;},onReceipt:value=>{receipt=value;}};
+    try {
+     if(transport==="stream") {
+      iterator=(await createAIStream(input))[Symbol.asyncIterator]();
+      const first=await iterator.next();must(variant+"已收到真实替身首段文本",!first.done&&!!first.value.choices[0]?.delta?.content);
+      await stopPolishRequest(actor.user.id,requestKey,work.file.id);
+      // 不等待250ms轮询：停止事务提交后下一步立即return，必须fresh读取持久意图。
+      const returning=iterator.return();
+      void returning.then(()=>{returnFinished=true;},()=>{returnFinished=true;});
+      // return已发出后才观察；替身不release时，原请求必须继续挂起而不是关闭。
+      const during=await fixture("/stats"),call=await findCreditCall(actor.user.id,requestKey),active=during.calls.find(c=>c.providerId===plan.providerId);
+      check(variant+"立即return后原请求仍开且保留预留",!returnFinished&&!receipt&&active?.phase==="waiting-stop-usage-release"&&!active.closed&&call?.state==="reserved"&&call.reason==="stopped_collecting_usage",{returnFinished,receipt,active,call});
+      if(release)await fixture("/release-usage",{providerId:plan.providerId});
+      await returning;
+     } else {
+      const running=createAICompletion(input);void running.catch(()=>{});
+      await poll(()=>fixture("/stats"),stats=>stats.calls.some(c=>c.providerId===plan.providerId&&c.phase==="waiting-completion-timeout"));
+      await stopPolishRequest(actor.user.id,requestKey,work.file.id);
+      await running;
+     }
+    } catch(caught) {error=caught;}
+    finally {elapsed=Date.now()-started;if(iterator&&!receipt)await iterator.return().catch(()=>{});}
+    const row=await model(admin,{id}),after=await statement(actor),call=await findCreditCall(actor.user.id,requestKey);
+    if(release) {
+     const expected=row.price.start.peak?"4.032":"2.016";
+     check("立即return后release仍获得可靠总usage",error?.name==="ModelStoppedError"&&receipt?.status==="stopped"&&row.status==="stopped"&&row.usageStatus==="reliable"&&row.usage?.total_tokens===1100&&call?.state==="settled"&&call.reason==="stopped_confirmed"&&call.consumed===expected,{error:error?.name,receipt,row,call});
+     check("立即return原请求只结算一次并释放余量",total(before.balance)-total(after.balance)===units(expected)&&after.balance.gift.reserved===before.balance.gift.reserved&&callEntries(after,id,"model_settle").length===1&&callEntries(after,id,"model_release").length===1,after.balance);
+    } else {
+     check(transport+"停止后的全程timeout有限返回且不冒充停止错误",error?.name!=="ModelStoppedError"&&elapsed>=1000&&elapsed<6000&&receipt?.status==="failed",{name:error?.name,message:error?.message,elapsed,receipt});
+     check(transport+"真实timeout优先failed/released且无usage",row?.status==="failed"&&row.usageStatus!=="reliable"&&row.usage===null&&row.costCny===null&&row.websiteBorne&&call?.state==="released"&&call.consumed==="0"&&call.reason==="website_borne",{row,call});
+     check(transport+"全程timeout免单并立即释放一次",JSON.stringify(after.balance)===JSON.stringify(before.balance)&&!after.pendingCalls.some(c=>c.id===id)&&callEntries(after,id,"model_settle").length===0&&callEntries(after,id,"model_release").length===1,after.balance);
+    }
+    const stats=await poll(()=>fixture("/stats"),stats=>stats.calls.find(c=>c.providerId===plan.providerId)?.closed),closed=stats.calls.find(c=>c.providerId===plan.providerId);
+    check(variant+"只有release或实际timeout才结束原连接",release?closed.released===true:closed.released!==true,closed);
+    observations.push({case:"stop-usage-timeout",variant,transport,elapsed,row,call,receipt});
+   }
+  } finally {if(previousMode===undefined)delete process.env.AI_MODE;else process.env.AI_MODE=previousMode;}
+ });
  await section("polish-explicit-stop-pending",async()=>{
   const requestId=randomUUID();
-  await fixture("/control",{mode:"hold"});
+  await fixture("/control",{mode:"hold-missing"});
   const count=(await fixture("/stats")).count;
   const running=actor.http.post(base+work.path,{data:{content:"主动停止润色",requestId}});
   await poll(()=>fixture("/stats"),s=>s.count===count+1);
@@ -109,7 +289,7 @@ try {
    await settleConversationCredits(call.id);await settleConversationCredits(call.id);
    check(mode+"重试与重复结算不再调用或改账",(await fixture("/stats")).count===count&&JSON.stringify((await statement(actor)).balance)===JSON.stringify(after.balance));
    const closed=await poll(()=>fixture("/stats"),s=>s.calls.find(c=>c.providerId===plan.providerId)?.closed);
-   check(mode+"取消及时传播供应商",closed.calls.find(c=>c.providerId===plan.providerId).phase!=="stop-timeout");
+   check(mode+"供应商原请求自然结束",closed.calls.find(c=>c.providerId===plan.providerId).phase==="done",closed.calls.find(c=>c.providerId===plan.providerId));
    observations.push({mode,call,row});
   }
  });
@@ -224,7 +404,7 @@ try {
    const requestKey=randomUUID();
    return {userId:actor.user.id,purpose:"polish",projectId:work.project.id,fileId:work.file.id,awaitProcessing:true,model:"deepseek-flash",maxTokens:1024,timeoutMs:10000,transport:"completion",creditBudget:conversationBudget(messages,1024),creditCall:{requestKey,requestDigest:createHash("sha256").update(requestKey).digest("hex"),messageId:randomUUID(),sessionId:work.file.id,context:{purpose:"polish",projectId:work.project.id,fileId:work.file.id}}};
   }
-  function observe(meter) {meter.observe({id:"fixture-helper-"+meter.id,model:"deepseek-flash",usage,choices:[{finish_reason:"stop"}]});}
+  function observe(meter,finish="stop",reliable=true) {meter.observe({id:"fixture-helper-"+meter.id,model:"deepseek-flash",...(reliable?{usage}:{}),choices:[{finish_reason:finish}]});}
   async function snapshot(id) {
    const [rows]=await getMysqlPool().execute("SELECT m.status,m.stop_requested_at,c.state,c.consumed FROM model_requests m JOIN conversation_credit_calls c ON c.id=m.id WHERE m.id=?",[id]);
    return rows[0];
@@ -232,7 +412,8 @@ try {
   const countBefore=(await fixture("/stats")).count;
   for(const reliable of [true,false]) {
    const params=input(),before=await statement(actor),meter=await startModelRequest(params);ids.push(meter.id);
-   if(reliable)observe(meter);
+   // 缺usage仍有正常finish；真正缺finish另用独立反例验证免单。
+   observe(meter,"stop",reliable);
    await meter.finish("completed");
    const processing=await snapshot(meter.id);
    must((reliable?"可靠":"未知")+"用量先进入processing+reserved",processing.status==="processing"&&processing.state==="reserved");
@@ -255,6 +436,30 @@ try {
    check("HTTP费用与竞争终态守恒："+reliable,reliable?total(before.balance)-total(after.balance)===units(expected)&&units(String(final.consumed))===units(expected):total(before.balance)===total(after.balance)&&after.pendingCalls.some(c=>c.id===meter.id&&c.state==="pending"));
    await markModelProcessingFailure(meter.id,true);await settleConversationCredits(meter.id);
    check("竞争重试不重复扣费或释放："+reliable,JSON.stringify((await statement(actor)).balance)===JSON.stringify(after.balance));
+  }
+  // 锁内重读停止意图必须沿用供应商终态分类，不能回退成可扣费的stopped。
+  for(const path of ["stop-before-finish","stop-after-processing"])for(const finish of ["length","fixture_unknown",null]) {
+   const label=path+" / finish="+String(finish),params=input(),before=await statement(actor),meter=await startModelRequest(params);ids.push(meter.id);
+   observe(meter,finish);
+   if(path==="stop-before-finish") {
+    // 模拟generator最后refresh已结束，此后才提交stop；finish内部的锁内检查负责兜底。
+    await stopPolishRequest(actor.user.id,params.creditCall.requestKey,work.file.id);
+    await meter.finish("completed");
+   } else {
+    await meter.finish("completed");
+    const processing=await snapshot(meter.id);
+    must(label+"先持久processing/reserved",processing.status==="processing"&&processing.state==="reserved");
+    await stopPolishRequest(actor.user.id,params.creditCall.requestKey,work.file.id);
+    await markModelProcessingFailure(meter.id,true);
+   }
+   const final=await snapshot(meter.id),row=await model(admin,{id:meter.id}),call=await findCreditCall(actor.user.id,params.creditCall.requestKey),after=await statement(actor),expectedStatus=finish==="length"?"failed":"interrupted";
+   check(label+"锁内停止不覆盖供应商终态",final.status===expectedStatus&&row.status===expectedStatus&&row.websiteBorne&&row.finishReason===finish,{final,row});
+   check(label+"免单释放且不冻结不扣费",call?.state==="released"&&call.consumed==="0"&&call.reason==="website_borne"&&JSON.stringify(after.balance)===JSON.stringify(before.balance)&&!after.pendingCalls.some(c=>c.id===meter.id)&&callEntries(after,meter.id,"model_settle").length===0&&callEntries(after,meter.id,"model_release").length===1,{call,before:before.balance,after:after.balance});
+   check(label+"保留真实usage和可确认成本",row.usage?.total_tokens===1100&&(finish===null?row.usageStatus!=="reliable"&&row.costCny===null:row.usageStatus==="reliable"&&row.costCny===(row.price.start.peak?"0.00201600":"0.00100800")),row);
+   await meter.finish("completed");await markModelProcessingFailure(meter.id,true);await settleConversationCredits(meter.id);
+   const retried=await statement(actor),repeated=await snapshot(meter.id);
+   check(label+"重复收尾不改终态和账本",repeated.status===final.status&&repeated.state===final.state&&String(repeated.consumed)===String(final.consumed)&&JSON.stringify(retried.balance)===JSON.stringify(after.balance)&&JSON.stringify(callEntries(retried,meter.id))===JSON.stringify(callEntries(after,meter.id)),{final,repeated});
+   observations.push({case:"processing-stop-finish-race",path,finish,final,row,call,balance:after.balance});
   }
   for(const status of ["failed","interrupted"]) {
    const meter=await startModelRequest(input());ids.push(meter.id);await meter.finish(status,"fixture_terminal");
@@ -324,12 +529,15 @@ try {
    // 两种视口都通过真实按钮发送停止，不在浏览器脚本内直接调用停止接口。
    for(const width of [1440,390]) {
     await viewport(width);await input.fill("浏览器真实停止润色 "+width);
-    const before=await statement(actor),plan=await fixture("/control",{mode:"hold"});
+    const before=await statement(actor),plan=await fixture("/control",{mode:"hold-missing"});
     await page.getByRole("button",{name:"AI 润色",exact:true}).click();
     await poll(()=>fixture("/stats"),s=>s.calls.some(c=>c.providerId===plan.providerId));
     const stoppedResponse=page.waitForResponse(r=>r.url()===base+work.path&&r.request().method()==="DELETE");
-    await page.getByRole("button",{name:"停止润色",exact:true}).click();
+    await page.getByRole("button",{name:"放弃润色结果",exact:true}).click();
     const response=await stoppedResponse,result=await response.json();
+    const waitingButton=page.getByRole("button",{name:"等待最终用量…",exact:true});
+    await waitingButton.waitFor({state:"visible"});
+    check(width+"px停止后按钮等待最终用量且禁用",await waitingButton.isDisabled());
     await page.locator('.project-file-edit [data-credit-state="pending"]').waitFor();
     const persisted=await json(actor.http,work.path+"?requestId="+result.requestId),after=await statement(actor);
     check(width+"px真实按钮停止且持久待核对",response.ok()&&persisted.state==="stopped"&&persisted.creditCall.state==="pending"&&persisted.creditCall.reason==="stopped_usage_unconfirmed",persisted);

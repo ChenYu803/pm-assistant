@@ -1,5 +1,16 @@
 # PROGRESS.md - 项目状态与交接
 
+### 2026-11-07：#15并行人工验收与停止用量本地修正
+
+用户要求技术修复继续推进，并通过原受控通道验收其他人工项。已提供 `docs/verification/v144-live-acceptance-20261106/manual-acceptance-20261107.md`：首批邀请码保存、普通用户后台拒绝、兑换及余额流水、短文件生成和润色；最多新增2次模型请求，未收到结果前不记为执行或通过。已更新sample-plan，原停止费用未知仍不按零计算。
+
+本地L2候选将用户停止意图与SDK全程超时分离：停止页面输出和结果采用，保留原请求读最终usage；手动持有stream iterator，提前return前强制查最新持久停止意图，防止跨进程轮询竞态。reserved/running停止记stopped_collecting_usage，保留原操作身份与预留，待可靠证据后只结算一次；正常结束证据存在但缺usage继续pending。缺失/未知结束证据、输出截断、明确供应商失败、断流或超时均沿用免单释放，不能被先前stop覆盖。页面明确后台仍可能生成计费。此方案不是立即停供应商计费，产品语义与真实服务能力仍待验收。
+
+本地最终验证已完成：tsc通过；stop-billing207/0、model-cost324/0、conversation57/0、polish57/0、pending24/0、generation-stream17/0、production-preparation60/0、replay-foundation94/0、credits100/0（均为场景计数）；停止锁内/后处理竞态针对组50/0、草稿专项15/0。均为隔离替身，真实模型费用0，资源已清理。500后草稿与replay按钮的旧测试契约已适配，仍严格核对原请求身份、供应商仅一次、消息唯一、余额及流水不重复。双轴最终审查：Standards硬违规/建议均0，Spec未解决0；完整证据与红绿关联见修复记录。
+
+原317.088积分pending无法用本修复补回旧usage，未手工改账。未部署、重启、关闭通道或新增代理真实模型请求；线上仍33df4878d3a2a30b2e9621211410cfb4a6fd27ab。#15保持claimed、AC未扩大。详细实现和最终验证记录见docs/verification/v144-live-acceptance-20261106/stop-usage-fix-20261107.md；后续按本地验证结果审阅产品语义，再安排受控部署与真实停止计量复验，仍保留隐藏包装成本、邮件安全配置及正式开放门禁。
+
+
 ### 2026-11-07：停止后可靠用量链路诊断与当前冻结只读复核
 
 北京时间11:46目标机只读核对：原停止请求仍stopped/user_stop、usage_json与finish_reason与cost_cny均NULL，317.088积分pending；pending_expired=0。24小时期限为2026-11-07 22:36:07.231，分钟恢复timer active且11:46执行成功；当前冻结不能据此判断到期释放故障，未手工触发恢复或修改资金。证据见`docs/verification/v144-live-acceptance-20261106/stop-usage-recheck-20261107.json`。

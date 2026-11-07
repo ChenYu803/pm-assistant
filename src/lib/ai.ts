@@ -392,9 +392,6 @@ function upstreamErrorCode(error: unknown, fallback: string): string {
  if (error instanceof OpenAI.APIConnectionError) return "upstream_connection_error";
  return fallback;
 }
-function userStopped(error: unknown, signal: AbortSignal) {
- return error instanceof ModelStoppedError || (signal.aborted && (error instanceof OpenAI.APIUserAbortError || (error instanceof Error && error.name === "AbortError")));
-}
 
 export async function createAIStream(input: AIRequest): Promise<AsyncIterable<ReplayChunk> | AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>> {
  const { userId,agentType,messages,maxTokens,timeoutMs,signal,replayDelayMs } = input;
@@ -406,34 +403,65 @@ export async function createAIStream(input: AIRequest): Promise<AsyncIterable<Re
  const meter = await startModelRequest({ ...input,userId: userId!,model: AI_MODEL,creditBudget: conversationBudget(messages,maxTokens),transport: "stream" });
  input.onRequest?.(meter.id);
  const control = watchModelStop(meter.id,signal);
+ const upstreamSignal = AbortSignal.timeout(timeoutMs);
  let stream: AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
  try {
   await control.refresh();
   if (control.signal.aborted) throw new ModelStoppedError();
-  const response = await createAIClient().chat.completions.create({ model: AI_MODEL,max_tokens: maxTokens,messages,stream: true,stream_options: { include_usage: true } },{ timeout: timeoutMs,signal:control.signal }).withResponse();
+  const response = await createAIClient().chat.completions.create({ model: AI_MODEL,max_tokens: maxTokens,messages,stream: true,stream_options: { include_usage: true } },{ timeout: timeoutMs,signal:upstreamSignal }).withResponse();
   meter.upstream(response.request_id); stream = response.data;
  } catch(error) {
   control.dispose();
-  const stopped = userStopped(error,control.signal);
+  const stopped = error instanceof ModelStoppedError;
   const receipt = await meter.finish(stopped ? "stopped" : "failed", stopped ? "user_stop" : upstreamErrorCode(error,"upstream_request_error"));
   input.onReceipt?.(receipt); throw stopped ? new ModelStoppedError() : error;
  }
  return (async function* () {
   let status: "completed" | "stopped" | "failed" | "interrupted" = "interrupted", errorCode: string | null = null;
+  // 手动持有上游迭代器，避免消费方退出 for-await 时自动关闭原连接、丢失末尾 usage。
+  const iterator = stream[Symbol.asyncIterator]();
+  let exhausted = false;
+  const next = async () => {
+   const item = await iterator.next();
+   // SDK 会吞掉读取阶段的 AbortError；用独立时限识别超时，不能当作正常 EOF。
+   if (upstreamSignal.aborted) throw new OpenAI.APIConnectionTimeoutError();
+   if (item.done) exhausted = true;
+   else meter.observe(item.value);
+   return item;
+  };
   try {
-   for await (const chunk of stream) { meter.observe(chunk); yield chunk; }
-   if (control.signal.aborted) throw new ModelStoppedError();
+   while (true) {
+    const item = await next();
+    if (item.done) break;
+    // 停止只放弃后续展示和结果采用；原请求仍可能继续产生供应商费用。
+    if (!control.signal.aborted) yield item.value;
+   }
    status = meter.outcome();
-   if (status !== "completed") { errorCode = status === "failed" ? "upstream_finish_error" : "finish_unconfirmed"; throw new Error("供应商未能完成生成，请稍后重试"); }
+   if (status === "failed") { errorCode = "upstream_finish_error"; throw new Error("供应商未能完成生成，请稍后重试"); }
+   if (control.signal.aborted) throw new ModelStoppedError();
+   if (status !== "completed") { errorCode = "finish_unconfirmed"; throw new Error("供应商未能完成生成，请稍后重试"); }
   } catch(error) {
-   const stopped = userStopped(error,control.signal);
+   const stopped = error instanceof ModelStoppedError;
    status = stopped ? "stopped" : errorCode === "finish_unconfirmed" ? "interrupted" : "failed";
    errorCode ??= stopped ? "user_stop" : upstreamErrorCode(error,"upstream_stream_error");
    throw stopped ? new ModelStoppedError() : error;
   } finally {
-   // 消费方在 yield 后退出不会经过 catch；保留已确认的主动停止分类。
-   if (status === "interrupted" && errorCode === null && control.signal.aborted) { status = "stopped"; errorCode = "user_stop"; }
-   control.dispose();
+   // 退出消费可能先于轮询或跨进程信号；关闭上游前读取事务已提交的停止意图。
+   await control.refresh(true);
+   // 消费方在 yield 后主动退出时，也由计量层读完同一个请求，不重新调用供应商。
+   if (control.signal.aborted && status !== "failed") {
+    status = "stopped"; errorCode = "user_stop";
+    try { while (!exhausted) await next(); }
+    catch(error) { status = "failed"; errorCode = upstreamErrorCode(error,"upstream_stream_error"); }
+    // 沿用明确故障、截断与未知结束的免单规则，不因停止展示而变成付费成功。
+    if (exhausted && status !== "failed") {
+     status = meter.stoppedOutcome();
+     errorCode = status === "stopped" ? "user_stop" : status === "failed" ? "upstream_finish_error" : "finish_unconfirmed";
+    }
+   }
+   try { if (!exhausted) await iterator.return?.(); }
+   catch { /* 关闭传输失败也必须持久化当前用量证据。 */ }
+   finally { control.dispose(); }
    const receipt = await meter.finish(status,errorCode); input.onReceipt?.(receipt);
    if (receipt.status === "stopped") throw new ModelStoppedError();
    if (receipt.status === "failed" && status === "completed") throw new Error("生成结果保存失败，本次免单，请重试。");
@@ -452,10 +480,10 @@ export async function createAICompletion(input: AIRequest): Promise<string> {
  try {
   await control.refresh();
   if (control.signal.aborted) throw new ModelStoppedError();
-  const result = await createAIClient().chat.completions.create({ model: AI_MODEL,max_tokens: maxTokens,messages,stream: false },{ timeout: timeoutMs,signal:control.signal }).withResponse();
+  const result = await createAIClient().chat.completions.create({ model: AI_MODEL,max_tokens: maxTokens,messages,stream: false },{ timeout: timeoutMs,signal:AbortSignal.timeout(timeoutMs) }).withResponse();
   meter.upstream(result.request_id); response = result.data;
  } catch(error) {
-  const stopped = userStopped(error,control.signal);
+  const stopped = error instanceof ModelStoppedError;
   const receipt = await meter.finish(stopped ? "stopped" : "failed",stopped ? "user_stop" : upstreamErrorCode(error,"upstream_completion_error"));
   input.onReceipt?.(receipt); throw stopped ? new ModelStoppedError() : error;
  } finally { control.dispose(); }
@@ -463,8 +491,8 @@ export async function createAICompletion(input: AIRequest): Promise<string> {
  const content = response.choices[0]?.message?.content?.trim() ?? "";
  const outcome = meter.outcome();
  const invalidPolish = input.purpose === "polish" && outcome !== "failed" && (response.choices[0]?.finish_reason !== "stop" || !content);
- const status = invalidPolish ? "failed" : outcome;
- const receipt = await meter.finish(status,invalidPolish ? "polish_incomplete" : status === "failed" ? "upstream_finish_error" : status === "interrupted" ? "upstream_disconnected" : null);
+ const status = control.signal.aborted ? meter.stoppedOutcome() : invalidPolish ? "failed" : outcome;
+ const receipt = await meter.finish(status,status === "stopped" ? "user_stop" : invalidPolish ? "polish_incomplete" : status === "failed" ? "upstream_finish_error" : status === "interrupted" ? "upstream_disconnected" : null);
  input.onReceipt?.(receipt);
  if (receipt.status === "stopped") throw new ModelStoppedError();
  if (receipt.status === "failed" || status === "failed") throw new Error("供应商未能完成生成，请稍后重试");

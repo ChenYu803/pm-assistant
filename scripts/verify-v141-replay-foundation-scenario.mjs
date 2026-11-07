@@ -236,7 +236,7 @@ try {
     const firstGeneration = await generation(page, `${sessionPath}/${firstSession.id}/messages`, () => page.getByRole("button", { name: "发送消息", exact: true }).click());
     const completed = await firstGeneration.result(200);
     requireOkay(`${prefix} 正常回复经过 token 与唯一 result 完成`, completed.tokens > 0 && completed.body.messages.some((item) => item.role === "assistant" && item.status === "completed" && item.content));
-    await page.getByRole("button", { name: "停止生成", exact: true }).waitFor({ state: "hidden" });
+    await page.getByRole("button", { name: "停止显示", exact: true }).waitFor({ state: "hidden" });
     await readyComposer();
     const firstDraft = "会话一未发送草稿";
     await page.getByLabel("输入消息").fill(firstDraft);
@@ -255,13 +255,13 @@ try {
     const secondMessage = `会话二独立消息 ${viewport.width}`;
     await page.getByLabel("输入消息").fill(secondMessage);
     const secondGeneration = await generation(page, delayedPath, () => page.getByRole("button", { name: "发送消息", exact: true }).click());
-    await page.getByRole("button", { name: "停止生成", exact: true }).waitFor();
+    await page.getByRole("button", { name: "停止显示", exact: true }).waitFor();
     const busy = await eventually(state, (value) => stage(value, "analysis").generatingSessionIds.includes(secondSession.id), "第二会话生成事实");
     check(`${prefix} 生成状态仅属于第二会话`, stage(busy, "analysis").generatingSessionIds.length === 1 && !stage(busy, "analysis").generatingSessionIds.includes(firstSession.id));
-    await mutation(page, `/api/iterations/${first.id}/sessions/${secondSession.id}/stop`, () => page.getByRole("button", { name: "停止生成", exact: true }).click());
+    await mutation(page, `/api/iterations/${first.id}/sessions/${secondSession.id}/stop`, () => page.getByRole("button", { name: "停止显示", exact: true }).click());
     const stopped = await secondGeneration.result(409);
     requireOkay(`${prefix} 停止保留 HTTP 200 并以 result 409 结束`, stopped.body.error === "生成已停止");
-    await page.getByRole("button", { name: "停止生成", exact: true }).waitFor({ state: "hidden" });
+    await page.getByRole("button", { name: "停止显示", exact: true }).waitFor({ state: "hidden" });
     await eventually(state, (value) => !stage(value, "analysis").generatingSessionIds.includes(secondSession.id), "停止后清除生成状态");
     await page.unroute(`**${delayedPath}`);
     await readyComposer();

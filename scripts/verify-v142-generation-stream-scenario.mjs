@@ -197,7 +197,7 @@ try {
   await page.locator(`.session-row[data-session-id="${session.body.session.id}"]`).click();
   await liveAssistant.locator(".message-content").waitFor();
   check("切回生成会话只显示一条回复并恢复完整部分正文", await page.locator(".workbench-message.assistant").count() === 1 && (await liveAssistant.locator(".message-content").innerText()).length > 0);
-  await page.getByRole("button", { name: "停止生成" }).click();
+  await page.getByRole("button", { name: "停止显示" }).click();
   await page.getByText(/已停止/).last().waitFor();
   const stoppedMessages = await api(page, messagesPath);
   const stopped = [...(stoppedMessages.body.messages ?? [])].reverse().find((message) => message.role === "assistant");

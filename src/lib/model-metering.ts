@@ -15,6 +15,15 @@ export type ModelPrice = { version: string; source: string; verifiedAt: string; 
 const PRICE_SOURCE = "https://api-docs.deepseek.com/zh-cn/quick_start/pricing";
 const HOLIDAYS_2026 = [["01-01", "01-03"], ["02-15", "02-23"], ["04-04", "04-06"], ["05-01", "05-05"], ["06-19", "06-21"], ["09-25", "09-27"], ["10-01", "10-07"]];
 const FLASH_MODELS = ["deepseek-flash", "deepseek-v4-flash", "deepseek-v4-flash-vision-exp"];
+function modelOutcome(finish: string | null): "completed" | "failed" | "interrupted" {
+ if (finish === "insufficient_system_resource" || finish === "content_filter") return "failed";
+ return finish && ["stop", "length", "tool_calls", "function_call"].includes(finish) ? "completed" : "interrupted";
+}
+function stoppedModelOutcome(finish: string | null): "stopped" | "failed" | "interrupted" {
+ // 传输收尾、锁内停止竞争及正文后处理共用分类，停止不能绕过故障免单。
+ const result = modelOutcome(finish);
+ return finish === "length" ? "failed" : result === "completed" ? "stopped" : result;
+}
 function priceAt(date: Date, model: string): ModelPrice | null {
  if (!FLASH_MODELS.includes(model)) return null;
  const china = new Date(date.valueOf() + 8*3600000), iso = china.toISOString(), day = iso.slice(5,10), minute = china.getUTCHours()*60+china.getUTCMinutes();
@@ -118,9 +127,11 @@ export async function startModelRequest(input: ModelContext & { userId: string; 
     receipt = {id,status:previous.status,usageStatus:previous.usage_status,costCny:previous.cost_cny,costReason:previous.cost_reason};
     return;
    }
-   const finalStatus = siteFailure ? "failed" : (status === "completed" || (status === "interrupted" && errorCode === null)) && (previous.stop_requested_at || previous.status === "stopped") ? "stopped" : persistedStatus;
+   const stoppedAtSettlement = status === "stopped" || (status === "completed" || (status === "interrupted" && errorCode === null)) && Boolean(previous.stop_requested_at || previous.status === "stopped");
+   const finalStatus = siteFailure ? "failed" : stoppedAtSettlement ? stoppedModelOutcome(finish) : persistedStatus;
+   const finalError = siteFailure ? "site_settlement_error" : finalStatus === "stopped" ? "user_stop" : stoppedAtSettlement ? finalStatus === "failed" ? "upstream_finish_error" : "finish_unconfirmed" : errorCode;
    const failure = ["failed","interrupted"].includes(finalStatus);
-   await connection.execute("UPDATE model_requests SET actual_model=?,provider_id=?,upstream_request_id=?,ended_at=?,status=?,finish_reason=?,error_code=?,usage_status=?,usage_json=?,price_json=?,cost_cny=?,cost_reason=?,website_borne=? WHERE id=?", [actualModel,providerId,upstreamId,utc(ended),finalStatus,finish,siteFailure ? "site_settlement_error" : finalStatus === "stopped" ? "user_stop" : errorCode,reliable ? "reliable" : "pending",usage ? JSON.stringify(usage) : null,JSON.stringify({ start: startPrice, end: endPrice, official, fixture, rule: "same_price_window_only", windowConfirmed: Boolean(sameWindow), usageValidated: !invalid }),costCny,costReason,failure,id]);
+   await connection.execute("UPDATE model_requests SET actual_model=?,provider_id=?,upstream_request_id=?,ended_at=?,status=?,finish_reason=?,error_code=?,usage_status=?,usage_json=?,price_json=?,cost_cny=?,cost_reason=?,website_borne=? WHERE id=?", [actualModel,providerId,upstreamId,utc(ended),finalStatus,finish,finalError,reliable ? "reliable" : "pending",usage ? JSON.stringify(usage) : null,JSON.stringify({ start: startPrice, end: endPrice, official, fixture, rule: "same_price_window_only", windowConfirmed: Boolean(sameWindow), usageValidated: !invalid }),costCny,costReason,failure,id]);
    if (finalStatus !== "processing") await settleConversationCredits(id, connection);
    receipt.status = finalStatus;
   });
@@ -130,10 +141,9 @@ export async function startModelRequest(input: ModelContext & { userId: string; 
   }
   return receipt;
  }
- return { id, observe, upstream(value: unknown) { upstreamId = shortId(value); }, finish: finishRequest, outcome(): "completed" | "failed" | "interrupted" {
-  if (finish === "insufficient_system_resource" || finish === "content_filter") return "failed";
-  return finish && ["stop", "length", "tool_calls", "function_call"].includes(finish) ? "completed" : "interrupted";
- } };
+ return { id, observe, upstream(value: unknown) { upstreamId = shortId(value); }, finish: finishRequest,
+  outcome: () => modelOutcome(finish), stoppedOutcome: () => stoppedModelOutcome(finish),
+ };
 }
 
 /** 应用收到可靠供应商结果后，若正文持久化等网站步骤失败，成本继续保留并由网站承担。 */
@@ -141,7 +151,12 @@ export async function markModelProcessingFailure(id: string | undefined, stopped
  if (!id) return;
  try {
   await withModelAccountTransaction(id, async connection => {
-  await connection.execute("UPDATE model_requests SET status=?, website_borne=?, error_code=? WHERE id=? AND status IN ('running','processing')",[stopped ? "stopped" : "failed", !stopped, stopped ? "site_processing_stopped" : "site_processing_error", id]);
+  const [rows] = await connection.execute<RowDataPacket[]>("SELECT status,finish_reason FROM model_requests WHERE id=? FOR UPDATE",[id]);
+  if (rows[0] && ["running","processing"].includes(rows[0].status)) {
+   const status = stopped ? stoppedModelOutcome(rows[0].finish_reason) : "failed";
+   const errorCode = !stopped ? "site_processing_error" : status === "stopped" ? "site_processing_stopped" : status === "failed" ? "upstream_finish_error" : "finish_unconfirmed";
+   await connection.execute("UPDATE model_requests SET status=?, website_borne=?, error_code=? WHERE id=? AND status IN ('running','processing')",[status, status !== "stopped", errorCode, id]);
+  }
   await settleConversationCredits(id, connection);
   });
  } catch {

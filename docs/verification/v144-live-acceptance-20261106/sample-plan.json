@@ -69,6 +69,15 @@
     "currentBalanceExplanation": "已知累计计提仍为0.011943 CNY；新停止请求费用未知，199.988057及0.998057均未扣除此笔，不能作为当前可信余额；317.088积分预留不是供应商实际费用或已证明硬上界"
   },
   "nextSample": null,
-  "executionState": "paused-unconfirmed-cost",
-  "resumeCondition": "先处理主动停止缺失最终用量的计量限制，再安排剩余应用样本；不自动重试"
+  "executionState": "manual-acceptance-authorized-stop-fix-local",
+  "resumeCondition": "用户2026-11-07要求使用受控连接并行验收其他人工项，按manual-acceptance-20261107.md至多新增2次模型调用；停止计量仍在本地修复，不重复停止样本、不自动重试。未知费用继续保留，不假定预算余量已确认。",
+  "manualAcceptance": {
+    "date": "2026-11-07",
+    "source": "用户明确要求代理技术修复与本人其他人工验收并行",
+    "procedure": "manual-acceptance-20261107.md",
+    "maximumAdditionalModelRequests": 2,
+    "performedAdditionalModelRequests": 0,
+    "status": "awaiting-user-results",
+    "costBoundary": "沿用累计200元和本轮1元操作预算；已知计提0.011943元外仍有1笔费用未知，操作预算不是已证明的供应商硬上界"
+  }
 }

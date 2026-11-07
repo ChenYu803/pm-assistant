@@ -5,7 +5,7 @@ import { creditText, creditUnits, type CreditCallView, type CreditStatement } fr
 
 export function ReplyCredits({ call }: { call?: CreditCallView }) {
   if (!call) return null;
-  return <p className="reply-credits" data-credit-state={call.state}>本次预留 {call.reserved} 积分 · {call.state === "settled" ? (call.reason === "stopped_confirmed" ? "已停止，按实结算 " : "实际消耗 ") + call.consumed + " 积分" : call.state === "pending" ? (call.reason === "stopped_usage_unconfirmed" ? "已停止，待核对，预留暂未释放" : "待核对，预留暂未释放") : call.state === "released" ? "已免单，预留已释放" : "生成中，完成后按实际用量结算"}</p>;
+  return <p className="reply-credits" data-credit-state={call.state}>本次预留 {call.reserved} 积分 · {call.state === "settled" ? (call.reason === "stopped_confirmed" ? "已停止显示，实际消耗 " : "实际消耗 ") + call.consumed + " 积分" : call.state === "pending" ? (call.reason === "stopped_usage_unconfirmed" ? "已停止，待核对，预留暂未释放" : "待核对，预留暂未释放") : call.state === "released" ? "已免单，预留已释放" : call.reason === "stopped_collecting_usage" ? "已停止显示，后台仍可能生成并计费，收到最终用量后结算" : "生成中，完成后按实际用量结算"}</p>;
 }
 export function AccountCredits() {
   const [statement,setStatement] = useState<CreditStatement | null>(null);
