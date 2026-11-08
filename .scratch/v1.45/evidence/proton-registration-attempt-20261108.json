@@ -1,0 +1,36 @@
+{
+  "scope": "用户授权的真实注册诊断，密码与验证码不留存",
+  "status": "awaiting-user-code",
+  "send": {
+    "sentAt": "2026-11-08T15:05:43.161Z",
+    "action": "send-register-code",
+    "transport": "正式 HTTPS 发码接口，TLS 校验开启",
+    "mailbox": "用户授权的 Proton 邮箱",
+    "httpStatus": 200,
+    "message": "验证码已发送，10 分钟内有效；重新发送后仅最新验证码有效。",
+    "error": null,
+    "retryAfter": 60,
+    "expiresIn": 600,
+    "requestCount": 1
+  },
+  "registrationSubmitted": false,
+  "passwordRecorded": false,
+  "codeRecorded": false,
+  "modelsCalled": 0,
+  "giftInvitesRedeemed": 0,
+  "serviceChanged": false,
+  "preflight": {
+    "checkedAt": "2026-11-08T15:04:01.169Z",
+    "matchingAccounts": 0,
+    "oldChallenge": {
+      "state": "ready",
+      "attempts": 3,
+      "sentAtAsiaShanghai": "2026-11-08 19:57:36.446",
+      "expiresAtAsiaShanghai": "2026-11-08 20:07:36.446",
+      "alreadyExpired": true
+    },
+    "deployedCommit": "33df4878d3a2a30b2e9621211410cfb4a6fd27ab",
+    "healthHttpStatus": 200,
+    "registrationPageHttpStatus": 200
+  }
+}
