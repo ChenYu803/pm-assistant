@@ -1,6 +1,6 @@
 {
   "scope": "用户授权的真实注册诊断，密码与验证码不留存",
-  "status": "awaiting-user-code",
+  "status": "registered-successfully-original-error-not-reproduced",
   "send": {
     "sentAt": "2026-11-08T15:05:43.161Z",
     "action": "send-register-code",
@@ -13,7 +13,7 @@
     "expiresIn": 600,
     "requestCount": 1
   },
-  "registrationSubmitted": false,
+  "registrationSubmitted": true,
   "passwordRecorded": false,
   "codeRecorded": false,
   "modelsCalled": 0,
@@ -32,5 +32,110 @@
     "deployedCommit": "33df4878d3a2a30b2e9621211410cfb4a6fd27ab",
     "healthHttpStatus": 200,
     "registrationPageHttpStatus": 200
-  }
+  },
+  "priorCodeReceivedFromUser": true,
+  "priorCodeExpiredWithoutConfirmedRegistration": true,
+  "connectivityInterruption": {
+    "serviceConfigurationChanged": false,
+    "sshFailedAfterInitialCodeReceived": true,
+    "priorRegistrationSubmissionUnconfirmedDuringInterruption": true,
+    "diagnosis": "连接超时本身不是已证实的验证码故障原因",
+    "connectionRestoredAt": "2026-11-08T15:19:27.766Z"
+  },
+  "resendCheck": {
+    "checkedAt": "2026-11-08T15:19:27.766Z",
+    "transport": "SSH + 正式 HTTPS，TLS 校验开启",
+    "action": "read-state-then-resend-once",
+    "before": {
+      "matchingAccounts": 0,
+      "challenge": {
+        "state": "ready",
+        "attempts": 0,
+        "hasDigest": 1,
+        "sentAtAsiaShanghai": "2026-11-08 23:05:42.831",
+        "expiresAtAsiaShanghai": "2026-11-08 23:15:42.831",
+        "validAtInspection": 0
+      },
+      "databaseTime": "2026-11-08 23:19:27.846",
+      "databaseUtc": "2026-11-08 15:19:27.846"
+    },
+    "resend": {
+      "completedAt": "2026-11-08T15:19:28.145Z",
+      "httpStatus": 200,
+      "message": "验证码已发送，10 分钟内有效；重新发送后仅最新验证码有效。",
+      "error": null,
+      "retryAfter": 60,
+      "expiresIn": 600
+    },
+    "after": {
+      "matchingAccounts": 0,
+      "challenge": {
+        "state": "ready",
+        "attempts": 0,
+        "hasDigest": 1,
+        "sentAtAsiaShanghai": "2026-11-08 23:19:27.882",
+        "expiresAtAsiaShanghai": "2026-11-08 23:29:27.882",
+        "validAtInspection": 1
+      },
+      "databaseTime": "2026-11-08 23:19:28.147",
+      "databaseUtc": "2026-11-08 15:19:28.147"
+    }
+  },
+  "totalSuccessfulCodeSends": 2,
+  "priorRegistrationCreatedAccount": false,
+  "registrationSubmissionNote": "本次提交和结果见registrationAttempt；此前连接中断未观察到账号创建。",
+  "resendNotification": {
+    "systemSoundInvoked": true,
+    "userNotifiedInChat": true
+  },
+  "registrationAttempt": {
+    "checkedAt": "2026-11-08T15:23:13.08Z",
+    "action": "single-real-register-attempt",
+    "transport": "SSH + 正式 HTTPS，TLS 校验开启",
+    "credentialValuesRecorded": false,
+    "before": {
+      "matchingAccounts": 0,
+      "verifiedAccounts": 0,
+      "challenge": {
+        "state": "ready",
+        "attempts": 0,
+        "hasDigest": true,
+        "providedCodeMatchesCurrentDigest": true,
+        "sentAtAsiaShanghai": "2026-11-08 23:19:27.882",
+        "expiresAtAsiaShanghai": "2026-11-08 23:29:27.882",
+        "validAtInspection": true
+      },
+      "databaseTime": "2026-11-08 23:23:13.168",
+      "databaseUtc": "2026-11-08 15:23:13.168"
+    },
+    "submittedAt": "2026-11-08T15:23:13.169Z",
+    "response": {
+      "completedAt": "2026-11-08T15:23:13.553Z",
+      "httpStatus": 201,
+      "error": null,
+      "message": null
+    },
+    "after": {
+      "matchingAccounts": 1,
+      "verifiedAccounts": 1,
+      "challenge": {
+        "state": "used",
+        "attempts": 0,
+        "hasDigest": false,
+        "providedCodeMatchesCurrentDigest": null,
+        "sentAtAsiaShanghai": "2026-11-08 23:19:27.882",
+        "expiresAtAsiaShanghai": "2026-11-08 23:29:27.882",
+        "validAtInspection": true
+      },
+      "databaseTime": "2026-11-08 23:23:13.556",
+      "databaseUtc": "2026-11-08 15:23:13.556"
+    },
+    "sameCredentialDuringSubmission": true,
+    "exactReportedErrorReproduced": false
+  },
+  "originalBugStatus": "not-reproduced-root-cause-unconfirmed",
+  "rootCauseConfirmed": false,
+  "businessCodeChanged": false,
+  "browserFormCovered": false,
+  "resultInterpretation": "23:23:13正式注册接口返回201，提交前邮件码与当前摘要匹配，提交后账号已验证、凭证used、attempts=0、发送时间未变。只证明本次HTTPS API路径成功；未覆盖用户原浏览器表单，不能由此关闭历史3次摘要失败问题。validAtInspection仅表示当时未超时，不代表used凭证仍可使用。"
 }
