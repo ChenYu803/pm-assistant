@@ -137,5 +137,62 @@
   "rootCauseConfirmed": false,
   "businessCodeChanged": false,
   "browserFormCovered": false,
-  "resultInterpretation": "23:23:13正式注册接口返回201，提交前邮件码与当前摘要匹配，提交后账号已验证、凭证used、attempts=0、发送时间未变。只证明本次HTTPS API路径成功；未覆盖用户原浏览器表单，不能由此关闭历史3次摘要失败问题。validAtInspection仅表示当时未超时，不代表used凭证仍可使用。"
+  "resultInterpretation": "23:23:13正式注册接口返回201，提交前邮件码与当前摘要匹配，提交后账号已验证、凭证used、attempts=0、发送时间未变。只证明本次HTTPS API路径成功；未覆盖用户原浏览器表单，不能由此关闭历史3次摘要失败问题。validAtInspection仅表示当时未超时，不代表used凭证仍可使用。",
+  "controlledConnectionCheck": {
+    "checkedAt": "2026-11-08T15:33:04.384Z",
+    "action": "只读核查用户提供的 SSH 本地端口转发目标及线上 HTTPS 路由",
+    "userReportedLocalForward": "127.0.0.1:443 -> ubuntu@101.33.79.30 -> 127.0.0.1:443",
+    "userReportedBrowserDnsOverride": "MAP ideastage.top 127.0.0.1",
+    "activeNginxRouting": [
+      "listen 80 default_server;",
+      "listen [::]:80 default_server;",
+      "server_name _;",
+      "listen 80;",
+      "server_name ideastage.top;",
+      "listen 443 ssl http2;",
+      "server_name ideastage.top;",
+      "limit_req_status 429;",
+      "proxy_pass http://127.0.0.1:3000;",
+      "proxy_pass http://127.0.0.1:3000;",
+      "proxy_set_header Host ideastage.top;",
+      "proxy_set_header X-Forwarded-Host ideastage.top;",
+      "proxy_set_header X-Forwarded-Proto https;",
+      "proxy_set_header X-Forwarded-For $remote_addr;"
+    ],
+    "serverLoopbackHttps": {
+      "httpStatus": 200,
+      "tlsAuthorized": true,
+      "tlsVerificationRequired": true,
+      "sni": "ideastage.top",
+      "requestHost": "ideastage.top",
+      "path": "/api/health"
+    },
+    "applicationDataMutations": 0,
+    "codeSends": 0,
+    "registrationSubmissions": 0,
+    "codeFindings": {
+      "digestSource": "src/lib/email-verification.ts:35",
+      "digestInput": [
+        "email",
+        "purpose",
+        "code"
+      ],
+      "ipOrBrowserBoundToDigest": false,
+      "rateLimitSource": "src/lib/auth-rate-limit.ts:36",
+      "rateLimitHttpStatus": 429,
+      "originCheckSource": "src/lib/auth-email-route.ts:35",
+      "originMismatchHttpStatus": 403,
+      "reportedErrorSource": "src/lib/email-verification.ts:113"
+    },
+    "interpretation": "用户命令的远端目标与本次成功注册的 HTTPS 入口相同。现有证据不支持把隧道本身认定为历史摘要不匹配的原因；未重现原浏览器提交过程，也未确诊历史根因。"
+  },
+  "diagnosticWorkStatus": "deferred-by-user",
+  "followUpDisposition": {
+    "reason": "用户明确要求停止当前排查，若后续真实用户再次反馈则重启诊断；转回 v1.45 下一轮 grilling，聚焦 Q8。",
+    "rootCauseConfirmed": false,
+    "originalIssueClosed": false,
+    "fixClaimed": false,
+    "furtherCodeSendsPlanned": 0,
+    "furtherRegistrationSubmissionsPlanned": 0
+  }
 }
