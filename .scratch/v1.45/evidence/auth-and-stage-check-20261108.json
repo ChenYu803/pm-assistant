@@ -1,0 +1,122 @@
+{
+  "recordedAt": "2026-11-08T13:53:45.848Z",
+  "scope": "v1.45 第一轮澄清所需事实核查，不是修复或验收通过证明",
+  "production": {
+    "method": "既有 SSH 身份；运行进程/源码只读；数据库 START TRANSACTION READ ONLY 后 SELECT 并回滚；腾讯云 GetEmailTemplate 只读请求",
+    "checks": [
+      {
+        "checkedAt": "2026-11-08T13:47:09.424Z",
+        "commit": "33df4878d3a2a30b2e9621211410cfb4a6fd27ab",
+        "configuration": {
+          "authSecretMatchesRuntime": true,
+          "dbMatchesRuntime": true,
+          "emailTestBoundaryEnabled": false
+        },
+        "challenge": {
+          "mailbox": "用户报告的 Proton 邮箱",
+          "purpose": "register",
+          "state": "ready",
+          "attempts": 3,
+          "hasDigest": true,
+          "sentAtAsiaShanghai": "2026-11-08 19:57:36.446",
+          "expiresAtAsiaShanghai": "2026-11-08 20:07:36.446",
+          "expiredAtInspection": true
+        },
+        "matchingAccounts": 0,
+        "databaseTime": "2026-11-08 21:47:09.502",
+        "databaseUtc": "2026-11-08 13:47:09.502",
+        "databaseSessionTimeZone": "SYSTEM"
+      },
+      {
+        "checkedAt": "2026-11-08T13:48:02.546Z",
+        "processCwdMatchesRelease": true,
+        "releaseWorkingTreeClean": true,
+        "registerTemplate": {
+          "querySucceeded": false,
+          "errorCode": "AuthFailure.UnauthorizedOperation",
+          "permissionChanged": false,
+          "templateChanged": false
+        }
+      },
+      {
+        "checkedAt": "2026-11-08T13:50:01.068Z",
+        "serviceProcessCount": 1,
+        "allServiceProcessesAuthSecretMatch": true,
+        "allServiceProcessesDbMatch": true,
+        "serverTimeZone": "Asia/Shanghai"
+      }
+    ],
+    "sourceHashes": {
+      "src/lib/email-verification.ts": "c621f6e18c470d9b3eb858450bf269391e2ef568fd410ef69fa7e19799b68a6e",
+      "src/lib/auth-email-route.ts": "b7fa098f680b6b8157c70329d0a2bf4bbf5bfeac51c6e74d9b54ea46f0e5e514",
+      "src/lib/auth-email-delivery.ts": "3bba871636e1332fd584c8416d367e618e36878749bb8d058bd070e9fb67e4c6",
+      "src/lib/mysql-account-workspace.ts": "99ddc90d43dcc5dc0bc97db0cd9e2996e96720bd320189ba911f53907b344dd4"
+    },
+    "hashNormalization": "将 CRLF 换为 LF 后 SHA-256",
+    "allFourLocalSourcesMatchDeployedSources": true,
+    "emailSent": 0,
+    "registrationAttempts": 0,
+    "passwordOrCodeRead": false,
+    "storedDigestRead": false,
+    "dbContentWrites": 0,
+    "productionFilesChanged": 0,
+    "serviceRestarted": false
+  },
+  "codeFindings": {
+    "exactReportedError": {
+      "file": "src/lib/email-verification.ts",
+      "branch": "state=ready、未过期、attempts<5 后，code_digest 不存在或 HMAC 摘要不等；失败次数递增",
+      "distinctErrorsFor": [
+        "没有凭证",
+        "已使用",
+        "发送未完成",
+        "过期",
+        "失败次数过多"
+      ]
+    },
+    "emailNormalization": {
+      "file": "src/lib/mysql-account-workspace.ts",
+      "operation": "trim().toLowerCase()",
+      "sameForSendAndVerify": true
+    },
+    "purpose": {
+      "registerFormSend": "register",
+      "registerRouteVerify": "register",
+      "protonDomainSpecialCaseFound": false
+    },
+    "stageWarning": {
+      "file": "src/components/ProductIterationWorkbench.tsx",
+      "function": "enterStage",
+      "rule": "目标之前第一个（状态不是 completed 且项目中没有按文件名归入该阶段的未删除文件）的阶段",
+      "usesCandidateConfirmation": false,
+      "checksContentQuality": false,
+      "requiresCurrentIterationFile": false
+    },
+    "fileClassification": {
+      "file": "src/lib/workbench-file-branch.ts",
+      "rules": [
+        "issues/ → tickets",
+        "原型前缀 → prototype",
+        "prd 前缀，不区分大小写 → prd",
+        "其余任意文件名 → analysis"
+      ]
+    },
+    "completeStage": {
+      "file": "src/lib/mysql-iteration-workbench.ts",
+      "function": "completeMysqlIterationStage",
+      "checks": [
+        "迭代属于用户",
+        "阶段状态为 in_progress",
+        "本阶段没有 generating 消息"
+      ],
+      "requiresWrittenArtifact": false
+    }
+  },
+  "limits": [
+    "未读取用户收到的邮件或验证码，未重现原始错误，不宣称完成诊断或修复",
+    "模板正文读取被供应商权限拒绝；未扩大权限或更换身份绕过",
+    "当前配置一致不能证明发送与失败发生当时的历史配置一致",
+    "每个邮箱/用途只有当前一条凭证；重发覆盖旧码且清零 attempts，当前记录不能重建所有历史发送与输入",
+    "ready 是投递成功后的状态标记，不保证当前仍在有效期；本次核查时该记录已经过期"
+  ]
+}
